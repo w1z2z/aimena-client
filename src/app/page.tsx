@@ -1,5 +1,6 @@
 import { HomeExchangeCtaBanner } from "@/widgets/home-exchange-cta/HomeExchangeCtaBanner";
 import { HomeFreeGiveawaySection } from "@/widgets/home-free-section/HomeFreeGiveawaySection";
+import { HomeRecommendationsHeader } from "@/widgets/home-recommendations-header/HomeRecommendationsHeader";
 import { HomeTopBlock } from "@/widgets/home-top-block/HomeTopBlock";
 
 export default function HomePage() {
@@ -8,6 +9,7 @@ export default function HomePage() {
       <HomeTopBlock />
       <HomeFreeGiveawaySection />
       <HomeExchangeCtaBanner />
+      <HomeRecommendationsHeader />
     </main>
   );
 }

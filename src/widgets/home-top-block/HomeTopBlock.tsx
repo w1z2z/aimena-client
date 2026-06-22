@@ -557,12 +557,16 @@ function computeCategoryLayout(index: number, displayIndex: number, length: numb
   const angle = distance * ARC_ANGLE_STEP;
   const rad = (angle * Math.PI) / 180;
   const centerProximity = Math.max(0, 1 - Math.abs(distance) / 0.45);
+  const scale = 1 - distanceFactor * 0.42 + centerProximity * CATEGORY_ACTIVE_SCALE_BOOST;
+  const iconSize = 102 - distanceFactor * 64 + centerProximity * CATEGORY_ACTIVE_SIZE_BOOST;
+  const arcTopY = ARC_BASE_Y - Math.cos(rad) * ARC_VERTICAL_RADIUS;
+  const scaledIconHeight = iconSize * scale;
 
   return {
     x: ARC_CENTER_X + Math.sin(rad) * ARC_HORIZONTAL_RADIUS,
-    y: ARC_BASE_Y - Math.cos(rad) * ARC_VERTICAL_RADIUS,
-    scale: 1 - distanceFactor * 0.42 + centerProximity * CATEGORY_ACTIVE_SCALE_BOOST,
-    iconSize: 102 - distanceFactor * 64 + centerProximity * CATEGORY_ACTIVE_SIZE_BOOST,
+    y: arcTopY - (scaledIconHeight - ARC_ACTIVE_ICON_SIZE) / 2,
+    scale,
+    iconSize,
     opacity: isFar ? 0 : 1 - distanceFactor * 0.5,
     isFar,
     isActive: Math.abs(distance) < 0.05,
