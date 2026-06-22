@@ -63,3 +63,24 @@ select:disabled,
 textarea:disabled {
   cursor: not-allowed;
 }
+
+@keyframes home-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.home-ticker-track {
+  animation: home-ticker-scroll 48s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-ticker-track {
+    animation: none;
+  }
+}

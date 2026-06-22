@@ -102,7 +102,67 @@ const tickerItems = [
   "Никакого спама в личные сообщения",
   "Каждый получает нужное себе",
   "Показываем то, что вас заинтересует",
+] as const;
+
+type TickerPinGlowRect = {
+  left?: string;
+  right?: string;
+  top: string;
+};
+
+const tickerPinGlowRects: TickerPinGlowRect[] = [
+  { right: "19px", top: "-2px" },
+  { left: "-8px", top: "17px" },
 ];
+
+function TickerPin({ label }: { label: string }) {
+  return (
+    <div className="relative isolate flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] overflow-hidden rounded-[16.327px] border border-[0.3px] border-white/30 bg-[rgba(0,0,0,0.004)] px-[18px] py-[12px]">
+      {tickerPinGlowRects.map((rect) => (
+        <span
+          key={`${rect.left ?? rect.right}-${rect.top}`}
+          aria-hidden
+          className="pointer-events-none absolute z-[1] size-[20.48px] blur-[14px]"
+          style={{
+            left: rect.left,
+            right: rect.right,
+            top: rect.top,
+            backgroundColor: "#8E8BED",
+            transform: "rotate(-39.36deg)",
+          }}
+        />
+      ))}
+      <span className="relative z-[2] flex items-center whitespace-nowrap text-center text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-white">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function TickerBolt() {
+  return (
+    <span className="flex h-[25.163px] w-[18.815px] shrink-0 items-center justify-center">
+      <BoltIcon className="h-[22.443px] w-[13.466px] rotate-[15deg]" />
+    </span>
+  );
+}
+
+function TickerCarousel() {
+  const loopItems = useMemo(() => [...tickerItems, ...tickerItems], []);
+
+  return (
+    <div className="pointer-events-none absolute left-[-96px] top-[1172px] z-20 h-[34px] w-[2118px] overflow-hidden">
+      <div className="home-ticker-track flex w-max items-center gap-[12px]">
+        {loopItems.map((item, idx) => (
+          <div key={`${item}-${idx}`} className="flex shrink-0 items-center gap-[12px]">
+            <TickerPin label={item} />
+            <TickerBolt />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function normalizeIndex(index: number, length: number) {
   if (length <= 0) return 0;
@@ -116,6 +176,17 @@ function getWrappedDistance(index: number, activeIndex: number, length: number) 
   if (rawDistance < -length / 2) return rawDistance + length;
   return rawDistance;
 }
+
+const ARC_CENTER_X = 720;
+const ARC_HORIZONTAL_RADIUS = 620;
+const ARC_VERTICAL_RADIUS = 170;
+const ARC_BASE_Y = 245;
+const ARC_ACTIVE_ICON_SIZE = 102;
+const ARC_GLOW_HORIZONTAL_RADIUS = 735;
+const ARC_ANGLE_STEP = 17.5;
+const ARC_ACTIVE_ICON_CENTER_Y = ARC_BASE_Y - ARC_VERTICAL_RADIUS + ARC_ACTIVE_ICON_SIZE / 2;
+const ARC_GLOW_BASE_Y = ARC_ACTIVE_ICON_CENTER_Y + ARC_VERTICAL_RADIUS;
+const ARC_GLOW_PATH = `M ${ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y} A ${ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_VERTICAL_RADIUS} 0 0 1 ${ARC_CENTER_X + ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y}`;
 
 function CategoriesArc() {
   const [activeIndex, setActiveIndex] = useState(() =>
@@ -159,7 +230,7 @@ function CategoriesArc() {
       <svg
         aria-hidden
         viewBox="0 0 1440 215"
-        className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
       >
         <defs>
           <filter id="categories-arc-glow-soft" x="-65%" y="-170%" width="230%" height="440%">
@@ -168,7 +239,14 @@ function CategoriesArc() {
           <filter id="categories-arc-glow-core" x="-55%" y="-145%" width="210%" height="390%">
             <feGaussianBlur stdDeviation="42" />
           </filter>
-          <linearGradient id="categories-arc-glow-gradient" x1="8" y1="0" x2="1432" y2="0" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="categories-arc-glow-gradient"
+            x1={ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS}
+            y1="0"
+            x2={ARC_CENTER_X + ARC_GLOW_HORIZONTAL_RADIUS}
+            y2="0"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop offset="0%" stopColor="#C8FF00" stopOpacity="0" />
             <stop offset="16%" stopColor="#C8FF00" stopOpacity="0.2" />
             <stop offset="50%" stopColor="#C8FF00" stopOpacity="0.46" />
@@ -178,7 +256,7 @@ function CategoriesArc() {
         </defs>
 
         <path
-          d="M 8 210 A 712 112 0 0 1 1432 210"
+          d={ARC_GLOW_PATH}
           fill="none"
           stroke="url(#categories-arc-glow-gradient)"
           strokeWidth="156"
@@ -187,7 +265,7 @@ function CategoriesArc() {
           filter="url(#categories-arc-glow-soft)"
         />
         <path
-          d="M 8 210 A 712 112 0 0 1 1432 210"
+          d={ARC_GLOW_PATH}
           fill="none"
           stroke="url(#categories-arc-glow-gradient)"
           strokeWidth="88"
@@ -206,10 +284,10 @@ function CategoriesArc() {
           return null;
         }
 
-        const angle = distance * 17.5;
+        const angle = distance * ARC_ANGLE_STEP;
         const rad = (angle * Math.PI) / 180;
-        const x = 720 + Math.sin(rad) * 620;
-        const y = 176 - Math.cos(rad) * 122;
+        const x = ARC_CENTER_X + Math.sin(rad) * ARC_HORIZONTAL_RADIUS;
+        const y = ARC_BASE_Y - Math.cos(rad) * ARC_VERTICAL_RADIUS;
         const distanceFactor = Math.abs(distance) / maxVisibleDistance;
         const scale = 1 - distanceFactor * 0.42;
         const iconSize = 102 - distanceFactor * 64;
@@ -222,13 +300,15 @@ function CategoriesArc() {
             type="button"
             onClick={() => setActiveIndex(index)}
             aria-label={item.label}
-            className="group absolute flex flex-col items-center transition-[transform,opacity] duration-500 ease-out"
+            className="group absolute flex flex-col items-center border-0 bg-transparent p-0 outline-none transition-[transform,opacity] duration-500 ease-out [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none active:outline-none"
             style={{
               left: `${x}px`,
               top: `${y}px`,
               transform: `translateX(-50%) scale(${scale})`,
               opacity,
               zIndex: 20 - Math.abs(distance),
+              WebkitAppearance: "none",
+              appearance: "none",
             }}
           >
             <img
@@ -381,7 +461,7 @@ export function HomeTopBlock() {
               })}
             </div>
 
-            <div className="absolute left-[492px] top-[486px] flex h-[535px] w-[1026px] gap-[12px]">
+            <div className="absolute left-[492px] top-[486px] z-10 flex h-[535px] w-[1026px] gap-[12px]">
               {isExchange ? (
                 <div className="flex h-full w-[560px] flex-col gap-[12px]">
                   <div className="h-[340px] rounded-[10px] border border-[#CACACA] bg-[#C8FF00] px-[24px] pt-[24px] text-[#3D3D3D]">
@@ -542,20 +622,15 @@ export function HomeTopBlock() {
               <CenterExchangeBadge />
             </div>
 
-            <p className="absolute left-[863px] top-[1084px] text-[22px] font-bold leading-[1.2]">Почему Aimena?</p>
+            <p className="pointer-events-none absolute left-1/2 top-[1084px] z-20 w-max -translate-x-1/2 text-center text-[24px] font-extrabold leading-[32px] tracking-[-0.072px] text-white">
+              Почему <span className="text-[#8E8BED]">Aimena</span>?
+            </p>
 
-            <div className="absolute left-[-96px] top-[1128px] flex h-[34px] w-[2118px] items-center gap-[12px] overflow-hidden">
-              {[...tickerItems, ...tickerItems].map((item, idx) => (
-                <div key={`${item}-${idx}`} className="flex items-center gap-[12px] whitespace-nowrap rounded-[16.327px] px-[18px] py-[8px] text-[14px] font-semibold text-white">
-                  <span>{item}</span>
-                  <BoltIcon className="h-[22px] w-[13px]" />
-                </div>
-              ))}
-            </div>
+            <TickerCarousel />
           </section>
         </div>
 
-        <button className="absolute left-[1704px] top-[1024px] h-[67px] w-[72px]">
+        <button className="absolute left-[1704px] top-[1024px] z-20 h-[67px] w-[72px]">
           <ChatBubbleIcon className="h-full w-full text-[#1A1A1A]" aria-label="Чат" />
         </button>
       </div>
