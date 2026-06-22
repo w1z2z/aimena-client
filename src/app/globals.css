@@ -162,6 +162,30 @@ textarea:disabled {
   }
 }
 
+.glass-surface {
+  isolation: isolate;
+  border: 1px solid rgb(255 255 255 / 8%);
+  background-color: rgb(26 26 26 / 72%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass-surface {
+    background-color: rgb(26 26 26 / 92%);
+  }
+}
+
+.home-exchange-badge__glass {
+  box-shadow: 0 4px 24px rgb(0 0 0 / 28%);
+}
+
+.home-ticker-pin {
+  box-shadow: 0 2px 12px rgb(0 0 0 / 22%);
+}
+
 
 /* Recommendations list scrollbar tuning */
 .home-recommendations-scroll {

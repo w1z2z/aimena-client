@@ -344,7 +344,7 @@ function ModeFormColumn({ isExchange, ...fields }: ModeFormFieldsProps & { isExc
 }
 
 function renderTabIcon(tabId: Mode, active: boolean) {
-  if (tabId === "exchange") return <WantExchangeIcon className="h-[17px] w-[15px]" />;
+  if (tabId === "exchange") return <WantExchangeIcon active={active} className="h-[17px] w-[15px]" />;
   if (tabId === "browse") return <WantBrowseIcon active={active} className="h-4 w-4" />;
   return <WantAllIcon active={active} className="h-4 w-4" />;
 }
@@ -389,14 +389,12 @@ function CenterExchangeBadge() {
     <button
       type="button"
       aria-label="Открыть полный список объявлений по выбранной категории и параметрам"
-      className="absolute bottom-[20.19%] left-[46.3%] right-[37.82%] top-[49.35%] cursor-pointer rounded-full border-0 bg-transparent p-0 transition-shadow duration-200 hover:shadow-[0_8px_32px_rgba(0,0,0,0.45)]"
+      className="home-exchange-badge absolute bottom-[20.19%] left-[46.3%] right-[37.82%] top-[49.35%] cursor-pointer rounded-full border-0 bg-transparent p-0 transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(0,0,0,0.36)]"
     >
-      <div className="relative h-full w-full">
-        <svg viewBox="0 0 163 163" className="absolute inset-0 h-full w-full" aria-hidden>
-          <circle cx="81.5" cy="81.5" r="81.5" fill="#1A1A1A" />
-          <ellipse cx="81.5" cy="81" rx="71" ry="71" fill="#000000" stroke="#CACACA" strokeWidth="2.5" />
+      <div className="home-exchange-badge__glass glass-surface relative h-full w-full overflow-hidden rounded-full">
+        <svg viewBox="0 0 163 163" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
+          <ellipse cx="81.5" cy="81" rx="71" ry="71" fill="none" stroke="#CACACA" strokeWidth="2.5" />
         </svg>
-
         <div className="pointer-events-none absolute left-[53px] top-[31px] h-[48.45px] w-[58.45px]">
           <ExchangeBadgeIcon className="h-full w-full" />
         </div>
@@ -430,7 +428,7 @@ const tickerPinGlowRects: TickerPinGlowRect[] = [
 
 function TickerPin({ label }: { label: string }) {
   return (
-    <div className="relative isolate flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] overflow-hidden rounded-[16.327px] border border-[0.3px] border-white/30 bg-[rgba(0,0,0,0.004)] px-[18px] py-[12px] [transform:translateZ(0)]">
+    <div className="home-ticker-pin glass-surface relative flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] overflow-hidden rounded-[16.327px] px-[18px] py-[12px]">
       {tickerPinGlowRects.map((rect) => (
         <span
           key={`${rect.left ?? rect.right}-${rect.top}`}
