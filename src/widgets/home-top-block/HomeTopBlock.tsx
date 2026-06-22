@@ -24,6 +24,9 @@ import {
   WantBrowseIcon,
   WantExchangeIcon,
 } from "@/shared/ui/icons";
+import { HERO_CONDITION_OPTIONS, useHomeSearch } from "@/features/home-search";
+import type { MockListing } from "@/features/home-search/mock-listings";
+import type { CategoryId } from "@/shared/ui/icons/category-icons";
 import { ComboboxField } from "@/shared/ui/combobox-field/ComboboxField";
 import { Header } from "@/widgets/header/Header";
 
@@ -33,7 +36,7 @@ type Mode = "exchange" | "browse" | "all";
 
 const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
 const cityComboboxOptions = cityOptions.map((city) => ({ value: city, label: city }));
-const conditionOptions = ["Отличное", "Новое", "Хорошее", "Б.у", "Требует ремонта"];
+const conditionOptions = [...HERO_CONDITION_OPTIONS];
 
 const titlePlaceholder = 'MacBook Pro 14" M3 Pro';
 const pricePlaceholder = "~ 100 000р";
@@ -348,45 +351,46 @@ function renderTabIcon(tabId: Mode, active: boolean) {
   return <WantAllIcon active={active} className="h-4 w-4" />;
 }
 
-function HeroCard() {
+function HeroCard({ listing }: { listing: MockListing }) {
   return (
     <div className="w-[342px] rounded-[10px] bg-white py-[12px] shadow-[0px_5px_4.95px_rgba(0,0,0,0.25)]">
       <div className="mx-auto flex h-[29px] w-[318px] items-center justify-center rounded-t-[10px] text-[18px] font-semibold text-[#1A1A1A]">
-        MacBook Pro 14&quot; M3 Хо
+        {listing.title}
       </div>
       <div className="relative mt-[12px] h-[342px] w-[342px] overflow-hidden">
         <img src={imgHeroCard} alt="" className="h-full w-full object-cover" />
         <div className="absolute bottom-[9px] left-[8px] flex gap-[6px]">
           <span className="rounded-[16.327px] border border-[#C8FF00] border-[0.3px] bg-white/70 px-[12px] py-[8px] text-[12px] leading-none text-[#1A1A1A]">
-            Москва
+            {listing.city}
           </span>
           <span className="rounded-[16.327px] border border-[#C8FF00] border-[0.3px] bg-white/70 px-[12px] py-[8px] text-[12px] leading-none text-[#1A1A1A]">
-            Хорошее
+            {listing.condition}
           </span>
         </div>
       </div>
       <div className="mx-auto mt-[12px] flex min-h-[44px] w-[321px] items-center gap-[6px] rounded-[9px] border border-[#8E8BED] border-[0.3px] bg-[#F9F7FF] px-[8px]">
         <TagsIcon className="h-[11px] w-[11px] rotate-180 text-[#8E8BED]" />
-        <span className="rounded-[39px] border border-[#8E8BED] border-[0.5px] bg-[#F2F4F7] px-[8px] py-[4px] text-[11px] font-semibold text-[#1A1A1A]">
-          Sony PlayStation 5
-        </span>
-        <span className="rounded-[39px] border border-[#8E8BED] border-[0.5px] bg-[#F2F4F7] px-[8px] py-[4px] text-[11px] font-semibold text-[#1A1A1A]">
-          Монитор 4K
-        </span>
-        <span className="text-[11px] text-[#626262]">+5</span>
+        {listing.wants.map((item) => (
+          <span
+            key={item}
+            className="rounded-[39px] border border-[#8E8BED] border-[0.5px] bg-[#F2F4F7] px-[8px] py-[4px] text-[11px] font-semibold text-[#1A1A1A]"
+          >
+            {item}
+          </span>
+        ))}
+        {listing.wantsMore > 0 ? (
+          <span className="text-[11px] text-[#626262]">+{listing.wantsMore}</span>
+        ) : null}
       </div>
     </div>
   );
 }
 
-const recommendedCards = Array.from({ length: 5 }, (_, idx) => ({
-  id: idx + 1,
-}));
-
-function CenterExchangeBadge() {
+function CenterExchangeBadge({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       aria-label="Открыть полный список объявлений по выбранной категории и параметрам"
       className="home-exchange-badge absolute bottom-[20.19%] left-[46.3%] right-[37.82%] top-[49.35%] cursor-pointer rounded-full border-0 bg-transparent p-0 transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(0,0,0,0.36)]"
     >
@@ -627,7 +631,7 @@ function applyCategoryLayout(
   }
 }
 
-function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) {
+function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: CategoryId) => void }) {
   const initialIndex = Math.max(
     0,
     categoryItems.findIndex((item) => item.id === "all"),
@@ -725,6 +729,15 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
     [applyAllLayouts],
   );
 
+  const notifyCategorySettled = useCallback(
+    (settled: number) => {
+      currentCategoryIndexRef.current = settled;
+      displayIndexRef.current = settled;
+      onCategoryChange?.(categoryItems[settled].id);
+    },
+    [onCategoryChange],
+  );
+
   const goToIndex = useCallback(
     (targetIndex: number) => {
       const settled = normalizeIndex(targetIndex, length);
@@ -732,11 +745,10 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
       const delta = getShortestDelta(from, settled, length);
 
       animateDisplayIndex(from + delta, Math.min(520, 260 + Math.abs(delta) * 70), () => {
-        currentCategoryIndexRef.current = settled;
-        displayIndexRef.current = settled;
+        notifyCategorySettled(settled);
       });
     },
-    [animateDisplayIndex, length],
+    [animateDisplayIndex, length, notifyCategorySettled],
   );
 
   const settleAfterDrag = useCallback(() => {
@@ -746,18 +758,16 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
     const delta = targetDisplay - from;
 
     if (Math.abs(delta) < 0.001) {
-      displayIndexRef.current = settled;
-      currentCategoryIndexRef.current = settled;
+      notifyCategorySettled(settled);
       applyAllLayouts(settled);
       return;
     }
 
     animateDisplayIndex(targetDisplay, Math.min(520, 260 + Math.abs(delta) * 70), () => {
-      currentCategoryIndexRef.current = settled;
-      displayIndexRef.current = settled;
+      notifyCategorySettled(settled);
       applyAllLayouts(settled);
     });
-  }, [animateDisplayIndex, applyAllLayouts, length]);
+  }, [animateDisplayIndex, applyAllLayouts, length, notifyCategorySettled]);
 
   const blurButtonAfterPointer = (event: PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
@@ -813,18 +823,16 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
 
       if (hasDraggedRef.current) {
         settleAfterDrag();
-        onCategorySelect?.();
         pendingTapIndexRef.current = null;
         return;
       }
 
       if (pendingTapIndexRef.current !== null) {
         goToIndex(pendingTapIndexRef.current);
-        onCategorySelect?.();
         pendingTapIndexRef.current = null;
       }
     },
-    [goToIndex, onCategorySelect, settleAfterDrag],
+    [goToIndex, settleAfterDrag],
   );
 
   const handleContainerPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -1063,18 +1071,33 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
 }
 
 export function HomeTopBlock() {
-  const [mode, setMode] = useState<Mode>("exchange");
-  const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [city, setCity] = useState("");
-  const [hasDocuments, setHasDocuments] = useState(false);
-  const [condition, setCondition] = useState("Отличное");
+  const {
+    hero,
+    setMode,
+    setCategoryId,
+    setTitle,
+    setPrice,
+    setCity,
+    setHasDocuments,
+    setCondition,
+    heroRecommendations,
+    openFiltersAndScroll,
+  } = useHomeSearch();
   const [sceneScale, setSceneScale] = useState(1);
 
+  const { mode, title, price, city, hasDocuments, condition } = hero;
   const isExchange = mode === "exchange";
   const blurButtonAfterClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
   };
+
+  const handleCategoryChange = useCallback(
+    (categoryId: CategoryId) => {
+      setCategoryId(categoryId);
+      setMode("browse");
+    },
+    [setCategoryId, setMode],
+  );
 
   const topTabs = useMemo(
     () => [
@@ -1113,7 +1136,7 @@ export function HomeTopBlock() {
             className="relative w-[2011px] -translate-x-[285px]"
             style={{ height: `${1280 - HERO_CONTENT_SHIFT_UP}px` }}
           >
-            <CategoriesArc onCategorySelect={() => setMode("browse")} />
+            <CategoriesArc onCategoryChange={handleCategoryChange} />
 
             <h1
               className="absolute left-[492px] w-[579px] text-[40px] font-bold leading-[40px]"
@@ -1173,16 +1196,16 @@ export function HomeTopBlock() {
                   className="home-recommendations-scroll mx-auto h-[479px] w-[358px] overflow-y-auto overflow-x-hidden rounded-[10px] p-[8px] snap-y snap-mandatory overscroll-contain"
                 >
                   <div className="flex flex-col items-center gap-[16px]">
-                    {recommendedCards.map((card) => (
-                      <div key={card.id} data-recommendation-card className="flex w-full snap-center snap-always justify-center">
-                        <HeroCard />
+                    {heroRecommendations.map((listing) => (
+                      <div key={listing.id} data-recommendation-card className="flex w-full snap-center snap-always justify-center">
+                        <HeroCard listing={listing} />
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <CenterExchangeBadge />
+              <CenterExchangeBadge onClick={openFiltersAndScroll} />
             </div>
 
             <p

@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+
+import { useHomeSearch } from "@/features/home-search";
+import type {
+  ConditionOptionId,
+  DateOptionId,
+  ListingMode,
+  ServiceFormatId,
+} from "@/features/home-search/types";
 
 import { categoryItems, type CategoryId } from "@/shared/ui/icons/category-icons";
 import { ComboboxField } from "@/shared/ui/combobox-field/ComboboxField";
@@ -28,11 +36,6 @@ const serviceFormatOptions = [
   { id: "onsite", label: "Выезд" },
   { id: "client", label: "У клиента" },
 ] as const;
-
-type DateOptionId = (typeof dateOptions)[number]["id"];
-type ConditionOptionId = (typeof conditionOptions)[number]["id"];
-type ServiceFormatId = (typeof serviceFormatOptions)[number]["id"];
-type ListingMode = "item" | "service";
 
 const filterCategoryOptions = [
   ...categoryItems.filter((item) => item.id === "all"),
@@ -140,43 +143,56 @@ function FilterPills<T extends string>({
 }
 
 export function HomeRecommendationsFiltersPanelContent() {
-  const [listingMode, setListingMode] = useState<ListingMode>("item");
-  const [category, setCategory] = useState<CategoryId>("all");
-  const [city, setCity] = useState("");
-  const [priceFrom, setPriceFrom] = useState("");
-  const [priceTo, setPriceTo] = useState("");
-  const [datePeriod, setDatePeriod] = useState<DateOptionId>("today");
-  const [conditions, setConditions] = useState<ConditionOptionId[]>([]);
-  const [withSurcharge, setWithSurcharge] = useState(false);
-  const [withDocuments, setWithDocuments] = useState(false);
-  const [serviceFormats, setServiceFormats] = useState<ServiceFormatId[]>([]);
-  const [verifiedProvider, setVerifiedProvider] = useState(false);
+  const { filters, setFilters, resetFilters, applyFilters } = useHomeSearch();
 
-  const toggleCondition = useCallback((id: ConditionOptionId) => {
-    setConditions((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
-    );
-  }, []);
+  const {
+    listingMode,
+    category,
+    city,
+    priceFrom,
+    priceTo,
+    datePeriod,
+    conditions,
+    withSurcharge,
+    withDocuments,
+    serviceFormats,
+    verifiedProvider,
+  } = filters;
 
-  const toggleServiceFormat = useCallback((id: ServiceFormatId) => {
-    setServiceFormats((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
-    );
-  }, []);
+  const updateFilters = useCallback(
+    (patch: Partial<typeof filters>) => {
+      setFilters((current) => ({ ...current, ...patch }));
+    },
+    [setFilters],
+  );
+
+  const toggleCondition = useCallback(
+    (id: ConditionOptionId) => {
+      setFilters((current) => ({
+        ...current,
+        conditions: current.conditions.includes(id)
+          ? current.conditions.filter((item) => item !== id)
+          : [...current.conditions, id],
+      }));
+    },
+    [setFilters],
+  );
+
+  const toggleServiceFormat = useCallback(
+    (id: ServiceFormatId) => {
+      setFilters((current) => ({
+        ...current,
+        serviceFormats: current.serviceFormats.includes(id)
+          ? current.serviceFormats.filter((item) => item !== id)
+          : [...current.serviceFormats, id],
+      }));
+    },
+    [setFilters],
+  );
 
   const handleReset = useCallback(() => {
-    setListingMode("item");
-    setCategory("all");
-    setCity("");
-    setPriceFrom("");
-    setPriceTo("");
-    setDatePeriod("today");
-    setConditions([]);
-    setWithSurcharge(false);
-    setWithDocuments(false);
-    setServiceFormats([]);
-    setVerifiedProvider(false);
-  }, []);
+    resetFilters();
+  }, [resetFilters]);
 
   return (
     <div className="home-filters-panel">
@@ -188,8 +204,8 @@ export function HomeRecommendationsFiltersPanelContent() {
         </p>
         <ComboboxField
           value={city}
-          onChange={setCity}
-          onInputChange={setCity}
+          onChange={(next) => updateFilters({ city: next })}
+          onInputChange={(next) => updateFilters({ city: next })}
           options={cityComboboxOptions}
           placeholder="Выберите город"
           wrapClassName="home-filters-panel__select-wrap"
@@ -202,13 +218,16 @@ export function HomeRecommendationsFiltersPanelContent() {
       </div>
 
       <div className="home-filters-panel__right">
-        <FilterModeSwitch value={listingMode} onChange={setListingMode} />
+        <FilterModeSwitch
+          value={listingMode}
+          onChange={(next) => updateFilters({ listingMode: next })}
+        />
 
         <div className="home-filters-panel__right-section">
           <p className="home-filters-panel__field-label">Категория</p>
           <ComboboxField
             value={category}
-            onChange={(next) => setCategory(next as CategoryId)}
+            onChange={(next) => updateFilters({ category: next as CategoryId })}
             options={categoryComboboxOptions}
             wrapClassName="home-filters-panel__select-wrap home-filters-panel__select-wrap--right"
             inputClassName="home-filters-panel__input home-filters-panel__input--right home-filters-panel__combobox-input"
@@ -234,7 +253,7 @@ export function HomeRecommendationsFiltersPanelContent() {
               <FilterToggle
                 checked={withDocuments}
                 label="С документами"
-                onChange={setWithDocuments}
+                onChange={(next) => updateFilters({ withDocuments: next })}
               />
             </div>
           </>
@@ -253,7 +272,7 @@ export function HomeRecommendationsFiltersPanelContent() {
               <FilterToggle
                 checked={verifiedProvider}
                 label="Проверенный исполнитель"
-                onChange={setVerifiedProvider}
+                onChange={(next) => updateFilters({ verifiedProvider: next })}
               />
             </div>
           </>
@@ -267,7 +286,7 @@ export function HomeRecommendationsFiltersPanelContent() {
             <button
               key={item.id}
               type="button"
-              onClick={() => setDatePeriod(item.id)}
+              onClick={() => updateFilters({ datePeriod: item.id })}
               className={`home-filters-panel__pill home-filters-panel__pill--date${datePeriod === item.id ? " is-active" : ""}`}
             >
               {item.label}
@@ -285,20 +304,24 @@ export function HomeRecommendationsFiltersPanelContent() {
             <input
               type="text"
               value={priceFrom}
-              onChange={(event) => setPriceFrom(event.target.value)}
+              onChange={(event) => updateFilters({ priceFrom: event.target.value })}
               className="home-filters-panel__input home-filters-panel__input--narrow"
               placeholder="От"
             />
             <input
               type="text"
               value={priceTo}
-              onChange={(event) => setPriceTo(event.target.value)}
+              onChange={(event) => updateFilters({ priceTo: event.target.value })}
               className="home-filters-panel__input home-filters-panel__input--narrow"
               placeholder="До"
             />
           </div>
           <div className="home-filters-panel__surcharge">
-            <FilterToggle checked={withSurcharge} label="С доплатой" onChange={setWithSurcharge} />
+            <FilterToggle
+              checked={withSurcharge}
+              label="С доплатой"
+              onChange={(next) => updateFilters({ withSurcharge: next })}
+            />
           </div>
         </div>
       </div>
@@ -307,7 +330,7 @@ export function HomeRecommendationsFiltersPanelContent() {
         <button type="button" onClick={handleReset} className="home-filters-panel__reset">
           Сбросить
         </button>
-        <button type="button" className="home-filters-panel__apply">
+        <button type="button" onClick={applyFilters} className="home-filters-panel__apply">
           Применить
         </button>
       </div>

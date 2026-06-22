@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+
+import { useHomeSearch } from "@/features/home-search";
 
 import { FilterIcon } from "@/shared/ui/icons";
 
@@ -9,15 +11,30 @@ import { HomeListingsViewAllLink } from "@/widgets/home-listings-grid/HomeListin
 
 import { HomeRecommendationsFiltersPanelContent } from "./HomeRecommendationsFiltersPanelContent";
 
+function formatOffersCount(count: number) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return `${count.toLocaleString("ru-RU")} предложение`;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+    return `${count.toLocaleString("ru-RU")} предложения`;
+  }
+
+  return `${count.toLocaleString("ru-RU")} предложений`;
+}
+
 export function HomeRecommendationsHeader() {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const { isFiltersOpen, setIsFiltersOpen, listingsCount } = useHomeSearch();
 
   const toggleFilters = useCallback(() => {
     setIsFiltersOpen((current) => !current);
-  }, []);
+  }, [setIsFiltersOpen]);
 
   return (
-    <section className="bg-[#F8F8F5] pb-[68px] text-[#1A1A1A]">
+    <section id="home-recommendations" className="bg-[#F8F8F5] pb-[68px] text-[#1A1A1A]">
       <div className="mx-auto w-full max-w-[1441px]">
         <div className="home-recommendations-header-wrap">
           <div className="home-recommendations-header">
@@ -26,7 +43,7 @@ export function HomeRecommendationsHeader() {
                 <span>Попробуй найти, то что</span>{" "}
                 <span className="home-recommendations-header__heading-accent">нужно</span>
               </h2>
-              <p className="home-recommendations-header__count">2 304 предложения</p>
+              <p className="home-recommendations-header__count">{formatOffersCount(listingsCount)}</p>
             </div>
 
             <button

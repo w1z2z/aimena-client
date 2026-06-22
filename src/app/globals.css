@@ -1249,6 +1249,24 @@ textarea:disabled {
   margin-top: 36px;
 }
 
+.home-listings-grid--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+}
+
+.home-listings-grid__empty {
+  margin: 0;
+  max-width: 420px;
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .home-listing-card {
   box-sizing: border-box;
   display: flex;
