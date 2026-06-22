@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { type MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   BoltIcon,
@@ -205,6 +205,9 @@ function CategoriesArc() {
   const displayIndexRef = useRef(initialIndex);
   const currentCategoryIndexRef = useRef(initialIndex);
   const animationRef = useRef<number | null>(null);
+  const wheelAccumulatorRef = useRef(0);
+  const lastWheelEventAtRef = useRef(0);
+  const nextStepAllowedAtRef = useRef(0);
 
   const animateDisplayIndex = useCallback(
     (targetValue: number, duration: number, onComplete?: () => void) => {
@@ -263,6 +266,51 @@ function CategoriesArc() {
     event.currentTarget.blur();
   };
 
+  const stepCarousel = useCallback(
+    (direction: 1 | -1) => {
+      if (animationRef.current !== null) return;
+
+      const nextIndex = normalizeIndex(currentCategoryIndexRef.current + direction, length);
+      const targetDisplay = displayIndexRef.current + direction;
+      currentCategoryIndexRef.current = nextIndex;
+
+      animateDisplayIndex(targetDisplay, 280, () => {
+        currentCategoryIndexRef.current = nextIndex;
+      });
+    },
+    [animateDisplayIndex, length],
+  );
+
+  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
+    if (animationRef.current !== null) return;
+
+    // Rotate categories only for a clearly horizontal gesture.
+    const hasHorizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.15;
+    if (!hasHorizontalIntent) return;
+
+    const now = Date.now();
+    const gapFromLastEvent = now - lastWheelEventAtRef.current;
+    lastWheelEventAtRef.current = now;
+
+    if (gapFromLastEvent > 140) {
+      wheelAccumulatorRef.current = 0;
+    }
+
+    wheelAccumulatorRef.current += event.deltaX;
+    if (now < nextStepAllowedAtRef.current) return;
+
+    const threshold = event.deltaMode === 1 ? 1 : 36;
+    if (Math.abs(wheelAccumulatorRef.current) < threshold) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const direction: 1 | -1 = wheelAccumulatorRef.current > 0 ? 1 : -1;
+    wheelAccumulatorRef.current = 0;
+    nextStepAllowedAtRef.current = now + 220;
+    stepCarousel(direction);
+  };
+
   useEffect(() => {
     return () => {
       if (animationRef.current !== null) {
@@ -272,7 +320,7 @@ function CategoriesArc() {
   }, []);
 
   return (
-    <div className="absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none">
+    <div onWheel={handleWheel} className="absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none">
       <svg
         aria-hidden
         viewBox="0 0 1440 215"
