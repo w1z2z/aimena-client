@@ -1,7 +1,6 @@
 import { ExchangeListingCard, type ExchangeListingCardData } from "./ExchangeListingCard";
-import { ITEMS_PER_PAGE, TOTAL_ITEMS } from "./HomeListingsPagination";
 
-const listings: ExchangeListingCardData[] = Array.from({ length: TOTAL_ITEMS }, (_, index) => ({
+const listings: ExchangeListingCardData[] = Array.from({ length: 12 }, (_, index) => ({
   id: index + 1,
   title: 'MacBook Pro 14" M3 Хо',
   city: "Москва",
@@ -10,17 +9,10 @@ const listings: ExchangeListingCardData[] = Array.from({ length: TOTAL_ITEMS }, 
   wantsMore: 5,
 }));
 
-type HomeListingsGridProps = {
-  page: number;
-};
-
-export function HomeListingsGrid({ page }: HomeListingsGridProps) {
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  const visibleListings = listings.slice(start, start + ITEMS_PER_PAGE);
-
+export function HomeListingsGrid() {
   return (
     <div className="home-listings-grid" aria-label="Лента объявлений">
-      {visibleListings.map((listing) => (
+      {listings.map((listing) => (
         <ExchangeListingCard key={listing.id} {...listing} />
       ))}
     </div>

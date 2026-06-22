@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 
 import { FilterIcon } from "@/shared/ui/icons";
 
-import { HomeListingsSection } from "@/widgets/home-listings-grid/HomeListingsSection";
+import { HomeListingsGrid } from "@/widgets/home-listings-grid/HomeListingsGrid";
+import { HomeListingsViewAllLink } from "@/widgets/home-listings-grid/HomeListingsViewAllLink";
 
 import { HomeRecommendationsFiltersPanelContent } from "./HomeRecommendationsFiltersPanelContent";
 
@@ -53,7 +54,8 @@ export function HomeRecommendationsHeader() {
           </div>
         </div>
 
-        <HomeListingsSection />
+        <HomeListingsGrid />
+        <HomeListingsViewAllLink />
       </div>
     </section>
   );
