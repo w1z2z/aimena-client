@@ -388,7 +388,7 @@ function CenterExchangeBadge() {
   return (
     <button
       type="button"
-      aria-label="Подобрать обмен"
+      aria-label="Открыть полный список объявлений по выбранной категории и параметрам"
       className="absolute bottom-[20.19%] left-[46.3%] right-[37.82%] top-[49.35%] cursor-pointer rounded-full border-0 bg-transparent p-0 transition-shadow duration-200 hover:shadow-[0_8px_32px_rgba(0,0,0,0.45)]"
     >
       <div className="relative h-full w-full">
@@ -401,7 +401,7 @@ function CenterExchangeBadge() {
           <ExchangeBadgeIcon className="h-full w-full" />
         </div>
         <div className="pointer-events-none absolute inset-[55.64%_19.02%_24.73%_20.86%] flex items-center justify-center text-center text-[16px] font-bold leading-[20px] tracking-[0.001em] text-white">
-          Подобрать обмен
+          Все варианты
         </div>
       </div>
     </button>
@@ -500,6 +500,13 @@ function getShortestDelta(from: number, to: number, length: number) {
   return delta;
 }
 
+function rebaseDisplayIndexContinuous(displayIndex: number, length: number) {
+  const nearest = Math.round(displayIndex);
+  const settled = normalizeIndex(nearest, length);
+  const fraction = displayIndex - nearest;
+  return settled + fraction;
+}
+
 const ARC_CENTER_X = 720;
 const ARC_HORIZONTAL_RADIUS = 620;
 const ARC_VERTICAL_RADIUS = 170;
@@ -514,6 +521,9 @@ const ARC_GLOW_BASE_Y = ARC_ACTIVE_ICON_CENTER_Y + ARC_VERTICAL_RADIUS;
 const ARC_GLOW_PATH = `M ${ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y} A ${ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_VERTICAL_RADIUS} 0 0 1 ${ARC_CENTER_X + ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y}`;
 const CATEGORY_DRAG_CLICK_THRESHOLD = 6;
 const CATEGORY_DRAG_PIXELS_PER_STEP = 88;
+const CATEGORY_ACTIVE_SCALE_BOOST = 0.05;
+const CATEGORY_ACTIVE_SIZE_BOOST = 6;
+const CATEGORY_ACTIVE_LABEL_BOOST = 1;
 
 const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(200, 255, 0, 0.35))";
 const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
@@ -545,16 +555,17 @@ function computeCategoryLayout(index: number, displayIndex: number, length: numb
   const isFar = Math.abs(distance) > maxVisibleDistance + 0.05;
   const angle = distance * ARC_ANGLE_STEP;
   const rad = (angle * Math.PI) / 180;
+  const centerProximity = Math.max(0, 1 - Math.abs(distance) / 0.45);
 
   return {
     x: ARC_CENTER_X + Math.sin(rad) * ARC_HORIZONTAL_RADIUS,
     y: ARC_BASE_Y - Math.cos(rad) * ARC_VERTICAL_RADIUS,
-    scale: 1 - distanceFactor * 0.42,
-    iconSize: 102 - distanceFactor * 64,
+    scale: 1 - distanceFactor * 0.42 + centerProximity * CATEGORY_ACTIVE_SCALE_BOOST,
+    iconSize: 102 - distanceFactor * 64 + centerProximity * CATEGORY_ACTIVE_SIZE_BOOST,
     opacity: isFar ? 0 : 1 - distanceFactor * 0.5,
     isFar,
     isActive: Math.abs(distance) < 0.05,
-    labelSize: Math.max(10, 14 - distanceFactor * 6),
+    labelSize: Math.max(10, 14 - distanceFactor * 6) + centerProximity * CATEGORY_ACTIVE_LABEL_BOOST,
     labelOpacity: Math.abs(distance) < 0.05 ? 1 : 0.8,
   };
 }
@@ -717,10 +728,31 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
 
       animateDisplayIndex(from + delta, Math.min(520, 260 + Math.abs(delta) * 70), () => {
         currentCategoryIndexRef.current = settled;
+        displayIndexRef.current = settled;
       });
     },
     [animateDisplayIndex, length],
   );
+
+  const settleAfterDrag = useCallback(() => {
+    const from = displayIndexRef.current;
+    const targetDisplay = Math.round(from);
+    const settled = normalizeIndex(targetDisplay, length);
+    const delta = targetDisplay - from;
+
+    if (Math.abs(delta) < 0.001) {
+      displayIndexRef.current = settled;
+      currentCategoryIndexRef.current = settled;
+      applyAllLayouts(settled);
+      return;
+    }
+
+    animateDisplayIndex(targetDisplay, Math.min(520, 260 + Math.abs(delta) * 70), () => {
+      currentCategoryIndexRef.current = settled;
+      displayIndexRef.current = settled;
+      applyAllLayouts(settled);
+    });
+  }, [animateDisplayIndex, applyAllLayouts, length]);
 
   const blurButtonAfterPointer = (event: PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
@@ -749,10 +781,19 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
       event.preventDefault();
 
       const nextDisplayIndex = dragStartDisplayIndexRef.current - deltaX / CATEGORY_DRAG_PIXELS_PER_STEP;
-      displayIndexRef.current = nextDisplayIndex;
-      applyAllLayouts(nextDisplayIndex, { skipFilters: true, skipAria: true });
+      const rebasedDisplayIndex =
+        Math.abs(nextDisplayIndex) > length * 20
+          ? rebaseDisplayIndexContinuous(nextDisplayIndex, length)
+          : nextDisplayIndex;
+
+      if (rebasedDisplayIndex !== nextDisplayIndex) {
+        dragStartDisplayIndexRef.current += rebasedDisplayIndex - nextDisplayIndex;
+      }
+
+      displayIndexRef.current = rebasedDisplayIndex;
+      applyAllLayouts(rebasedDisplayIndex, { skipFilters: true, skipAria: true });
     },
-    [applyAllLayouts],
+    [applyAllLayouts, length],
   );
 
   const endPointerTrack = useCallback(
@@ -766,7 +807,7 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
       isDraggingRef.current = false;
 
       if (hasDraggedRef.current) {
-        goToIndex(normalizeIndex(Math.round(displayIndexRef.current), length));
+        settleAfterDrag();
         onCategorySelect?.();
         pendingTapIndexRef.current = null;
         return;
@@ -778,7 +819,7 @@ function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) 
         pendingTapIndexRef.current = null;
       }
     },
-    [goToIndex, length, onCategorySelect],
+    [goToIndex, onCategorySelect, settleAfterDrag],
   );
 
   const handleContainerPointerDown = (event: PointerEvent<HTMLDivElement>) => {
