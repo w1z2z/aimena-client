@@ -3,8 +3,10 @@
 import { useCallback, useState } from "react";
 
 import { categoryItems, type CategoryId } from "@/shared/ui/icons/category-icons";
+import { ComboboxField } from "@/shared/ui/combobox-field/ComboboxField";
 
 const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
+const cityComboboxOptions = cityOptions.map((city) => ({ value: city, label: city }));
 
 const dateOptions = [
   { id: "today", label: "За сегодня" },
@@ -36,6 +38,11 @@ const filterCategoryOptions = [
   ...categoryItems.filter((item) => item.id === "all"),
   ...categoryItems.filter((item) => item.id !== "all"),
 ];
+
+const categoryComboboxOptions = filterCategoryOptions.map((item) => ({
+  value: item.id,
+  label: item.label,
+}));
 
 function FilterToggle({
   checked,
@@ -179,25 +186,19 @@ export function HomeRecommendationsFiltersPanelContent() {
         <p className="home-filters-panel__field-label home-filters-panel__field-label--golos">
           Выберите город
         </p>
-        <div className="home-filters-panel__select-wrap">
-          <select
-            value={city}
-            onChange={(event) => setCity(event.target.value)}
-            className={`home-filters-panel__input home-filters-panel__input--price-row home-filters-panel__select${city ? "" : " is-placeholder"}`}
-          >
-            <option value="" disabled hidden>
-              Выберите город
-            </option>
-            {cityOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          <span className="home-filters-panel__select-chevron" aria-hidden="true">
-            ▼
-          </span>
-        </div>
+        <ComboboxField
+          value={city}
+          onChange={setCity}
+          onInputChange={setCity}
+          options={cityComboboxOptions}
+          placeholder="Выберите город"
+          wrapClassName="home-filters-panel__select-wrap"
+          inputClassName={`home-filters-panel__input home-filters-panel__input--price-row home-filters-panel__combobox-input${city ? "" : " is-placeholder"}`}
+          listClassName="home-filters-panel__combobox-list"
+          optionClassName="home-filters-panel__combobox-option"
+          chevronClassName="home-filters-panel__select-chevron"
+          aria-label="Выберите город"
+        />
       </div>
 
       <div className="home-filters-panel__right">
@@ -205,22 +206,17 @@ export function HomeRecommendationsFiltersPanelContent() {
 
         <div className="home-filters-panel__right-section">
           <p className="home-filters-panel__field-label">Категория</p>
-          <div className="home-filters-panel__select-wrap home-filters-panel__select-wrap--right">
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value as CategoryId)}
-              className="home-filters-panel__input home-filters-panel__input--right home-filters-panel__select"
-            >
-              {filterCategoryOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <span className="home-filters-panel__select-chevron" aria-hidden="true">
-              ▼
-            </span>
-          </div>
+          <ComboboxField
+            value={category}
+            onChange={(next) => setCategory(next as CategoryId)}
+            options={categoryComboboxOptions}
+            wrapClassName="home-filters-panel__select-wrap home-filters-panel__select-wrap--right"
+            inputClassName="home-filters-panel__input home-filters-panel__input--right home-filters-panel__combobox-input"
+            listClassName="home-filters-panel__combobox-list"
+            optionClassName="home-filters-panel__combobox-option"
+            chevronClassName="home-filters-panel__select-chevron"
+            aria-label="Категория"
+          />
         </div>
 
         {listingMode === "item" ? (

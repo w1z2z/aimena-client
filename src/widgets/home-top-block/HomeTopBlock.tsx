@@ -24,6 +24,7 @@ import {
   WantBrowseIcon,
   WantExchangeIcon,
 } from "@/shared/ui/icons";
+import { ComboboxField } from "@/shared/ui/combobox-field/ComboboxField";
 import { Header } from "@/widgets/header/Header";
 
 const imgHeroCard = "https://www.figma.com/api/mcp/asset/03e5747b-db77-495a-a0bc-3d74a40d9e94";
@@ -31,6 +32,7 @@ const imgHeroCard = "https://www.figma.com/api/mcp/asset/03e5747b-db77-495a-a0bc
 type Mode = "exchange" | "browse" | "all";
 
 const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
+const cityComboboxOptions = cityOptions.map((city) => ({ value: city, label: city }));
 const conditionOptions = ["Отличное", "Новое", "Хорошее", "Б.у", "Требует ремонта"];
 
 const titlePlaceholder = 'MacBook Pro 14" M3 Pro';
@@ -179,23 +181,21 @@ function PriceCityFields({
           className={`mt-[8px] h-[48px] w-full text-[14px] ${fieldClassName}`}
         />
       </div>
-      <div className="relative w-[203px]">
+      <div className="w-[203px]">
         <label className="text-[14px] font-semibold">Город</label>
-        <select
+        <ComboboxField
           value={city}
-          onChange={(event) => setCity(event.target.value)}
-          className={`mt-[8px] h-[48px] w-full appearance-none text-[14px] ${fieldClassName} ${city ? "" : "text-[#626262]"}`}
-        >
-          <option value="" disabled hidden>
-            {cityPlaceholder}
-          </option>
-          {cityOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-        <span className="pointer-events-none absolute right-[12px] top-[43px] text-[12px] text-[#3D3D3D]">▼</span>
+          onChange={setCity}
+          onInputChange={setCity}
+          options={cityComboboxOptions}
+          placeholder={cityPlaceholder}
+          wrapClassName="mt-[8px]"
+          inputClassName={`h-[48px] w-full text-[14px] ${fieldClassName} ${city ? "" : "text-[#626262]"}`}
+          listClassName="combobox-field__list--hero"
+          optionClassName="combobox-field__option--hero"
+          chevronClassName="combobox-field__chevron--hero"
+          aria-label="Город"
+        />
       </div>
     </div>
   );
