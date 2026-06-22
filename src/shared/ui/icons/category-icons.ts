@@ -36,7 +36,7 @@ export const categoryItems: CategoryItem[] = [
   { id: "animals", label: "Животные", icon: animalsIcon },
   { id: "free", label: "Даром", icon: freeIcon },
   { id: "electronics", label: "Электроника", icon: electronicsIcon },
-  { id: "all", label: "ВСЕ", icon: allIcon },
+  { id: "all", label: "Все", icon: allIcon },
   { id: "clothes", label: "Одежда", icon: clothesIcon },
   { id: "home", label: "Для дома", icon: homeIcon },
   { id: "hobby", label: "Хобби", icon: hobbyIcon },

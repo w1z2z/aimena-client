@@ -3,8 +3,8 @@
 
 import {
   type MouseEvent,
+  type PointerEvent,
   type RefObject,
-  type WheelEvent,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -512,6 +512,8 @@ const ARC_ANGLE_STEP = 17.5;
 const ARC_ACTIVE_ICON_CENTER_Y = ARC_BASE_Y - ARC_VERTICAL_RADIUS + ARC_ACTIVE_ICON_SIZE / 2;
 const ARC_GLOW_BASE_Y = ARC_ACTIVE_ICON_CENTER_Y + ARC_VERTICAL_RADIUS;
 const ARC_GLOW_PATH = `M ${ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y} A ${ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_VERTICAL_RADIUS} 0 0 1 ${ARC_CENTER_X + ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y}`;
+const CATEGORY_DRAG_CLICK_THRESHOLD = 6;
+const CATEGORY_DRAG_PIXELS_PER_STEP = 88;
 
 const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(200, 255, 0, 0.35))";
 const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
@@ -609,7 +611,7 @@ function applyCategoryLayout(
   }
 }
 
-function CategoriesArc() {
+function CategoriesArc({ onCategorySelect }: { onCategorySelect?: () => void }) {
   const initialIndex = Math.max(
     0,
     categoryItems.findIndex((item) => item.id === "all"),
@@ -622,9 +624,11 @@ function CategoriesArc() {
   const isAnimatingRef = useRef(false);
   const isSafari = useIsSafari();
   const animationRef = useRef<number | null>(null);
-  const wheelAccumulatorRef = useRef(0);
-  const lastWheelEventAtRef = useRef(0);
-  const nextStepAllowedAtRef = useRef(0);
+  const isDraggingRef = useRef(false);
+  const hasDraggedRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const dragStartDisplayIndexRef = useRef(0);
+  const pendingTapIndexRef = useRef<number | null>(null);
 
   const applyAllLayouts = useCallback(
     (displayIndex: number, options?: { skipFilters?: boolean; skipAria?: boolean }) => {
@@ -718,53 +722,68 @@ function CategoriesArc() {
     [animateDisplayIndex, length],
   );
 
-  const blurButtonAfterClick = (event: MouseEvent<HTMLButtonElement>) => {
+  const blurButtonAfterPointer = (event: PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
   };
 
-  const stepCarousel = useCallback(
-    (direction: 1 | -1) => {
-      if (animationRef.current !== null) return;
+  const beginPointerTrack = useCallback((event: PointerEvent<HTMLElement>, tapIndex: number | null) => {
+    if (event.button !== 0) return;
 
-      const nextIndex = normalizeIndex(currentCategoryIndexRef.current + direction, length);
-      const targetDisplay = displayIndexRef.current + direction;
-      currentCategoryIndexRef.current = nextIndex;
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    pendingTapIndexRef.current = tapIndex;
+    dragStartXRef.current = event.clientX;
+    dragStartDisplayIndexRef.current = displayIndexRef.current;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }, []);
 
-      animateDisplayIndex(targetDisplay, 280, () => {
-        currentCategoryIndexRef.current = nextIndex;
-      });
+  const handleTrackedPointerMove = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      if (!isDraggingRef.current) return;
+
+      const deltaX = event.clientX - dragStartXRef.current;
+      if (Math.abs(deltaX) <= CATEGORY_DRAG_CLICK_THRESHOLD) return;
+
+      hasDraggedRef.current = true;
+      pendingTapIndexRef.current = null;
+      event.preventDefault();
+
+      const nextDisplayIndex = dragStartDisplayIndexRef.current - deltaX / CATEGORY_DRAG_PIXELS_PER_STEP;
+      displayIndexRef.current = nextDisplayIndex;
+      applyAllLayouts(nextDisplayIndex, { skipFilters: true, skipAria: true });
     },
-    [animateDisplayIndex, length],
+    [applyAllLayouts],
   );
 
-  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
-    if (animationRef.current !== null) return;
+  const endPointerTrack = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      if (!isDraggingRef.current) return;
 
-    // Rotate categories only for a clearly horizontal gesture.
-    const hasHorizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.15;
-    if (!hasHorizontalIntent) return;
-    // Prevent browser-level horizontal page shift on small viewports.
-    event.preventDefault();
-    event.stopPropagation();
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
 
-    const now = Date.now();
-    const gapFromLastEvent = now - lastWheelEventAtRef.current;
-    lastWheelEventAtRef.current = now;
+      isDraggingRef.current = false;
 
-    if (gapFromLastEvent > 140) {
-      wheelAccumulatorRef.current = 0;
-    }
+      if (hasDraggedRef.current) {
+        goToIndex(normalizeIndex(Math.round(displayIndexRef.current), length));
+        onCategorySelect?.();
+        pendingTapIndexRef.current = null;
+        return;
+      }
 
-    wheelAccumulatorRef.current += event.deltaX;
-    if (now < nextStepAllowedAtRef.current) return;
+      if (pendingTapIndexRef.current !== null) {
+        goToIndex(pendingTapIndexRef.current);
+        onCategorySelect?.();
+        pendingTapIndexRef.current = null;
+      }
+    },
+    [goToIndex, length, onCategorySelect],
+  );
 
-    const threshold = event.deltaMode === 1 ? 1 : 36;
-    if (Math.abs(wheelAccumulatorRef.current) < threshold) return;
-
-    const direction: 1 | -1 = wheelAccumulatorRef.current > 0 ? 1 : -1;
-    wheelAccumulatorRef.current = 0;
-    nextStepAllowedAtRef.current = now + 220;
-    stepCarousel(direction);
+  const handleContainerPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.target instanceof Element && event.target.closest("[data-category-button]")) return;
+    beginPointerTrack(event, null);
   };
 
   useLayoutEffect(() => {
@@ -783,8 +802,11 @@ function CategoriesArc() {
 
   return (
     <div
-      onWheel={handleWheel}
-      className="categories-arc absolute left-[288px] z-10 h-[188px] w-[1440px] select-none"
+      onPointerDown={handleContainerPointerDown}
+      onPointerMove={handleTrackedPointerMove}
+      onPointerUp={endPointerTrack}
+      onPointerCancel={endPointerTrack}
+      className="categories-arc absolute left-[288px] z-10 h-[188px] w-[1440px] cursor-grab select-none active:cursor-grabbing"
       style={{ top: `${ARC_CONTAINER_TOP}px` }}
     >
       <svg
@@ -931,9 +953,18 @@ function CategoriesArc() {
               itemRefs.current[index] = { button: element, iconWrap, img, label };
             }}
             type="button"
-            onClick={(event) => {
-              goToIndex(index);
-              blurButtonAfterClick(event);
+            onPointerDown={(event) => {
+              event.stopPropagation();
+              beginPointerTrack(event, index);
+            }}
+            onPointerMove={handleTrackedPointerMove}
+            onPointerUp={(event) => {
+              endPointerTrack(event);
+              blurButtonAfterPointer(event);
+            }}
+            onPointerCancel={(event) => {
+              endPointerTrack(event);
+              blurButtonAfterPointer(event);
             }}
             aria-label={item.label}
             aria-current={layout.isActive ? "true" : undefined}
@@ -1003,7 +1034,6 @@ export function HomeTopBlock() {
     () => [
       { id: "exchange" as const, label: "Хочу обменять" },
       { id: "browse" as const, label: "Хочу посмотреть" },
-      { id: "all" as const, label: "Хочу все" },
     ],
     [],
   );
@@ -1037,7 +1067,7 @@ export function HomeTopBlock() {
             className="relative w-[2011px] -translate-x-[285px]"
             style={{ height: `${1280 - HERO_CONTENT_SHIFT_UP}px` }}
           >
-            <CategoriesArc />
+            <CategoriesArc onCategorySelect={() => setMode("browse")} />
 
             <h1
               className="absolute left-[492px] w-[579px] text-[40px] font-bold leading-[40px]"
@@ -1047,7 +1077,7 @@ export function HomeTopBlock() {
             </h1>
 
             <div
-              className="absolute left-[1065px] flex gap-[12px]"
+              className="absolute left-[1065px] flex w-[453px] gap-[12px]"
               style={{ top: `${354 - HERO_CONTENT_SHIFT_UP}px` }}
             >
               {topTabs.map((tab) => {
@@ -1060,7 +1090,7 @@ export function HomeTopBlock() {
                       setMode(tab.id);
                       blurButtonAfterClick(event);
                     }}
-                    className={`flex h-[76px] w-[143px] flex-col items-center justify-center gap-[4px] rounded-[10px] border border-[0.5px] px-[24px] py-[12px] text-[14px] font-semibold outline-none transition focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:outline-none ${
+                    className={`flex h-[76px] flex-1 flex-col items-center justify-center gap-[4px] rounded-[10px] border border-[0.5px] px-[24px] py-[12px] text-[14px] font-semibold outline-none transition focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:outline-none ${
                       active
                         ? "border-[#F8F8F5] bg-[#8E8BED] text-white"
                         : "border-white bg-[#1A1A1A] text-white hover:bg-[#252525]"
