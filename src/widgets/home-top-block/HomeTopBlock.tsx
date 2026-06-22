@@ -205,7 +205,9 @@ function CategoriesArc() {
   const displayIndexRef = useRef(initialIndex);
   const currentCategoryIndexRef = useRef(initialIndex);
   const animationRef = useRef<number | null>(null);
-  const nextWheelAllowedAtRef = useRef(0);
+  const wheelAccumulatorRef = useRef(0);
+  const lastWheelEventAtRef = useRef(0);
+  const nextStepAllowedAtRef = useRef(0);
 
   const animateDisplayIndex = useCallback(
     (targetValue: number, duration: number, onComplete?: () => void) => {
@@ -281,13 +283,30 @@ function CategoriesArc() {
     event.preventDefault();
     event.stopPropagation();
     if (animationRef.current !== null) return;
-    const now = Date.now();
-    if (now < nextWheelAllowedAtRef.current) return;
-    if (event.deltaY === 0) return;
 
-    const direction: 1 | -1 = event.deltaY > 0 ? 1 : -1;
-    // One accepted wheel event -> exactly one category step.
-    nextWheelAllowedAtRef.current = now + 360;
+    const dominantDelta =
+      Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+    if (Math.abs(dominantDelta) < 0.5) return;
+
+    const now = Date.now();
+    const gapFromLastEvent = now - lastWheelEventAtRef.current;
+    lastWheelEventAtRef.current = now;
+
+    // New gesture after a short pause - drop inertia leftovers.
+    if (gapFromLastEvent > 140) {
+      wheelAccumulatorRef.current = 0;
+    }
+
+    wheelAccumulatorRef.current += dominantDelta;
+    if (now < nextStepAllowedAtRef.current) return;
+
+    // Mouse wheels usually come with deltaMode=1 (lines), trackpads with pixels.
+    const threshold = event.deltaMode === 1 ? 1 : 45;
+    if (Math.abs(wheelAccumulatorRef.current) < threshold) return;
+
+    const direction: 1 | -1 = wheelAccumulatorRef.current > 0 ? 1 : -1;
+    wheelAccumulatorRef.current = 0;
+    nextStepAllowedAtRef.current = now + 220;
     stepCarousel(direction);
   };
 
