@@ -4,6 +4,8 @@ import { useCallback, useState } from "react";
 
 import { FilterIcon } from "@/shared/ui/icons";
 
+import { HomeListingsGrid } from "@/widgets/home-listings-grid/HomeListingsGrid";
+
 import { HomeRecommendationsFiltersPanelContent } from "./HomeRecommendationsFiltersPanelContent";
 
 export function HomeRecommendationsHeader() {
@@ -50,6 +52,8 @@ export function HomeRecommendationsHeader() {
             </div>
           </div>
         </div>
+
+        <HomeListingsGrid />
       </div>
     </section>
   );
