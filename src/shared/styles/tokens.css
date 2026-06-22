@@ -1,0 +1,18 @@
+:root {
+  --color-bg-page: #f6f8fb;
+  --color-bg-surface: #ffffff;
+  --color-bg-muted: #eef2f7;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-border: #d1d5db;
+  --color-accent: #2563eb;
+  --color-accent-soft: #dbeafe;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 8%);
+  --shadow-md: 0 12px 30px rgb(15 23 42 / 8%);
+
+  --container-lg: 1440px;
+}

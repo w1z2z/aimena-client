@@ -1,0 +1,29 @@
+.card {
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  padding: 12px;
+}
+
+.cover {
+  height: 180px;
+  border-radius: 10px;
+  background: #f2f4f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card h3 {
+  margin: 12px 0 4px;
+  font-size: 18px;
+}
+
+.city {
+  margin: 0 0 6px;
+  color: var(--color-text-secondary);
+}
+
+.wants {
+  margin: 0;
+}

@@ -1,0 +1,29 @@
+.page {
+  width: min(100%, var(--container-lg));
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.section {
+  margin-top: 28px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+.sectionHead {
+  margin-bottom: 18px;
+}
+
+.sectionHead h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+
+.sectionHead p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}

@@ -1,0 +1,26 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.card {
+  width: min(100%, 760px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  padding: 24px;
+}
+
+.card h1 {
+  margin: 0 0 10px;
+  font: 700 32px/1.2 var(--font-geist-sans), sans-serif;
+}
+
+.card p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font: 400 16px/1.5 var(--font-geist-sans), sans-serif;
+}
