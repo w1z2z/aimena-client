@@ -153,6 +153,45 @@ textarea:disabled {
   }
 }
 
+.header-dropdown-panel {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+  transform-origin: top right;
+  pointer-events: none;
+  color: #1a1a1a;
+  transition:
+    opacity 220ms cubic-bezier(0.33, 1, 0.68, 1),
+    transform 220ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.header-dropdown-panel.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-dropdown-panel {
+    transition: none;
+    transform: none;
+  }
+
+  .header-dropdown-panel:not(.is-open) {
+    display: none;
+  }
+}
+
+.header-notifications-scroll {
+  scrollbar-gutter: stable;
+  min-width: 0;
+  overscroll-behavior: contain;
+}
+
+.header-notifications-scroll > * {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
 .site-header {
   isolation: isolate;
 }

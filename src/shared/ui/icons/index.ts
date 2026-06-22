@@ -8,6 +8,7 @@ export { BoltIcon } from "./BoltIcon";
 export { ChatBubbleIcon } from "./ChatBubbleIcon";
 export { ExchangeBadgeIcon } from "./ExchangeBadgeIcon";
 export { HeartIcon } from "./HeartIcon";
+export { LogoutIcon } from "./LogoutIcon";
 export { LogoIcon } from "./LogoIcon";
 export { TagsIcon } from "./TagsIcon";
 export { WantAllIcon } from "./WantAllIcon";

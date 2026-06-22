@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Avatar } from "./Avatar";
 import { ButtonPrimary } from "./ButtonPrimary";
+import { HeaderDropdown } from "./HeaderDropdown";
 import { IconButton } from "./IconButton";
 import { Logo } from "./Logo";
+import { NotificationsDropdown } from "./NotificationsDropdown";
+import { ProfileDropdown } from "./ProfileDropdown";
 import { BellDotIcon, BellIcon, HeartIcon } from "@/shared/ui/icons";
+
+type OpenPanel = "notifications" | "profile" | null;
 
 function getPageScrollTop() {
   return Math.max(
@@ -20,6 +25,11 @@ function getPageScrollTop() {
 export function Header() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
+
+  const togglePanel = useCallback((panel: Exclude<OpenPanel, null>) => {
+    setOpenPanel((current) => (current === panel ? null : panel));
+  }, []);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -77,18 +87,47 @@ export function Header() {
           <div className="absolute left-[1049px] top-[11px] flex items-center justify-end gap-[16px]">
             <ButtonPrimary>Разместить предложение</ButtonPrimary>
 
-            <IconButton label="Уведомления">
-              <span className="relative inline-flex items-center justify-center">
-                <BellIcon className="h-[16.4px] w-[14.6px] text-black" />
-                <BellDotIcon className="absolute -right-[3px] -top-[3px] h-[5px] w-[5px] text-[#FF2056]" />
-              </span>
-            </IconButton>
-
             <IconButton label="Избранное">
               <HeartIcon className="h-[11px] w-[13px] text-black" />
             </IconButton>
 
-            <Avatar />
+            <HeaderDropdown
+              open={openPanel === "notifications"}
+              onOpenChange={(open) => setOpenPanel(open ? "notifications" : null)}
+              panelLabel="Уведомления"
+              trigger={
+                <IconButton
+                  label="Уведомления"
+                  aria-expanded={openPanel === "notifications"}
+                  aria-haspopup="dialog"
+                  onClick={() => togglePanel("notifications")}
+                >
+                  <span className="relative inline-flex items-center justify-center">
+                    <BellIcon className="h-[16.4px] w-[14.6px] text-black" />
+                    {openPanel !== "notifications" ? (
+                      <BellDotIcon className="absolute -right-[3px] -top-[3px] h-[5px] w-[5px] text-[#FF2056]" />
+                    ) : null}
+                  </span>
+                </IconButton>
+              }
+            >
+              <NotificationsDropdown />
+            </HeaderDropdown>
+
+            <HeaderDropdown
+              open={openPanel === "profile"}
+              onOpenChange={(open) => setOpenPanel(open ? "profile" : null)}
+              panelLabel="Профиль"
+              trigger={
+                <Avatar
+                  aria-expanded={openPanel === "profile"}
+                  aria-haspopup="dialog"
+                  onClick={() => togglePanel("profile")}
+                />
+              }
+            >
+              <ProfileDropdown onClose={() => setOpenPanel(null)} />
+            </HeaderDropdown>
           </div>
         </div>
       </header>
