@@ -159,7 +159,7 @@ export function FloatingChat() {
             aria-label={isOpen ? "Закрыть чат" : "Открыть чат"}
             aria-expanded={isOpen}
             onClick={() => setIsOpen((open) => !open)}
-            className={`flex w-full items-center justify-center border border-black ${
+            className={`flex w-full items-center justify-center ${
               isOpen
                 ? "rounded-[13.27px] bg-[#1A1A1A] hover:bg-[#2a2a2a]"
                 : "rounded-[13.27px] bg-[#C8FF00] hover:brightness-95"

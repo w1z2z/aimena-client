@@ -17,8 +17,8 @@ const golosText = Golos_Text({
 });
 
 export const metadata: Metadata = {
-  title: "Swaply",
-  description: "Frontend skeleton for Swaply marketplace",
+  title: "Aimena",
+  description: "Frontend skeleton for Aimena marketplace",
 };
 
 export default function RootLayout({

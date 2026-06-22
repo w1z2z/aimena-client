@@ -36,7 +36,7 @@ export function SiteFooter() {
       <div className="site-footer__inner">
         <div className="site-footer__top">
           <div className="site-footer__brand">
-            <Link href="/" className="site-footer__logo" aria-label="Swaply — на главную">
+            <Link href="/" className="site-footer__logo" aria-label="Aimena — на главную">
               <LogoIcon className="site-footer__logo-icon" />
             </Link>
             <p className="site-footer__tagline">
@@ -63,7 +63,7 @@ export function SiteFooter() {
         </div>
 
         <div className="site-footer__bottom">
-          <p className="site-footer__copyright">© {new Date().getFullYear()} Swaply</p>
+          <p className="site-footer__copyright">© {new Date().getFullYear()} Aimena</p>
           <div className="site-footer__legal">
             <Link href="#" className="site-footer__legal-link">
               Политика конфиденциальности
