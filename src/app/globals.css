@@ -104,6 +104,41 @@ textarea:disabled {
   }
 }
 
+.home-ticker-carousel {
+  isolation: isolate;
+}
+
+.home-ticker-carousel::before,
+.home-ticker-carousel::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  z-index: 2;
+  width: min(180px, 20%);
+  pointer-events: none;
+}
+
+.home-ticker-carousel::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    #1a1a1a 0%,
+    rgb(26 26 26 / 88%) 40%,
+    transparent 100%
+  );
+}
+
+.home-ticker-carousel::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    #1a1a1a 0%,
+    rgb(26 26 26 / 88%) 40%,
+    transparent 100%
+  );
+}
+
 .home-ticker-track {
   animation: home-ticker-scroll 48s linear infinite;
   will-change: transform;

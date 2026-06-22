@@ -463,7 +463,7 @@ function TickerCarousel() {
 
   return (
     <div
-      className="pointer-events-none absolute left-[-96px] z-20 h-[34px] w-[2118px] overflow-hidden [transform:translateZ(0)]"
+      className="home-ticker-carousel pointer-events-none absolute left-[-96px] z-20 h-[34px] w-[2118px] overflow-hidden [transform:translateZ(0)]"
       style={{ top: `${1172 - HERO_CONTENT_SHIFT_UP}px` }}
     >
       <div className="home-ticker-track flex w-max items-center gap-[12px]">
