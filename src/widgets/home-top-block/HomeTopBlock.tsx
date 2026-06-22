@@ -1022,14 +1022,16 @@ export function HomeTopBlock() {
   }, []);
 
   return (
-    <main className="min-h-screen w-full overflow-x-hidden bg-[#1A1A1A] text-white">
+    <main className="min-h-screen w-full shrink-0 overflow-x-hidden bg-[#1A1A1A] text-white">
+      <Header />
+
       <div className="relative w-full overflow-hidden" style={{ height: `${BASE_SCENE_HEIGHT * sceneScale}px` }}>
         <div
           className="relative left-1/2 h-[1330px] w-[1920px] origin-top"
           style={{ transform: `translateX(-50%) scale(${sceneScale})` }}
         >
         <div className="absolute left-[239px] top-0 z-20 w-[1441px]">
-          <Header />
+          <div className="h-[54px]" aria-hidden="true" />
 
           <section
             className="relative w-[2011px] -translate-x-[285px]"

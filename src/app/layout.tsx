@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="ru"
-      className={`${manrope.variable} ${golosText.variable} h-full antialiased`}
+      className={`${manrope.variable} ${golosText.variable} antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

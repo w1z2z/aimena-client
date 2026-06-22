@@ -118,6 +118,50 @@ textarea:disabled {
   }
 }
 
+.site-header {
+  isolation: isolate;
+}
+
+.site-header__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  border-bottom: 1px solid transparent;
+  background-color: rgb(26 26 26 / 72%);
+  box-shadow: none;
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-transition:
+    opacity 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+  transition:
+    opacity 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.site-header[data-scrolled="true"] .site-header__backdrop {
+  opacity: 1;
+  border-bottom-color: rgb(255 255 255 / 8%);
+  box-shadow: 0 4px 24px rgb(0 0 0 / 28%);
+}
+
+.site-header__inner {
+  position: relative;
+  z-index: 1;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .site-header[data-scrolled="true"] .site-header__backdrop {
+    background-color: rgb(26 26 26 / 92%);
+  }
+}
+
 
 /* Recommendations list scrollbar tuning */
 .home-recommendations-scroll {
