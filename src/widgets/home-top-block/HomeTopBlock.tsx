@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   BoltIcon,
@@ -262,6 +262,10 @@ function CategoriesArc() {
     [animateDisplayIndex, length],
   );
 
+  const blurButtonAfterClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.currentTarget.blur();
+  };
+
   const stepCarousel = useCallback(
     (direction: 1 | -1) => {
       if (animationRef.current !== null) {
@@ -387,10 +391,13 @@ function CategoriesArc() {
           <button
             key={item.id}
             type="button"
-            onClick={() => goToIndex(index)}
+            onClick={(event) => {
+              goToIndex(index);
+              blurButtonAfterClick(event);
+            }}
             aria-label={item.label}
             aria-current={isActive ? "true" : undefined}
-            className="group absolute flex flex-col items-center border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none active:outline-none"
+            className="group absolute flex flex-col items-center border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:outline-none"
             style={{
               left: `${x}px`,
               top: `${y}px`,
@@ -448,6 +455,9 @@ export function HomeTopBlock() {
   const panelTitle = isExchange ? "Что хотите обменять?" : "Помогите узнать вас больше";
   const panelSubTitle = "Можно ввести не все поля";
   const titleLabel = isExchange ? "Название" : "Название желания";
+  const blurButtonAfterClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.currentTarget.blur();
+  };
 
   const topTabs = useMemo(
     () => [
@@ -538,8 +548,11 @@ export function HomeTopBlock() {
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setMode(tab.id)}
-                    className={`flex h-[76px] w-[143px] flex-col items-center justify-center gap-[4px] rounded-[10px] border border-[0.5px] px-[24px] py-[12px] text-[14px] font-semibold transition ${
+                    onClick={(event) => {
+                      setMode(tab.id);
+                      blurButtonAfterClick(event);
+                    }}
+                    className={`flex h-[76px] w-[143px] flex-col items-center justify-center gap-[4px] rounded-[10px] border border-[0.5px] px-[24px] py-[12px] text-[14px] font-semibold outline-none transition focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:outline-none ${
                       active
                         ? "border-[#F8F8F5] bg-[#8E8BED] text-white"
                         : "border-white bg-[#1A1A1A] text-white hover:bg-[#252525]"
