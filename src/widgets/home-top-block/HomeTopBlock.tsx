@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { type MouseEvent, type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   BoltIcon,
@@ -205,9 +205,6 @@ function CategoriesArc() {
   const displayIndexRef = useRef(initialIndex);
   const currentCategoryIndexRef = useRef(initialIndex);
   const animationRef = useRef<number | null>(null);
-  const wheelAccumulatorRef = useRef(0);
-  const lastWheelEventAtRef = useRef(0);
-  const nextStepAllowedAtRef = useRef(0);
 
   const animateDisplayIndex = useCallback(
     (targetValue: number, duration: number, onComplete?: () => void) => {
@@ -266,54 +263,6 @@ function CategoriesArc() {
     event.currentTarget.blur();
   };
 
-  const stepCarousel = useCallback(
-    (direction: 1 | -1) => {
-      if (animationRef.current !== null) {
-        return;
-      }
-
-      const nextIndex = normalizeIndex(currentCategoryIndexRef.current + direction, length);
-      const targetDisplay = displayIndexRef.current + direction;
-      currentCategoryIndexRef.current = nextIndex;
-
-      animateDisplayIndex(targetDisplay, 280, () => {
-        currentCategoryIndexRef.current = nextIndex;
-      });
-    },
-    [animateDisplayIndex, length],
-  );
-
-  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (animationRef.current !== null) return;
-
-    const dominantDelta =
-      Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
-    if (Math.abs(dominantDelta) < 0.5) return;
-
-    const now = Date.now();
-    const gapFromLastEvent = now - lastWheelEventAtRef.current;
-    lastWheelEventAtRef.current = now;
-
-    // New gesture after a short pause - drop inertia leftovers.
-    if (gapFromLastEvent > 140) {
-      wheelAccumulatorRef.current = 0;
-    }
-
-    wheelAccumulatorRef.current += dominantDelta;
-    if (now < nextStepAllowedAtRef.current) return;
-
-    // Mouse wheels usually come with deltaMode=1 (lines), trackpads with pixels.
-    const threshold = event.deltaMode === 1 ? 1 : 45;
-    if (Math.abs(wheelAccumulatorRef.current) < threshold) return;
-
-    const direction: 1 | -1 = wheelAccumulatorRef.current > 0 ? 1 : -1;
-    wheelAccumulatorRef.current = 0;
-    nextStepAllowedAtRef.current = now + 220;
-    stepCarousel(direction);
-  };
-
   useEffect(() => {
     return () => {
       if (animationRef.current !== null) {
@@ -323,7 +272,7 @@ function CategoriesArc() {
   }, []);
 
   return (
-    <div onWheel={handleWheel} className="absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none">
+    <div className="absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none">
       <svg
         aria-hidden
         viewBox="0 0 1440 215"
@@ -446,10 +395,6 @@ export function HomeTopBlock() {
   const [hasDocuments, setHasDocuments] = useState(false);
   const [condition, setCondition] = useState("Отличное");
   const recommendationsRef = useRef<HTMLDivElement | null>(null);
-  const currentRecommendationIndexRef = useRef(0);
-  const wheelLockRef = useRef(false);
-  const lastWheelAtRef = useRef(0);
-  const unlockTimeoutRef = useRef<number | null>(null);
 
   const isExchange = mode === "exchange";
   const panelTitle = isExchange ? "Что хотите обменять?" : "Помогите узнать вас больше";
@@ -468,63 +413,25 @@ export function HomeTopBlock() {
     [],
   );
 
-  const scrollToRecommendation = (targetIndex: number) => {
-    const container = recommendationsRef.current;
-    if (!container) return;
-    const cards = container.querySelectorAll<HTMLElement>("[data-recommendation-card]");
-    if (cards.length === 0) return;
-    const nextIndex = Math.max(0, Math.min(cards.length - 1, targetIndex));
-    currentRecommendationIndexRef.current = nextIndex;
-    cards[nextIndex].scrollIntoView({ behavior: "smooth", block: "center" });
-  };
+  useEffect(() => {
+    // On this page we want deterministic wheel behavior:
+    // if pointer is outside the recommendations list, wheel always scrolls the document.
+    const handleWindowWheel = (event: globalThis.WheelEvent) => {
+      if (Math.abs(event.deltaY) < 0.01) return;
 
-  const handleRecommendationsWheel = (event: WheelEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    lastWheelAtRef.current = Date.now();
+      const recommendations = recommendationsRef.current;
+      const target = event.target instanceof Node ? event.target : null;
+      const insideRecommendations = Boolean(recommendations && target && recommendations.contains(target));
 
-    if (wheelLockRef.current) return;
+      if (insideRecommendations) return;
 
-    const direction = event.deltaY > 0 ? 1 : -1;
-    const nextIndex = currentRecommendationIndexRef.current + direction;
-
-    wheelLockRef.current = true;
-    scrollToRecommendation(nextIndex);
-    const PAUSE_MS = 320;
-    const MIN_LOCK_MS = 800;
-    const startedAt = Date.now();
-
-    const tryUnlock = () => {
-      const now = Date.now();
-      const enoughPause = now - lastWheelAtRef.current >= PAUSE_MS;
-      const minLockPassed = now - startedAt >= MIN_LOCK_MS;
-
-      if (enoughPause && minLockPassed) {
-        wheelLockRef.current = false;
-        unlockTimeoutRef.current = null;
-        return;
-      }
-
-      unlockTimeoutRef.current = window.setTimeout(tryUnlock, 80);
+      event.preventDefault();
+      window.scrollBy({ top: event.deltaY, left: 0, behavior: "auto" });
     };
 
-    unlockTimeoutRef.current = window.setTimeout(tryUnlock, 80);
-  };
-
-  useEffect(() => {
-    const container = recommendationsRef.current;
-    if (!container) return;
-    const firstCard = container.querySelector<HTMLElement>("[data-recommendation-card]");
-    if (!firstCard) return;
-    firstCard.scrollIntoView({ block: "center" });
-    currentRecommendationIndexRef.current = 0;
-  }, []);
-
-  useEffect(() => {
+    window.addEventListener("wheel", handleWindowWheel, { passive: false, capture: true });
     return () => {
-      if (unlockTimeoutRef.current) {
-        window.clearTimeout(unlockTimeoutRef.current);
-      }
+      window.removeEventListener("wheel", handleWindowWheel, { capture: true });
     };
   }, []);
 
@@ -710,7 +617,6 @@ export function HomeTopBlock() {
                 <p className="mx-auto mb-[8px] mt-[8px] w-[342px] text-left text-[16px] font-bold text-[#1A1A1A]">Вам может подойти</p>
                 <div
                   ref={recommendationsRef}
-                  onWheel={handleRecommendationsWheel}
                   className="mx-auto h-[479px] w-[358px] overflow-y-auto rounded-[10px] bg-[#F2F4F7] p-[8px] snap-y snap-mandatory overscroll-contain"
                 >
                   <div className="flex flex-col items-center gap-[16px]">
