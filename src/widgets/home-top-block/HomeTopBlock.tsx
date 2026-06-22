@@ -5,6 +5,8 @@ import { type WheelEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   BoltIcon,
+  categoryItems,
+  getCategoryIconSrc,
   ChatBubbleIcon,
   ExchangeBadgeIcon,
   TagsIcon,
@@ -102,18 +104,6 @@ const tickerItems = [
   "Показываем то, что вас заинтересует",
 ];
 
-const topCategoryItems = [
-  { id: "collection", label: "Коллекция", icon: "●" },
-  { id: "animals", label: "Животные", icon: "●" },
-  { id: "free", label: "Даром", icon: "●" },
-  { id: "electronics", label: "Электроника", icon: "●" },
-  { id: "all", label: "ВСЕ", icon: "●" },
-  { id: "clothes", label: "Одежда", icon: "●" },
-  { id: "home", label: "Для дома", icon: "●" },
-  { id: "hobby", label: "Хобби", icon: "●" },
-  { id: "transport", label: "Транспорт", icon: "●" },
-] as const;
-
 function normalizeIndex(index: number, length: number) {
   if (length <= 0) return 0;
   const result = index % length;
@@ -131,14 +121,14 @@ function CategoriesArc() {
   const [activeIndex, setActiveIndex] = useState(() =>
     Math.max(
       0,
-      topCategoryItems.findIndex((item) => item.id === "all"),
+      categoryItems.findIndex((item) => item.id === "all"),
     ),
   );
   const wheelLockRef = useRef(false);
   const unlockTimeoutRef = useRef<number | null>(null);
 
   const shiftToNext = (direction: number) => {
-    setActiveIndex((current) => normalizeIndex(current + direction, topCategoryItems.length));
+    setActiveIndex((current) => normalizeIndex(current + direction, categoryItems.length));
   };
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
@@ -188,13 +178,6 @@ function CategoriesArc() {
         </defs>
 
         <path
-          d="M 44 210 A 676 106 0 0 1 1396 210"
-          fill="none"
-          stroke="#8E8BED"
-          strokeWidth="1.4"
-          opacity="0.52"
-        />
-        <path
           d="M 8 210 A 712 112 0 0 1 1432 210"
           fill="none"
           stroke="url(#categories-arc-glow-gradient)"
@@ -214,8 +197,8 @@ function CategoriesArc() {
         />
       </svg>
 
-      {topCategoryItems.map((item, index) => {
-        const distance = getWrappedDistance(index, activeIndex, topCategoryItems.length);
+      {categoryItems.map((item, index) => {
+        const distance = getWrappedDistance(index, activeIndex, categoryItems.length);
         const maxVisibleDistance = 4;
         const hidden = Math.abs(distance) > maxVisibleDistance;
 
@@ -229,7 +212,7 @@ function CategoriesArc() {
         const y = 176 - Math.cos(rad) * 122;
         const distanceFactor = Math.abs(distance) / maxVisibleDistance;
         const scale = 1 - distanceFactor * 0.42;
-        const iconSize = 92 - distanceFactor * 58;
+        const iconSize = 102 - distanceFactor * 64;
         const opacity = 1 - distanceFactor * 0.5;
         const isActive = distance === 0;
 
@@ -248,20 +231,20 @@ function CategoriesArc() {
               zIndex: 20 - Math.abs(distance),
             }}
           >
-            <div
-              className={`relative flex items-center justify-center rounded-full border border-white/30 text-white shadow-[0_12px_26px_rgba(0,0,0,0.45)] transition-all duration-300 ${
+            <img
+              src={getCategoryIconSrc(item.icon)}
+              alt=""
+              draggable={false}
+              className={`pointer-events-none object-contain transition-[filter,transform] duration-300 ${
                 isActive
-                  ? "bg-[#8E8BED] ring-2 ring-[#C8FF00]/90 ring-offset-2 ring-offset-[#1A1A1A]"
-                  : "bg-[#2D2D2D]/90 group-hover:bg-[#393939]"
+                  ? "drop-shadow-[0_10px_24px_rgba(200,255,0,0.35)]"
+                  : "drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)] group-hover:brightness-110"
               }`}
               style={{
                 height: `${iconSize}px`,
                 width: `${iconSize}px`,
-                fontSize: `${Math.max(18, iconSize * 0.32)}px`,
               }}
-            >
-              {item.icon}
-            </div>
+            />
             <span
               className={`mt-[8px] text-center font-semibold tracking-[-0.002em] text-white transition-opacity duration-300 ${
                 isActive ? "opacity-100" : "opacity-80"

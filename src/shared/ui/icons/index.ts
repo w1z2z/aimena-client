@@ -1,4 +1,6 @@
 export type { IconProps } from "./types";
+export type { CategoryId, CategoryItem } from "./category-icons";
+export { categoryItems, getCategoryIconSrc } from "./category-icons";
 
 export { BellIcon } from "./BellIcon";
 export { BellDotIcon } from "./BellDotIcon";
