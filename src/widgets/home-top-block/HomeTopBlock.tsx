@@ -3,6 +3,7 @@
 
 import {
   type MouseEvent,
+  type RefObject,
   type WheelEvent,
   useCallback,
   useEffect,
@@ -41,6 +42,305 @@ const BASE_SCENE_HEIGHT = 1330;
 
 const fieldClassName =
   "rounded-[10px] border border-[#CACACA] bg-white px-[12px] font-semibold text-[#3D3D3D] outline-none placeholder:text-[#626262]";
+
+const MODE_COLORED_HEIGHT_EXCHANGE = 340;
+const MODE_COLORED_HEIGHT_BROWSE = 535;
+const MODE_WHITE_PANEL_HEIGHT = 183;
+const MODE_PANEL_GAP = 12;
+const MODE_PANEL_DURATION = 680;
+
+function isSafariBrowser() {
+  if (typeof navigator === "undefined") return false;
+
+  const ua = navigator.userAgent;
+  return /Safari/i.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|Zen/i.test(ua);
+}
+
+function useIsSafari() {
+  return useSyncExternalStore(
+    () => () => {},
+    isSafariBrowser,
+    () => false,
+  );
+}
+
+function easeOutQuint(progress: number) {
+  return 1 - (1 - progress) ** 5;
+}
+
+function useSafariPanelAnimation(
+  isExchange: boolean,
+  columnRef: RefObject<HTMLDivElement | null>,
+  coloredRef: RefObject<HTMLDivElement | null>,
+  whiteRef: RefObject<HTMLDivElement | null>,
+) {
+  const isSafari = useIsSafari();
+  const animationRef = useRef<number | null>(null);
+  const isFirstRenderRef = useRef(true);
+
+  useLayoutEffect(() => {
+    if (!isSafari) return;
+
+    const column = columnRef.current;
+    const colored = coloredRef.current;
+    const white = whiteRef.current;
+    if (!column || !colored || !white) return;
+
+    const targetColored = isExchange ? MODE_COLORED_HEIGHT_EXCHANGE : MODE_COLORED_HEIGHT_BROWSE;
+    const targetWhite = isExchange ? MODE_WHITE_PANEL_HEIGHT : 0;
+    const targetGap = isExchange ? MODE_PANEL_GAP : 0;
+    const targetWhiteOpacity = isExchange ? 1 : 0;
+
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      colored.style.height = `${targetColored}px`;
+      white.style.height = `${targetWhite}px`;
+      column.style.gap = `${targetGap}px`;
+      white.style.opacity = String(targetWhiteOpacity);
+      return;
+    }
+
+    if (animationRef.current !== null) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
+    const startColored = colored.getBoundingClientRect().height;
+    const startWhite = white.getBoundingClientRect().height;
+    const startGap = Number.parseFloat(getComputedStyle(column).rowGap || getComputedStyle(column).gap) || 0;
+    const startWhiteOpacity = Number.parseFloat(getComputedStyle(white).opacity) || 0;
+    const startTime = performance.now();
+
+    colored.style.transition = "none";
+    white.style.transition = "none";
+    column.style.transition = "none";
+
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startTime) / MODE_PANEL_DURATION);
+      const eased = easeOutQuint(progress);
+
+      colored.style.height = `${startColored + (targetColored - startColored) * eased}px`;
+      white.style.height = `${startWhite + (targetWhite - startWhite) * eased}px`;
+      column.style.gap = `${startGap + (targetGap - startGap) * eased}px`;
+      white.style.opacity = String(startWhiteOpacity + (targetWhiteOpacity - startWhiteOpacity) * eased);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      colored.style.height = `${targetColored}px`;
+      white.style.height = `${targetWhite}px`;
+      column.style.gap = `${targetGap}px`;
+      white.style.opacity = String(targetWhiteOpacity);
+      colored.style.transition = "";
+      white.style.transition = "";
+      column.style.transition = "";
+      animationRef.current = null;
+    };
+
+    animationRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    };
+  }, [coloredRef, columnRef, isExchange, isSafari, whiteRef]);
+}
+
+type ModeFormFieldsProps = {
+  title: string;
+  setTitle: (value: string) => void;
+  price: string;
+  setPrice: (value: string) => void;
+  city: string;
+  setCity: (value: string) => void;
+  hasDocuments: boolean;
+  setHasDocuments: (value: boolean | ((prev: boolean) => boolean)) => void;
+  condition: string;
+  setCondition: (value: string) => void;
+};
+
+function PriceCityFields({
+  price,
+  setPrice,
+  city,
+  setCity,
+}: Pick<ModeFormFieldsProps, "price" | "setPrice" | "city" | "setCity">) {
+  return (
+    <div className="mt-[14px] flex gap-[12px]">
+      <div className="w-[177px]">
+        <label className="text-[14px] font-semibold">Примерная стоимость</label>
+        <input
+          value={price}
+          onChange={(event) => setPrice(event.target.value)}
+          placeholder={pricePlaceholder}
+          className={`mt-[8px] h-[48px] w-full text-[14px] ${fieldClassName}`}
+        />
+      </div>
+      <div className="relative w-[203px]">
+        <label className="text-[14px] font-semibold">Город</label>
+        <select
+          value={city}
+          onChange={(event) => setCity(event.target.value)}
+          className={`mt-[8px] h-[48px] w-full appearance-none text-[14px] ${fieldClassName} ${city ? "" : "text-[#626262]"}`}
+        >
+          <option value="" disabled hidden>
+            {cityPlaceholder}
+          </option>
+          {cityOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <span className="pointer-events-none absolute right-[12px] top-[43px] text-[12px] text-[#3D3D3D]">▼</span>
+      </div>
+    </div>
+  );
+}
+
+function ModeCrossfadeText({
+  activeIndex,
+  items,
+  className,
+}: {
+  activeIndex: 0 | 1;
+  items: [React.ReactNode, React.ReactNode];
+  className?: string;
+}) {
+  return (
+    <div className={`home-mode-crossfade-text ${className ?? ""}`}>
+      {items.map((item, index) => (
+        <span key={index} className={activeIndex === index ? "is-active" : undefined} aria-hidden={activeIndex !== index}>
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function BrowseOnlyFields({
+  isExchange,
+  hasDocuments,
+  setHasDocuments,
+  condition,
+  setCondition,
+}: Pick<ModeFormFieldsProps, "hasDocuments" | "setHasDocuments" | "condition" | "setCondition"> & {
+  isExchange: boolean;
+}) {
+  return (
+    <div className={`home-mode-browse-only ${isExchange ? "" : "is-visible"}`} aria-hidden={isExchange}>
+      <label className="flex cursor-pointer items-center gap-[12px]">
+        <button
+          type="button"
+          onClick={() => setHasDocuments((prev) => !prev)}
+          className="relative h-[22px] w-[38px] rounded-[11px] border border-[#1A1A1A] bg-white p-[2px]"
+          aria-label="С документами"
+          tabIndex={isExchange ? -1 : 0}
+        >
+          <span
+            className={`block h-[16px] w-[16px] rounded-full bg-[#1A1A1A] transition-transform ${
+              hasDocuments ? "translate-x-[16px]" : "translate-x-0"
+            }`}
+          />
+        </button>
+        <span className="text-[16px] leading-[24px] tracking-[0.16px] text-[#1A1A1A]">С документами</span>
+      </label>
+
+      <p className="mt-[32px] text-[14px] font-semibold">Выберите интересующее состояние</p>
+      <div className="mt-[8px] flex flex-wrap gap-[8px]">
+        {conditionOptions.map((item) => {
+          const active = condition === item;
+          return (
+            <button
+              key={item}
+              type="button"
+              onClick={() => setCondition(item)}
+              tabIndex={isExchange ? -1 : 0}
+              className={`rounded-[16px] border px-[12px] py-[8px] text-[12px] font-medium ${
+                active ? "border-[#1A1A1A] bg-[#1A1A1A] text-white" : "border-[#CACACA] bg-white text-[#1A1A1A]"
+              }`}
+            >
+              {item}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ColoredPanelContent({ isExchange, title, setTitle, price, setPrice, city, setCity, ...browseFields }: ModeFormFieldsProps & { isExchange: boolean }) {
+  const textIndex: 0 | 1 = isExchange ? 0 : 1;
+
+  return (
+    <>
+      <ModeCrossfadeText
+        activeIndex={textIndex}
+        className="text-[24px] font-extrabold leading-[32px] tracking-[-0.3px]"
+        items={["Что хотите обменять?", "Помогите узнать вас больше"]}
+      />
+      <p className="mt-[6px] text-[12px]">Можно ввести не все поля</p>
+
+      <ModeCrossfadeText
+        activeIndex={textIndex}
+        className="mt-[16px] block text-[14px] font-semibold"
+        items={["Название", "Название желания"]}
+      />
+      <input
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+        placeholder={titlePlaceholder}
+        className={`mt-[8px] h-[83px] w-full text-[18px] leading-[1.2] tracking-[-0.2px] ${fieldClassName}`}
+      />
+
+      <PriceCityFields price={price} setPrice={setPrice} city={city} setCity={setCity} />
+
+      <BrowseOnlyFields isExchange={isExchange} {...browseFields} />
+    </>
+  );
+}
+
+function ModeFormColumn({ isExchange, ...fields }: ModeFormFieldsProps & { isExchange: boolean }) {
+  const isSafari = useIsSafari();
+  const columnRef = useRef<HTMLDivElement>(null);
+  const coloredRef = useRef<HTMLDivElement>(null);
+  const whiteRef = useRef<HTMLDivElement>(null);
+
+  useSafariPanelAnimation(isExchange, columnRef, coloredRef, whiteRef);
+
+  return (
+    <div
+      ref={columnRef}
+      className={`home-mode-panel-column flex h-[535px] w-[560px] flex-col ${isExchange ? "is-exchange" : "is-browse"} ${isSafari ? "is-safari" : ""}`}
+    >
+      <div
+        ref={coloredRef}
+        className="home-mode-colored-panel shrink-0 overflow-hidden rounded-[10px] border border-[#CACACA] bg-[#C8FF00] px-[24px] pt-[24px] pb-[24px] text-[#3D3D3D]"
+      >
+        <ColoredPanelContent isExchange={isExchange} {...fields} />
+      </div>
+
+      <div ref={whiteRef} className="home-mode-white-panel shrink-0 overflow-hidden" aria-hidden={!isExchange}>
+        <div className="flex h-[183px] flex-col justify-center rounded-[10px] border border-[#CACACA] bg-[#F2F4F7] pl-[36px] pr-[24px]">
+          <p className="max-w-[330px] text-[14px] leading-[1.36] text-[#3D3D3D]">
+            Вся информация сохранится для будущего создания объявления
+          </p>
+          <button
+            type="button"
+            tabIndex={isExchange ? 0 : -1}
+            className="mt-[16px] flex h-[49px] w-fit items-center gap-[15px] rounded-[10px] bg-[#8E8BED] px-[24px] text-white"
+          >
+            <span className="text-[24px] font-extrabold leading-none">+</span>
+            <span className="text-[14px] font-semibold">Добавить объявление</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function renderTabIcon(tabId: Mode, active: boolean) {
   if (tabId === "exchange") return <WantExchangeIcon className="h-[17px] w-[15px]" />;
@@ -210,13 +510,6 @@ const ARC_GLOW_PATH = `M ${ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW
 const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(200, 255, 0, 0.35))";
 const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
 
-function isSafariBrowser() {
-  if (typeof navigator === "undefined") return false;
-
-  const ua = navigator.userAgent;
-  return /Safari/i.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|Zen/i.test(ua);
-}
-
 function getCategoryIconFilter(isActive: boolean, useSvgFilter: boolean) {
   if (useSvgFilter) {
     return isActive ? "url(#category-icon-shadow-active)" : "url(#category-icon-shadow-inactive)";
@@ -256,14 +549,6 @@ function computeCategoryLayout(index: number, displayIndex: number, length: numb
     labelSize: Math.max(10, 14 - distanceFactor * 6),
     labelOpacity: Math.abs(distance) < 0.05 ? 1 : 0.8,
   };
-}
-
-function useIsSafari() {
-  return useSyncExternalStore(
-    () => () => {},
-    isSafariBrowser,
-    () => false,
-  );
 }
 
 type CategoryItemRefs = {
@@ -700,9 +985,6 @@ export function HomeTopBlock() {
   const [sceneScale, setSceneScale] = useState(1);
 
   const isExchange = mode === "exchange";
-  const panelTitle = isExchange ? "Что хотите обменять?" : "Помогите узнать вас больше";
-  const panelSubTitle = "Можно ввести не все поля";
-  const titleLabel = isExchange ? "Название" : "Название желания";
   const blurButtonAfterClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
   };
@@ -771,145 +1053,19 @@ export function HomeTopBlock() {
             </div>
 
             <div className="absolute left-[492px] top-[486px] z-10 flex h-[535px] w-[1026px] gap-[12px]">
-              {isExchange ? (
-                <div className="flex h-full w-[560px] flex-col gap-[12px]">
-                  <div className="h-[340px] rounded-[10px] border border-[#CACACA] bg-[#C8FF00] px-[24px] pt-[24px] text-[#3D3D3D]">
-                    <h2 className="text-[24px] font-extrabold leading-[32px] tracking-[-0.3px]">{panelTitle}</h2>
-                    <p className="mt-[6px] text-[12px]">{panelSubTitle}</p>
-
-                    <label className="mt-[16px] block text-[14px] font-semibold">{titleLabel}</label>
-                    <input
-                      value={title}
-                      onChange={(event) => setTitle(event.target.value)}
-                      placeholder={titlePlaceholder}
-                      className={`mt-[8px] h-[83px] w-full text-[18px] leading-[1.2] tracking-[-0.2px] ${fieldClassName}`}
-                    />
-
-                    <div className="mt-[14px] flex gap-[12px]">
-                      <div className="w-[177px]">
-                        <label className="text-[14px] font-semibold">Примерная стоимость</label>
-                        <input
-                          value={price}
-                          onChange={(event) => setPrice(event.target.value)}
-                          placeholder={pricePlaceholder}
-                          className={`mt-[8px] h-[48px] w-full text-[14px] ${fieldClassName}`}
-                        />
-                      </div>
-                      <div className="relative w-[203px]">
-                        <label className="text-[14px] font-semibold">Город</label>
-                        <select
-                          value={city}
-                          onChange={(event) => setCity(event.target.value)}
-                          className={`mt-[8px] h-[48px] w-full appearance-none text-[14px] ${fieldClassName} ${city ? "" : "text-[#626262]"}`}
-                        >
-                          <option value="" disabled hidden>
-                            {cityPlaceholder}
-                          </option>
-                          {cityOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="pointer-events-none absolute right-[12px] top-[43px] text-[12px] text-[#3D3D3D]">▼</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex h-[183px] flex-col justify-center rounded-[10px] border border-[#CACACA] bg-[#F2F4F7] pl-[36px] pr-[24px]">
-                    <p className="max-w-[330px] text-[14px] leading-[1.36] text-[#3D3D3D]">
-                      Вся информация сохранится для будущего создания объявления
-                    </p>
-                    <button
-                      type="button"
-                      className="mt-[16px] flex h-[49px] w-fit items-center gap-[15px] rounded-[10px] bg-[#8E8BED] px-[24px] text-white"
-                    >
-                      <span className="text-[24px] font-extrabold leading-none">+</span>
-                      <span className="text-[14px] font-semibold">Добавить объявление</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative h-full w-[560px] rounded-[10px] border border-[#CACACA] bg-[#C8FF00] px-[24px] pt-[24px] pb-[24px] text-[#3D3D3D]">
-                  <h2 className="text-[24px] font-extrabold leading-[32px] tracking-[-0.3px]">{panelTitle}</h2>
-                  <p className="mt-[6px] text-[12px]">{panelSubTitle}</p>
-
-                  <label className="mt-[16px] block text-[14px] font-semibold">{titleLabel}</label>
-                  <input
-                    value={title}
-                    onChange={(event) => setTitle(event.target.value)}
-                    placeholder={titlePlaceholder}
-                    className={`mt-[8px] h-[83px] w-full text-[18px] leading-[1.2] tracking-[-0.2px] ${fieldClassName}`}
-                  />
-
-                  <div className="mt-[14px] flex gap-[12px]">
-                    <div className="w-[177px]">
-                      <label className="text-[14px] font-semibold">Примерная стоимость</label>
-                      <input
-                        value={price}
-                        onChange={(event) => setPrice(event.target.value)}
-                        placeholder={pricePlaceholder}
-                        className={`mt-[8px] h-[48px] w-full text-[14px] ${fieldClassName}`}
-                      />
-                    </div>
-                    <div className="relative w-[203px]">
-                      <label className="text-[14px] font-semibold">Город</label>
-                      <select
-                        value={city}
-                        onChange={(event) => setCity(event.target.value)}
-                        className={`mt-[8px] h-[48px] w-full appearance-none text-[14px] ${fieldClassName} ${city ? "" : "text-[#626262]"}`}
-                      >
-                        <option value="" disabled hidden>
-                          {cityPlaceholder}
-                        </option>
-                        {cityOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                      <span className="pointer-events-none absolute right-[12px] top-[43px] text-[12px] text-[#3D3D3D]">▼</span>
-                    </div>
-                  </div>
-
-                  <label className="mt-[32px] flex cursor-pointer items-center gap-[12px]">
-                    <button
-                      type="button"
-                      onClick={() => setHasDocuments((prev) => !prev)}
-                      className="relative h-[22px] w-[38px] rounded-[11px] border border-[#1A1A1A] bg-white p-[2px]"
-                      aria-label="С документами"
-                    >
-                      <span
-                        className={`block h-[16px] w-[16px] rounded-full bg-[#1A1A1A] transition-transform ${
-                          hasDocuments ? "translate-x-[16px]" : "translate-x-0"
-                        }`}
-                      />
-                    </button>
-                    <span className="text-[16px] leading-[24px] tracking-[0.16px] text-[#1A1A1A]">С документами</span>
-                  </label>
-
-                  <p className="mt-[32px] text-[14px] font-semibold">Выберите интересующее состояние</p>
-                  <div className="mt-[8px] flex flex-wrap gap-[8px]">
-                    {conditionOptions.map((item) => {
-                      const active = condition === item;
-                      return (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => setCondition(item)}
-                          className={`rounded-[16px] border px-[12px] py-[8px] text-[12px] font-medium ${
-                            active
-                              ? "border-[#1A1A1A] bg-[#1A1A1A] text-white"
-                              : "border-[#CACACA] bg-white text-[#1A1A1A]"
-                          }`}
-                        >
-                          {item}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              <ModeFormColumn
+                isExchange={isExchange}
+                title={title}
+                setTitle={setTitle}
+                price={price}
+                setPrice={setPrice}
+                city={city}
+                setCity={setCity}
+                hasDocuments={hasDocuments}
+                setHasDocuments={setHasDocuments}
+                condition={condition}
+                setCondition={setCondition}
+              />
 
               <div className="relative h-full w-[454px] rounded-[10px] bg-[#C8FF00] p-[8px]">
                 <p className="mx-auto mb-[8px] mt-[8px] w-[342px] text-left text-[16px] font-bold text-[#1A1A1A]">Вам может подойти</p>
