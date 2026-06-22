@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Golos_Text, Manrope } from "next/font/google";
+
+import { FloatingChat } from "@/widgets/floating-chat/FloatingChat";
+
 import "./globals.css";
 
 const manrope = Manrope({
@@ -27,7 +30,10 @@ export default function RootLayout({
       lang="ru"
       className={`${manrope.variable} ${golosText.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {children}
+        <FloatingChat />
+      </body>
     </html>
   );
 }

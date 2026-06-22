@@ -18,7 +18,6 @@ import {
   BoltIcon,
   categoryItems,
   getCategoryIconSrc,
-  ChatBubbleIcon,
   ExchangeBadgeIcon,
   TagsIcon,
   WantAllIcon,
@@ -510,7 +509,7 @@ const ARC_HORIZONTAL_RADIUS = 620;
 const ARC_VERTICAL_RADIUS = 170;
 const ARC_BASE_Y = 218;
 const ARC_CONTAINER_TOP = -20;
-const ARC_CONTAINER_HEIGHT = 188;
+const ARC_CONTAINER_HEIGHT = 188;1
 const ARC_ACTIVE_ICON_SIZE = 102;
 const ARC_GLOW_HORIZONTAL_RADIUS = 735;
 const ARC_ANGLE_STEP = 17.5;
@@ -1189,12 +1188,6 @@ export function HomeTopBlock() {
           </section>
         </div>
 
-        <button
-          className="absolute left-[1704px] z-20 h-[67px] w-[72px]"
-          style={{ top: `${1024 - HERO_CONTENT_SHIFT_UP}px` }}
-        >
-          <ChatBubbleIcon className="h-full w-full text-[#1A1A1A]" aria-label="Чат" />
-        </button>
       </div>
       </div>
     </main>
