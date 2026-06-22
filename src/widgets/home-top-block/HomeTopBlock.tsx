@@ -102,6 +102,181 @@ const tickerItems = [
   "Показываем то, что вас заинтересует",
 ];
 
+const topCategoryItems = [
+  { id: "collection", label: "Коллекция", icon: "●" },
+  { id: "animals", label: "Животные", icon: "●" },
+  { id: "free", label: "Даром", icon: "●" },
+  { id: "electronics", label: "Электроника", icon: "●" },
+  { id: "all", label: "ВСЕ", icon: "●" },
+  { id: "clothes", label: "Одежда", icon: "●" },
+  { id: "home", label: "Для дома", icon: "●" },
+  { id: "hobby", label: "Хобби", icon: "●" },
+  { id: "transport", label: "Транспорт", icon: "●" },
+] as const;
+
+function normalizeIndex(index: number, length: number) {
+  if (length <= 0) return 0;
+  const result = index % length;
+  return result < 0 ? result + length : result;
+}
+
+function getWrappedDistance(index: number, activeIndex: number, length: number) {
+  const rawDistance = index - activeIndex;
+  if (rawDistance > length / 2) return rawDistance - length;
+  if (rawDistance < -length / 2) return rawDistance + length;
+  return rawDistance;
+}
+
+function CategoriesArc() {
+  const [activeIndex, setActiveIndex] = useState(() =>
+    Math.max(
+      0,
+      topCategoryItems.findIndex((item) => item.id === "all"),
+    ),
+  );
+  const wheelLockRef = useRef(false);
+  const unlockTimeoutRef = useRef<number | null>(null);
+
+  const shiftToNext = (direction: number) => {
+    setActiveIndex((current) => normalizeIndex(current + direction, topCategoryItems.length));
+  };
+
+  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (wheelLockRef.current) return;
+    wheelLockRef.current = true;
+
+    shiftToNext(event.deltaY > 0 ? 1 : -1);
+
+    unlockTimeoutRef.current = window.setTimeout(() => {
+      wheelLockRef.current = false;
+      unlockTimeoutRef.current = null;
+    }, 220);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (unlockTimeoutRef.current) {
+        window.clearTimeout(unlockTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div onWheel={handleWheel} className="absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none">
+      <svg
+        aria-hidden
+        viewBox="0 0 1440 215"
+        className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+      >
+        <defs>
+          <filter id="categories-arc-glow-soft" x="-65%" y="-170%" width="230%" height="440%">
+            <feGaussianBlur stdDeviation="72" />
+          </filter>
+          <filter id="categories-arc-glow-core" x="-55%" y="-145%" width="210%" height="390%">
+            <feGaussianBlur stdDeviation="42" />
+          </filter>
+          <linearGradient id="categories-arc-glow-gradient" x1="8" y1="0" x2="1432" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#C8FF00" stopOpacity="0" />
+            <stop offset="16%" stopColor="#C8FF00" stopOpacity="0.2" />
+            <stop offset="50%" stopColor="#C8FF00" stopOpacity="0.46" />
+            <stop offset="84%" stopColor="#C8FF00" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#C8FF00" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        <path
+          d="M 44 210 A 676 106 0 0 1 1396 210"
+          fill="none"
+          stroke="#8E8BED"
+          strokeWidth="1.4"
+          opacity="0.52"
+        />
+        <path
+          d="M 8 210 A 712 112 0 0 1 1432 210"
+          fill="none"
+          stroke="url(#categories-arc-glow-gradient)"
+          strokeWidth="156"
+          strokeLinecap="round"
+          opacity="0.2"
+          filter="url(#categories-arc-glow-soft)"
+        />
+        <path
+          d="M 8 210 A 712 112 0 0 1 1432 210"
+          fill="none"
+          stroke="url(#categories-arc-glow-gradient)"
+          strokeWidth="88"
+          strokeLinecap="round"
+          opacity="0.34"
+          filter="url(#categories-arc-glow-core)"
+        />
+      </svg>
+
+      {topCategoryItems.map((item, index) => {
+        const distance = getWrappedDistance(index, activeIndex, topCategoryItems.length);
+        const maxVisibleDistance = 4;
+        const hidden = Math.abs(distance) > maxVisibleDistance;
+
+        if (hidden) {
+          return null;
+        }
+
+        const angle = distance * 17.5;
+        const rad = (angle * Math.PI) / 180;
+        const x = 720 + Math.sin(rad) * 620;
+        const y = 176 - Math.cos(rad) * 122;
+        const distanceFactor = Math.abs(distance) / maxVisibleDistance;
+        const scale = 1 - distanceFactor * 0.42;
+        const iconSize = 92 - distanceFactor * 58;
+        const opacity = 1 - distanceFactor * 0.5;
+        const isActive = distance === 0;
+
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setActiveIndex(index)}
+            aria-label={item.label}
+            className="group absolute flex flex-col items-center transition-[transform,opacity] duration-500 ease-out"
+            style={{
+              left: `${x}px`,
+              top: `${y}px`,
+              transform: `translateX(-50%) scale(${scale})`,
+              opacity,
+              zIndex: 20 - Math.abs(distance),
+            }}
+          >
+            <div
+              className={`relative flex items-center justify-center rounded-full border border-white/30 text-white shadow-[0_12px_26px_rgba(0,0,0,0.45)] transition-all duration-300 ${
+                isActive
+                  ? "bg-[#8E8BED] ring-2 ring-[#C8FF00]/90 ring-offset-2 ring-offset-[#1A1A1A]"
+                  : "bg-[#2D2D2D]/90 group-hover:bg-[#393939]"
+              }`}
+              style={{
+                height: `${iconSize}px`,
+                width: `${iconSize}px`,
+                fontSize: `${Math.max(18, iconSize * 0.32)}px`,
+              }}
+            >
+              {item.icon}
+            </div>
+            <span
+              className={`mt-[8px] text-center font-semibold tracking-[-0.002em] text-white transition-opacity duration-300 ${
+                isActive ? "opacity-100" : "opacity-80"
+              }`}
+              style={{ fontSize: `${Math.max(10, 14 - distanceFactor * 6)}px` }}
+            >
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function HomeTopBlock() {
   const [mode, setMode] = useState<Mode>("exchange");
   const [title, setTitle] = useState("");
@@ -191,22 +366,18 @@ export function HomeTopBlock() {
 
   return (
     <main className="min-h-screen w-screen overflow-x-hidden bg-[#1A1A1A] text-white">
-      <div className="relative left-1/2 h-[1119px] w-[1920px] -translate-x-1/2">
+      <div className="relative left-1/2 h-[1330px] w-[1920px] -translate-x-1/2">
         <div className="absolute left-[239px] top-0 w-[1441px]">
           <Header />
 
-          <section className="relative h-[1065px] w-[2011px] -translate-x-[285px]">
-            <div className="absolute left-[288px] top-[27px] flex w-[1440px] items-start justify-between text-center text-[11px] text-white/70">
-              {["Коллекция", "Животные", "Даром", "Электроника", "ВСЕ", "Одежда", "Для дома", "Хобби", "Транспорт"].map((i) => (
-                <span key={i}>{i}</span>
-              ))}
-            </div>
+          <section className="relative h-[1280px] w-[2011px] -translate-x-[285px]">
+            <CategoriesArc />
 
-            <h1 className="absolute left-[492px] top-[203px] w-[579px] text-[40px] font-bold leading-[40px]">
+            <h1 className="absolute left-[492px] top-[350px] w-[579px] text-[40px] font-bold leading-[40px]">
               Обменивайтесь <span className="text-[#8E8BED]">без продаж</span> и лишних переговоров
             </h1>
 
-            <div className="absolute left-[1065px] top-[207px] flex gap-[12px]">
+            <div className="absolute left-[1065px] top-[354px] flex gap-[12px]">
               {topTabs.map((tab) => {
                 const active = mode === tab.id;
                 return (
@@ -227,7 +398,7 @@ export function HomeTopBlock() {
               })}
             </div>
 
-            <div className="absolute left-[492px] top-[339px] flex h-[535px] w-[1026px] gap-[12px]">
+            <div className="absolute left-[492px] top-[486px] flex h-[535px] w-[1026px] gap-[12px]">
               {isExchange ? (
                 <div className="flex h-full w-[560px] flex-col gap-[12px]">
                   <div className="h-[340px] rounded-[10px] border border-[#CACACA] bg-[#C8FF00] px-[24px] pt-[24px] text-[#3D3D3D]">
@@ -388,9 +559,9 @@ export function HomeTopBlock() {
               <CenterExchangeBadge />
             </div>
 
-            <p className="absolute left-[863px] top-[937px] text-[22px] font-bold leading-[1.2]">Почему Aimena?</p>
+            <p className="absolute left-[863px] top-[1084px] text-[22px] font-bold leading-[1.2]">Почему Aimena?</p>
 
-            <div className="absolute left-[-96px] top-[981px] flex h-[34px] w-[2118px] items-center gap-[12px] overflow-hidden">
+            <div className="absolute left-[-96px] top-[1128px] flex h-[34px] w-[2118px] items-center gap-[12px] overflow-hidden">
               {[...tickerItems, ...tickerItems].map((item, idx) => (
                 <div key={`${item}-${idx}`} className="flex items-center gap-[12px] whitespace-nowrap rounded-[16.327px] px-[18px] py-[8px] text-[14px] font-semibold text-white">
                   <span>{item}</span>
@@ -401,7 +572,7 @@ export function HomeTopBlock() {
           </section>
         </div>
 
-        <button className="absolute left-[1704px] top-[877px] h-[67px] w-[72px]">
+        <button className="absolute left-[1704px] top-[1024px] h-[67px] w-[72px]">
           <ChatBubbleIcon className="h-full w-full text-[#1A1A1A]" aria-label="Чат" />
         </button>
       </div>
