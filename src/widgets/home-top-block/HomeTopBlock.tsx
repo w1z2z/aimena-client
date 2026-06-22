@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { type WheelEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   BoltIcon,
@@ -170,11 +170,18 @@ function normalizeIndex(index: number, length: number) {
   return result < 0 ? result + length : result;
 }
 
-function getWrappedDistance(index: number, activeIndex: number, length: number) {
-  const rawDistance = index - activeIndex;
-  if (rawDistance > length / 2) return rawDistance - length;
-  if (rawDistance < -length / 2) return rawDistance + length;
+function getWrappedDistanceFloat(index: number, activeIndex: number, length: number) {
+  let rawDistance = index - activeIndex;
+  while (rawDistance > length / 2) rawDistance -= length;
+  while (rawDistance < -length / 2) rawDistance += length;
   return rawDistance;
+}
+
+function getShortestDelta(from: number, to: number, length: number) {
+  let delta = to - from;
+  if (delta > length / 2) delta -= length;
+  if (delta < -length / 2) delta += length;
+  return delta;
 }
 
 const ARC_CENTER_X = 720;
@@ -189,38 +196,105 @@ const ARC_GLOW_BASE_Y = ARC_ACTIVE_ICON_CENTER_Y + ARC_VERTICAL_RADIUS;
 const ARC_GLOW_PATH = `M ${ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y} A ${ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_VERTICAL_RADIUS} 0 0 1 ${ARC_CENTER_X + ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y}`;
 
 function CategoriesArc() {
-  const [activeIndex, setActiveIndex] = useState(() =>
-    Math.max(
-      0,
-      categoryItems.findIndex((item) => item.id === "all"),
-    ),
+  const initialIndex = Math.max(
+    0,
+    categoryItems.findIndex((item) => item.id === "all"),
   );
-  const wheelLockRef = useRef(false);
-  const unlockTimeoutRef = useRef<number | null>(null);
+  const length = categoryItems.length;
+  const [displayIndex, setDisplayIndex] = useState(initialIndex);
+  const displayIndexRef = useRef(initialIndex);
+  const currentCategoryIndexRef = useRef(initialIndex);
+  const animationRef = useRef<number | null>(null);
+  const nextWheelAllowedAtRef = useRef(0);
 
-  const shiftToNext = (direction: number) => {
-    setActiveIndex((current) => normalizeIndex(current + direction, categoryItems.length));
-  };
+  const animateDisplayIndex = useCallback(
+    (targetValue: number, duration: number, onComplete?: () => void) => {
+      const from = displayIndexRef.current;
+      const delta = targetValue - from;
+
+      if (Math.abs(delta) < 0.001) {
+        onComplete?.();
+        return;
+      }
+
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+      }
+
+      const startTime = performance.now();
+
+      const tick = (now: number) => {
+        const progress = Math.min(1, (now - startTime) / duration);
+        const eased = 1 - (1 - progress) ** 3;
+        const current = from + delta * eased;
+
+        displayIndexRef.current = current;
+        setDisplayIndex(current);
+
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(tick);
+          return;
+        }
+
+        displayIndexRef.current = targetValue;
+        setDisplayIndex(targetValue);
+        animationRef.current = null;
+        onComplete?.();
+      };
+
+      animationRef.current = requestAnimationFrame(tick);
+    },
+    [],
+  );
+
+  const goToIndex = useCallback(
+    (targetIndex: number) => {
+      const settled = normalizeIndex(targetIndex, length);
+      const from = displayIndexRef.current;
+      const delta = getShortestDelta(from, settled, length);
+
+      animateDisplayIndex(from + delta, Math.min(520, 260 + Math.abs(delta) * 70), () => {
+        currentCategoryIndexRef.current = settled;
+      });
+    },
+    [animateDisplayIndex, length],
+  );
+
+  const stepCarousel = useCallback(
+    (direction: 1 | -1) => {
+      if (animationRef.current !== null) {
+        return;
+      }
+
+      const nextIndex = normalizeIndex(currentCategoryIndexRef.current + direction, length);
+      const targetDisplay = displayIndexRef.current + direction;
+      currentCategoryIndexRef.current = nextIndex;
+
+      animateDisplayIndex(targetDisplay, 280, () => {
+        currentCategoryIndexRef.current = nextIndex;
+      });
+    },
+    [animateDisplayIndex, length],
+  );
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    if (animationRef.current !== null) return;
+    const now = Date.now();
+    if (now < nextWheelAllowedAtRef.current) return;
+    if (event.deltaY === 0) return;
 
-    if (wheelLockRef.current) return;
-    wheelLockRef.current = true;
-
-    shiftToNext(event.deltaY > 0 ? 1 : -1);
-
-    unlockTimeoutRef.current = window.setTimeout(() => {
-      wheelLockRef.current = false;
-      unlockTimeoutRef.current = null;
-    }, 220);
+    const direction: 1 | -1 = event.deltaY > 0 ? 1 : -1;
+    // One accepted wheel event -> exactly one category step.
+    nextWheelAllowedAtRef.current = now + 360;
+    stepCarousel(direction);
   };
 
   useEffect(() => {
     return () => {
-      if (unlockTimeoutRef.current) {
-        window.clearTimeout(unlockTimeoutRef.current);
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
       }
     };
   }, []);
@@ -276,37 +350,35 @@ function CategoriesArc() {
       </svg>
 
       {categoryItems.map((item, index) => {
-        const distance = getWrappedDistance(index, activeIndex, categoryItems.length);
+        const distance = getWrappedDistanceFloat(index, displayIndex, length);
         const maxVisibleDistance = 4;
-        const hidden = Math.abs(distance) > maxVisibleDistance;
-
-        if (hidden) {
-          return null;
-        }
+        const distanceFactor = Math.min(1, Math.abs(distance) / maxVisibleDistance);
+        const isFar = Math.abs(distance) > maxVisibleDistance + 0.05;
 
         const angle = distance * ARC_ANGLE_STEP;
         const rad = (angle * Math.PI) / 180;
         const x = ARC_CENTER_X + Math.sin(rad) * ARC_HORIZONTAL_RADIUS;
         const y = ARC_BASE_Y - Math.cos(rad) * ARC_VERTICAL_RADIUS;
-        const distanceFactor = Math.abs(distance) / maxVisibleDistance;
         const scale = 1 - distanceFactor * 0.42;
         const iconSize = 102 - distanceFactor * 64;
-        const opacity = 1 - distanceFactor * 0.5;
-        const isActive = distance === 0;
+        const opacity = isFar ? 0 : 1 - distanceFactor * 0.5;
+        const isActive = Math.abs(distance) < 0.05;
 
         return (
           <button
             key={item.id}
             type="button"
-            onClick={() => setActiveIndex(index)}
+            onClick={() => goToIndex(index)}
             aria-label={item.label}
-            className="group absolute flex flex-col items-center border-0 bg-transparent p-0 outline-none transition-[transform,opacity] duration-500 ease-out [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none active:outline-none"
+            aria-current={isActive ? "true" : undefined}
+            className="group absolute flex flex-col items-center border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none active:outline-none"
             style={{
               left: `${x}px`,
               top: `${y}px`,
               transform: `translateX(-50%) scale(${scale})`,
               opacity,
               zIndex: 20 - Math.abs(distance),
+              pointerEvents: isFar ? "none" : "auto",
               WebkitAppearance: "none",
               appearance: "none",
             }}

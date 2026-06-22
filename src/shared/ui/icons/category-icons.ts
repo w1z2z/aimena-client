@@ -1,14 +1,14 @@
 import type { StaticImageData } from "next/image";
 
-import allIcon from "./все.svg";
-import animalsIcon from "./животные.svg";
-import clothesIcon from "./одежда.svg";
-import collectionIcon from "./коллекция.svg";
-import electronicsIcon from "./электроника.svg";
-import freeIcon from "./даром.svg";
-import hobbyIcon from "./хобби.svg";
-import homeIcon from "./для дома.svg";
-import transportIcon from "./транспорт.svg";
+import allIcon from "./all.svg";
+import animalsIcon from "./animals.svg";
+import clothesIcon from "./clothes.svg";
+import collectionIcon from "./collection.svg";
+import electronicsIcon from "./electronics.svg";
+import freeIcon from "./free.svg";
+import hobbyIcon from "./hobby.svg";
+import homeIcon from "./home.svg";
+import transportIcon from "./transport.svg";
 
 export type CategoryId =
   | "collection"
