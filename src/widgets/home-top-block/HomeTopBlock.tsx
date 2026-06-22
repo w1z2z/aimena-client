@@ -38,7 +38,8 @@ const titlePlaceholder = 'MacBook Pro 14" M3 Pro';
 const pricePlaceholder = "~ 100 000р";
 const cityPlaceholder = "Краснодар";
 const BASE_SCENE_WIDTH = 1920;
-const BASE_SCENE_HEIGHT = 1330;
+const HERO_CONTENT_SHIFT_UP = 99;
+const BASE_SCENE_HEIGHT = 1330 - HERO_CONTENT_SHIFT_UP;
 
 const fieldClassName =
   "rounded-[10px] border border-[#CACACA] bg-white px-[12px] font-semibold text-[#3D3D3D] outline-none placeholder:text-[#626262]";
@@ -463,7 +464,10 @@ function TickerCarousel() {
   const loopItems = useMemo(() => [...tickerItems, ...tickerItems], []);
 
   return (
-    <div className="pointer-events-none absolute left-[-96px] top-[1172px] z-20 h-[34px] w-[2118px] overflow-hidden [transform:translateZ(0)]">
+    <div
+      className="pointer-events-none absolute left-[-96px] z-20 h-[34px] w-[2118px] overflow-hidden [transform:translateZ(0)]"
+      style={{ top: `${1172 - HERO_CONTENT_SHIFT_UP}px` }}
+    >
       <div className="home-ticker-track flex w-max items-center gap-[12px]">
         {loopItems.map((item, idx) => (
           <div key={`${item}-${idx}`} className="flex shrink-0 items-center gap-[12px]">
@@ -499,7 +503,9 @@ function getShortestDelta(from: number, to: number, length: number) {
 const ARC_CENTER_X = 720;
 const ARC_HORIZONTAL_RADIUS = 620;
 const ARC_VERTICAL_RADIUS = 170;
-const ARC_BASE_Y = 245;
+const ARC_BASE_Y = 218;
+const ARC_CONTAINER_TOP = -20;
+const ARC_CONTAINER_HEIGHT = 188;
 const ARC_ACTIVE_ICON_SIZE = 102;
 const ARC_GLOW_HORIZONTAL_RADIUS = 735;
 const ARC_ANGLE_STEP = 17.5;
@@ -776,10 +782,14 @@ function CategoriesArc() {
   }, []);
 
   return (
-    <div onWheel={handleWheel} className="categories-arc absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none">
+    <div
+      onWheel={handleWheel}
+      className="categories-arc absolute left-[288px] z-10 h-[188px] w-[1440px] select-none"
+      style={{ top: `${ARC_CONTAINER_TOP}px` }}
+    >
       <svg
         aria-hidden
-        viewBox="0 0 1440 215"
+        viewBox={`0 0 1440 ${ARC_CONTAINER_HEIGHT}`}
         className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
         style={
           isSafari
@@ -1018,17 +1028,26 @@ export function HomeTopBlock() {
           className="relative left-1/2 h-[1330px] w-[1920px] origin-top"
           style={{ transform: `translateX(-50%) scale(${sceneScale})` }}
         >
-        <div className="absolute left-[239px] top-0 w-[1441px]">
+        <div className="absolute left-[239px] top-0 z-20 w-[1441px]">
           <Header />
 
-          <section className="relative h-[1280px] w-[2011px] -translate-x-[285px]">
+          <section
+            className="relative w-[2011px] -translate-x-[285px]"
+            style={{ height: `${1280 - HERO_CONTENT_SHIFT_UP}px` }}
+          >
             <CategoriesArc />
 
-            <h1 className="absolute left-[492px] top-[350px] w-[579px] text-[40px] font-bold leading-[40px]">
+            <h1
+              className="absolute left-[492px] w-[579px] text-[40px] font-bold leading-[40px]"
+              style={{ top: `${350 - HERO_CONTENT_SHIFT_UP}px` }}
+            >
               Обменивайтесь <span className="text-[#8E8BED]">без продаж</span> и лишних переговоров
             </h1>
 
-            <div className="absolute left-[1065px] top-[354px] flex gap-[12px]">
+            <div
+              className="absolute left-[1065px] flex gap-[12px]"
+              style={{ top: `${354 - HERO_CONTENT_SHIFT_UP}px` }}
+            >
               {topTabs.map((tab) => {
                 const active = mode === tab.id;
                 return (
@@ -1052,7 +1071,10 @@ export function HomeTopBlock() {
               })}
             </div>
 
-            <div className="absolute left-[492px] top-[486px] z-10 flex h-[535px] w-[1026px] gap-[12px]">
+            <div
+              className="absolute left-[492px] z-10 flex h-[535px] w-[1026px] gap-[12px]"
+              style={{ top: `${486 - HERO_CONTENT_SHIFT_UP}px` }}
+            >
               <ModeFormColumn
                 isExchange={isExchange}
                 title={title}
@@ -1085,7 +1107,10 @@ export function HomeTopBlock() {
               <CenterExchangeBadge />
             </div>
 
-            <p className="pointer-events-none absolute left-1/2 top-[1084px] z-20 w-max -translate-x-1/2 text-center text-[24px] font-extrabold leading-[32px] tracking-[-0.072px] text-white">
+            <p
+              className="pointer-events-none absolute left-1/2 z-20 w-max -translate-x-1/2 text-center text-[24px] font-extrabold leading-[32px] tracking-[-0.072px] text-white"
+              style={{ top: `${1084 - HERO_CONTENT_SHIFT_UP}px` }}
+            >
               Почему <span className="text-[#8E8BED]">Aimena</span>?
             </p>
 
@@ -1093,7 +1118,10 @@ export function HomeTopBlock() {
           </section>
         </div>
 
-        <button className="absolute left-[1704px] top-[1024px] z-20 h-[67px] w-[72px]">
+        <button
+          className="absolute left-[1704px] z-20 h-[67px] w-[72px]"
+          style={{ top: `${1024 - HERO_CONTENT_SHIFT_UP}px` }}
+        >
           <ChatBubbleIcon className="h-full w-full text-[#1A1A1A]" aria-label="Чат" />
         </button>
       </div>
