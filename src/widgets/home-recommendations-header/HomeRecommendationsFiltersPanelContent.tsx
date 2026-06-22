@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from "react";
 
+import { categoryItems, type CategoryId } from "@/shared/ui/icons/category-icons";
+
 const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
 
 const dateOptions = [
@@ -17,11 +19,23 @@ const conditionOptions = [
   { id: "good", label: "Хорошее" },
   { id: "used", label: "Б.у" },
   { id: "repair", label: "Требует ремонта" },
-  { id: "service", label: "Услуга" },
+] as const;
+
+const serviceFormatOptions = [
+  { id: "online", label: "Онлайн" },
+  { id: "onsite", label: "Выезд" },
+  { id: "client", label: "У клиента" },
 ] as const;
 
 type DateOptionId = (typeof dateOptions)[number]["id"];
 type ConditionOptionId = (typeof conditionOptions)[number]["id"];
+type ServiceFormatId = (typeof serviceFormatOptions)[number]["id"];
+type ListingMode = "item" | "service";
+
+const filterCategoryOptions = [
+  ...categoryItems.filter((item) => item.id === "all"),
+  ...categoryItems.filter((item) => item.id !== "all"),
+];
 
 function FilterToggle({
   checked,
@@ -48,14 +62,88 @@ function FilterToggle({
   );
 }
 
+function FilterModeSwitch({
+  value,
+  onChange,
+}: {
+  value: ListingMode;
+  onChange: (next: ListingMode) => void;
+}) {
+  return (
+    <div
+      className="home-filters-panel__mode-switch"
+      data-active={value}
+      role="radiogroup"
+      aria-label="Тип объявления"
+    >
+      <span className="home-filters-panel__mode-switch-indicator" aria-hidden="true" />
+      <button
+        type="button"
+        role="radio"
+        aria-checked={value === "item"}
+        onClick={() => onChange("item")}
+        className={`home-filters-panel__mode-switch-btn${value === "item" ? " is-active" : ""}`}
+      >
+        Вещь
+      </button>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={value === "service"}
+        onClick={() => onChange("service")}
+        className={`home-filters-panel__mode-switch-btn${value === "service" ? " is-active" : ""}`}
+      >
+        Услуга
+      </button>
+    </div>
+  );
+}
+
+function FilterPills<T extends string>({
+  options,
+  selected,
+  onToggle,
+  nowrap = true,
+}: {
+  options: ReadonlyArray<{ id: T; label: string }>;
+  selected: T[];
+  onToggle: (id: T) => void;
+  nowrap?: boolean;
+}) {
+  return (
+    <div
+      className={`home-filters-panel__pills${nowrap ? " home-filters-panel__pills--nowrap" : ""}`}
+    >
+      {options.map((item) => {
+        const active = selected.includes(item.id);
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onToggle(item.id)}
+            aria-pressed={active}
+            className={`home-filters-panel__pill home-filters-panel__pill--condition${active ? " is-active" : ""}`}
+          >
+            {item.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function HomeRecommendationsFiltersPanelContent() {
+  const [listingMode, setListingMode] = useState<ListingMode>("item");
+  const [category, setCategory] = useState<CategoryId>("all");
   const [city, setCity] = useState("");
   const [priceFrom, setPriceFrom] = useState("");
   const [priceTo, setPriceTo] = useState("");
   const [datePeriod, setDatePeriod] = useState<DateOptionId>("today");
   const [conditions, setConditions] = useState<ConditionOptionId[]>([]);
   const [withSurcharge, setWithSurcharge] = useState(false);
-  const [withDocuments, setWithDocuments] = useState(true);
+  const [withDocuments, setWithDocuments] = useState(false);
+  const [serviceFormats, setServiceFormats] = useState<ServiceFormatId[]>([]);
+  const [verifiedProvider, setVerifiedProvider] = useState(false);
 
   const toggleCondition = useCallback((id: ConditionOptionId) => {
     setConditions((current) =>
@@ -63,14 +151,24 @@ export function HomeRecommendationsFiltersPanelContent() {
     );
   }, []);
 
+  const toggleServiceFormat = useCallback((id: ServiceFormatId) => {
+    setServiceFormats((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
+  }, []);
+
   const handleReset = useCallback(() => {
+    setListingMode("item");
+    setCategory("all");
     setCity("");
     setPriceFrom("");
     setPriceTo("");
     setDatePeriod("today");
     setConditions([]);
     setWithSurcharge(false);
-    setWithDocuments(true);
+    setWithDocuments(false);
+    setServiceFormats([]);
+    setVerifiedProvider(false);
   }, []);
 
   return (
@@ -102,28 +200,68 @@ export function HomeRecommendationsFiltersPanelContent() {
         </div>
       </div>
 
-      <div className="home-filters-panel__condition">
-        <p className="home-filters-panel__field-label">Выберите состояние</p>
-        <div className="home-filters-panel__pills home-filters-panel__pills--condition">
-          {conditionOptions.map((item) => {
-            const active = conditions.includes(item.id);
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => toggleCondition(item.id)}
-                aria-pressed={active}
-                className={`home-filters-panel__pill home-filters-panel__pill--condition${active ? " is-active" : ""}`}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <div className="home-filters-panel__right">
+        <FilterModeSwitch value={listingMode} onChange={setListingMode} />
 
-      <div className="home-filters-panel__documents">
-        <FilterToggle checked={withDocuments} label="С документами" onChange={setWithDocuments} />
+        <div className="home-filters-panel__right-section">
+          <p className="home-filters-panel__field-label">Категория</p>
+          <div className="home-filters-panel__select-wrap home-filters-panel__select-wrap--right">
+            <select
+              value={category}
+              onChange={(event) => setCategory(event.target.value as CategoryId)}
+              className="home-filters-panel__input home-filters-panel__input--right home-filters-panel__select"
+            >
+              {filterCategoryOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <span className="home-filters-panel__select-chevron" aria-hidden="true">
+              ▼
+            </span>
+          </div>
+        </div>
+
+        {listingMode === "item" ? (
+          <>
+            <div className="home-filters-panel__right-section">
+              <p className="home-filters-panel__field-label">Выберите состояние</p>
+              <FilterPills
+                options={conditionOptions}
+                selected={conditions}
+                onToggle={toggleCondition}
+              />
+            </div>
+
+            <div className="home-filters-panel__right-section home-filters-panel__right-section--toggle">
+              <FilterToggle
+                checked={withDocuments}
+                label="С документами"
+                onChange={setWithDocuments}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="home-filters-panel__right-section">
+              <p className="home-filters-panel__field-label">Формат оказания</p>
+              <FilterPills
+                options={serviceFormatOptions}
+                selected={serviceFormats}
+                onToggle={toggleServiceFormat}
+              />
+            </div>
+
+            <div className="home-filters-panel__right-section home-filters-panel__right-section--toggle">
+              <FilterToggle
+                checked={verifiedProvider}
+                label="Проверенный исполнитель"
+                onChange={setVerifiedProvider}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="home-filters-panel__date">

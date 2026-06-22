@@ -681,6 +681,15 @@ textarea:disabled {
   width: 392px;
 }
 
+.home-filters-panel__select-wrap--right {
+  width: 100%;
+  min-width: 392px;
+}
+
+.home-filters-panel__input--right {
+  width: 100%;
+}
+
 .home-filters-panel__select {
   appearance: none;
   padding-right: 32px;
@@ -720,21 +729,81 @@ textarea:disabled {
   margin-bottom: 8px;
 }
 
-.home-filters-panel__condition {
+.home-filters-panel__right {
   position: absolute;
   top: 68px;
   left: 756px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
   width: max-content;
   max-width: 673px;
 }
 
-.home-filters-panel__documents {
+.home-filters-panel__right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-filters-panel__right-section--toggle {
+  padding-top: 4px;
+}
+
+.home-filters-panel__mode-switch {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  box-sizing: border-box;
+  width: 220px;
+  padding: 3px;
+  border: 0.5px solid #cacaca;
+  border-radius: 12px;
+  background: #f2f2f2;
+}
+
+.home-filters-panel__mode-switch-indicator {
   position: absolute;
-  top: 157px;
-  left: 756px;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 9px;
+  background: #1a1a1a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 220ms cubic-bezier(0.33, 1, 0.68, 1);
+  pointer-events: none;
+}
+
+.home-filters-panel__mode-switch[data-active="service"] .home-filters-panel__mode-switch-indicator {
+  transform: translateX(100%);
+}
+
+.home-filters-panel__mode-switch-btn {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 30px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  padding: 0 16px;
+  color: #626262;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: 0.001em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 220ms ease;
+}
+
+.home-filters-panel__mode-switch-btn.is-active {
+  color: #ffffff;
 }
 
 .home-filters-panel__date {
@@ -781,7 +850,8 @@ textarea:disabled {
 }
 
 .home-filters-panel__pills--date,
-.home-filters-panel__pills--condition {
+.home-filters-panel__pills--condition,
+.home-filters-panel__pills--nowrap {
   flex-wrap: nowrap;
 }
 
@@ -884,7 +954,7 @@ textarea:disabled {
   flex-direction: row;
   align-items: center;
   gap: 19px;
-  height: 46px;
+  height: 49px;
 }
 
 .home-filters-panel__reset {
@@ -911,13 +981,13 @@ textarea:disabled {
   align-items: center;
   justify-content: center;
   width: 161px;
-  height: 46px;
+  height: 49px;
   border: 0;
-  border-radius: 9.33px;
+  border-radius: 10px;
   background: #8e8bed;
   padding: 16px 24px;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 20px;
   letter-spacing: 0.001em;
