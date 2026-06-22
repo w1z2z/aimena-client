@@ -1,7 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { type MouseEvent, type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type MouseEvent,
+  type WheelEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   BoltIcon,
@@ -26,6 +35,8 @@ const conditionOptions = ["Отличное", "Новое", "Хорошее", "�
 const titlePlaceholder = 'MacBook Pro 14" M3 Pro';
 const pricePlaceholder = "~ 100 000р";
 const cityPlaceholder = "Краснодар";
+const BASE_SCENE_WIDTH = 1920;
+const BASE_SCENE_HEIGHT = 1330;
 
 const fieldClassName =
   "rounded-[10px] border border-[#CACACA] bg-white px-[12px] font-semibold text-[#3D3D3D] outline-none placeholder:text-[#626262]";
@@ -117,12 +128,12 @@ const tickerPinGlowRects: TickerPinGlowRect[] = [
 
 function TickerPin({ label }: { label: string }) {
   return (
-    <div className="relative isolate flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] overflow-hidden rounded-[16.327px] border border-[0.3px] border-white/30 bg-[rgba(0,0,0,0.004)] px-[18px] py-[12px]">
+    <div className="relative isolate flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] overflow-hidden rounded-[16.327px] border border-[0.3px] border-white/30 bg-[rgba(0,0,0,0.004)] px-[18px] py-[12px] [transform:translateZ(0)]">
       {tickerPinGlowRects.map((rect) => (
         <span
           key={`${rect.left ?? rect.right}-${rect.top}`}
           aria-hidden
-          className="pointer-events-none absolute z-[1] size-[20.48px] blur-[14px]"
+          className="pointer-events-none absolute z-[1] size-[20.48px] rounded-full blur-[14px] [transform:translateZ(0)]"
           style={{
             left: rect.left,
             right: rect.right,
@@ -151,7 +162,7 @@ function TickerCarousel() {
   const loopItems = useMemo(() => [...tickerItems, ...tickerItems], []);
 
   return (
-    <div className="pointer-events-none absolute left-[-96px] top-[1172px] z-20 h-[34px] w-[2118px] overflow-hidden">
+    <div className="pointer-events-none absolute left-[-96px] top-[1172px] z-20 h-[34px] w-[2118px] overflow-hidden [transform:translateZ(0)]">
       <div className="home-ticker-track flex w-max items-center gap-[12px]">
         {loopItems.map((item, idx) => (
           <div key={`${item}-${idx}`} className="flex shrink-0 items-center gap-[12px]">
@@ -195,19 +206,122 @@ const ARC_ACTIVE_ICON_CENTER_Y = ARC_BASE_Y - ARC_VERTICAL_RADIUS + ARC_ACTIVE_I
 const ARC_GLOW_BASE_Y = ARC_ACTIVE_ICON_CENTER_Y + ARC_VERTICAL_RADIUS;
 const ARC_GLOW_PATH = `M ${ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y} A ${ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_VERTICAL_RADIUS} 0 0 1 ${ARC_CENTER_X + ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y}`;
 
+const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(200, 255, 0, 0.35))";
+const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
+
+function isSafariBrowser() {
+  if (typeof navigator === "undefined") return false;
+
+  const ua = navigator.userAgent;
+  return /Safari/i.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|Zen/i.test(ua);
+}
+
+function getCategoryIconFilter(isActive: boolean, useSvgFilter: boolean) {
+  if (useSvgFilter) {
+    return isActive ? "url(#category-icon-shadow-active)" : "url(#category-icon-shadow-inactive)";
+  }
+
+  return isActive ? CATEGORY_ICON_ACTIVE_SHADOW : CATEGORY_ICON_INACTIVE_SHADOW;
+}
+
+type CategoryLayout = {
+  x: number;
+  y: number;
+  scale: number;
+  iconSize: number;
+  opacity: number;
+  isFar: boolean;
+  isActive: boolean;
+  labelSize: number;
+  labelOpacity: number;
+};
+
+function computeCategoryLayout(index: number, displayIndex: number, length: number): CategoryLayout {
+  const distance = getWrappedDistanceFloat(index, displayIndex, length);
+  const maxVisibleDistance = 4;
+  const distanceFactor = Math.min(1, Math.abs(distance) / maxVisibleDistance);
+  const isFar = Math.abs(distance) > maxVisibleDistance + 0.05;
+  const angle = distance * ARC_ANGLE_STEP;
+  const rad = (angle * Math.PI) / 180;
+
+  return {
+    x: ARC_CENTER_X + Math.sin(rad) * ARC_HORIZONTAL_RADIUS,
+    y: ARC_BASE_Y - Math.cos(rad) * ARC_VERTICAL_RADIUS,
+    scale: 1 - distanceFactor * 0.42,
+    iconSize: 102 - distanceFactor * 64,
+    opacity: isFar ? 0 : 1 - distanceFactor * 0.5,
+    isFar,
+    isActive: Math.abs(distance) < 0.05,
+    labelSize: Math.max(10, 14 - distanceFactor * 6),
+    labelOpacity: Math.abs(distance) < 0.05 ? 1 : 0.8,
+  };
+}
+
+function applyCategoryLayout(button: HTMLButtonElement, layout: CategoryLayout, useSvgIconFilter: boolean) {
+  button.style.left = `${layout.x}px`;
+  button.style.top = `${layout.y}px`;
+  button.style.transform = `translateX(-50%) scale(${layout.scale})`;
+  button.style.opacity = String(layout.opacity);
+  button.style.pointerEvents = layout.isFar ? "none" : "auto";
+
+  const img = button.querySelector<HTMLImageElement>("[data-category-icon]");
+  const label = button.querySelector<HTMLElement>("[data-category-label]");
+
+  if (img) {
+    img.style.width = `${layout.iconSize}px`;
+    img.style.height = `${layout.iconSize}px`;
+
+    const filter = getCategoryIconFilter(layout.isActive, useSvgIconFilter);
+    if (useSvgIconFilter) {
+      img.style.filter = filter;
+      img.style.webkitFilter = filter;
+    } else {
+      img.style.removeProperty("filter");
+      img.style.removeProperty("-webkit-filter");
+    }
+  }
+
+  if (label) {
+    label.style.fontSize = `${layout.labelSize}px`;
+    label.style.opacity = String(layout.labelOpacity);
+  }
+
+  if (layout.isActive) {
+    button.setAttribute("aria-current", "true");
+  } else {
+    button.removeAttribute("aria-current");
+  }
+}
+
 function CategoriesArc() {
   const initialIndex = Math.max(
     0,
     categoryItems.findIndex((item) => item.id === "all"),
   );
   const length = categoryItems.length;
-  const [displayIndex, setDisplayIndex] = useState(initialIndex);
   const displayIndexRef = useRef(initialIndex);
   const currentCategoryIndexRef = useRef(initialIndex);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const useSvgIconFilterRef = useRef(false);
   const animationRef = useRef<number | null>(null);
   const wheelAccumulatorRef = useRef(0);
   const lastWheelEventAtRef = useRef(0);
   const nextStepAllowedAtRef = useRef(0);
+
+  const applyAllLayouts = useCallback(
+    (displayIndex: number) => {
+      categoryItems.forEach((_, index) => {
+        const button = itemRefs.current[index];
+        if (!button) return;
+
+        const layout = computeCategoryLayout(index, displayIndex, length);
+        const distance = getWrappedDistanceFloat(index, displayIndex, length);
+        button.style.zIndex = String(20 - Math.abs(distance));
+        applyCategoryLayout(button, layout, useSvgIconFilterRef.current);
+      });
+    },
+    [length],
+  );
 
   const animateDisplayIndex = useCallback(
     (targetValue: number, duration: number, onComplete?: () => void) => {
@@ -231,7 +345,7 @@ function CategoriesArc() {
         const current = from + delta * eased;
 
         displayIndexRef.current = current;
-        setDisplayIndex(current);
+        applyAllLayouts(current);
 
         if (progress < 1) {
           animationRef.current = requestAnimationFrame(tick);
@@ -239,14 +353,14 @@ function CategoriesArc() {
         }
 
         displayIndexRef.current = targetValue;
-        setDisplayIndex(targetValue);
+        applyAllLayouts(targetValue);
         animationRef.current = null;
         onComplete?.();
       };
 
       animationRef.current = requestAnimationFrame(tick);
     },
-    [],
+    [applyAllLayouts],
   );
 
   const goToIndex = useCallback(
@@ -287,6 +401,9 @@ function CategoriesArc() {
     // Rotate categories only for a clearly horizontal gesture.
     const hasHorizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.15;
     if (!hasHorizontalIntent) return;
+    // Prevent browser-level horizontal page shift on small viewports.
+    event.preventDefault();
+    event.stopPropagation();
 
     const now = Date.now();
     const gapFromLastEvent = now - lastWheelEventAtRef.current;
@@ -302,14 +419,16 @@ function CategoriesArc() {
     const threshold = event.deltaMode === 1 ? 1 : 36;
     if (Math.abs(wheelAccumulatorRef.current) < threshold) return;
 
-    event.preventDefault();
-    event.stopPropagation();
-
     const direction: 1 | -1 = wheelAccumulatorRef.current > 0 ? 1 : -1;
     wheelAccumulatorRef.current = 0;
     nextStepAllowedAtRef.current = now + 220;
     stepCarousel(direction);
   };
+
+  useLayoutEffect(() => {
+    useSvgIconFilterRef.current = isSafariBrowser();
+    applyAllLayouts(displayIndexRef.current);
+  }, [applyAllLayouts]);
 
   useEffect(() => {
     return () => {
@@ -320,18 +439,52 @@ function CategoriesArc() {
   }, []);
 
   return (
-    <div onWheel={handleWheel} className="absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none">
+    <div onWheel={handleWheel} className="absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none [transform:translateZ(0)]">
       <svg
         aria-hidden
         viewBox="0 0 1440 215"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible [transform:translateZ(0)]"
       >
         <defs>
-          <filter id="categories-arc-glow-soft" x="-65%" y="-170%" width="230%" height="440%">
-            <feGaussianBlur stdDeviation="72" />
+          <filter
+            id="category-icon-shadow-active"
+            x="-120%"
+            y="-120%"
+            width="340%"
+            height="340%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(200, 255, 0)" floodOpacity="0.35" />
           </filter>
-          <filter id="categories-arc-glow-core" x="-55%" y="-145%" width="210%" height="390%">
-            <feGaussianBlur stdDeviation="42" />
+          <filter
+            id="category-icon-shadow-inactive"
+            x="-120%"
+            y="-120%"
+            width="340%"
+            height="340%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feDropShadow dx="0" dy="8" stdDeviation="9" floodColor="rgb(0, 0, 0)" floodOpacity="0.35" />
+          </filter>
+          <filter
+            id="categories-arc-glow-soft"
+            x="-65%"
+            y="-170%"
+            width="230%"
+            height="440%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feGaussianBlur in="SourceGraphic" stdDeviation="72" edgeMode="none" />
+          </filter>
+          <filter
+            id="categories-arc-glow-core"
+            x="-55%"
+            y="-145%"
+            width="210%"
+            height="390%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feGaussianBlur in="SourceGraphic" stdDeviation="42" edgeMode="none" />
           </filter>
           <linearGradient
             id="categories-arc-glow-gradient"
@@ -370,61 +523,55 @@ function CategoriesArc() {
       </svg>
 
       {categoryItems.map((item, index) => {
-        const distance = getWrappedDistanceFloat(index, displayIndex, length);
-        const maxVisibleDistance = 4;
-        const distanceFactor = Math.min(1, Math.abs(distance) / maxVisibleDistance);
-        const isFar = Math.abs(distance) > maxVisibleDistance + 0.05;
-
-        const angle = distance * ARC_ANGLE_STEP;
-        const rad = (angle * Math.PI) / 180;
-        const x = ARC_CENTER_X + Math.sin(rad) * ARC_HORIZONTAL_RADIUS;
-        const y = ARC_BASE_Y - Math.cos(rad) * ARC_VERTICAL_RADIUS;
-        const scale = 1 - distanceFactor * 0.42;
-        const iconSize = 102 - distanceFactor * 64;
-        const opacity = isFar ? 0 : 1 - distanceFactor * 0.5;
-        const isActive = Math.abs(distance) < 0.05;
+        const layout = computeCategoryLayout(index, initialIndex, length);
+        const distance = getWrappedDistanceFloat(index, initialIndex, length);
 
         return (
           <button
             key={item.id}
+            ref={(element) => {
+              itemRefs.current[index] = element;
+            }}
             type="button"
             onClick={(event) => {
               goToIndex(index);
               blurButtonAfterClick(event);
             }}
             aria-label={item.label}
-            aria-current={isActive ? "true" : undefined}
+            aria-current={layout.isActive ? "true" : undefined}
             className="group absolute flex flex-col items-center border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:outline-none"
             style={{
-              left: `${x}px`,
-              top: `${y}px`,
-              transform: `translateX(-50%) scale(${scale})`,
-              opacity,
+              left: `${layout.x}px`,
+              top: `${layout.y}px`,
+              transform: `translateX(-50%) scale(${layout.scale})`,
+              opacity: layout.opacity,
               zIndex: 20 - Math.abs(distance),
-              pointerEvents: isFar ? "none" : "auto",
+              pointerEvents: layout.isFar ? "none" : "auto",
               WebkitAppearance: "none",
               appearance: "none",
             }}
           >
             <img
+              data-category-icon
               src={getCategoryIconSrc(item.icon)}
               alt=""
               draggable={false}
-              className={`pointer-events-none object-contain transition-[filter,transform] duration-300 ${
-                isActive
+              className={`pointer-events-none object-contain transition-[filter,transform] duration-300 group-hover:brightness-110 ${
+                layout.isActive
                   ? "drop-shadow-[0_10px_24px_rgba(200,255,0,0.35)]"
-                  : "drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)] group-hover:brightness-110"
+                  : "drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)]"
               }`}
               style={{
-                height: `${iconSize}px`,
-                width: `${iconSize}px`,
+                height: `${layout.iconSize}px`,
+                width: `${layout.iconSize}px`,
               }}
             />
             <span
+              data-category-label
               className={`mt-[8px] text-center font-semibold tracking-[-0.002em] text-white transition-opacity duration-300 ${
-                isActive ? "opacity-100" : "opacity-80"
+                layout.isActive ? "opacity-100" : "opacity-80"
               }`}
-              style={{ fontSize: `${Math.max(10, 14 - distanceFactor * 6)}px` }}
+              style={{ fontSize: `${layout.labelSize}px` }}
             >
               {item.label}
             </span>
@@ -442,7 +589,7 @@ export function HomeTopBlock() {
   const [city, setCity] = useState("");
   const [hasDocuments, setHasDocuments] = useState(false);
   const [condition, setCondition] = useState("Отличное");
-  const recommendationsRef = useRef<HTMLDivElement | null>(null);
+  const [sceneScale, setSceneScale] = useState(1);
 
   const isExchange = mode === "exchange";
   const panelTitle = isExchange ? "Что хотите обменять?" : "Помогите узнать вас больше";
@@ -462,30 +609,25 @@ export function HomeTopBlock() {
   );
 
   useEffect(() => {
-    // On this page we want deterministic wheel behavior:
-    // if pointer is outside the recommendations list, wheel always scrolls the document.
-    const handleWindowWheel = (event: globalThis.WheelEvent) => {
-      if (Math.abs(event.deltaY) < 0.01) return;
-
-      const recommendations = recommendationsRef.current;
-      const target = event.target instanceof Node ? event.target : null;
-      const insideRecommendations = Boolean(recommendations && target && recommendations.contains(target));
-
-      if (insideRecommendations) return;
-
-      event.preventDefault();
-      window.scrollBy({ top: event.deltaY, left: 0, behavior: "auto" });
+    const applyScale = () => {
+      const nextScale = Math.min(1, window.innerWidth / BASE_SCENE_WIDTH);
+      setSceneScale(nextScale);
     };
 
-    window.addEventListener("wheel", handleWindowWheel, { passive: false, capture: true });
+    applyScale();
+    window.addEventListener("resize", applyScale);
     return () => {
-      window.removeEventListener("wheel", handleWindowWheel, { capture: true });
+      window.removeEventListener("resize", applyScale);
     };
   }, []);
 
   return (
-    <main className="min-h-screen w-screen overflow-x-hidden bg-[#1A1A1A] text-white">
-      <div className="relative left-1/2 h-[1330px] w-[1920px] -translate-x-1/2">
+    <main className="min-h-screen w-full overflow-x-hidden bg-[#1A1A1A] text-white">
+      <div className="relative w-full overflow-hidden" style={{ height: `${BASE_SCENE_HEIGHT * sceneScale}px` }}>
+        <div
+          className="relative left-1/2 h-[1330px] w-[1920px] origin-top"
+          style={{ transform: `translateX(-50%) scale(${sceneScale})` }}
+        >
         <div className="absolute left-[239px] top-0 w-[1441px]">
           <Header />
 
@@ -664,7 +806,6 @@ export function HomeTopBlock() {
               <div className="relative h-full w-[454px] rounded-[10px] bg-[#C8FF00] p-[8px]">
                 <p className="mx-auto mb-[8px] mt-[8px] w-[342px] text-left text-[16px] font-bold text-[#1A1A1A]">Вам может подойти</p>
                 <div
-                  ref={recommendationsRef}
                   className="mx-auto h-[479px] w-[358px] overflow-y-auto rounded-[10px] bg-[#F2F4F7] p-[8px] snap-y snap-mandatory overscroll-contain"
                 >
                   <div className="flex flex-col items-center gap-[16px]">
@@ -691,6 +832,7 @@ export function HomeTopBlock() {
         <button className="absolute left-[1704px] top-[1024px] z-20 h-[67px] w-[72px]">
           <ChatBubbleIcon className="h-full w-full text-[#1A1A1A]" aria-label="Чат" />
         </button>
+      </div>
       </div>
     </main>
   );

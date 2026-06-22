@@ -27,6 +27,9 @@ html,
 body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -66,21 +69,31 @@ textarea:disabled {
 
 @keyframes home-ticker-scroll {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 
   to {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .home-ticker-track {
   animation: home-ticker-scroll 48s linear infinite;
   will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-ticker-track {
     animation: none;
+  }
+}
+
+/* Safari / WebKit: blur and filter compositing */
+@supports (-webkit-hyphens: none) {
+  .home-ticker-track {
+    -webkit-transform: translateZ(0);
   }
 }
