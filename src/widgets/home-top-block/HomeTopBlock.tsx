@@ -10,6 +10,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 import {
@@ -257,20 +258,44 @@ function computeCategoryLayout(index: number, displayIndex: number, length: numb
   };
 }
 
-function applyCategoryLayout(button: HTMLButtonElement, layout: CategoryLayout, useSvgIconFilter: boolean) {
+function useIsSafari() {
+  return useSyncExternalStore(
+    () => () => {},
+    isSafariBrowser,
+    () => false,
+  );
+}
+
+type CategoryItemRefs = {
+  button: HTMLButtonElement;
+  iconWrap: HTMLElement;
+  img: HTMLImageElement;
+  label: HTMLElement;
+};
+
+function applyCategoryLayout(
+  refs: CategoryItemRefs,
+  layout: CategoryLayout,
+  useSvgIconFilter: boolean,
+  options?: { skipFilters?: boolean; skipAria?: boolean },
+) {
+  const { button, iconWrap, img, label } = refs;
+  const skipFilters = options?.skipFilters ?? false;
+  const skipAria = options?.skipAria ?? false;
+
   button.style.left = `${layout.x}px`;
   button.style.top = `${layout.y}px`;
-  button.style.transform = `translateX(-50%) scale(${layout.scale})`;
+  button.style.transform = "translateX(-50%)";
   button.style.opacity = String(layout.opacity);
   button.style.pointerEvents = layout.isFar ? "none" : "auto";
 
-  const img = button.querySelector<HTMLImageElement>("[data-category-icon]");
-  const label = button.querySelector<HTMLElement>("[data-category-label]");
+  iconWrap.style.transform = `scale(${layout.scale})`;
+  iconWrap.style.transformOrigin = "top center";
 
-  if (img) {
-    img.style.width = `${layout.iconSize}px`;
-    img.style.height = `${layout.iconSize}px`;
+  img.style.width = `${layout.iconSize}px`;
+  img.style.height = `${layout.iconSize}px`;
 
+  if (!skipFilters) {
     const filter = getCategoryIconFilter(layout.isActive, useSvgIconFilter);
     if (useSvgIconFilter) {
       img.style.filter = filter;
@@ -281,15 +306,15 @@ function applyCategoryLayout(button: HTMLButtonElement, layout: CategoryLayout, 
     }
   }
 
-  if (label) {
-    label.style.fontSize = `${layout.labelSize}px`;
-    label.style.opacity = String(layout.labelOpacity);
-  }
+  label.style.fontSize = `${layout.labelSize}px`;
+  label.style.opacity = String(layout.labelOpacity);
 
-  if (layout.isActive) {
-    button.setAttribute("aria-current", "true");
-  } else {
-    button.removeAttribute("aria-current");
+  if (!skipAria) {
+    if (layout.isActive) {
+      button.setAttribute("aria-current", "true");
+    } else {
+      button.removeAttribute("aria-current");
+    }
   }
 }
 
@@ -301,23 +326,34 @@ function CategoriesArc() {
   const length = categoryItems.length;
   const displayIndexRef = useRef(initialIndex);
   const currentCategoryIndexRef = useRef(initialIndex);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const itemRefs = useRef<(CategoryItemRefs | null)[]>([]);
   const useSvgIconFilterRef = useRef(false);
+  const isAnimatingRef = useRef(false);
+  const isSafari = useIsSafari();
   const animationRef = useRef<number | null>(null);
   const wheelAccumulatorRef = useRef(0);
   const lastWheelEventAtRef = useRef(0);
   const nextStepAllowedAtRef = useRef(0);
 
   const applyAllLayouts = useCallback(
-    (displayIndex: number) => {
+    (displayIndex: number, options?: { skipFilters?: boolean; skipAria?: boolean }) => {
+      const skipFilters = options?.skipFilters ?? isAnimatingRef.current;
+      const skipAria = options?.skipAria ?? isAnimatingRef.current;
+
       categoryItems.forEach((_, index) => {
-        const button = itemRefs.current[index];
-        if (!button) return;
+        const refs = itemRefs.current[index];
+        if (!refs) return;
 
         const layout = computeCategoryLayout(index, displayIndex, length);
+        if (layout.isFar) {
+          refs.button.style.opacity = "0";
+          refs.button.style.pointerEvents = "none";
+          return;
+        }
+
         const distance = getWrappedDistanceFloat(index, displayIndex, length);
-        button.style.zIndex = String(20 - Math.abs(distance));
-        applyCategoryLayout(button, layout, useSvgIconFilterRef.current);
+        refs.button.style.zIndex = String(20 - Math.abs(distance));
+        applyCategoryLayout(refs, layout, useSvgIconFilterRef.current, { skipFilters, skipAria });
       });
     },
     [length],
@@ -337,6 +373,14 @@ function CategoriesArc() {
         cancelAnimationFrame(animationRef.current);
       }
 
+      isAnimatingRef.current = true;
+      itemRefs.current.forEach((refs) => {
+        if (refs) {
+          refs.button.style.willChange = "transform, opacity";
+          refs.iconWrap.style.willChange = "transform";
+        }
+      });
+
       const startTime = performance.now();
 
       const tick = (now: number) => {
@@ -345,7 +389,7 @@ function CategoriesArc() {
         const current = from + delta * eased;
 
         displayIndexRef.current = current;
-        applyAllLayouts(current);
+        applyAllLayouts(current, { skipFilters: true, skipAria: true });
 
         if (progress < 1) {
           animationRef.current = requestAnimationFrame(tick);
@@ -353,6 +397,13 @@ function CategoriesArc() {
         }
 
         displayIndexRef.current = targetValue;
+        isAnimatingRef.current = false;
+        itemRefs.current.forEach((refs) => {
+          if (refs) {
+            refs.button.style.willChange = "auto";
+            refs.iconWrap.style.willChange = "auto";
+          }
+        });
         applyAllLayouts(targetValue);
         animationRef.current = null;
         onComplete?.();
@@ -426,66 +477,79 @@ function CategoriesArc() {
   };
 
   useLayoutEffect(() => {
-    useSvgIconFilterRef.current = isSafariBrowser();
+    useSvgIconFilterRef.current = isSafari;
     applyAllLayouts(displayIndexRef.current);
-  }, [applyAllLayouts]);
+  }, [applyAllLayouts, isSafari]);
 
   useEffect(() => {
     return () => {
       if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current);
       }
+      isAnimatingRef.current = false;
     };
   }, []);
 
   return (
-    <div onWheel={handleWheel} className="absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none [transform:translateZ(0)]">
+    <div onWheel={handleWheel} className="categories-arc absolute left-[288px] top-[27px] h-[215px] w-[1440px] select-none">
       <svg
         aria-hidden
         viewBox="0 0 1440 215"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible [transform:translateZ(0)]"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
+        style={
+          isSafari
+            ? {
+                filter: "blur(44px)",
+                WebkitFilter: "blur(44px)",
+              }
+            : undefined
+        }
       >
         <defs>
-          <filter
-            id="category-icon-shadow-active"
-            x="-120%"
-            y="-120%"
-            width="340%"
-            height="340%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(200, 255, 0)" floodOpacity="0.35" />
-          </filter>
-          <filter
-            id="category-icon-shadow-inactive"
-            x="-120%"
-            y="-120%"
-            width="340%"
-            height="340%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feDropShadow dx="0" dy="8" stdDeviation="9" floodColor="rgb(0, 0, 0)" floodOpacity="0.35" />
-          </filter>
-          <filter
-            id="categories-arc-glow-soft"
-            x="-65%"
-            y="-170%"
-            width="230%"
-            height="440%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feGaussianBlur in="SourceGraphic" stdDeviation="72" edgeMode="none" />
-          </filter>
-          <filter
-            id="categories-arc-glow-core"
-            x="-55%"
-            y="-145%"
-            width="210%"
-            height="390%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feGaussianBlur in="SourceGraphic" stdDeviation="42" edgeMode="none" />
-          </filter>
+          {!isSafari && (
+            <>
+              <filter
+                id="categories-arc-glow-soft"
+                x="-65%"
+                y="-170%"
+                width="230%"
+                height="440%"
+                colorInterpolationFilters="sRGB"
+              >
+                <feGaussianBlur in="SourceGraphic" stdDeviation="72" edgeMode="none" />
+              </filter>
+              <filter
+                id="categories-arc-glow-core"
+                x="-55%"
+                y="-145%"
+                width="210%"
+                height="390%"
+                colorInterpolationFilters="sRGB"
+              >
+                <feGaussianBlur in="SourceGraphic" stdDeviation="42" edgeMode="none" />
+              </filter>
+              <filter
+                id="category-icon-shadow-active"
+                x="-120%"
+                y="-120%"
+                width="340%"
+                height="340%"
+                colorInterpolationFilters="sRGB"
+              >
+                <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(200, 255, 0)" floodOpacity="0.35" />
+              </filter>
+              <filter
+                id="category-icon-shadow-inactive"
+                x="-120%"
+                y="-120%"
+                width="340%"
+                height="340%"
+                colorInterpolationFilters="sRGB"
+              >
+                <feDropShadow dx="0" dy="8" stdDeviation="9" floodColor="rgb(0, 0, 0)" floodOpacity="0.35" />
+              </filter>
+            </>
+          )}
           <linearGradient
             id="categories-arc-glow-gradient"
             x1={ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS}
@@ -503,24 +567,53 @@ function CategoriesArc() {
         </defs>
 
         <path
+          className="categories-arc-glow"
           d={ARC_GLOW_PATH}
           fill="none"
           stroke="url(#categories-arc-glow-gradient)"
           strokeWidth="156"
           strokeLinecap="round"
           opacity="0.2"
-          filter="url(#categories-arc-glow-soft)"
+          filter={isSafari ? undefined : "url(#categories-arc-glow-soft)"}
         />
         <path
+          className="categories-arc-glow"
           d={ARC_GLOW_PATH}
           fill="none"
           stroke="url(#categories-arc-glow-gradient)"
           strokeWidth="88"
           strokeLinecap="round"
           opacity="0.34"
-          filter="url(#categories-arc-glow-core)"
+          filter={isSafari ? undefined : "url(#categories-arc-glow-core)"}
         />
       </svg>
+
+      {isSafari && (
+        <svg aria-hidden className="pointer-events-none absolute size-0 overflow-hidden">
+          <defs>
+            <filter
+              id="category-icon-shadow-active"
+              x="-120%"
+              y="-120%"
+              width="340%"
+              height="340%"
+              colorInterpolationFilters="sRGB"
+            >
+              <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(200, 255, 0)" floodOpacity="0.35" />
+            </filter>
+            <filter
+              id="category-icon-shadow-inactive"
+              x="-120%"
+              y="-120%"
+              width="340%"
+              height="340%"
+              colorInterpolationFilters="sRGB"
+            >
+              <feDropShadow dx="0" dy="8" stdDeviation="9" floodColor="rgb(0, 0, 0)" floodOpacity="0.35" />
+            </filter>
+          </defs>
+        </svg>
+      )}
 
       {categoryItems.map((item, index) => {
         const layout = computeCategoryLayout(index, initialIndex, length);
@@ -530,7 +623,17 @@ function CategoriesArc() {
           <button
             key={item.id}
             ref={(element) => {
-              itemRefs.current[index] = element;
+              if (!element) {
+                itemRefs.current[index] = null;
+                return;
+              }
+
+              const iconWrap = element.querySelector<HTMLElement>("[data-category-icon-wrap]");
+              const img = element.querySelector<HTMLImageElement>("[data-category-icon]");
+              const label = element.querySelector<HTMLElement>("[data-category-label]");
+              if (!iconWrap || !img || !label) return;
+
+              itemRefs.current[index] = { button: element, iconWrap, img, label };
             }}
             type="button"
             onClick={(event) => {
@@ -539,11 +642,12 @@ function CategoriesArc() {
             }}
             aria-label={item.label}
             aria-current={layout.isActive ? "true" : undefined}
+            data-category-button
             className="group absolute flex flex-col items-center border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:outline-none"
             style={{
               left: `${layout.x}px`,
               top: `${layout.y}px`,
-              transform: `translateX(-50%) scale(${layout.scale})`,
+              transform: "translateX(-50%)",
               opacity: layout.opacity,
               zIndex: 20 - Math.abs(distance),
               pointerEvents: layout.isFar ? "none" : "auto",
@@ -551,27 +655,31 @@ function CategoriesArc() {
               appearance: "none",
             }}
           >
-            <img
-              data-category-icon
-              src={getCategoryIconSrc(item.icon)}
-              alt=""
-              draggable={false}
-              className={`pointer-events-none object-contain transition-[filter,transform] duration-300 group-hover:brightness-110 ${
-                layout.isActive
-                  ? "drop-shadow-[0_10px_24px_rgba(200,255,0,0.35)]"
-                  : "drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)]"
-              }`}
-              style={{
-                height: `${layout.iconSize}px`,
-                width: `${layout.iconSize}px`,
-              }}
-            />
+            <span
+              data-category-icon-wrap
+              className="inline-block origin-top"
+              style={{ transform: `scale(${layout.scale})` }}
+            >
+              <img
+                data-category-icon
+                src={getCategoryIconSrc(item.icon)}
+                alt=""
+                draggable={false}
+                className={`pointer-events-none object-contain group-hover:brightness-110 ${
+                  layout.isActive
+                    ? "drop-shadow-[0_10px_24px_rgba(200,255,0,0.35)]"
+                    : "drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)]"
+                }`}
+                style={{
+                  height: `${layout.iconSize}px`,
+                  width: `${layout.iconSize}px`,
+                }}
+              />
+            </span>
             <span
               data-category-label
-              className={`mt-[8px] text-center font-semibold tracking-[-0.002em] text-white transition-opacity duration-300 ${
-                layout.isActive ? "opacity-100" : "opacity-80"
-              }`}
-              style={{ fontSize: `${layout.labelSize}px` }}
+              className="mt-[8px] text-center font-semibold tracking-[-0.002em] text-white"
+              style={{ fontSize: `${layout.labelSize}px`, opacity: layout.labelOpacity }}
             >
               {item.label}
             </span>
@@ -806,7 +914,7 @@ export function HomeTopBlock() {
               <div className="relative h-full w-[454px] rounded-[10px] bg-[#C8FF00] p-[8px]">
                 <p className="mx-auto mb-[8px] mt-[8px] w-[342px] text-left text-[16px] font-bold text-[#1A1A1A]">Вам может подойти</p>
                 <div
-                  className="mx-auto h-[479px] w-[358px] overflow-y-auto rounded-[10px] bg-[#F2F4F7] p-[8px] snap-y snap-mandatory overscroll-contain"
+                  className="home-recommendations-scroll mx-auto h-[479px] w-[358px] overflow-y-auto overflow-x-hidden rounded-[10px] bg-[#F2F4F7] p-[8px] snap-y snap-mandatory overscroll-contain"
                 >
                   <div className="flex flex-col items-center gap-[16px]">
                     {recommendedCards.map((card) => (
