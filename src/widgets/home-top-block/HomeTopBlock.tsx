@@ -462,8 +462,12 @@ function TickerCarousel() {
 
   return (
     <div
-      className="home-ticker-carousel pointer-events-none absolute left-[-96px] z-20 h-[34px] w-[2118px] overflow-hidden [transform:translateZ(0)]"
-      style={{ top: `${1172 - HERO_CONTENT_SHIFT_UP}px` }}
+      className="home-ticker-carousel pointer-events-none absolute left-1/2 z-20 h-[34px] overflow-hidden"
+      style={{
+        top: `${1172 - HERO_CONTENT_SHIFT_UP}px`,
+        width: `${BASE_SCENE_WIDTH}px`,
+        transform: "translateX(-50%) translateZ(0)",
+      }}
     >
       <div className="home-ticker-track flex w-max items-center gap-[12px]">
         {loopItems.map((item, idx) => (
@@ -509,7 +513,7 @@ const ARC_HORIZONTAL_RADIUS = 620;
 const ARC_VERTICAL_RADIUS = 170;
 const ARC_BASE_Y = 218;
 const ARC_CONTAINER_TOP = -20;
-const ARC_CONTAINER_HEIGHT = 188;1
+const ARC_CONTAINER_HEIGHT = 188;
 const ARC_ACTIVE_ICON_SIZE = 102;
 const ARC_GLOW_HORIZONTAL_RADIUS = 735;
 const ARC_ANGLE_STEP = 17.5;
@@ -1090,7 +1094,7 @@ export function HomeTopBlock() {
   }, []);
 
   return (
-    <main className="min-h-screen w-full shrink-0 overflow-x-hidden bg-[#1A1A1A] text-white">
+    <div className="bg-[#1A1A1A] text-white">
       <Header />
 
       <div className="relative w-full overflow-hidden" style={{ height: `${BASE_SCENE_HEIGHT * sceneScale}px` }}>
@@ -1190,6 +1194,6 @@ export function HomeTopBlock() {
 
       </div>
       </div>
-    </main>
+    </div>
   );
 }
