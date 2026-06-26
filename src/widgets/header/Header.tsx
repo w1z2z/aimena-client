@@ -44,6 +44,12 @@ export function Header() {
   }, []);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setOpenPanel(null);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
@@ -99,49 +105,51 @@ export function Header() {
           <div className="absolute left-[1049px] top-[11px] flex items-center justify-end gap-[16px]">
             <ButtonPrimary onClick={handleCreateListing}>Разместить предложение</ButtonPrimary>
 
-            <IconButton label="Избранное">
-              <HeartIcon className="h-[11px] w-[13px] text-black" />
-            </IconButton>
-
-            <HeaderDropdown
-              open={openPanel === "notifications"}
-              onOpenChange={(open) => setOpenPanel(open ? "notifications" : null)}
-              panelLabel="Уведомления"
-              trigger={
-                <IconButton
-                  label="Уведомления"
-                  aria-expanded={openPanel === "notifications"}
-                  aria-haspopup="dialog"
-                  onClick={() => togglePanel("notifications")}
-                >
-                  <span className="relative inline-flex items-center justify-center">
-                    <BellIcon className="h-[16.4px] w-[14.6px] text-black" />
-                    {openPanel !== "notifications" ? (
-                      <BellDotIcon className="absolute -right-[3px] -top-[3px] h-[5px] w-[5px] text-[#FF2056]" />
-                    ) : null}
-                  </span>
-                </IconButton>
-              }
-            >
-              <NotificationsDropdown />
-            </HeaderDropdown>
-
             {isAuthenticated && user ? (
-              <HeaderDropdown
-                open={openPanel === "profile"}
-                onOpenChange={(open) => setOpenPanel(open ? "profile" : null)}
-                panelLabel="Профиль"
-                trigger={
-                  <Avatar
-                    initial={user.avatarInitial}
-                    aria-expanded={openPanel === "profile"}
-                    aria-haspopup="dialog"
-                    onClick={() => togglePanel("profile")}
-                  />
-                }
-              >
-                <ProfileDropdown onClose={() => setOpenPanel(null)} />
-              </HeaderDropdown>
+              <>
+                <IconButton label="Избранное">
+                  <HeartIcon className="h-[11px] w-[13px] text-black" />
+                </IconButton>
+
+                <HeaderDropdown
+                  open={openPanel === "notifications"}
+                  onOpenChange={(open) => setOpenPanel(open ? "notifications" : null)}
+                  panelLabel="Уведомления"
+                  trigger={
+                    <IconButton
+                      label="Уведомления"
+                      aria-expanded={openPanel === "notifications"}
+                      aria-haspopup="dialog"
+                      onClick={() => togglePanel("notifications")}
+                    >
+                      <span className="relative inline-flex items-center justify-center">
+                        <BellIcon className="h-[16.4px] w-[14.6px] text-black" />
+                        {openPanel !== "notifications" ? (
+                          <BellDotIcon className="absolute -right-[3px] -top-[3px] h-[5px] w-[5px] text-[#FF2056]" />
+                        ) : null}
+                      </span>
+                    </IconButton>
+                  }
+                >
+                  <NotificationsDropdown />
+                </HeaderDropdown>
+
+                <HeaderDropdown
+                  open={openPanel === "profile"}
+                  onOpenChange={(open) => setOpenPanel(open ? "profile" : null)}
+                  panelLabel="Профиль"
+                  trigger={
+                    <Avatar
+                      initial={user.avatarInitial}
+                      aria-expanded={openPanel === "profile"}
+                      aria-haspopup="dialog"
+                      onClick={() => togglePanel("profile")}
+                    />
+                  }
+                >
+                  <ProfileDropdown onClose={() => setOpenPanel(null)} />
+                </HeaderDropdown>
+              </>
             ) : (
               <LoginButton />
             )}

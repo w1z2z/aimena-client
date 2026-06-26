@@ -1,3 +1,6 @@
+export const AUTH_MOCK_STORAGE_KEY = "swaply-auth-mock";
+export const AUTH_USER_STORAGE_KEY = "swaply-auth-user";
+
 export const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
 
 export const onboardingCategories = [

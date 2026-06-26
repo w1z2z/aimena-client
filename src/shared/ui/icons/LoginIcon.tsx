@@ -20,7 +20,7 @@ export function LoginIcon({ className, ...props }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.2"
         strokeLinecap="round"
-        strokeLinejoin="round"
+        strokeLinejoin="round"см
       />
       <path d="M14 7.5H6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
