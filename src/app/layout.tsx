@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Golos_Text, Manrope } from "next/font/google";
 
+import { AuthProvider } from "@/features/auth";
 import { FloatingChat } from "@/widgets/floating-chat/FloatingChat";
 import { SiteFooter } from "@/widgets/footer/SiteFooter";
 
@@ -32,9 +33,11 @@ export default function RootLayout({
       className={`${manrope.variable} ${golosText.variable} antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <div className="flex min-h-full flex-1 flex-col">{children}</div>
-        <SiteFooter />
-        <FloatingChat />
+        <AuthProvider>
+          <div className="flex min-h-full flex-1 flex-col">{children}</div>
+          <SiteFooter />
+          <FloatingChat />
+        </AuthProvider>
       </body>
     </html>
   );

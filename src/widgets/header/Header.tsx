@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { useAuth } from "@/features/auth";
 
 import { Avatar } from "./Avatar";
 import { ButtonPrimary } from "./ButtonPrimary";
@@ -8,6 +11,7 @@ import { HeaderDropdown } from "./HeaderDropdown";
 import { IconButton } from "./IconButton";
 import { Logo } from "./Logo";
 import { NotificationsDropdown } from "./NotificationsDropdown";
+import { LoginButton } from "./LoginButton";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { BellDotIcon, BellIcon, HeartIcon } from "@/shared/ui/icons";
 
@@ -23,6 +27,7 @@ function getPageScrollTop() {
 }
 
 export function Header() {
+  const { isAuthenticated, user } = useAuth();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
@@ -114,20 +119,25 @@ export function Header() {
               <NotificationsDropdown />
             </HeaderDropdown>
 
-            <HeaderDropdown
-              open={openPanel === "profile"}
-              onOpenChange={(open) => setOpenPanel(open ? "profile" : null)}
-              panelLabel="Профиль"
-              trigger={
-                <Avatar
-                  aria-expanded={openPanel === "profile"}
-                  aria-haspopup="dialog"
-                  onClick={() => togglePanel("profile")}
-                />
-              }
-            >
-              <ProfileDropdown onClose={() => setOpenPanel(null)} />
-            </HeaderDropdown>
+            {isAuthenticated && user ? (
+              <HeaderDropdown
+                open={openPanel === "profile"}
+                onOpenChange={(open) => setOpenPanel(open ? "profile" : null)}
+                panelLabel="Профиль"
+                trigger={
+                  <Avatar
+                    initial={user.avatarInitial}
+                    aria-expanded={openPanel === "profile"}
+                    aria-haspopup="dialog"
+                    onClick={() => togglePanel("profile")}
+                  />
+                }
+              >
+                <ProfileDropdown onClose={() => setOpenPanel(null)} />
+              </HeaderDropdown>
+            ) : (
+              <LoginButton />
+            )}
           </div>
         </div>
       </header>

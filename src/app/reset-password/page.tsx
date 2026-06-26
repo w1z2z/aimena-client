@@ -1,10 +1,10 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+import { AuthPageLayout } from "@/widgets/auth/AuthPageLayout";
+import { ResetPasswordForm } from "@/widgets/auth/ResetPasswordForm";
 
 export default function ResetPasswordPage() {
   return (
-    <PageStub
-      title="Reset Password"
-      description="Страница установки нового пароля по reset token."
-    />
+    <AuthPageLayout>
+      <ResetPasswordForm />
+    </AuthPageLayout>
   );
 }

@@ -1,14 +1,12 @@
 import { AuthMessage } from "@/widgets/auth/AuthMessage";
 import { AuthPageLayout } from "@/widgets/auth/AuthPageLayout";
-import { AuthLink } from "@/widgets/auth/AuthLink";
 
-export default function VerifyEmailPage() {
+export default function RegisterConfirmPage() {
   return (
     <AuthPageLayout>
       <AuthMessage title="Подтвердите почту">
         <p className="mb-0">Необходимо подтвердить вашу почту для дальнейшей авторизации.</p>
-        <p className="mb-[24px]">Отправили письмо с ссылкой на подтверждение на указанную почту</p>
-        <AuthLink href="/login">Перейти ко входу</AuthLink>
+        <p>Отправили письмо с ссылкой на подтверждение на указанную почту</p>
       </AuthMessage>
     </AuthPageLayout>
   );

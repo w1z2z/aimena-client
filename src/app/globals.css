@@ -1624,3 +1624,50 @@ textarea:disabled {
     gap: 12px;
   }
 }
+
+.auth-city-combobox {
+  width: 100%;
+}
+
+.auth-city-combobox__input {
+  height: 48px;
+  width: 100%;
+  border: 0.5px solid #3d3d3d;
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px 40px 8px 12px;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0.016px;
+}
+
+.auth-city-combobox__input::placeholder {
+  color: #3d3d3d;
+}
+
+.auth-city-combobox__input:focus {
+  outline: none;
+  border-color: #8e8bed;
+}
+
+.auth-city-combobox__chevron {
+  right: 12px;
+  font-size: 10px;
+  color: #3d3d3d;
+}
+
+.auth-city-combobox__list {
+  border: 0.5px solid #3d3d3d;
+  border-radius: 10px;
+}
+
+.auth-city-combobox__option {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 12px;
+  text-align: left;
+}

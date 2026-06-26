@@ -1,5 +1,10 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+import { AuthPageLayout } from "@/widgets/auth/AuthPageLayout";
+import { LoginForm } from "@/widgets/auth/LoginForm";
 
 export default function LoginPage() {
-  return <PageStub title="Login" description="Страница входа по email и паролю." />;
+  return (
+    <AuthPageLayout>
+      <LoginForm />
+    </AuthPageLayout>
+  );
 }

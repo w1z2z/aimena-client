@@ -2,8 +2,12 @@ export type { IconProps } from "./types";
 export type { CategoryId, CategoryItem } from "./category-icons";
 export { categoryItems, getCategoryIconSrc } from "./category-icons";
 
+export { AuthStarIcon } from "./AuthStarIcon";
 export { BellIcon } from "./BellIcon";
 export { BellDotIcon } from "./BellDotIcon";
+export { EyeIcon } from "./EyeIcon";
+export { EyeOffIcon } from "./EyeOffIcon";
+export { LoginIcon } from "./LoginIcon";
 export { BoltIcon } from "./BoltIcon";
 export { ChatBubbleIcon } from "./ChatBubbleIcon";
 export { ExchangeBadgeIcon } from "./ExchangeBadgeIcon";

@@ -1,10 +1,10 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+import { AuthPageLayout } from "@/widgets/auth/AuthPageLayout";
+import { RegisterForm } from "@/widgets/auth/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <PageStub
-      title="Register"
-      description="Страница регистрации нового пользователя."
-    />
+    <AuthPageLayout>
+      <RegisterForm />
+    </AuthPageLayout>
   );
 }
