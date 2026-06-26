@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 
+import { useAuth, useAuthGate } from "@/features/auth";
 import { ChatBubbleIcon } from "@/shared/ui/icons";
 
 type ChatPreview = {
@@ -57,26 +59,30 @@ function ChatAvatarButton({
   chat,
   href,
   tabIndex,
+  onNavigate,
 }: {
   chat: ChatPreview;
   href: string;
   tabIndex: number;
+  onNavigate: (href: string, event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   return (
     <Link
       href={href}
       aria-label="Открыть чат"
       tabIndex={tabIndex}
+      onClick={(event) => onNavigate(href, event)}
       className="relative block size-[40px] shrink-0 rounded-full bg-[#1A1A1A] transition hover:brightness-125"
     >
-      {chat.hasUnread ? (
-        <NotificationDot className="right-0 top-0" />
-      ) : null}
+      {chat.hasUnread ? <NotificationDot className="right-0 top-0" /> : null}
     </Link>
   );
 }
 
 export function FloatingChat() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { guardAuth } = useAuthGate();
   const listRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [listHeight, setListHeight] = useState(0);
@@ -96,6 +102,20 @@ export function FloatingChat() {
 
     return () => observer.disconnect();
   }, []);
+
+  const handleChatNavigate = (href: string, event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    guardAuth("chat", () => router.push(href));
+  };
+
+  const handleToggle = () => {
+    if (!isAuthenticated) {
+      guardAuth("chat");
+      return;
+    }
+
+    setIsOpen((open) => !open);
+  };
 
   const heightTransition = `height ${PANEL_DURATION_MS}ms ${PANEL_EASE}`;
   const slideTransition = `transform ${PANEL_DURATION_MS}ms ${PANEL_EASE}`;
@@ -128,6 +148,7 @@ export function FloatingChat() {
                 href="/chats"
                 aria-label="Все чаты"
                 tabIndex={isOpen ? 0 : -1}
+                onClick={(event) => handleChatNavigate("/chats", event)}
                 className="mb-[16px] flex h-[24px] w-[27px] items-center justify-center"
               >
                 <ChatBubbleWithBadge className="size-full" />
@@ -140,6 +161,7 @@ export function FloatingChat() {
                     chat={chat}
                     href="/chats"
                     tabIndex={isOpen ? 0 : -1}
+                    onNavigate={handleChatNavigate}
                   />
                 ))}
               </div>
@@ -158,7 +180,7 @@ export function FloatingChat() {
             type="button"
             aria-label={isOpen ? "Закрыть чат" : "Открыть чат"}
             aria-expanded={isOpen}
-            onClick={() => setIsOpen((open) => !open)}
+            onClick={handleToggle}
             className={`flex w-full items-center justify-center ${
               isOpen
                 ? "rounded-[13.27px] bg-[#1A1A1A] hover:bg-[#2a2a2a]"

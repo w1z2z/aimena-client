@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Golos_Text, Manrope } from "next/font/google";
 
-import { AuthProvider } from "@/features/auth";
+import { AuthGateProvider, AuthProvider } from "@/features/auth";
 import { FloatingChat } from "@/widgets/floating-chat/FloatingChat";
 import { SiteFooter } from "@/widgets/footer/SiteFooter";
 
@@ -34,9 +34,11 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <AuthProvider>
-          <div className="flex min-h-full flex-1 flex-col">{children}</div>
-          <SiteFooter />
-          <FloatingChat />
+          <AuthGateProvider>
+            <div className="flex min-h-full flex-1 flex-col">{children}</div>
+            <SiteFooter />
+            <FloatingChat />
+          </AuthGateProvider>
         </AuthProvider>
       </body>
     </html>

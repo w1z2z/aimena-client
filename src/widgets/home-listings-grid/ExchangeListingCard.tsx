@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useAuthGate } from "@/features/auth";
 import { HeartIcon, TagsIcon } from "@/shared/ui/icons";
 
 const imgListingPhoto =
@@ -22,6 +23,16 @@ export function ExchangeListingCard({
   wants,
   wantsMore,
 }: Omit<ExchangeListingCardData, "id">) {
+  const { guardAuth } = useAuthGate();
+
+  const handleFavoriteClick = () => {
+    guardAuth("favorites");
+  };
+
+  const handleExchangeClick = () => {
+    guardAuth("propose-exchange");
+  };
+
   return (
     <article className="home-listing-card">
       <div className="home-listing-card__title">{title}</div>
@@ -32,6 +43,7 @@ export function ExchangeListingCard({
           type="button"
           aria-label="Добавить в избранное"
           className="home-listing-card__favorite"
+          onClick={handleFavoriteClick}
         >
           <HeartIcon className="h-[14px] w-[16px] text-[#626262]" />
         </button>
@@ -42,7 +54,7 @@ export function ExchangeListingCard({
       </div>
 
       <div className="home-listing-card__footer">
-        <button type="button" className="home-listing-card__action">
+        <button type="button" className="home-listing-card__action" onClick={handleExchangeClick}>
           Быстрый обмен
         </button>
 

@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 
+import { useAuthGate } from "@/features/auth";
 import { HeartIcon } from "@/shared/ui/icons";
 
 const imgListingPhoto =
@@ -79,6 +80,12 @@ function FreeGiveawayCard({
   city: string;
   condition: string;
 }) {
+  const { guardAuth } = useAuthGate();
+
+  const handleFavoriteClick = () => {
+    guardAuth("favorites");
+  };
+
   return (
     <article className="w-[342px] shrink-0 rounded-[10px] bg-white py-[12px] shadow-[0px_0px_4.95px_rgba(0,0,0,0.12)]">
       <div className="mx-auto flex h-[29px] w-[318px] items-center justify-center text-[18px] font-semibold tracking-[-0.036px] text-[#1A1A1A]">
@@ -90,6 +97,7 @@ function FreeGiveawayCard({
           type="button"
           aria-label="Добавить в избранное"
           className="absolute right-[11px] top-[10px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition hover:bg-white"
+          onClick={handleFavoriteClick}
         >
           <HeartIcon className="h-[14px] w-[16px] text-[#626262]" />
         </button>

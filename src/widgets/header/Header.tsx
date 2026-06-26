@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { useAuth } from "@/features/auth";
+import { useAuth, useAuthGate } from "@/features/auth";
 
 import { Avatar } from "./Avatar";
 import { ButtonPrimary } from "./ButtonPrimary";
@@ -27,10 +28,16 @@ function getPageScrollTop() {
 }
 
 export function Header() {
+  const router = useRouter();
   const { isAuthenticated, user } = useAuth();
+  const { guardAuth } = useAuthGate();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
+
+  const handleCreateListing = useCallback(() => {
+    guardAuth("create-listing", () => router.push("/create-listing"));
+  }, [guardAuth, router]);
 
   const togglePanel = useCallback((panel: Exclude<OpenPanel, null>) => {
     setOpenPanel((current) => (current === panel ? null : panel));
@@ -90,7 +97,7 @@ export function Header() {
           </div>
 
           <div className="absolute left-[1049px] top-[11px] flex items-center justify-end gap-[16px]">
-            <ButtonPrimary>Разместить предложение</ButtonPrimary>
+            <ButtonPrimary onClick={handleCreateListing}>Разместить предложение</ButtonPrimary>
 
             <IconButton label="Избранное">
               <HeartIcon className="h-[11px] w-[13px] text-black" />

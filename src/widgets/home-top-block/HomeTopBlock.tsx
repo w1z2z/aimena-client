@@ -14,6 +14,12 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import { useRouter } from "next/navigation";
+
+import { useAuthGate } from "@/features/auth";
+import { HERO_CONDITION_OPTIONS, useHomeSearch } from "@/features/home-search";
+import type { MockListing } from "@/features/home-search/mock-listings";
+import type { CategoryId } from "@/shared/ui/icons/category-icons";
 import {
   BoltIcon,
   categoryItems,
@@ -24,9 +30,6 @@ import {
   WantBrowseIcon,
   WantExchangeIcon,
 } from "@/shared/ui/icons";
-import { HERO_CONDITION_OPTIONS, useHomeSearch } from "@/features/home-search";
-import type { MockListing } from "@/features/home-search/mock-listings";
-import type { CategoryId } from "@/shared/ui/icons/category-icons";
 import { SelectField } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
 
@@ -303,7 +306,11 @@ function ColoredPanelContent({ isExchange, title, setTitle, price, setPrice, cit
   );
 }
 
-function ModeFormColumn({ isExchange, ...fields }: ModeFormFieldsProps & { isExchange: boolean }) {
+function ModeFormColumn({
+  isExchange,
+  onAddListingClick,
+  ...fields
+}: ModeFormFieldsProps & { isExchange: boolean; onAddListingClick: () => void }) {
   const isSafari = useIsSafari();
   const columnRef = useRef<HTMLDivElement>(null);
   const coloredRef = useRef<HTMLDivElement>(null);
@@ -331,6 +338,7 @@ function ModeFormColumn({ isExchange, ...fields }: ModeFormFieldsProps & { isExc
           <button
             type="button"
             tabIndex={isExchange ? 0 : -1}
+            onClick={onAddListingClick}
             className="mt-[16px] flex h-[49px] w-fit items-center gap-[15px] rounded-[10px] bg-[#8E8BED] px-[24px] text-white"
           >
             <span className="text-[24px] font-extrabold leading-none">+</span>
@@ -1068,6 +1076,8 @@ function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: C
 }
 
 export function HomeTopBlock() {
+  const router = useRouter();
+  const { guardAuth } = useAuthGate();
   const {
     hero,
     setMode,
@@ -1084,9 +1094,14 @@ export function HomeTopBlock() {
 
   const { mode, title, price, city, hasDocuments, condition } = hero;
   const isExchange = mode === "exchange";
+
   const blurButtonAfterClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
   };
+
+  const handleCreateListing = useCallback(() => {
+    guardAuth("create-listing", () => router.push("/create-listing"));
+  }, [guardAuth, router]);
 
   const handleCategoryChange = useCallback(
     (categoryId: CategoryId) => {
@@ -1175,6 +1190,7 @@ export function HomeTopBlock() {
             >
               <ModeFormColumn
                 isExchange={isExchange}
+                onAddListingClick={handleCreateListing}
                 title={title}
                 setTitle={setTitle}
                 price={price}
