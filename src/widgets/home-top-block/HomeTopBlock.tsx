@@ -27,7 +27,7 @@ import {
 import { HERO_CONDITION_OPTIONS, useHomeSearch } from "@/features/home-search";
 import type { MockListing } from "@/features/home-search/mock-listings";
 import type { CategoryId } from "@/shared/ui/icons/category-icons";
-import { ComboboxField } from "@/shared/ui/combobox-field/ComboboxField";
+import { SelectField } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
 
 const imgHeroCard = "https://www.figma.com/api/mcp/asset/03e5747b-db77-495a-a0bc-3d74a40d9e94";
@@ -186,17 +186,14 @@ function PriceCityFields({
       </div>
       <div className="w-[203px]">
         <label className="text-[14px] font-semibold">Город</label>
-        <ComboboxField
+        <SelectField
           value={city}
           onChange={setCity}
-          onInputChange={setCity}
           options={cityComboboxOptions}
           placeholder={cityPlaceholder}
-          wrapClassName="mt-[8px]"
-          inputClassName={`h-[48px] w-full text-[14px] ${fieldClassName} ${city ? "" : "text-[#626262]"}`}
-          listClassName="combobox-field__list--hero"
-          optionClassName="combobox-field__option--hero"
-          chevronClassName="combobox-field__chevron--hero"
+          variant="hero"
+          allowCustomValue
+          className="mt-[8px]"
           aria-label="Город"
         />
       </div>

@@ -11,7 +11,7 @@ import type {
 } from "@/features/home-search/types";
 
 import { categoryItems, type CategoryId } from "@/shared/ui/icons/category-icons";
-import { ComboboxField } from "@/shared/ui/combobox-field/ComboboxField";
+import { SelectField } from "@/shared/ui/select-field";
 
 const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
 const cityComboboxOptions = cityOptions.map((city) => ({ value: city, label: city }));
@@ -202,17 +202,14 @@ export function HomeRecommendationsFiltersPanelContent() {
         <p className="home-filters-panel__field-label home-filters-panel__field-label--golos">
           Выберите город
         </p>
-        <ComboboxField
+        <SelectField
           value={city}
           onChange={(next) => updateFilters({ city: next })}
-          onInputChange={(next) => updateFilters({ city: next })}
           options={cityComboboxOptions}
           placeholder="Выберите город"
-          wrapClassName="home-filters-panel__select-wrap"
-          inputClassName={`home-filters-panel__input home-filters-panel__input--price-row home-filters-panel__combobox-input${city ? "" : " is-placeholder"}`}
-          listClassName="home-filters-panel__combobox-list"
-          optionClassName="home-filters-panel__combobox-option"
-          chevronClassName="home-filters-panel__select-chevron"
+          variant="filter"
+          allowCustomValue
+          className="home-filters-panel__select-wrap"
           aria-label="Выберите город"
         />
       </div>
@@ -225,15 +222,13 @@ export function HomeRecommendationsFiltersPanelContent() {
 
         <div className="home-filters-panel__right-section">
           <p className="home-filters-panel__field-label">Категория</p>
-          <ComboboxField
+          <SelectField
             value={category}
             onChange={(next) => updateFilters({ category: next as CategoryId })}
             options={categoryComboboxOptions}
-            wrapClassName="home-filters-panel__select-wrap home-filters-panel__select-wrap--right"
-            inputClassName="home-filters-panel__input home-filters-panel__input--right home-filters-panel__combobox-input"
-            listClassName="home-filters-panel__combobox-list"
-            optionClassName="home-filters-panel__combobox-option"
-            chevronClassName="home-filters-panel__select-chevron"
+            variant="filter"
+            searchable={false}
+            className="home-filters-panel__select-wrap home-filters-panel__select-wrap--right"
             aria-label="Категория"
           />
         </div>

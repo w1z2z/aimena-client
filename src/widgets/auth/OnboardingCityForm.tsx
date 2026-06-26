@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { cityOptions, useAuth } from "@/features/auth";
-import { ComboboxField } from "@/shared/ui/combobox-field/ComboboxField";
+import { SelectField } from "@/shared/ui/select-field";
 import { LogoIcon } from "@/shared/ui/icons";
 
 import { AuthButton } from "./AuthButton";
@@ -60,17 +60,14 @@ export function OnboardingCityForm() {
           Укажите город, чтобы вам попадались объявления поближе к вам
         </AuthSubtitle>
 
-        <ComboboxField
+        <SelectField
           value={city}
           onChange={setCity}
           options={cityComboboxOptions}
           placeholder="Выберите город"
+          variant="field"
+          allowCustomValue
           aria-label="Выберите город"
-          wrapClassName="auth-city-combobox"
-          inputClassName="auth-city-combobox__input"
-          listClassName="auth-city-combobox__list"
-          optionClassName="auth-city-combobox__option"
-          chevronClassName="auth-city-combobox__chevron"
         />
       </div>
 
