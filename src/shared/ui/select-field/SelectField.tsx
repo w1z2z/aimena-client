@@ -15,6 +15,7 @@ import { createPortal } from "react-dom";
 export type SelectOption = {
   value: string;
   label: string;
+  disabled?: boolean;
 };
 
 type SelectFieldVariant = "filter" | "field" | "hero";
@@ -38,7 +39,7 @@ const LIST_MAX_HEIGHT = 280;
 const VIEWPORT_PADDING = 8;
 
 function getLabelForValue(options: readonly SelectOption[], value: string) {
-  return options.find((option) => option.value === value)?.label ?? value;
+  return options.find((option) => option.value === value && !option.disabled)?.label ?? value;
 }
 
 function filterOptions(options: readonly SelectOption[], query: string) {
@@ -159,6 +160,7 @@ export function SelectField({
   };
 
   const handleOptionPick = (option: SelectOption) => {
+    if (option.disabled) return;
     setInputValue(option.label);
     onChange(option.value);
     close();
@@ -196,18 +198,26 @@ export function SelectField({
       onWheel={(event) => event.stopPropagation()}
     >
       {visibleOptions.length > 0 ? (
-        visibleOptions.map((option) => (
+        visibleOptions.map((option, index) => (
           <li key={option.value} role="presentation">
-            <button
-              type="button"
-              role="option"
-              aria-selected={option.value === value}
-              className={`site-select__option${option.value === value ? " is-selected" : ""}`}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => handleOptionPick(option)}
-            >
-              {option.label}
-            </button>
+            {option.disabled ? (
+              <span
+                className={`site-select__group-label${index > 0 ? " site-select__group-label--with-divider" : ""}`}
+              >
+                {option.label}
+              </span>
+            ) : (
+              <button
+                type="button"
+                role="option"
+                aria-selected={option.value === value}
+                className={`site-select__option${option.value === value ? " is-selected" : ""}`}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => handleOptionPick(option)}
+              >
+                {option.label}
+              </button>
+            )}
           </li>
         ))
       ) : (

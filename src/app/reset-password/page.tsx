@@ -1,10 +1,17 @@
 import { AuthPageLayout } from "@/widgets/auth/AuthPageLayout";
 import { ResetPasswordForm } from "@/widgets/auth/ResetPasswordForm";
 
-export default function ResetPasswordPage() {
+type ResetPasswordPageProps = {
+  searchParams?: Promise<{ token?: string }>;
+};
+
+export default async function ResetPasswordPage({ searchParams }: ResetPasswordPageProps) {
+  const params = searchParams ? await searchParams : undefined;
+  const token = params?.token ?? null;
+
   return (
     <AuthPageLayout>
-      <ResetPasswordForm />
+      <ResetPasswordForm token={token} />
     </AuthPageLayout>
   );
 }

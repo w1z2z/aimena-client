@@ -5,18 +5,15 @@ import { useCallback } from "react";
 import { useHomeSearch } from "@/features/home-search";
 import type {
   ConditionOptionId,
-  DateOptionId,
   ListingMode,
+  SearchMode,
   ServiceFormatId,
 } from "@/features/home-search/types";
 
-import { categoryItems, type CategoryId } from "@/shared/ui/icons/category-icons";
 import { SelectField } from "@/shared/ui/select-field";
 
-const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
-const cityComboboxOptions = cityOptions.map((city) => ({ value: city, label: city }));
-
 const dateOptions = [
+  { id: "all", label: "За всё время" },
   { id: "today", label: "За сегодня" },
   { id: "week", label: "За неделю" },
   { id: "month", label: "За месяц" },
@@ -37,15 +34,7 @@ const serviceFormatOptions = [
   { id: "client", label: "У клиента" },
 ] as const;
 
-const filterCategoryOptions = [
-  ...categoryItems.filter((item) => item.id === "all"),
-  ...categoryItems.filter((item) => item.id !== "all"),
-];
-
-const categoryComboboxOptions = filterCategoryOptions.map((item) => ({
-  value: item.id,
-  label: item.label,
-}));
+const titleQueryPlaceholder = 'MacBook Pro 14" M3 Pro';
 
 function FilterToggle({
   checked,
@@ -142,11 +131,53 @@ function FilterPills<T extends string>({
   );
 }
 
+function FilterSearchModeSwitch({
+  value,
+  onChange,
+}: {
+  value: SearchMode;
+  onChange: (next: SearchMode) => void;
+}) {
+  return (
+    <div
+      className="home-filters-panel__mode-switch"
+      data-active={value}
+      role="radiogroup"
+      aria-label="Режим поиска"
+    >
+      <span className="home-filters-panel__mode-switch-indicator" aria-hidden="true" />
+      <button
+        type="button"
+        role="radio"
+        aria-checked={value === "want"}
+        onClick={() => onChange("want")}
+        className={`home-filters-panel__mode-switch-btn${value === "want" ? " is-active" : ""}`}
+      >
+        Отдают
+      </button>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={value === "have"}
+        onClick={() => onChange("have")}
+        className={`home-filters-panel__mode-switch-btn${value === "have" ? " is-active" : ""}`}
+      >
+        Хотят
+      </button>
+    </div>
+  );
+}
+
 export function HomeRecommendationsFiltersPanelContent() {
-  const { filters, setFilters, resetFilters, applyFilters } = useHomeSearch();
+  const { filters, setFilters, resetFilters, applyFilters, cityOptions, categories } = useHomeSearch();
+  const categoryComboboxOptions = categories.map((item) => ({
+    value: item.id,
+    label: item.label,
+  }));
 
   const {
     listingMode,
+    searchMode,
     category,
     city,
     priceFrom,
@@ -157,6 +188,7 @@ export function HomeRecommendationsFiltersPanelContent() {
     withDocuments,
     serviceFormats,
     verifiedProvider,
+    titleQuery,
   } = filters;
 
   const updateFilters = useCallback(
@@ -198,6 +230,28 @@ export function HomeRecommendationsFiltersPanelContent() {
     <div className="home-filters-panel">
       <h3 className="home-filters-panel__title">Фильтры</h3>
 
+      <div className="home-filters-panel__top-row">
+        <div className="home-filters-panel__search-mode">
+          <p className="home-filters-panel__field-label">Искать по</p>
+          <FilterSearchModeSwitch
+            value={searchMode}
+            onChange={(next) => updateFilters({ searchMode: next })}
+          />
+        </div>
+
+        <div className="home-filters-panel__title-query">
+          <p className="home-filters-panel__field-label">Название / тег</p>
+          <input
+            type="text"
+            value={titleQuery}
+            onChange={(event) => updateFilters({ titleQuery: event.target.value })}
+            className="home-filters-panel__input home-filters-panel__input--title-query"
+            placeholder={titleQueryPlaceholder}
+            aria-label="Название или тег"
+          />
+        </div>
+      </div>
+
       <div className="home-filters-panel__city">
         <p className="home-filters-panel__field-label home-filters-panel__field-label--golos">
           Выберите город
@@ -205,7 +259,7 @@ export function HomeRecommendationsFiltersPanelContent() {
         <SelectField
           value={city}
           onChange={(next) => updateFilters({ city: next })}
-          options={cityComboboxOptions}
+          options={cityOptions}
           placeholder="Выберите город"
           variant="filter"
           allowCustomValue
@@ -215,16 +269,19 @@ export function HomeRecommendationsFiltersPanelContent() {
       </div>
 
       <div className="home-filters-panel__right">
-        <FilterModeSwitch
-          value={listingMode}
-          onChange={(next) => updateFilters({ listingMode: next })}
-        />
+        <div className="home-filters-panel__right-section">
+          <p className="home-filters-panel__field-label">Тип объявления</p>
+          <FilterModeSwitch
+            value={listingMode}
+            onChange={(next) => updateFilters({ listingMode: next })}
+          />
+        </div>
 
         <div className="home-filters-panel__right-section">
           <p className="home-filters-panel__field-label">Категория</p>
           <SelectField
             value={category}
-            onChange={(next) => updateFilters({ category: next as CategoryId })}
+            onChange={(next) => updateFilters({ category: next })}
             options={categoryComboboxOptions}
             variant="filter"
             searchable={false}

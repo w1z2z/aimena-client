@@ -1,13 +1,20 @@
+import { AuthLink } from "@/widgets/auth/AuthLink";
 import { AuthMessage } from "@/widgets/auth/AuthMessage";
 import { AuthPageLayout } from "@/widgets/auth/AuthPageLayout";
-import { AuthLink } from "@/widgets/auth/AuthLink";
+import { VerifyEmailStatus } from "@/widgets/auth/VerifyEmailStatus";
 
-export default function VerifyEmailPage() {
+type VerifyEmailPageProps = {
+  searchParams?: Promise<{ token?: string }>;
+};
+
+export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) {
+  const params = searchParams ? await searchParams : undefined;
+  const token = params?.token ?? null;
+
   return (
     <AuthPageLayout>
       <AuthMessage title="Подтвердите почту">
-        <p className="mb-0">Необходимо подтвердить вашу почту для дальнейшей авторизации.</p>
-        <p className="mb-[24px]">Отправили письмо с ссылкой на подтверждение на указанную почту</p>
+        <VerifyEmailStatus token={token} />
         <AuthLink href="/login">Перейти ко входу</AuthLink>
       </AuthMessage>
     </AuthPageLayout>

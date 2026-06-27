@@ -18,8 +18,8 @@ import { useRouter } from "next/navigation";
 
 import { useAuthGate } from "@/features/auth";
 import { HERO_CONDITION_OPTIONS, useHomeSearch } from "@/features/home-search";
-import type { MockListing } from "@/features/home-search/mock-listings";
-import type { CategoryId } from "@/shared/ui/icons/category-icons";
+import type { HomeCategoryItem, HomeListingCard } from "@/features/home-search/types";
+import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
 import {
   BoltIcon,
   categoryItems,
@@ -30,15 +30,14 @@ import {
   WantBrowseIcon,
   WantExchangeIcon,
 } from "@/shared/ui/icons";
+import type { SelectOption } from "@/shared/ui/select-field";
 import { SelectField } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
 
-const imgHeroCard = "https://www.figma.com/api/mcp/asset/03e5747b-db77-495a-a0bc-3d74a40d9e94";
+const imgHeroCard = LISTING_PLACEHOLDER_IMAGE;
 
 type Mode = "exchange" | "browse" | "all";
 
-const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
-const cityComboboxOptions = cityOptions.map((city) => ({ value: city, label: city }));
 const conditionOptions = [...HERO_CONDITION_OPTIONS];
 
 const titlePlaceholder = 'MacBook Pro 14" M3 Pro';
@@ -164,6 +163,7 @@ type ModeFormFieldsProps = {
   setPrice: (value: string) => void;
   city: string;
   setCity: (value: string) => void;
+  cityOptions: SelectOption[];
   hasDocuments: boolean;
   setHasDocuments: (value: boolean | ((prev: boolean) => boolean)) => void;
   condition: string;
@@ -175,7 +175,8 @@ function PriceCityFields({
   setPrice,
   city,
   setCity,
-}: Pick<ModeFormFieldsProps, "price" | "setPrice" | "city" | "setCity">) {
+  cityOptions,
+}: Pick<ModeFormFieldsProps, "price" | "setPrice" | "city" | "setCity" | "cityOptions">) {
   return (
     <div className="mt-[14px] flex gap-[12px]">
       <div className="w-[177px]">
@@ -192,7 +193,7 @@ function PriceCityFields({
         <SelectField
           value={city}
           onChange={setCity}
-          options={cityComboboxOptions}
+          options={cityOptions}
           placeholder={cityPlaceholder}
           variant="hero"
           allowCustomValue
@@ -299,7 +300,13 @@ function ColoredPanelContent({ isExchange, title, setTitle, price, setPrice, cit
         className={`mt-[8px] h-[83px] w-full text-[18px] leading-[1.2] tracking-[-0.2px] ${fieldClassName}`}
       />
 
-      <PriceCityFields price={price} setPrice={setPrice} city={city} setCity={setCity} />
+      <PriceCityFields
+        price={price}
+        setPrice={setPrice}
+        city={city}
+        setCity={setCity}
+        cityOptions={browseFields.cityOptions}
+      />
 
       <BrowseOnlyFields isExchange={isExchange} {...browseFields} />
     </>
@@ -356,14 +363,43 @@ function renderTabIcon(tabId: Mode, active: boolean) {
   return <WantAllIcon active={active} className="h-4 w-4" />;
 }
 
-function HeroCard({ listing }: { listing: MockListing }) {
+function HeroRecommendationsEmpty({
+  isExchange,
+  isAllCategory,
+}: {
+  isExchange: boolean;
+  isAllCategory: boolean;
+}) {
+  return (
+    <div className="flex min-h-[427px] w-[342px] flex-col items-center justify-center rounded-[10px] bg-white px-[24px] py-[32px] text-center shadow-[0px_5px_4.95px_rgba(0,0,0,0.25)]">
+      <p className="text-[18px] font-semibold text-[#1A1A1A]">Пока ничего не нашли</p>
+      <p className="mt-[8px] text-[14px] leading-[1.35] text-[#626262]">
+        {isAllCategory
+          ? "Сейчас нет активных объявлений. Загляните позже или откройте полный список."
+          : isExchange
+            ? "Попробуйте изменить название, город или категорию."
+            : "Попробуйте ослабить параметры или выбрать другую категорию."}
+      </p>
+    </div>
+  );
+}
+
+function HeroRecommendationsLoading() {
+  return (
+    <div className="flex min-h-[427px] w-[342px] items-center justify-center rounded-[10px] bg-white/90 px-[24px] text-center text-[14px] font-medium text-[#626262] shadow-[0px_5px_4.95px_rgba(0,0,0,0.12)]">
+      Подбираем объявления...
+    </div>
+  );
+}
+
+function HeroCard({ listing }: { listing: HomeListingCard }) {
   return (
     <div className="w-[342px] rounded-[10px] bg-white py-[12px] shadow-[0px_5px_4.95px_rgba(0,0,0,0.25)]">
-      <div className="mx-auto flex h-[29px] w-[318px] items-center justify-center rounded-t-[10px] text-[18px] font-semibold text-[#1A1A1A]">
-        {listing.title}
+      <div className="mx-auto flex h-[29px] w-[318px] items-center justify-center rounded-t-[10px] px-[4px] text-[18px] font-semibold text-[#1A1A1A]">
+        <span className="block w-full truncate text-center">{listing.title}</span>
       </div>
       <div className="relative mt-[12px] h-[342px] w-[342px] overflow-hidden">
-        <img src={imgHeroCard} alt="" className="h-full w-full object-cover" />
+        <img src={listing.coverImageUrl || imgHeroCard} alt="" className="h-full w-full object-cover" />
         <div className="absolute bottom-[9px] left-[8px] flex gap-[6px]">
           <span className="rounded-[16.327px] border border-[#C8FF00] border-[0.3px] bg-white/70 px-[12px] py-[8px] text-[12px] leading-none text-[#1A1A1A]">
             {listing.city}
@@ -537,6 +573,9 @@ const CATEGORY_ACTIVE_LABEL_BOOST = 1;
 
 const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(200, 255, 0, 0.35))";
 const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
+const CATEGORY_ICON_FALLBACK_BY_ID: Record<string, string> = Object.fromEntries(
+  categoryItems.map((item) => [item.id, getCategoryIconSrc(item.icon)]),
+);
 
 function getCategoryIconFilter(isActive: boolean, useSvgFilter: boolean) {
   if (useSvgFilter) {
@@ -636,12 +675,18 @@ function applyCategoryLayout(
   }
 }
 
-function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: CategoryId) => void }) {
+function CategoriesArc({
+  categories,
+  onCategoryChange,
+}: {
+  categories: HomeCategoryItem[];
+  onCategoryChange?: (categoryId: string) => void;
+}) {
   const initialIndex = Math.max(
     0,
-    categoryItems.findIndex((item) => item.id === "all"),
+    categories.findIndex((item) => item.id === "all"),
   );
-  const length = categoryItems.length;
+  const length = categories.length;
   const displayIndexRef = useRef(initialIndex);
   const currentCategoryIndexRef = useRef(initialIndex);
   const itemRefs = useRef<(CategoryItemRefs | null)[]>([]);
@@ -660,7 +705,7 @@ function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: C
       const skipFilters = options?.skipFilters ?? isAnimatingRef.current;
       const skipAria = options?.skipAria ?? isAnimatingRef.current;
 
-      categoryItems.forEach((_, index) => {
+      categories.forEach((_, index) => {
         const refs = itemRefs.current[index];
         if (!refs) return;
 
@@ -676,7 +721,7 @@ function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: C
         applyCategoryLayout(refs, layout, useSvgIconFilterRef.current, { skipFilters, skipAria });
       });
     },
-    [length],
+    [categories, length],
   );
 
   const animateDisplayIndex = useCallback(
@@ -736,11 +781,12 @@ function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: C
 
   const notifyCategorySettled = useCallback(
     (settled: number) => {
+      if (length === 0) return;
       currentCategoryIndexRef.current = settled;
       displayIndexRef.current = settled;
-      onCategoryChange?.(categoryItems[settled].id);
+      onCategoryChange?.(categories[settled].id);
     },
-    [onCategoryChange],
+    [categories, length, onCategoryChange],
   );
 
   const goToIndex = useCallback(
@@ -858,6 +904,8 @@ function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: C
       isAnimatingRef.current = false;
     };
   }, []);
+
+  if (length === 0) return null;
 
   return (
     <div
@@ -991,7 +1039,7 @@ function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: C
         </svg>
       )}
 
-      {categoryItems.map((item, index) => {
+      {categories.map((item, index) => {
         const layout = computeCategoryLayout(index, initialIndex, length);
         const distance = getWrappedDistanceFloat(index, initialIndex, length);
 
@@ -1047,7 +1095,7 @@ function CategoriesArc({ onCategoryChange }: { onCategoryChange?: (categoryId: C
             >
               <img
                 data-category-icon
-                src={getCategoryIconSrc(item.icon)}
+                src={item.iconUrl || CATEGORY_ICON_FALLBACK_BY_ID[item.id] || "about:blank"}
                 alt=""
                 draggable={false}
                 className={`pointer-events-none object-contain group-hover:brightness-110 ${
@@ -1088,12 +1136,21 @@ export function HomeTopBlock() {
     setHasDocuments,
     setCondition,
     heroRecommendations,
+    heroRecommendationsLoading,
     openFiltersAndScroll,
+    cityOptions,
+    categories,
   } = useHomeSearch();
   const [sceneScale, setSceneScale] = useState(1);
 
-  const { mode, title, price, city, hasDocuments, condition } = hero;
+  const { mode, title, price, city, hasDocuments, condition, categoryId } = hero;
   const isExchange = mode === "exchange";
+  const isAllCategory = categoryId === "all";
+  const recommendationsHeading = isAllCategory
+    ? "Случайные объявления из каталога"
+    : isExchange
+      ? "Что готовы обменять на вашу вещь"
+      : "Варианты обмена по вашему запросу";
 
   const blurButtonAfterClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
@@ -1104,11 +1161,12 @@ export function HomeTopBlock() {
   }, [guardAuth, router]);
 
   const handleCategoryChange = useCallback(
-    (categoryId: CategoryId) => {
+    (categoryId: string) => {
       setCategoryId(categoryId);
+      setCondition("");
       setMode("browse");
     },
-    [setCategoryId, setMode],
+    [setCategoryId, setCondition, setMode],
   );
 
   const topTabs = useMemo(
@@ -1148,7 +1206,7 @@ export function HomeTopBlock() {
             className="relative w-[2011px] -translate-x-[285px]"
             style={{ height: `${1280 - HERO_CONTENT_SHIFT_UP}px` }}
           >
-            <CategoriesArc onCategoryChange={handleCategoryChange} />
+            <CategoriesArc categories={categories} onCategoryChange={handleCategoryChange} />
 
             <h1
               className="absolute left-[492px] w-[579px] text-[40px] font-bold leading-[40px]"
@@ -1197,6 +1255,7 @@ export function HomeTopBlock() {
                 setPrice={setPrice}
                 city={city}
                 setCity={setCity}
+                cityOptions={cityOptions}
                 hasDocuments={hasDocuments}
                 setHasDocuments={setHasDocuments}
                 condition={condition}
@@ -1204,16 +1263,24 @@ export function HomeTopBlock() {
               />
 
               <div className="relative h-full w-[454px] rounded-[10px] bg-[#C8FF00] p-[8px]">
-                <p className="mx-auto mb-[8px] mt-[8px] w-[342px] text-left text-[16px] font-bold text-[#1A1A1A]">Вам может подойти</p>
+                <div className="mx-auto mb-[8px] mt-[8px] w-[342px] text-left text-[#1A1A1A]">
+                  <p className="text-[16px] font-bold leading-[1.2]">{recommendationsHeading}</p>
+                </div>
                 <div
                   className="home-recommendations-scroll mx-auto h-[479px] w-[358px] overflow-y-auto overflow-x-hidden rounded-[10px] p-[8px] snap-y snap-mandatory overscroll-contain"
                 >
                   <div className="flex flex-col items-center gap-[16px]">
-                    {heroRecommendations.map((listing) => (
-                      <div key={listing.id} data-recommendation-card className="flex w-full snap-center snap-always justify-center">
-                        <HeroCard listing={listing} />
-                      </div>
-                    ))}
+                    {heroRecommendationsLoading ? (
+                      <HeroRecommendationsLoading />
+                    ) : heroRecommendations.length > 0 ? (
+                      heroRecommendations.map((listing) => (
+                        <div key={listing.id} data-recommendation-card className="flex w-full snap-center snap-always justify-center">
+                          <HeroCard listing={listing} />
+                        </div>
+                      ))
+                    ) : (
+                      <HeroRecommendationsEmpty isExchange={isExchange} isAllCategory={isAllCategory} />
+                    )}
                   </div>
                 </div>
               </div>

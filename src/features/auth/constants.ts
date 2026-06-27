@@ -1,19 +1,3 @@
-export const AUTH_MOCK_STORAGE_KEY = "swaply-auth-mock";
 export const AUTH_USER_STORAGE_KEY = "swaply-auth-user";
-
-export const cityOptions = ["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Краснодар"];
-
-export const onboardingCategories = [
-  "Транспорт",
-  "Недвижимость",
-  "Электроника",
-  "Одежда",
-  "Для дома и дачи",
-  "Детские товары",
-  "Животные",
-  "Хобби и отдых",
-  "Услуги",
-  "Продукты питания",
-] as const;
-
-export type OnboardingCategory = (typeof onboardingCategories)[number];
+export const AUTH_ACCESS_TOKEN_STORAGE_KEY = "swaply-auth-access-token";
+export const ONBOARDING_CATEGORIES_STORAGE_KEY = "swaply-onboarding-categories";

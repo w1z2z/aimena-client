@@ -2,18 +2,19 @@
 "use client";
 
 import { useAuthGate } from "@/features/auth";
+import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
 import { HeartIcon, TagsIcon } from "@/shared/ui/icons";
 
-const imgListingPhoto =
-  "https://www.figma.com/api/mcp/asset/894b8ee8-41b7-42f4-ac22-adc7bf25b4ce";
+const imgListingPhoto = LISTING_PLACEHOLDER_IMAGE;
 
 export type ExchangeListingCardData = {
-  id: number;
+  id: string;
   title: string;
   city: string;
   condition: string;
   wants: string[];
   wantsMore: number;
+  coverImageUrl?: string | null;
 };
 
 export function ExchangeListingCard({
@@ -22,6 +23,7 @@ export function ExchangeListingCard({
   condition,
   wants,
   wantsMore,
+  coverImageUrl,
 }: Omit<ExchangeListingCardData, "id">) {
   const { guardAuth } = useAuthGate();
 
@@ -38,7 +40,7 @@ export function ExchangeListingCard({
       <div className="home-listing-card__title">{title}</div>
 
       <div className="home-listing-card__media">
-        <img src={imgListingPhoto} alt="" className="home-listing-card__image" />
+        <img src={coverImageUrl || imgListingPhoto} alt="" className="home-listing-card__image" />
         <button
           type="button"
           aria-label="Добавить в избранное"

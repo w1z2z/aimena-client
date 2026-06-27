@@ -3,13 +3,20 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { resetPassword } from "@/shared/api/auth";
+import { ApiError } from "@/shared/api/http";
+
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
 import { AuthFormFields } from "./AuthMessage";
 import { AuthInput } from "./AuthInput";
 import { AuthTitle } from "./AuthTypography";
 
-export function ResetPasswordForm() {
+type ResetPasswordFormProps = {
+  token: string | null;
+};
+
+export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,9 +32,19 @@ export function ResetPasswordForm() {
       return;
     }
 
+    if (!token) {
+      setError("Некорректная ссылка для сброса пароля");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      await resetPassword(token, password);
       router.push("/login");
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError ? requestError.message : "Не удалось обновить пароль",
+      );
     } finally {
       setIsSubmitting(false);
     }

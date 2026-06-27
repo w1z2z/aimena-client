@@ -12,6 +12,7 @@ export { BoltIcon } from "./BoltIcon";
 export { ChatBubbleIcon } from "./ChatBubbleIcon";
 export { ExchangeBadgeIcon } from "./ExchangeBadgeIcon";
 export { FilterIcon } from "./FilterIcon";
+export { FreePromoStarIcon } from "./FreePromoStarIcon";
 export { HeartIcon } from "./HeartIcon";
 export { LogoutIcon } from "./LogoutIcon";
 export { LogoIcon } from "./LogoIcon";

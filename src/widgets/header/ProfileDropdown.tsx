@@ -22,7 +22,7 @@ export function ProfileDropdown({ onClose }: ProfileDropdownProps) {
   if (!user) return null;
 
   const handleLogout = () => {
-    logout();
+    void logout();
     onClose?.();
     router.push("/");
   };

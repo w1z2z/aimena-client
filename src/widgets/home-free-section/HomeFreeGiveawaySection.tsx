@@ -1,28 +1,25 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { useAuthGate } from "@/features/auth";
-import { HeartIcon } from "@/shared/ui/icons";
+import type { HomeListingCard } from "@/features/home-search";
+import { getListings } from "@/shared/api/listings";
+import { mapListingCardToHomeCard } from "@/shared/api/mappers";
+import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
+import { FreePromoStarIcon, HeartIcon } from "@/shared/ui/icons";
 
-const imgListingPhoto =
-  "https://www.figma.com/api/mcp/asset/03e5747b-db77-495a-a0bc-3d74a40d9e94";
-const imgPromoBlob = "https://www.figma.com/api/mcp/asset/196fe5fd-b85d-4179-8afd-49cfb69c895e";
+const imgListingPhoto = LISTING_PLACEHOLDER_IMAGE;
 
-const freeListings = [
-  { id: 1, title: 'MacBook Pro 14" M3 Хо', city: "Москва", condition: "Хорошее" },
-  { id: 2, title: 'MacBook Pro 14" M3 Хо', city: "Москва", condition: "Хорошее" },
-  { id: 3, title: 'MacBook Pro 14" M3 Хо', city: "Москва", condition: "Хорошее" },
-  { id: 4, title: 'MacBook Pro 14" M3 Хо', city: "Москва", condition: "Хорошее" },
-  { id: 5, title: 'MacBook Pro 14" M3 Хо', city: "Москва", condition: "Хорошее" },
-];
+type FreeListing = Pick<HomeListingCard, "id" | "title" | "city" | "condition" | "coverImageUrl">;
 
 const CARD_WIDTH = 342;
 const CARD_GAP = 24;
 const CARD_STEP = CARD_WIDTH + CARD_GAP;
 const VISIBLE_CARD_COUNT = 2;
 const CAROUSEL_SCROLL_END_FALLBACK_MS = 150;
+const CAROUSEL_AUTO_ADVANCE_MS = 5000;
 
 function getCarouselSetWidth(itemCount: number) {
   if (itemCount <= 0) return 0;
@@ -33,7 +30,18 @@ const PANEL_PADDING = 28;
 const CAROUSEL_VISIBLE_WIDTH = CARD_WIDTH * VISIBLE_CARD_COUNT + CARD_GAP;
 const PROMO_WIDTH = SECTION_WIDTH - PANEL_PADDING * 2 - CAROUSEL_VISIBLE_WIDTH - CARD_GAP;
 
-const PROMO_BLOB_LEFT = Math.round((306 / 660) * PROMO_WIDTH);
+const PROMO_DESIGN_WIDTH = 660;
+const PROMO_FRAME_PADDING = 48;
+const PROMO_STAR_DESIGN_SIZE = 636;
+const PROMO_STAR_SIZE_SCALE = 0.9;
+const PROMO_STAR_SIZE = Math.round(PROMO_STAR_DESIGN_SIZE * PROMO_STAR_SIZE_SCALE);
+const PROMO_STAR_LEFT = 306;
+const PROMO_STAR_TOP = 0;
+const PROMO_STAR_SHIFT_RIGHT =
+  32 + Math.round(PROMO_STAR_DESIGN_SIZE * 0.15) - 25;
+const PROMO_STAR_SHIFT_DOWN = 88;
+const PROMO_STAR_RADIUS = Math.round(49 * PROMO_STAR_SIZE_SCALE);
+const promoStarScale = PROMO_WIDTH / PROMO_DESIGN_WIDTH;
 
 function FreePromoBanner() {
   return (
@@ -60,12 +68,16 @@ function FreePromoBanner() {
         </button>
       </div>
       <div
-        className="pointer-events-none absolute top-0 size-[636px]"
-        style={{ left: `${PROMO_BLOB_LEFT}px` }}
+        className="pointer-events-none absolute z-[1] overflow-hidden"
+        style={{
+          left: `${(PROMO_STAR_LEFT + PROMO_STAR_SHIFT_RIGHT - PROMO_FRAME_PADDING) * promoStarScale}px`,
+          top: `${(PROMO_STAR_TOP + PROMO_STAR_SHIFT_DOWN - PROMO_FRAME_PADDING) * promoStarScale}px`,
+          width: `${PROMO_STAR_SIZE * promoStarScale}px`,
+          height: `${PROMO_STAR_SIZE * promoStarScale}px`,
+          borderRadius: `${PROMO_STAR_RADIUS * promoStarScale}px`,
+        }}
       >
-        <div className="absolute inset-[7.98%]">
-          <img src={imgPromoBlob} alt="" className="block h-full w-full max-w-none object-contain" />
-        </div>
+        <FreePromoStarIcon className="block h-full w-full max-w-none" />
       </div>
     </div>
   );
@@ -75,10 +87,12 @@ function FreeGiveawayCard({
   title,
   city,
   condition,
+  coverImageUrl,
 }: {
   title: string;
   city: string;
   condition: string;
+  coverImageUrl: string | null;
 }) {
   const { guardAuth } = useAuthGate();
 
@@ -88,11 +102,11 @@ function FreeGiveawayCard({
 
   return (
     <article className="w-[342px] shrink-0 rounded-[10px] bg-white py-[12px] shadow-[0px_0px_4.95px_rgba(0,0,0,0.12)]">
-      <div className="mx-auto flex h-[29px] w-[318px] items-center justify-center text-[18px] font-semibold tracking-[-0.036px] text-[#1A1A1A]">
-        {title}
+      <div className="mx-auto flex h-[29px] w-[318px] items-center justify-center px-[4px] text-[18px] font-semibold tracking-[-0.036px] text-[#1A1A1A]">
+        <span className="block w-full truncate text-center">{title}</span>
       </div>
       <div className="relative mt-[12px] h-[342px] w-[342px] overflow-hidden">
-        <img src={imgListingPhoto} alt="" className="h-full w-full object-cover" />
+        <img src={coverImageUrl || imgListingPhoto} alt="" className="h-full w-full object-cover" />
         <button
           type="button"
           aria-label="Добавить в избранное"
@@ -158,10 +172,11 @@ function CarouselArrowButton({
   );
 }
 
-function FreeGiveawayCarousel({ listings }: { listings: typeof freeListings }) {
+function FreeGiveawayCarousel({ listings }: { listings: FreeListing[] }) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const scrollEndTimerRef = useRef<number | null>(null);
   const isProgrammaticScrollRef = useRef(false);
+  const isAutoAdvancePausedRef = useRef(false);
   const itemCount = listings.length;
   const setWidth = getCarouselSetWidth(itemCount);
   const loopListings = useMemo(
@@ -251,10 +266,33 @@ function FreeGiveawayCarousel({ listings }: { listings: typeof freeListings }) {
     [itemCount],
   );
 
+  useEffect(() => {
+    if (itemCount <= 1) return;
+
+    const intervalId = window.setInterval(() => {
+      if (isAutoAdvancePausedRef.current) return;
+      scrollByStep(1);
+    }, CAROUSEL_AUTO_ADVANCE_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [itemCount, scrollByStep]);
+
+  const pauseAutoAdvance = useCallback(() => {
+    isAutoAdvancePausedRef.current = true;
+  }, []);
+
+  const resumeAutoAdvance = useCallback(() => {
+    isAutoAdvancePausedRef.current = false;
+  }, []);
+
   return (
     <div
       className="home-free-carousel-viewport relative shrink-0 overflow-hidden rounded-[20px]"
       style={{ width: `${CAROUSEL_VISIBLE_WIDTH}px` }}
+      onMouseEnter={pauseAutoAdvance}
+      onMouseLeave={resumeAutoAdvance}
     >
       <div
         ref={carouselRef}
@@ -269,17 +307,54 @@ function FreeGiveawayCarousel({ listings }: { listings: typeof freeListings }) {
               title={listing.title}
               city={listing.city}
               condition={listing.condition}
+              coverImageUrl={listing.coverImageUrl}
             />
           </div>
         ))}
       </div>
-      <CarouselArrowButton direction="left" onClick={() => scrollByStep(-1)} />
-      <CarouselArrowButton direction="right" onClick={() => scrollByStep(1)} />
+      {itemCount > 1 ? (
+        <>
+          <CarouselArrowButton direction="left" onClick={() => scrollByStep(-1)} />
+          <CarouselArrowButton direction="right" onClick={() => scrollByStep(1)} />
+        </>
+      ) : null}
     </div>
   );
 }
 
 export function HomeFreeGiveawaySection() {
+  const [freeListings, setFreeListings] = useState<FreeListing[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void getListings({ page: 1, pageSize: 36, type: ["item"], isFree: true }, controller.signal)
+      .then((response) => {
+        const freeOnly = response.data
+          .map(mapListingCardToHomeCard)
+          .slice(0, 8)
+          .map((listing) => ({
+            id: listing.id,
+            title: listing.title,
+            city: listing.city,
+            condition: listing.condition,
+            coverImageUrl: listing.coverImageUrl,
+          }));
+
+        if (freeOnly.length > 0) {
+          setFreeListings(freeOnly);
+          return;
+        }
+        setFreeListings([]);
+      })
+      .catch(() => {
+        setFreeListings([]);
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
   return (
     <section className="bg-[#F8F8F5] pb-[68px] pt-[68px] text-[#1A1A1A]">
       <div className="mx-auto w-full max-w-[1441px]">
@@ -291,7 +366,16 @@ export function HomeFreeGiveawaySection() {
           <div className="relative overflow-hidden rounded-[20px] bg-[#F0E8FF] p-[28px]">
             <div className="flex items-stretch gap-[24px]">
               <FreePromoBanner />
-              <FreeGiveawayCarousel listings={freeListings} />
+              {freeListings.length > 0 ? (
+                <FreeGiveawayCarousel listings={freeListings} />
+              ) : (
+                <div
+                  className="flex shrink-0 items-center justify-center rounded-[20px] bg-white/80 px-[24px] text-center text-[16px] font-semibold text-[#3D3D3D]"
+                  style={{ width: `${CAROUSEL_VISIBLE_WIDTH}px` }}
+                >
+                  Пока нет объявлений в разделе &quot;Даром&quot;
+                </div>
+              )}
             </div>
           </div>
         </div>

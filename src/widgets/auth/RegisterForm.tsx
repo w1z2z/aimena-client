@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useAuth } from "@/features/auth";
+import { ApiError } from "@/shared/api/http";
 
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
@@ -34,6 +35,10 @@ export function RegisterForm() {
     try {
       await register(email.trim(), password);
       router.push("/register/confirm");
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError ? requestError.message : "Не удалось завершить регистрацию",
+      );
     } finally {
       setIsSubmitting(false);
     }

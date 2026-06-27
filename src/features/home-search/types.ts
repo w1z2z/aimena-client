@@ -1,18 +1,18 @@
-import type { CategoryId } from "@/shared/ui/icons/category-icons";
-
 export type HomeSearchMode = "exchange" | "browse";
 
 export type ConditionOptionId = "excellent" | "new" | "good" | "used" | "repair";
 
-export type DateOptionId = "today" | "week" | "month" | "year";
+export type DateOptionId = "all" | "today" | "week" | "month" | "year";
 
 export type ListingMode = "item" | "service";
+export type SearchMode = "have" | "want";
 
 export type ServiceFormatId = "online" | "onsite" | "client";
 
 export type HomeFiltersState = {
+  searchMode: SearchMode;
   listingMode: ListingMode;
-  category: CategoryId;
+  category: string;
   city: string;
   priceFrom: string;
   priceTo: string;
@@ -27,7 +27,7 @@ export type HomeFiltersState = {
 
 export type HomeHeroState = {
   mode: HomeSearchMode;
-  categoryId: CategoryId;
+  categoryId: string;
   title: string;
   price: string;
   city: string;
@@ -35,7 +35,28 @@ export type HomeHeroState = {
   condition: string;
 };
 
-export const DEFAULT_HERO_CONDITION = "Отличное";
+export type HomeListingCard = {
+  id: string;
+  title: string;
+  city: string;
+  condition: string;
+  wants: string[];
+  wantsMore: number;
+  hasDocuments: boolean;
+  isFree: boolean;
+  price: number;
+  coverImageUrl: string | null;
+};
+
+export type HomeCategoryItem = {
+  id: string;
+  label: string;
+  iconUrl: string | null;
+  homeArcOrder?: number;
+  isVirtual?: boolean;
+};
+
+export const DEFAULT_HERO_CONDITION = "";
 
 export const HERO_CONDITION_OPTIONS = [
   "Отличное",
@@ -47,12 +68,13 @@ export const HERO_CONDITION_OPTIONS = [
 
 export function createDefaultFilters(): HomeFiltersState {
   return {
+    searchMode: "want",
     listingMode: "item",
     category: "all",
     city: "",
     priceFrom: "",
     priceTo: "",
-    datePeriod: "today",
+    datePeriod: "all",
     conditions: [],
     withSurcharge: false,
     withDocuments: false,
