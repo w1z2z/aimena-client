@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { RegistrationPromptModal } from "@/widgets/auth-gate/RegistrationPromptModal";
+import { RegistrationPromptModal } from "./ui/RegistrationPromptModal";
 
 import { useAuth } from "./AuthProvider";
 import type { RegistrationPromptReason } from "./registration-prompt";

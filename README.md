@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Aimena Frontend
 
-## Getting Started
+Next.js 16 + React 19 + TypeScript + Tailwind CSS v4 marketplace frontend.
 
-First, run the development server:
+## Architecture (Feature-Sliced Design)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+src/
+├── app/              # Next.js App Router routes
+├── entities/         # Domain models (listing, etc.)
+├── features/         # Business features (auth, home-search)
+├── widgets/          # Page sections (hero, listings grid, header)
+└── shared/           # API, UI kit, config, providers
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Dependency direction:** `app → widgets → features → entities → shared`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Key modules
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Module | Purpose |
+|--------|---------|
+| `entities/listing` | Listing types, condition mappings, `ListingCard`, React Query hooks |
+| `features/home-search` | Hero + filter state, catalog bootstrap |
+| `features/auth` | Auth context, registration gate modal |
+| `shared/config/tokens.ts` | Design tokens (colors, layout) |
+| `shared/providers/QueryProvider.tsx` | TanStack React Query |
 
-## Learn More
+## Design tokens
 
-To learn more about Next.js, take a look at the following resources:
+Tokens live in `shared/config/tokens.ts` and are mirrored in Tailwind via `@theme` in `globals.css`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `text-brand`, `bg-accent`, `text-accent`, `bg-surface`, `bg-lime`
+- `max-w-container-home` (1441px)
+- Listing card width: 342px (`--spacing-card`)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Component styles for listing cards: `src/styles/listing-card.css`
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm dev      # development server
+pnpm build    # production build
+pnpm lint     # ESLint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment
+
+Set `NEXT_PUBLIC_API_URL` to the backend API base URL (see `shared/api/http.ts`).

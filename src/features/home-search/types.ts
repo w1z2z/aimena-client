@@ -1,6 +1,6 @@
-export type HomeSearchMode = "exchange" | "browse";
+import type { ConditionOptionId } from "@/entities/listing";
 
-export type ConditionOptionId = "excellent" | "new" | "good" | "used" | "repair";
+export type HomeSearchMode = "exchange" | "browse";
 
 export type DateOptionId = "all" | "today" | "week" | "month" | "year";
 
@@ -35,19 +35,6 @@ export type HomeHeroState = {
   condition: string;
 };
 
-export type HomeListingCard = {
-  id: string;
-  title: string;
-  city: string;
-  condition: string;
-  wants: string[];
-  wantsMore: number;
-  hasDocuments: boolean;
-  isFree: boolean;
-  price: number;
-  coverImageUrl: string | null;
-};
-
 export type HomeCategoryItem = {
   id: string;
   label: string;
@@ -57,14 +44,6 @@ export type HomeCategoryItem = {
 };
 
 export const DEFAULT_HERO_CONDITION = "";
-
-export const HERO_CONDITION_OPTIONS = [
-  "Отличное",
-  "Новое",
-  "Хорошее",
-  "Б.у",
-  "Требует ремонта",
-] as const;
 
 export function createDefaultFilters(): HomeFiltersState {
   return {
@@ -83,3 +62,5 @@ export function createDefaultFilters(): HomeFiltersState {
     titleQuery: "",
   };
 }
+
+export type { ConditionOptionId } from "@/entities/listing";

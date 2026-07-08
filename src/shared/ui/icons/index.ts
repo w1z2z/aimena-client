@@ -10,6 +10,7 @@ export { EyeOffIcon } from "./EyeOffIcon";
 export { LoginIcon } from "./LoginIcon";
 export { BoltIcon } from "./BoltIcon";
 export { ChatBubbleIcon } from "./ChatBubbleIcon";
+export { ChevronIcon } from "./ChevronIcon";
 export { ExchangeBadgeIcon } from "./ExchangeBadgeIcon";
 export { FilterIcon } from "./FilterIcon";
 export { FreePromoStarIcon } from "./FreePromoStarIcon";

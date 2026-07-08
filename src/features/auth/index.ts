@@ -1,5 +1,6 @@
 export { AuthProvider, useAuth } from "./AuthProvider";
 export { AuthGateProvider, useAuthGate } from "./AuthGateProvider";
+export { RegistrationPromptModal } from "./ui/RegistrationPromptModal";
 export {
   AUTH_USER_STORAGE_KEY,
   AUTH_ACCESS_TOKEN_STORAGE_KEY,

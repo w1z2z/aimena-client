@@ -1,4 +1,4 @@
-import { CONDITION_LABEL_TO_ID } from "./constants";
+import { CONDITION_LABEL_TO_ID } from "@/entities/listing";
 import type { HomeFiltersState, HomeHeroState } from "./types";
 
 function parsePrice(value: string) {

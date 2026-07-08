@@ -1,0 +1,171 @@
+.home-listing-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 342px;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 12px 0;
+  box-shadow: 0 0 4.95px rgba(0, 0, 0, 0.12);
+}
+
+.home-listing-card--hero {
+  box-shadow: 0 5px 4.95px rgba(0, 0, 0, 0.25);
+}
+
+.home-listing-card--free .home-listing-card__action {
+  background: #8e8bed;
+}
+
+.home-listing-card--hero .home-listing-card__wants {
+  border: 0.3px solid #8e8bed;
+}
+
+.home-listing-card__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 29px;
+  padding: 0 12px;
+  color: #1a1a1a;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.036px;
+  text-align: center;
+}
+
+.home-listing-card__title span {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-listing-card__media {
+  position: relative;
+  width: 342px;
+  height: 342px;
+  overflow: hidden;
+}
+
+.home-listing-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-listing-card__favorite {
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.home-listing-card__favorite:hover {
+  background: #ffffff;
+}
+
+.home-listing-card__tags {
+  position: absolute;
+  bottom: 9px;
+  left: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.home-listing-card__tag {
+  border: 0.3px solid #c8ff00;
+  border-radius: 16.327px;
+  background: rgba(255, 255, 255, 0.73);
+  padding: 8px 12px;
+  color: #1a1a1a;
+  font-family: var(--font-golos), Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.home-listing-card__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 10px;
+}
+
+.home-listing-card__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 322px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: #1a1a1a;
+  padding: 10px 74px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: filter 150ms ease;
+}
+
+.home-listing-card__action:hover {
+  filter: brightness(1.1);
+}
+
+.home-listing-card__wants {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: 321px;
+  min-height: 44px;
+  border-radius: 9px;
+  background: #f9f7ff;
+  padding: 8px;
+}
+
+.home-listing-card__wants-icon {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  transform: rotate(180deg);
+  color: #8e8bed;
+}
+
+.home-listing-card__want-pill {
+  border: 0.5px solid #8e8bed;
+  border-radius: 39px;
+  background: #f2f4f7;
+  padding: 4px 8px;
+  color: #1a1a1a;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.022px;
+  white-space: nowrap;
+}
+
+.home-listing-card__wants-more {
+  color: #626262;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.022px;
+}

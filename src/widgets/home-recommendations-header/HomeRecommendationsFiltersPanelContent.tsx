@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 
+import { FILTER_CONDITION_OPTIONS } from "@/entities/listing";
 import { useHomeSearch } from "@/features/home-search";
 import type {
   ConditionOptionId,
@@ -9,7 +10,7 @@ import type {
   SearchMode,
   ServiceFormatId,
 } from "@/features/home-search/types";
-
+import { placeholders } from "@/shared/config/tokens";
 import { SelectField } from "@/shared/ui/select-field";
 
 const dateOptions = [
@@ -20,13 +21,7 @@ const dateOptions = [
   { id: "year", label: "За год" },
 ] as const;
 
-const conditionOptions = [
-  { id: "excellent", label: "Отличное" },
-  { id: "new", label: "Новое" },
-  { id: "good", label: "Хорошее" },
-  { id: "used", label: "Б.у" },
-  { id: "repair", label: "Требует ремонта" },
-] as const;
+const conditionOptions = FILTER_CONDITION_OPTIONS;
 
 const serviceFormatOptions = [
   { id: "online", label: "Онлайн" },
@@ -34,7 +29,7 @@ const serviceFormatOptions = [
   { id: "client", label: "У клиента" },
 ] as const;
 
-const titleQueryPlaceholder = 'MacBook Pro 14" M3 Pro';
+const titleQueryPlaceholder = placeholders.listingTitle;
 
 function FilterToggle({
   checked,
