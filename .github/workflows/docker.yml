@@ -68,10 +68,28 @@ jobs:
         if: github.ref_name == 'staging'
         env:
           DOKPLOY_DEPLOY_HOOK: ${{ secrets.DOKPLOY_DEPLOY_HOOK }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           if [ -z "$DOKPLOY_DEPLOY_HOOK" ]; then
             echo "Secret DOKPLOY_DEPLOY_HOOK is not set — skip deploy"
             exit 0
           fi
-          curl -fsS -X POST "$DOKPLOY_DEPLOY_HOOK"
-          echo "Dokploy deploy triggered"
+
+          SHORT_SHA="${GITHUB_SHA::7}"
+          TITLE="$(printf '%s' "$COMMIT_MESSAGE" | head -n 1 | cut -c1-120)"
+          if [ -z "$TITLE" ]; then
+            TITLE="Deploy ${SHORT_SHA}"
+          fi
+
+          PAYLOAD="$(jq -n \
+            --arg ref "$GITHUB_REF" \
+            --arg id "$SHORT_SHA" \
+            --arg msg "$TITLE" \
+            '{ref: $ref, head_commit: {id: $id, message: $msg}}')"
+
+          curl -fsS -X POST "$DOKPLOY_DEPLOY_HOOK" \
+            -H 'Content-Type: application/json' \
+            -H 'X-GitHub-Event: push' \
+            -d "$PAYLOAD"
+
+          echo "Dokploy deploy triggered: ${TITLE}"
