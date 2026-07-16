@@ -10,4 +10,5 @@
 - сборка в GitHub Actions (`.github/workflows/docker.yml`)
 - `NEXT_PUBLIC_*` задаются в CI build-args
 - Dokploy тянет Docker Image, порт `3000`
-- после push: дождаться Actions → Deploy в Dokploy
+- после push в `staging`: Actions собирает образ и сам вызывает Dokploy webhook
+- секрет репо: `DOKPLOY_DEPLOY_HOOK` = Webhook URL из Dokploy (не коммитить)

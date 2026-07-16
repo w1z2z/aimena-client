@@ -5,6 +5,10 @@ on:
     branches:
       - staging
       - main
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - "DEPLOYMENT.md"
   workflow_dispatch:
 
 env:
@@ -59,3 +63,15 @@ jobs:
             NEXT_PUBLIC_APP_URL=${{ steps.meta.outputs.app_url }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Trigger Dokploy deploy
+        if: github.ref_name == 'staging'
+        env:
+          DOKPLOY_DEPLOY_HOOK: ${{ secrets.DOKPLOY_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DOKPLOY_DEPLOY_HOOK" ]; then
+            echo "Secret DOKPLOY_DEPLOY_HOOK is not set — skip deploy"
+            exit 0
+          fi
+          curl -fsS -X POST "$DOKPLOY_DEPLOY_HOOK"
+          echo "Dokploy deploy triggered"
