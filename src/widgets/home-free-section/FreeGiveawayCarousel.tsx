@@ -62,11 +62,13 @@ export function FreeGiveawayCarousel({ listings }: { listings: ListingCardPrevie
             style={{ width: `${CARD_WIDTH}px` }}
           >
             <ListingCard
+              listingId={listing.id}
               variant="free"
               title={listing.title}
               city={listing.city}
               condition={listing.condition}
               coverImageUrl={listing.coverImageUrl}
+              isFavorite={listing.isFavorite}
             />
           </div>
         ))}

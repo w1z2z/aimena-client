@@ -1,13 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useState } from "react";
+
 import { useAuthGate } from "@/features/auth";
+import { useFavoriteToggle } from "@/features/favorites";
 import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
 import { HeartIcon, TagsIcon } from "@/shared/ui/icons";
 
 import type { ListingCardVariant } from "../model/types";
 
 export type ListingCardProps = {
+  listingId: string;
   variant: ListingCardVariant;
   title: string;
   city: string;
@@ -15,10 +19,12 @@ export type ListingCardProps = {
   coverImageUrl?: string | null;
   wants?: string[];
   wantsMore?: number;
+  isFavorite?: boolean;
   className?: string;
 };
 
 export function ListingCard({
+  listingId,
   variant,
   title,
   city,
@@ -26,10 +32,13 @@ export function ListingCard({
   coverImageUrl,
   wants = [],
   wantsMore = 0,
+  isFavorite = false,
   className,
 }: ListingCardProps) {
   const { guardAuth } = useAuthGate();
-  const showFavorite = variant !== "hero";
+  const favoriteMutation = useFavoriteToggle();
+  const [favoriteOverride, setFavoriteOverride] = useState<boolean | null>(null);
+  const favorite = favoriteOverride ?? isFavorite;
   const showWants = variant !== "free";
   const rootClassName = [
     "home-listing-card",
@@ -41,7 +50,17 @@ export function ListingCard({
     .join(" ");
 
   const handleFavoriteClick = () => {
-    guardAuth("favorites");
+    guardAuth("favorites", () => {
+      const previous = favorite;
+      setFavoriteOverride(!previous);
+      favoriteMutation.mutate(
+        { listingId, isFavorite: previous },
+        {
+          onSuccess: () => setFavoriteOverride(null),
+          onError: () => setFavoriteOverride(null),
+        },
+      );
+    });
   };
 
   const handleExchangeClick = () => {
@@ -63,16 +82,19 @@ export function ListingCard({
           alt=""
           className="home-listing-card__image"
         />
-        {showFavorite ? (
-          <button
-            type="button"
-            aria-label="Добавить в избранное"
-            className="home-listing-card__favorite"
-            onClick={handleFavoriteClick}
-          >
-            <HeartIcon className="h-[14px] w-[16px] text-[#626262]" />
-          </button>
-        ) : null}
+        <button
+          type="button"
+          aria-label={favorite ? "Удалить из избранного" : "Добавить в избранное"}
+          aria-pressed={favorite}
+          className="home-listing-card__favorite"
+          onClick={handleFavoriteClick}
+          disabled={favoriteMutation.isPending}
+        >
+          <HeartIcon
+            className={`h-[14px] w-[16px] ${favorite ? "text-[#FF2056]" : "text-[#626262]"}`}
+            fill={favorite ? "currentColor" : "none"}
+          />
+        </button>
         <div className="home-listing-card__tags">
           <span className="home-listing-card__tag">{city}</span>
           <span className="home-listing-card__tag">{condition}</span>

@@ -47,5 +47,6 @@ export function mapApiListingToCard(listing: ApiListingCard): ListingCardData {
     isFree: listing.isFree,
     price: listing.estimatedPrice ?? 0,
     coverImageUrl: listing.coverImageUrl,
+    isFavorite: listing.isFavorite,
   };
 }

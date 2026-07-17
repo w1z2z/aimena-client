@@ -107,7 +107,7 @@ export function Header() {
 
             {isAuthenticated && user ? (
               <>
-                <IconButton label="Избранное">
+                <IconButton label="Избранное" onClick={() => router.push("/favorites")}>
                   <HeartIcon className="h-[11px] w-[13px] text-black" />
                 </IconButton>
 

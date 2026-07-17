@@ -59,6 +59,7 @@ export function HeroRecommendationsPanel({
             listings.map((listing) => (
               <div key={listing.id} data-recommendation-card className="flex w-full snap-center snap-always justify-center">
                 <ListingCard
+                  listingId={listing.id}
                   variant="hero"
                   title={listing.title}
                   city={listing.city}
@@ -66,6 +67,7 @@ export function HeroRecommendationsPanel({
                   coverImageUrl={listing.coverImageUrl}
                   wants={listing.wants}
                   wantsMore={listing.wantsMore}
+                  isFavorite={listing.isFavorite}
                 />
               </div>
             ))

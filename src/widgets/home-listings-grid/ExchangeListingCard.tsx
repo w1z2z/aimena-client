@@ -10,18 +10,22 @@ export type ExchangeListingCardData = {
   wants: string[];
   wantsMore: number;
   coverImageUrl?: string | null;
+  isFavorite: boolean;
 };
 
 export function ExchangeListingCard({
+  id,
   title,
   city,
   condition,
   wants,
   wantsMore,
   coverImageUrl,
-}: Omit<ExchangeListingCardData, "id">) {
+  isFavorite,
+}: ExchangeListingCardData) {
   return (
     <ListingCard
+      listingId={id}
       variant="exchange"
       title={title}
       city={city}
@@ -29,6 +33,7 @@ export function ExchangeListingCard({
       coverImageUrl={coverImageUrl}
       wants={wants}
       wantsMore={wantsMore}
+      isFavorite={isFavorite}
     />
   );
 }

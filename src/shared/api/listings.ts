@@ -28,6 +28,7 @@ export type ApiListingCard = {
   wantsCategory: { id: string; name: string; slug: string } | null;
   city: { id: string; name: string; regionName: string | null; slug: string };
   coverImageUrl: string | null;
+  isFavorite: boolean;
 };
 
 export type ApiListResponse<T> = {

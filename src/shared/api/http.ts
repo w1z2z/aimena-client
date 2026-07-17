@@ -27,6 +27,7 @@ type RequestOptions = {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ?? "http://localhost:9000/api/v1";
+const ACCESS_TOKEN_STORAGE_KEY = "swaply-auth-access-token";
 
 function buildQueryString(query: Record<string, QueryValue> | undefined): string {
   if (!query) return "";
@@ -79,11 +80,15 @@ export async function httpRequest<T>(path: string, options: RequestOptions = {})
   } = options;
 
   const isJsonBody = body !== undefined && !(body instanceof FormData);
+  const resolvedToken =
+    token === undefined && typeof window !== "undefined"
+      ? window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
+      : token;
   const response = await fetch(`${API_BASE_URL}${path}${buildQueryString(query)}`, {
     method,
     headers: {
       ...(isJsonBody ? { "Content-Type": "application/json" } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(resolvedToken ? { Authorization: `Bearer ${resolvedToken}` } : {}),
       ...headers,
     },
     body: isJsonBody ? JSON.stringify(body) : (body as BodyInit | undefined),

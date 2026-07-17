@@ -11,9 +11,10 @@ export type ListingCardData = {
   isFree: boolean;
   price: number;
   coverImageUrl: string | null;
+  isFavorite: boolean;
 };
 
 export type ListingCardPreview = Pick<
   ListingCardData,
-  "id" | "title" | "city" | "condition" | "coverImageUrl"
+  "id" | "title" | "city" | "condition" | "coverImageUrl" | "isFavorite"
 >;
