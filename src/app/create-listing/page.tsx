@@ -107,7 +107,7 @@ export default function CreateListingPage() {
       <Header />
       <div className="h-[54px]" aria-hidden="true" />
 
-      <div className="mx-auto flex w-full max-w-[1074px] flex-col gap-5 px-4 pb-14 pt-7">
+      <div className="mx-auto flex w-full max-w-[1238px] flex-col gap-5 px-4 pb-14 pt-14">
         <section className="flex items-start justify-between gap-4">
           <div>
             <h1 className="m-0 text-[40px] font-bold leading-[40px] tracking-[-0.005em] text-[#1A1A1A]">
