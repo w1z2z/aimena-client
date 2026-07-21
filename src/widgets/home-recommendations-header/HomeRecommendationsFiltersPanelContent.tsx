@@ -11,6 +11,7 @@ import type {
   ServiceFormatId,
 } from "@/features/home-search/types";
 import { placeholders } from "@/shared/config/tokens";
+import { ToggleStarIcon } from "@/shared/ui/icons";
 import { SelectField } from "@/shared/ui/select-field";
 
 const dateOptions = [
@@ -30,10 +31,6 @@ const serviceFormatOptions = [
 ] as const;
 
 const titleQueryPlaceholder = placeholders.listingTitle;
-
-"use client";
-
-import { ToggleStarIcon } from "@/shared/ui/icons";
 
 function FilterToggle({
   checked,
