@@ -31,6 +31,10 @@ const serviceFormatOptions = [
 
 const titleQueryPlaceholder = placeholders.listingTitle;
 
+"use client";
+
+import { ToggleStarIcon } from "@/shared/ui/icons";
+
 function FilterToggle({
   checked,
   label,
@@ -49,7 +53,11 @@ function FilterToggle({
         onClick={() => onChange(!checked)}
         className={`home-filters-panel__toggle-track${checked ? " is-on" : ""}`}
       >
-        <span className="home-filters-panel__toggle-knob" />
+        <span className="home-filters-panel__toggle-knob">
+          <ToggleStarIcon
+            className={`home-filters-panel__toggle-star${checked ? " is-on" : ""}`}
+          />
+        </span>
       </button>
       <span className="home-filters-panel__toggle-label">{label}</span>
     </label>
