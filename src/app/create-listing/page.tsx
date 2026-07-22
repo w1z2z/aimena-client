@@ -1,8 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
+import { useAuth } from "@/features/auth/AuthProvider";
+import { getCities, type ApiCity } from "@/shared/api/catalog";
+import { buildCitySelectOptions } from "@/shared/lib/city-select-options";
+import { SelectField, type SelectOption } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
 import { DeleteIcon } from "@/shared/ui/icons";
 import { Switch } from "@/shared/ui/switch/Switch";
@@ -53,11 +57,24 @@ const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/jpg,image/webp";
 
 const FIELD_ERROR_CLASS = "m-0 mt-1 text-[14px] font-normal leading-[170%] text-[#FF2056]";
+const CITY_FETCH_DEBOUNCE_MS = 250;
 
 type PhotoItem = {
   id: string;
   previewUrl: string;
 };
+
+function mergeCitiesById(current: ApiCity[], incoming: ApiCity[]): ApiCity[] {
+  if (incoming.length === 0) return current;
+  const seen = new Set(current.map((cityItem) => cityItem.id));
+  const merged = [...current];
+  for (const cityItem of incoming) {
+    if (seen.has(cityItem.id)) continue;
+    seen.add(cityItem.id);
+    merged.push(cityItem);
+  }
+  return merged;
+}
 
 function createPhotoItems(files: FileList | File[]): PhotoItem[] {
   return Array.from(files)
@@ -167,11 +184,19 @@ function scrollToFirstError(errors: FieldErrors) {
 
 export default function CreateListingPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const itemPhotosInputRef = useRef<HTMLInputElement>(null);
   const docPhotosInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
-  const [city, setCity] = useState("");
+  const [cityId, setCityId] = useState<string | null>(null);
+  const [cityQuery, setCityQuery] = useState("");
+  const [debouncedCityQuery, setDebouncedCityQuery] = useState("");
+  const [featuredCities, setFeaturedCities] = useState<ApiCity[]>([]);
+  const [regularCities, setRegularCities] = useState<ApiCity[]>([]);
+  const [cityPage, setCityPage] = useState(1);
+  const [cityPageCount, setCityPageCount] = useState(1);
+  const [isCityLoading, setIsCityLoading] = useState(false);
   const [condition, setCondition] = useState<ConditionId | null>(null);
   const [extraPay, setExtraPay] = useState<ExtraPayId>("none");
   const [isFree, setIsFree] = useState(false);
@@ -182,9 +207,31 @@ export default function CreateListingPage() {
   const [isPublishedModalOpen, setIsPublishedModalOpen] = useState(false);
   const itemPhotoGrid = getItemPhotoGridLayout(itemPhotos.length);
   const docPhotoGrid = getDocPhotoGridLayout(docPhotos.length);
+  const cityOptions = useMemo(() => {
+    const options = buildCitySelectOptions({
+      featured: featuredCities,
+      cities: regularCities,
+      mapCityToOption: (cityItem) => ({
+        value: cityItem.id,
+        label: cityItem.regionName
+          ? `${cityItem.name}, ${cityItem.regionName}`
+          : cityItem.name,
+      }),
+    });
+
+    if (user?.cityId && user.city) {
+      const hasProfileCity = options.some((option) => option.value === user.cityId);
+      if (!hasProfileCity) {
+        return [{ value: user.cityId, label: user.city }, ...options];
+      }
+    }
+
+    return options;
+  }, [featuredCities, regularCities, user?.city, user?.cityId]);
 
   const itemPhotosRef = useRef(itemPhotos);
   const docPhotosRef = useRef(docPhotos);
+  const latestCitiesRequestRef = useRef(0);
   itemPhotosRef.current = itemPhotos;
   docPhotosRef.current = docPhotos;
 
@@ -194,6 +241,58 @@ export default function CreateListingPage() {
       revokePhotoUrls(docPhotosRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedCityQuery(cityQuery.trim());
+      setCityPage(1);
+    }, CITY_FETCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [cityQuery]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const requestId = latestCitiesRequestRef.current + 1;
+    latestCitiesRequestRef.current = requestId;
+
+    setIsCityLoading(true);
+    void getCities({
+      q: debouncedCityQuery || undefined,
+      page: cityPage,
+      pageSize: 50,
+    })
+      .then((response) => {
+        if (cancelled || requestId !== latestCitiesRequestRef.current) return;
+        const nextFeatured = response.data.featured;
+        const nextRegular = response.data.cities;
+        setCityPageCount(Math.max(response.meta.pageCount, 1));
+        setFeaturedCities((current) =>
+          cityPage === 1 ? nextFeatured : mergeCitiesById(current, nextFeatured),
+        );
+        setRegularCities((current) =>
+          cityPage === 1 ? nextRegular : mergeCitiesById(current, nextRegular),
+        );
+      })
+      .catch(() => {
+        if (cancelled || requestId !== latestCitiesRequestRef.current) return;
+        if (cityPage === 1) {
+          setFeaturedCities([]);
+          setRegularCities([]);
+          setCityPageCount(1);
+        }
+      })
+      .finally(() => {
+        if (cancelled || requestId !== latestCitiesRequestRef.current) return;
+        setIsCityLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cityPage, debouncedCityQuery]);
 
   const clearError = (key: keyof FieldErrors) => {
     setErrors((current) => {
@@ -265,12 +364,31 @@ export default function CreateListingPage() {
     });
   };
 
+  const handleInsertCityFromProfile = () => {
+    if (!user?.cityId || !user.city) {
+      setErrors((current) => ({
+        ...current,
+        city: "В профиле не указан город. Добавьте его в профиле или выберите вручную.",
+      }));
+      scrollToFirstError({
+        city: "В профиле не указан город. Добавьте его в профиле или выберите вручную.",
+      });
+      return;
+    }
+
+    const profileCityId = user.cityId;
+    setCityId(profileCityId);
+    clearError("city");
+  };
+
   const validateAndPublish = () => {
     const nextErrors: FieldErrors = {};
 
     if (!title.trim()) nextErrors.title = "Вы не добавили наименование вещи";
     if (!category.trim()) nextErrors.category = "Вы не добавили категорию вещи";
-    if (!city.trim()) nextErrors.city = "Вы не добавили город вещи";
+    if (!cityId) {
+      nextErrors.city = "Выберите город из списка или вставьте его из профиля";
+    }
     if (!condition) nextErrors.condition = "Вы не выбрали состояние вашей вещи";
     if (itemPhotos.length < 1) nextErrors.photos = "Вы не добавили фото вещи";
 
@@ -350,19 +468,31 @@ export default function CreateListingPage() {
               <div className="flex items-end gap-3">
                 <div className="grid min-w-0 flex-1 gap-1.5">
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Город вещи</p>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(event) => {
-                      setCity(event.target.value);
+                  <SelectField
+                    value={cityId ?? ""}
+                    onChange={(value) => {
+                      setCityId(value || null);
                       clearError("city");
                     }}
-                    placeholder="Напишите город в котором находится вещь"
-                    className="h-11 rounded-[18px] border-[0.5px] border-[#C4D86F] bg-white px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
+                    onInputChange={(value) => {
+                      setCityQuery(value);
+                    }}
+                    options={cityOptions}
+                    onListEndReached={() => {
+                      if (isCityLoading) return;
+                      if (cityPage >= cityPageCount) return;
+                      setCityPage((current) => current + 1);
+                    }}
+                    placeholder="Начните вводить город или выберите из списка"
+                    variant="field"
+                    className="create-listing-city-select"
+                    allowCustomValue={false}
+                    aria-label="Город вещи"
                   />
                 </div>
                 <button
                   type="button"
+                  onClick={handleInsertCityFromProfile}
                   className="h-11 shrink-0 whitespace-nowrap rounded-[18px] border-[0.5px] border-[#8E8BED] bg-[#8E8BED] px-5 text-[14px] font-semibold text-white"
                 >
                   Вставить из профиля

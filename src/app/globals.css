@@ -882,6 +882,31 @@ textarea:disabled {
   font-weight: 700;
 }
 
+.create-listing-city-select.site-select--field .site-select__input {
+  height: 44px;
+  border: 0.5px solid #c4d86f;
+  border-radius: 18px;
+  padding: 0 40px 0 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
+  letter-spacing: normal;
+  color: #1a1a1a;
+}
+
+.create-listing-city-select.site-select--field .site-select__input::placeholder {
+  color: #3d3d3d;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
+}
+
+.create-listing-city-select.site-select--field .site-select__input:focus,
+.create-listing-city-select.site-select--field.is-open .site-select__input {
+  border-color: #c4d86f;
+  box-shadow: none;
+}
+
 .site-select--hero .site-select__input {
   height: 48px;
   border: 1px solid #cacaca;

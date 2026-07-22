@@ -15,6 +15,7 @@ function getAvatarInitial(name: string, email: string): string {
 
 export function mapBackendUserToAuthUser(user: BackendUserMe): AuthUser {
   const displayName = user.profile?.displayName ?? user.email.split("@")[0] ?? "Пользователь";
+  const cityId = user.profile?.city?.id ?? null;
   const city = user.profile?.city?.name ?? null;
   const favoriteCategories = user.profile?.interests.map((interest) => interest.name) ?? [];
 
@@ -25,6 +26,7 @@ export function mapBackendUserToAuthUser(user: BackendUserMe): AuthUser {
     avatarInitial: getAvatarInitial(displayName, user.email),
     onboardingCompleted: user.profile?.onboardingCompleted ?? false,
     favoriteCategories,
+    cityId,
     city,
   };
 }

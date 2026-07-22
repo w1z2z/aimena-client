@@ -24,6 +24,7 @@ type SelectFieldProps = {
   value: string;
   onChange: (value: string) => void;
   onInputChange?: (value: string) => void;
+  onListEndReached?: () => void;
   options: readonly SelectOption[];
   placeholder?: string;
   variant?: SelectFieldVariant;
@@ -66,6 +67,7 @@ export function SelectField({
   value,
   onChange,
   onInputChange,
+  onListEndReached,
   options,
   placeholder,
   variant = "field",
@@ -89,7 +91,11 @@ export function SelectField({
 
   useEffect(() => {
     setInputValue(getLabelForValue(options, value));
-  }, [options, value]);
+    // Intentionally do not depend on options:
+    // options are frequently re-fetched while user types, and syncing on each
+    // options change would wipe in-progress input before explicit selection.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   const close = useCallback(() => setIsOpen(false), []);
 
@@ -187,6 +193,14 @@ export function SelectField({
   };
 
   const showPlaceholderState = !value && !inputValue.trim();
+  const handleListScroll = () => {
+    if (!onListEndReached || !listRef.current) return;
+    const node = listRef.current;
+    const remaining = node.scrollHeight - node.scrollTop - node.clientHeight;
+    if (remaining <= 24) {
+      onListEndReached();
+    }
+  };
 
   const list = isOpen ? (
     <ul
@@ -196,6 +210,7 @@ export function SelectField({
       className="site-select__list"
       style={listStyle}
       onWheel={(event) => event.stopPropagation()}
+      onScroll={handleListScroll}
     >
       {visibleOptions.length > 0 ? (
         visibleOptions.map((option, index) => (

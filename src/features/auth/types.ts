@@ -5,6 +5,7 @@ export type AuthUser = {
   avatarInitial: string;
   onboardingCompleted: boolean;
   favoriteCategories: string[];
+  cityId: string | null;
   city: string | null;
 };
 
