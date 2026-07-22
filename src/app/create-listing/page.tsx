@@ -607,30 +607,32 @@ export default function CreateListingPage() {
               Создавайте объявления, чтобы обмениваться с другими
             </p>
           </div>
-          <div className="relative mt-1 inline-grid w-[220px] grid-cols-2 rounded-[12px] border border-[#CACACA] bg-[#F2F2F2] p-[3px]">
-            <span
-              className={`pointer-events-none absolute bottom-[3px] left-[3px] top-[3px] w-[calc(50%-3px)] rounded-[9px] bg-[#8E8BED] transition-transform duration-200 ease-out ${
-                listingKind === "service" ? "translate-x-full" : ""
-              }`}
-            />
-            <button
-              type="button"
-              onClick={() => setListingKind("item")}
-              className={`relative z-[1] h-[32px] rounded-[9px] text-[14px] font-semibold ${
-                listingKind === "item" ? "text-white" : "text-[#6A6A6A]"
-              }`}
-            >
-              Вещь
-            </button>
-            <button
-              type="button"
-              onClick={() => setListingKind("service")}
-              className={`relative z-[1] h-[32px] rounded-[9px] text-[14px] font-semibold ${
-                listingKind === "service" ? "text-white" : "text-[#6A6A6A]"
-              }`}
-            >
-              Услуга
-            </button>
+          <div className="mt-1 rounded-[15px] bg-[linear-gradient(135deg,#8E8BED_0%,#C8FF00_100%)] p-[1px]">
+            <div className="relative inline-flex h-[42px] w-[212px] items-start gap-1 rounded-[15px] bg-[#F2F4F7] p-1">
+              <span
+                className={`pointer-events-none absolute left-1 top-1 h-[34px] w-[100px] rounded-[13px] bg-[#8E8BED] transition-transform duration-200 ease-out ${
+                  listingKind === "service" ? "translate-x-[104px]" : ""
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setListingKind("item")}
+                className={`relative z-[1] flex h-[34px] w-[100px] items-center justify-center rounded-[13px] px-3 text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                  listingKind === "item" ? "text-white" : "text-[#1A1A1A]"
+                }`}
+              >
+                Вещь
+              </button>
+              <button
+                type="button"
+                onClick={() => setListingKind("service")}
+                className={`relative z-[1] flex h-[34px] w-[100px] items-center justify-center rounded-[13px] px-3 text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                  listingKind === "service" ? "text-white" : "text-[#1A1A1A]"
+                }`}
+              >
+                Услуга
+              </button>
+            </div>
           </div>
         </section>
 
