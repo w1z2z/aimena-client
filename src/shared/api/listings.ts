@@ -75,6 +75,10 @@ export type RecommendationsQuery = {
   priceTo?: number;
 };
 
+export type TagSuggestionsResponse = {
+  data: string[];
+};
+
 export function getListings(query: ListingsQuery, signal?: AbortSignal) {
   return httpRequest<ApiListResponse<ApiListingCard>>("/listings", {
     query,
@@ -85,6 +89,16 @@ export function getListings(query: ListingsQuery, signal?: AbortSignal) {
 export function getRecommendations(query: RecommendationsQuery, signal?: AbortSignal) {
   return httpRequest<ApiListResponse<ApiListingCard>>("/listings/recommendations", {
     query,
+    signal,
+  });
+}
+
+export function getListingTagSuggestions(
+  params: { q?: string; limit?: number },
+  signal?: AbortSignal,
+) {
+  return httpRequest<TagSuggestionsResponse>("/listings/tags/suggest", {
+    query: params,
     signal,
   });
 }

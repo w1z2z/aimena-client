@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getCategories, getCities, type ApiCategoryNode, type ApiCity } from "@/shared/api/catalog";
+import { getListingTagSuggestions } from "@/shared/api/listings";
 import { buildCitySelectOptions } from "@/shared/lib/city-select-options";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
@@ -55,9 +56,11 @@ const ITEM_PHOTO_MAX_ROWS = 2;
 const DOCUMENT_PHOTO_SLOTS = 5;
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/jpg,image/webp";
+const WANTS_TAGS_LIMIT = 10;
 
 const FIELD_ERROR_CLASS = "m-0 mt-1 text-[14px] font-normal leading-[170%] text-[#FF2056]";
 const CITY_FETCH_DEBOUNCE_MS = 250;
+const TAGS_FETCH_DEBOUNCE_MS = 200;
 
 type CategoryTreeNode = ApiCategoryNode & {
   children?: Array<{ id: string; name: string; slug: string }>;
@@ -66,6 +69,12 @@ type CategoryTreeNode = ApiCategoryNode & {
 type PhotoItem = {
   id: string;
   previewUrl: string;
+};
+
+type TagSuggestionItem = {
+  value: string;
+  label: string;
+  isCreateAction?: boolean;
 };
 
 function mergeCitiesById(current: ApiCity[], incoming: ApiCity[]): ApiCity[] {
@@ -199,6 +208,9 @@ export default function CreateListingPage() {
   const [childCategoryId, setChildCategoryId] = useState<string | null>(null);
   const [wantsParentCategoryId, setWantsParentCategoryId] = useState<string | null>(null);
   const [wantsChildCategoryId, setWantsChildCategoryId] = useState<string | null>(null);
+  const [wantsTagInput, setWantsTagInput] = useState("");
+  const [wantsTags, setWantsTags] = useState<string[]>([]);
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [cityId, setCityId] = useState<string | null>(null);
   const [cityQuery, setCityQuery] = useState("");
   const [debouncedCityQuery, setDebouncedCityQuery] = useState("");
@@ -250,6 +262,42 @@ export default function CreateListingPage() {
       })),
     [selectedWantsParentCategory],
   );
+  const tagSuggestions = useMemo<TagSuggestionItem[]>(() => {
+    const normalizedInput = wantsTagInput.trim().toLowerCase();
+    const existingMatches = suggestedTags
+      .filter((tag) => !wantsTags.some((existing) => existing.toLowerCase() === tag.toLowerCase()))
+      .filter((tag) => (normalizedInput ? tag.toLowerCase().includes(normalizedInput) : true))
+      .slice(0, 8)
+      .map((tag) => ({
+        value: tag,
+        label: tag,
+      }));
+
+    if (!normalizedInput || wantsTags.length >= WANTS_TAGS_LIMIT) {
+      return existingMatches;
+    }
+
+    const rawInput = wantsTagInput.trim();
+    const alreadySelected = wantsTags.some(
+      (existingTag) => existingTag.toLowerCase() === normalizedInput,
+    );
+    const alreadySuggested = existingMatches.some(
+      (item) => item.value.toLowerCase() === normalizedInput,
+    );
+
+    if (alreadySelected || alreadySuggested) {
+      return existingMatches;
+    }
+
+    return [
+      {
+        value: rawInput,
+        label: `Добавить "${rawInput}"`,
+        isCreateAction: true,
+      },
+      ...existingMatches,
+    ];
+  }, [suggestedTags, wantsTagInput, wantsTags]);
   const cityOptions = useMemo(() => {
     const options = buildCitySelectOptions({
       featured: featuredCities,
@@ -301,6 +349,39 @@ export default function CreateListingPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const query = wantsTagInput.trim();
+    if (!query) {
+      setSuggestedTags([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => {
+      void getListingTagSuggestions(
+        {
+          q: query,
+          limit: 10,
+        },
+        controller.signal,
+      )
+        .then((response) => {
+          setSuggestedTags(response.data);
+        })
+        .catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === "AbortError") {
+            return;
+          }
+          setSuggestedTags([]);
+        });
+    }, TAGS_FETCH_DEBOUNCE_MS);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [wantsTagInput]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -422,6 +503,33 @@ export default function CreateListingPage() {
       if (target) URL.revokeObjectURL(target.previewUrl);
       return current.filter((photo) => photo.id !== photoId);
     });
+  };
+
+  const addWantsTag = (rawTag: string) => {
+    const normalized = rawTag.trim();
+    if (!normalized) return;
+    setWantsTags((current) => {
+      if (current.length >= WANTS_TAGS_LIMIT) return current;
+      const hasDuplicate = current.some(
+        (existingTag) => existingTag.toLowerCase() === normalized.toLowerCase(),
+      );
+      if (hasDuplicate) return current;
+      return [...current, normalized];
+    });
+    setWantsTagInput("");
+  };
+
+  const handleWantsTagKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" || event.key === ",") {
+      event.preventDefault();
+      addWantsTag(wantsTagInput);
+      return;
+    }
+
+    if (event.key === "Backspace" && wantsTagInput.length === 0 && wantsTags.length > 0) {
+      event.preventDefault();
+      setWantsTags((current) => current.slice(0, -1));
+    }
   };
 
   const handleInsertCityFromProfile = () => {
@@ -776,11 +884,73 @@ export default function CreateListingPage() {
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
                     Создайте тег, либо выберите существующий, просто начните писать (до 10 тегов)
                   </p>
-                  <input
-                    type="text"
-                    placeholder="Начните вводить желаемое"
-                    className={`${EXCHANGE_FIELD_INPUT_CLASS} mb-2`}
-                  />
+                  <div className="grid gap-2">
+                    {wantsTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {wantsTags.map((tag) => (
+                          <span
+                            key={tag.toLowerCase()}
+                            className="inline-flex items-center gap-1.5 rounded-[999px] border border-[#CACACA] bg-white px-3.5 py-1.5 text-[14px] leading-[120%] text-[#1A1A1A]"
+                          >
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setWantsTags((current) =>
+                                  current.filter((item) => item.toLowerCase() !== tag.toLowerCase()),
+                                )
+                              }
+                              className="text-[17px] leading-none text-[#626262] hover:text-[#1A1A1A]"
+                              aria-label={`Удалить тег ${tag}`}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div>
+                      <input
+                        type="text"
+                        value={wantsTagInput}
+                        onChange={(event) => setWantsTagInput(event.target.value)}
+                        onKeyDown={handleWantsTagKeyDown}
+                        onBlur={() => {
+                          if (wantsTagInput.trim()) {
+                            addWantsTag(wantsTagInput);
+                          }
+                        }}
+                        placeholder={
+                          wantsTags.length >= WANTS_TAGS_LIMIT
+                            ? "Достигнут лимит 10 тегов"
+                            : "Например: iPhone, MacBook, велосипед"
+                        }
+                        disabled={wantsTags.length >= WANTS_TAGS_LIMIT}
+                        className={`${EXCHANGE_FIELD_INPUT_CLASS} mb-2`}
+                      />
+                      {tagSuggestions.length > 0 &&
+                      wantsTags.length < WANTS_TAGS_LIMIT &&
+                      wantsTagInput.trim().length > 0 ? (
+                        <div className="mt-2 max-h-44 overflow-y-auto rounded-[12px] border border-[#CACACA] bg-white p-1 shadow-[0_8px_24px_rgba(15,23,42,0.14)]">
+                          {tagSuggestions.map((item) => (
+                            <button
+                              key={`${item.value.toLowerCase()}-${item.isCreateAction ? "create" : "existing"}`}
+                              type="button"
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => addWantsTag(item.value)}
+                              className={`block w-full rounded-[8px] px-3 py-2 text-left text-[13px] leading-[120%] ${
+                                item.isCreateAction
+                                  ? "bg-[#F3F2FF] text-[#1A1A1A]"
+                                  : "text-[#1A1A1A] hover:bg-[#F8F8F5]"
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
