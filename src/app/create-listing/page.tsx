@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 import { useAuth } from "@/features/auth/AuthProvider";
-import { getCities, type ApiCity } from "@/shared/api/catalog";
+import { getCategories, getCities, type ApiCategoryNode, type ApiCity } from "@/shared/api/catalog";
 import { buildCitySelectOptions } from "@/shared/lib/city-select-options";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
@@ -59,6 +59,10 @@ const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/jpg,image/webp";
 const FIELD_ERROR_CLASS = "m-0 mt-1 text-[14px] font-normal leading-[170%] text-[#FF2056]";
 const CITY_FETCH_DEBOUNCE_MS = 250;
 
+type CategoryTreeNode = ApiCategoryNode & {
+  children?: Array<{ id: string; name: string; slug: string }>;
+};
+
 type PhotoItem = {
   id: string;
   previewUrl: string;
@@ -110,12 +114,14 @@ function getDocPhotoGridLayout(photoCount: number) {
 }
 
 const EXCHANGE_FIELD_INPUT_CLASS =
-  "box-border h-12 w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] px-3 py-2 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]";
+  "box-border h-[50px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] px-3 py-[11px] text-[14px] font-normal leading-[140%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[140%] placeholder:text-[#3D3D3D]";
 
 const SECTION_TITLE_CLASS =
   "m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#626262]";
 
 const SECTION_TEXT_CLASS = "text-[14px] font-normal leading-[170%] text-[#1A1A1A]";
+const PHOTO_UPLOAD_LABEL_CLASS =
+  "text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A]";
 
 function PlaceholderImage() {
   return (
@@ -188,7 +194,11 @@ export default function CreateListingPage() {
   const itemPhotosInputRef = useRef<HTMLInputElement>(null);
   const docPhotosInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
+  const [categoryTree, setCategoryTree] = useState<CategoryTreeNode[]>([]);
+  const [parentCategoryId, setParentCategoryId] = useState<string | null>(null);
+  const [childCategoryId, setChildCategoryId] = useState<string | null>(null);
+  const [wantsParentCategoryId, setWantsParentCategoryId] = useState<string | null>(null);
+  const [wantsChildCategoryId, setWantsChildCategoryId] = useState<string | null>(null);
   const [cityId, setCityId] = useState<string | null>(null);
   const [cityQuery, setCityQuery] = useState("");
   const [debouncedCityQuery, setDebouncedCityQuery] = useState("");
@@ -207,6 +217,39 @@ export default function CreateListingPage() {
   const [isPublishedModalOpen, setIsPublishedModalOpen] = useState(false);
   const itemPhotoGrid = getItemPhotoGridLayout(itemPhotos.length);
   const docPhotoGrid = getDocPhotoGridLayout(docPhotos.length);
+  const parentCategoryOptions = useMemo<SelectOption[]>(
+    () =>
+      categoryTree.map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    [categoryTree],
+  );
+  const selectedParentCategory = useMemo(
+    () => categoryTree.find((item) => item.id === parentCategoryId) ?? null,
+    [categoryTree, parentCategoryId],
+  );
+  const childCategoryOptions = useMemo<SelectOption[]>(
+    () =>
+      (selectedParentCategory?.children ?? []).map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    [selectedParentCategory],
+  );
+  const finalCategoryId = childCategoryId ?? parentCategoryId;
+  const selectedWantsParentCategory = useMemo(
+    () => categoryTree.find((item) => item.id === wantsParentCategoryId) ?? null,
+    [categoryTree, wantsParentCategoryId],
+  );
+  const wantsChildCategoryOptions = useMemo<SelectOption[]>(
+    () =>
+      (selectedWantsParentCategory?.children ?? []).map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    [selectedWantsParentCategory],
+  );
   const cityOptions = useMemo(() => {
     const options = buildCitySelectOptions({
       featured: featuredCities,
@@ -239,6 +282,23 @@ export default function CreateListingPage() {
     return () => {
       revokePhotoUrls(itemPhotosRef.current);
       revokePhotoUrls(docPhotosRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getCategories({ parentsOnly: false, homeArc: false })
+      .then((response) => {
+        if (cancelled) return;
+        setCategoryTree(response.data as CategoryTreeNode[]);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCategoryTree([]);
+      });
+
+    return () => {
+      cancelled = true;
     };
   }, []);
 
@@ -385,7 +445,7 @@ export default function CreateListingPage() {
     const nextErrors: FieldErrors = {};
 
     if (!title.trim()) nextErrors.title = "Вы не добавили наименование вещи";
-    if (!category.trim()) nextErrors.category = "Вы не добавили категорию вещи";
+    if (!finalCategoryId) nextErrors.category = "Выберите категорию вещи";
     if (!cityId) {
       nextErrors.city = "Выберите город из списка или вставьте его из профиля";
     }
@@ -445,23 +505,45 @@ export default function CreateListingPage() {
                   setTitle(event.target.value);
                   clearError("title");
                 }}
-                placeholder="Наименование вашей вещи *"
+                placeholder="Наименование вашей вещи"
                 className="h-11 rounded-[18px] border-[0.5px] border-[#C4D86F] bg-white px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
               />
               <FieldError message={errors.title} />
             </div>
             <div id={fieldAnchorId("category")} className="grid gap-1.5">
               <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Категория вещи</p>
-              <input
-                type="text"
-                value={category}
-                onChange={(event) => {
-                  setCategory(event.target.value);
+              <SelectField
+                value={parentCategoryId ?? ""}
+                onChange={(value) => {
+                  setParentCategoryId(value || null);
+                  setChildCategoryId(null);
                   clearError("category");
                 }}
-                placeholder="Напишите категорию вашей вещи"
-                className="h-11 rounded-[18px] border-[0.5px] border-[#C4D86F] bg-white px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
+                options={parentCategoryOptions}
+                placeholder="Выберите категорию вещи"
+                variant="field"
+                className="create-listing-city-select"
+                searchable={false}
+                allowCustomValue={false}
+                aria-label="Категория вещи"
               />
+              {childCategoryOptions.length > 0 ? (
+                <div className="mt-2">
+                  <SelectField
+                    value={childCategoryId ?? ""}
+                    onChange={(value) => {
+                      setChildCategoryId(value || null);
+                    }}
+                    options={childCategoryOptions}
+                    placeholder="Уточните подкатегорию (необязательно)"
+                    variant="field"
+                    className="create-listing-city-select"
+                    searchable={false}
+                    allowCustomValue={false}
+                    aria-label="Подкатегория вещи"
+                  />
+                </div>
+              ) : null}
               <FieldError message={errors.category} />
             </div>
             <div id={fieldAnchorId("city")}>
@@ -505,8 +587,8 @@ export default function CreateListingPage() {
 
         <section id={fieldAnchorId("photos")} className="rounded-[16px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
           <h3 className={SECTION_TITLE_CLASS}>Добавить фото (до 10 фото)*</h3>
-          <p className="mt-4 text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Загрузить фото</p>
-          <p className={`mt-0 ${SECTION_TEXT_CLASS}`}>PNG, JPG до 5 МБ</p>
+          <p className={`mt-4 ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить фото</p>
+          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>PNG, JPG до 5 МБ</p>
           <input
             ref={itemPhotosInputRef}
             type="file"
@@ -660,11 +742,35 @@ export default function CreateListingPage() {
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
                     Выберите категорию, которую хотите получить
                   </p>
-                  <input
-                    type="text"
-                    placeholder="Напишите и выберите нужную категорию"
-                    className={EXCHANGE_FIELD_INPUT_CLASS}
+                  <SelectField
+                    value={wantsParentCategoryId ?? ""}
+                    onChange={(value) => {
+                      setWantsParentCategoryId(value || null);
+                      setWantsChildCategoryId(null);
+                    }}
+                    options={parentCategoryOptions}
+                    placeholder="Выберите нужную категорию"
+                    variant="field"
+                    className="create-listing-exchange-select"
+                    searchable={false}
+                    allowCustomValue={false}
+                    aria-label="Желаемая категория"
                   />
+                  {wantsChildCategoryOptions.length > 0 ? (
+                    <SelectField
+                      value={wantsChildCategoryId ?? ""}
+                      onChange={(value) => {
+                        setWantsChildCategoryId(value || null);
+                      }}
+                      options={wantsChildCategoryOptions}
+                      placeholder="Уточните подкатегорию (необязательно)"
+                      variant="field"
+                      className="create-listing-exchange-select"
+                      searchable={false}
+                      allowCustomValue={false}
+                      aria-label="Желаемая подкатегория"
+                    />
+                  ) : null}
                 </div>
                 <div className="grid gap-2">
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
@@ -673,7 +779,7 @@ export default function CreateListingPage() {
                   <input
                     type="text"
                     placeholder="Начните вводить желаемое"
-                    className={EXCHANGE_FIELD_INPUT_CLASS}
+                    className={`${EXCHANGE_FIELD_INPUT_CLASS} mb-2`}
                   />
                 </div>
               </div>
@@ -685,11 +791,8 @@ export default function CreateListingPage() {
           <h3 className={SECTION_TITLE_CLASS}>
             Добавить фото документов, сертификатов, дипломов (до 5 фото)
           </h3>
-          <p className="mt-4 text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Загрузить фото</p>
-          <p className={`mt-0 ${SECTION_TEXT_CLASS}`}>PNG, JPG до 5 МБ</p>
-          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
-            Скрытые фото. Видны только после подтверждения обмена.
-          </p>
+          <p className={`mt-4 ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить фото</p>
+          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>PNG, JPG до 5 МБ</p>
           <input
             ref={docPhotosInputRef}
             type="file"

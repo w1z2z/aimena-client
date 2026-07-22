@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type MouseEvent,
 } from "react";
 import { createPortal } from "react-dom";
 
@@ -81,6 +82,7 @@ export function SelectField({
   const [inputValue, setInputValue] = useState(() => getLabelForValue(options, value));
   const [listStyle, setListStyle] = useState<CSSProperties>({ visibility: "hidden" });
   const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listId = useId();
 
@@ -193,6 +195,18 @@ export function SelectField({
   };
 
   const showPlaceholderState = !value && !inputValue.trim();
+  const handleControlMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+    if (disabled) return;
+    const target = event.target as HTMLElement;
+    if (target.closest(".site-select__chevron")) {
+      return;
+    }
+    setIsOpen(true);
+    window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  };
+
   const handleListScroll = () => {
     if (!onListEndReached || !listRef.current) return;
     const node = listRef.current;
@@ -248,8 +262,9 @@ export function SelectField({
       ref={rootRef}
       className={`site-select site-select--${variant}${className ? ` ${className}` : ""}${isOpen ? " is-open" : ""}${disabled ? " is-disabled" : ""}`}
     >
-      <div className="site-select__control">
+      <div className="site-select__control" onMouseDown={handleControlMouseDown}>
         <input
+          ref={inputRef}
           type="text"
           role="combobox"
           aria-expanded={isOpen}
@@ -263,7 +278,12 @@ export function SelectField({
           onChange={(event) => handleInputChange(event.target.value)}
           onFocus={() => !disabled && setIsOpen(true)}
           onBlur={handleBlur}
-          className={`site-select__input${showPlaceholderState ? " is-placeholder" : ""}`}
+          onMouseDown={(event) => {
+            if (!searchable) {
+              event.preventDefault();
+            }
+          }}
+          className={`site-select__input${showPlaceholderState ? " is-placeholder" : ""}${!searchable ? " is-readonly-select" : ""}`}
         />
         <button
           type="button"

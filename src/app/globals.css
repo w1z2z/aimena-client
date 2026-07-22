@@ -848,6 +848,16 @@ textarea:disabled {
   color: #3d3d3d;
 }
 
+.site-select__input[readonly] {
+  caret-color: transparent;
+  cursor: pointer;
+}
+
+.site-select__input.is-readonly-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .site-select__input:focus {
   border-color: #8e8bed;
   box-shadow: 0 0 0 1px rgb(142 139 237 / 35%);
@@ -904,6 +914,32 @@ textarea:disabled {
 .create-listing-city-select.site-select--field .site-select__input:focus,
 .create-listing-city-select.site-select--field.is-open .site-select__input {
   border-color: #c4d86f;
+  box-shadow: none;
+}
+
+.create-listing-exchange-select.site-select--field .site-select__input {
+  height: 48px;
+  border: 0.5px solid #cacaca;
+  border-radius: 18px;
+  padding: 8px 40px 8px 12px;
+  background: #f2f4f7;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
+  letter-spacing: normal;
+  color: #1a1a1a;
+}
+
+.create-listing-exchange-select.site-select--field .site-select__input::placeholder {
+  color: #3d3d3d;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
+}
+
+.create-listing-exchange-select.site-select--field .site-select__input:focus,
+.create-listing-exchange-select.site-select--field.is-open .site-select__input {
+  border-color: #cacaca;
   box-shadow: none;
 }
 
