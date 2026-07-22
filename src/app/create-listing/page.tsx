@@ -16,12 +16,15 @@ import { ListingPublishedModal } from "./ListingPublishedModal";
 
 type ConditionId = "excellent" | "new" | "good" | "used" | "needs_repair";
 type ExtraPayId = "none" | "i_pay" | "they_pay";
+type ListingKind = "item" | "service";
+type ServiceFormatId = "online" | "onsite" | "client";
 
 type FieldErrors = {
   title?: string;
   category?: string;
   city?: string;
   condition?: string;
+  serviceFormat?: string;
   photos?: string;
 };
 
@@ -32,6 +35,7 @@ const FIELD_SCROLL_ORDER: Array<keyof FieldErrors> = [
   "city",
   "photos",
   "condition",
+  "serviceFormat",
 ];
 
 const HEADER_SCROLL_OFFSET_PX = 72;
@@ -48,6 +52,12 @@ const EXTRA_PAY_OPTIONS: Array<{ id: ExtraPayId; label: string }> = [
   { id: "none", label: "Без доплаты" },
   { id: "i_pay", label: "Готов доплатить" },
   { id: "they_pay", label: "Хочу доплату" },
+];
+
+const SERVICE_FORMAT_OPTIONS: Array<{ id: ServiceFormatId; label: string }> = [
+  { id: "online", label: "Онлайн" },
+  { id: "onsite", label: "Выезд" },
+  { id: "client", label: "У клиента" },
 ];
 
 const ITEM_PHOTO_SLOTS = 10;
@@ -202,6 +212,7 @@ export default function CreateListingPage() {
   const { user } = useAuth();
   const itemPhotosInputRef = useRef<HTMLInputElement>(null);
   const docPhotosInputRef = useRef<HTMLInputElement>(null);
+  const [listingKind, setListingKind] = useState<ListingKind>("item");
   const [title, setTitle] = useState("");
   const [categoryTree, setCategoryTree] = useState<CategoryTreeNode[]>([]);
   const [parentCategoryId, setParentCategoryId] = useState<string | null>(null);
@@ -220,6 +231,7 @@ export default function CreateListingPage() {
   const [cityPageCount, setCityPageCount] = useState(1);
   const [isCityLoading, setIsCityLoading] = useState(false);
   const [condition, setCondition] = useState<ConditionId | null>(null);
+  const [serviceFormats, setServiceFormats] = useState<ServiceFormatId[]>([]);
   const [extraPay, setExtraPay] = useState<ExtraPayId>("none");
   const [isFree, setIsFree] = useState(false);
   const [exchangeEnabled, setExchangeEnabled] = useState(false);
@@ -444,6 +456,9 @@ export default function CreateListingPage() {
     });
   };
 
+  const listingTypeLabel = listingKind === "item" ? "вещи" : "услуги";
+  const listingTypeName = listingKind === "item" ? "вещь" : "услугу";
+
   const handleIsFreeChange = (next: boolean) => {
     setIsFree(next);
     if (next) setExchangeEnabled(false);
@@ -552,13 +567,21 @@ export default function CreateListingPage() {
   const validateAndPublish = () => {
     const nextErrors: FieldErrors = {};
 
-    if (!title.trim()) nextErrors.title = "Вы не добавили наименование вещи";
-    if (!finalCategoryId) nextErrors.category = "Выберите категорию вещи";
+    if (!title.trim()) nextErrors.title = `Вы не добавили наименование ${listingTypeLabel}`;
+    if (!finalCategoryId) nextErrors.category = `Выберите категорию ${listingTypeLabel}`;
     if (!cityId) {
       nextErrors.city = "Выберите город из списка или вставьте его из профиля";
     }
-    if (!condition) nextErrors.condition = "Вы не выбрали состояние вашей вещи";
-    if (itemPhotos.length < 1) nextErrors.photos = "Вы не добавили фото вещи";
+    if (listingKind === "item" && !condition) {
+      nextErrors.condition = "Вы не выбрали состояние вашей вещи";
+    }
+    if (listingKind === "service" && serviceFormats.length === 0) {
+      nextErrors.serviceFormat = "Выберите хотя бы один формат оказания услуги";
+    }
+    if (itemPhotos.length < 1) {
+      nextErrors.photos =
+        listingKind === "item" ? "Вы не добавили фото вещи" : "Вы не добавили фото услуги";
+    }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
@@ -585,14 +608,26 @@ export default function CreateListingPage() {
             </p>
           </div>
           <div className="relative mt-1 inline-grid w-[220px] grid-cols-2 rounded-[12px] border border-[#CACACA] bg-[#F2F2F2] p-[3px]">
-            <span className="pointer-events-none absolute bottom-[3px] left-[3px] top-[3px] w-[calc(50%-3px)] rounded-[9px] bg-[#8E8BED]" />
-            <button type="button" className="relative z-[1] h-[32px] rounded-[9px] text-[14px] font-semibold text-white">
+            <span
+              className={`pointer-events-none absolute bottom-[3px] left-[3px] top-[3px] w-[calc(50%-3px)] rounded-[9px] bg-[#8E8BED] transition-transform duration-200 ease-out ${
+                listingKind === "service" ? "translate-x-full" : ""
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => setListingKind("item")}
+              className={`relative z-[1] h-[32px] rounded-[9px] text-[14px] font-semibold ${
+                listingKind === "item" ? "text-white" : "text-[#6A6A6A]"
+              }`}
+            >
               Вещь
             </button>
             <button
               type="button"
-              disabled
-              className="relative z-[1] h-[32px] rounded-[9px] text-[14px] font-semibold text-[#6A6A6A] opacity-80"
+              onClick={() => setListingKind("service")}
+              className={`relative z-[1] h-[32px] rounded-[9px] text-[14px] font-semibold ${
+                listingKind === "service" ? "text-white" : "text-[#6A6A6A]"
+              }`}
             >
               Услуга
             </button>
@@ -605,7 +640,7 @@ export default function CreateListingPage() {
           </h2>
           <div className="mt-3 grid gap-3">
             <div id={fieldAnchorId("title")} className="grid gap-1.5">
-              <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Наименование вещи</p>
+              <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Наименование {listingTypeLabel}</p>
               <input
                 type="text"
                 value={title}
@@ -613,13 +648,13 @@ export default function CreateListingPage() {
                   setTitle(event.target.value);
                   clearError("title");
                 }}
-                placeholder="Наименование вашей вещи"
+                placeholder={`Наименование вашей ${listingTypeName}`}
                 className="h-11 rounded-[18px] border-[0.5px] border-[#C4D86F] bg-white px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
               />
               <FieldError message={errors.title} />
             </div>
             <div id={fieldAnchorId("category")} className="grid gap-1.5">
-              <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Категория вещи</p>
+              <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Категория {listingTypeLabel}</p>
               <SelectField
                 value={parentCategoryId ?? ""}
                 onChange={(value) => {
@@ -628,12 +663,12 @@ export default function CreateListingPage() {
                   clearError("category");
                 }}
                 options={parentCategoryOptions}
-                placeholder="Выберите категорию вещи"
+                placeholder={`Выберите категорию ${listingTypeLabel}`}
                 variant="field"
                 className="create-listing-city-select"
                 searchable={false}
                 allowCustomValue={false}
-                aria-label="Категория вещи"
+                aria-label={`Категория ${listingTypeLabel}`}
               />
               {childCategoryOptions.length > 0 ? (
                 <div className="mt-2">
@@ -648,7 +683,7 @@ export default function CreateListingPage() {
                     className="create-listing-city-select"
                     searchable={false}
                     allowCustomValue={false}
-                    aria-label="Подкатегория вещи"
+                    aria-label={`Подкатегория ${listingTypeLabel}`}
                   />
                 </div>
               ) : null}
@@ -657,7 +692,7 @@ export default function CreateListingPage() {
             <div id={fieldAnchorId("city")}>
               <div className="flex items-end gap-3">
                 <div className="grid min-w-0 flex-1 gap-1.5">
-                  <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Город вещи</p>
+                  <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Город {listingTypeLabel}</p>
                   <SelectField
                     value={cityId ?? ""}
                     onChange={(value) => {
@@ -677,7 +712,7 @@ export default function CreateListingPage() {
                     variant="field"
                     className="create-listing-city-select"
                     allowCustomValue={false}
-                    aria-label="Город вещи"
+                    aria-label={`Город ${listingTypeLabel}`}
                   />
                 </div>
                 <button
@@ -738,7 +773,7 @@ export default function CreateListingPage() {
           <h3 className={SECTION_TITLE_CLASS}>Дополнительная информация</h3>
 
           <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>
-            Опишите вашу вещь подробнее (до 2000 символов)
+            Опишите вашу {listingTypeName} подробнее (до 2000 символов)
           </p>
           <textarea
             maxLength={2000}
@@ -746,41 +781,75 @@ export default function CreateListingPage() {
             className="mt-2 h-[150px] w-full resize-none rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 py-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
           />
 
-          <div id={fieldAnchorId("condition")}>
-            <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Выберите состояние вашей вещи *</p>
-            <div className="mt-2 flex flex-wrap gap-3">
-              {CONDITION_OPTIONS.map((item) => {
-                const active = condition === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setCondition(item.id);
-                      clearError("condition");
-                    }}
-                    className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
-                      active
-                        ? "bg-[#8E8BED] text-white"
-                        : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
+          {listingKind === "item" ? (
+            <div id={fieldAnchorId("condition")}>
+              <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Выберите состояние вашей вещи *</p>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {CONDITION_OPTIONS.map((item) => {
+                  const active = condition === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setCondition(item.id);
+                        clearError("condition");
+                      }}
+                      className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                        active
+                          ? "bg-[#8E8BED] text-white"
+                          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <FieldError message={errors.condition} />
             </div>
-            <FieldError message={errors.condition} />
-          </div>
+          ) : (
+            <div id={fieldAnchorId("serviceFormat")}>
+              <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Формат оказания услуги *</p>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {SERVICE_FORMAT_OPTIONS.map((item) => {
+                  const active = serviceFormats.includes(item.id);
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setServiceFormats((current) =>
+                          current.includes(item.id)
+                            ? current.filter((currentItem) => currentItem !== item.id)
+                            : [...current, item.id],
+                        );
+                        clearError("serviceFormat");
+                      }}
+                      className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                        active
+                          ? "bg-[#8E8BED] text-white"
+                          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <FieldError message={errors.serviceFormat} />
+            </div>
+          )}
 
           <div className="mt-4 grid gap-4">
             <div>
               <p className={`mb-2 ${SECTION_TEXT_CLASS}`}>
-                Напишите примерную стоимость вашей вещи (другим будет легче предложить равноценный обмен)
+                Напишите примерную стоимость вашей {listingTypeName} (другим будет легче предложить
+                равноценный обмен)
               </p>
               <input
                 type="text"
-                placeholder="Введите стоимость вашей вещи"
+                placeholder={`Введите стоимость вашей ${listingTypeName}`}
                 className="h-11 w-full rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
               />
             </div>
@@ -825,7 +894,7 @@ export default function CreateListingPage() {
                 Отдаю даром
               </h3>
               <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
-                Включите, если отдаёте вещь без обмена — взамен вы ничего не получите
+                Включите, если отдаёте {listingTypeName} без обмена — взамен вы ничего не получите
               </p>
             </div>
             <Switch checked={isFree} onChange={handleIsFreeChange} />
