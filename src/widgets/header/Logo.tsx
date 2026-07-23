@@ -4,8 +4,11 @@ import { LogoIcon } from "@/shared/ui/icons";
 
 export function Logo() {
   return (
-    <Link href="/" className="flex h-[54px] w-[71px] items-start" aria-label="На главную">
-      <LogoIcon className="h-[54px] w-[71px]" />
+    <Link href="/" className="inline-flex h-[41px] w-[101px] items-start overflow-hidden" aria-label="На главную">
+      <LogoIcon
+        className="block h-full w-full object-fill"
+        style={{ transform: "translateX(-9px) scale(1.22)", transformOrigin: "left center" }}
+      />
     </Link>
   );
 }

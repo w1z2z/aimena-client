@@ -85,7 +85,7 @@ export function OnboardingCityForm() {
 
   return (
     <AuthCard className="gap-[48px]">
-      <LogoIcon className="h-[110px] w-[160px]" aria-hidden="true" />
+      <LogoIcon className="w-[160px] h-auto" aria-hidden="true" />
 
       <AuthTitle>Укажите свой город</AuthTitle>
 

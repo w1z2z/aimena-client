@@ -9,7 +9,8 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type MouseEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
 } from "react";
 import { createPortal } from "react-dom";
 
@@ -168,13 +169,13 @@ export function SelectField({
   useEffect(() => {
     if (!isOpen) return;
 
-    const handlePointerDown = (event: MouseEvent) => {
+    const handlePointerDown = (event: globalThis.MouseEvent) => {
       const target = event.target as Node;
       if (rootRef.current?.contains(target) || listRef.current?.contains(target)) return;
       close();
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") close();
     };
 
@@ -243,7 +244,7 @@ export function SelectField({
     });
   };
 
-  const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (disabled) return;
 
     if (event.key === "ArrowDown") {
@@ -278,7 +279,7 @@ export function SelectField({
   }, [activeOptionValue, isOpen]);
 
   const showPlaceholderState = !value && !inputValue.trim();
-  const handleControlMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+  const handleControlMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (disabled) return;
     const target = event.target as HTMLElement;
     if (target.closest(".site-select__chevron")) {

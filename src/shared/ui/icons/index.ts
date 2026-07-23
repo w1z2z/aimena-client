@@ -18,6 +18,7 @@ export { FreePromoStarIcon } from "./FreePromoStarIcon";
 export { HeartIcon } from "./HeartIcon";
 export { LogoutIcon } from "./LogoutIcon";
 export { LogoIcon } from "./LogoIcon";
+export { SearchIcon } from "./SearchIcon";
 export { TagsIcon } from "./TagsIcon";
 export { ToggleStarIcon } from "./ToggleStarIcon";
 export { WantAllIcon } from "./WantAllIcon";

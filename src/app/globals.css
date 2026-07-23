@@ -1193,7 +1193,8 @@ textarea:disabled {
 
 .registration-prompt-modal__logo {
   width: 160px;
-  height: 111px;
+  height: auto;
+  display: block;
   flex-shrink: 0;
 }
 
@@ -1895,8 +1896,9 @@ textarea:disabled {
 }
 
 .site-footer__logo-icon {
-  width: 71px;
+  width: auto;
   height: 54px;
+  display: block;
 }
 
 .site-footer__tagline {
