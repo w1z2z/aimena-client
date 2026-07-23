@@ -5,12 +5,13 @@ import { httpRequest } from "./http";
 export type ApiCategoryNode = {
   id: string;
   name: string;
+  shortName?: string | null;
   slug: string;
   uiKey?: string;
   iconUrl?: string | null;
   homeArcOrder?: number;
   isVirtual?: boolean;
-  children?: Array<{ id: string; name: string; slug: string }>;
+  children?: Array<{ id: string; name: string; shortName?: string | null; slug: string }>;
 };
 
 export type ApiCategoriesResponse = {

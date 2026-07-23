@@ -10,7 +10,7 @@ import {
 } from "react";
 
 import type { HomeCategoryItem } from "@/features/home-search/types";
-import { categoryItems, categoryPlaceholderIconSrc, getCategoryIconSrc } from "@/shared/ui/icons";
+import { categoryPlaceholderIconSrc } from "@/shared/ui/icons";
 
 import { useIsSafari } from "./lib/safari";
 
@@ -75,9 +75,7 @@ const CATEGORY_PROFILE: readonly CategoryProfileStep[] = [
 
 const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(200, 255, 0, 0.35))";
 const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
-const CATEGORY_ICON_FALLBACK_BY_ID: Record<string, string> = Object.fromEntries(
-  categoryItems.map((item) => [item.id, getCategoryIconSrc(item.icon)]),
-);
+const CATEGORY_ICON_PLACEHOLDER = categoryPlaceholderIconSrc;
 
 function interpolateProfile(
   property: keyof Omit<CategoryProfileStep, "opacity"> | "opacity",
@@ -91,49 +89,6 @@ function interpolateProfile(
   const upperValue = CATEGORY_PROFILE[upperIndex][property];
   return lowerValue + (upperValue - lowerValue) * progress;
 }
-
-function getTrajectoryPoint(offsetX: number, centerY: number, direction: -1 | 0 | 1) {
-  return {
-    x: ARC_CENTER_X + direction * offsetX,
-    y: centerY,
-  };
-}
-
-function buildSmoothCategoryTrajectoryPath() {
-  const points: Array<{ x: number; y: number }> = [];
-  const maxDistance = CATEGORY_PROFILE.length - 1;
-
-  for (let distance = -maxDistance; distance <= maxDistance; distance += 0.04) {
-    const direction = distance === 0 ? 0 : ((distance < 0 ? -1 : 1) as -1 | 1);
-    points.push(
-      getTrajectoryPoint(
-        interpolateProfile("offsetX", distance),
-        interpolateProfile("centerY", distance),
-        direction,
-      ),
-    );
-  }
-
-  if (points.length < 2) return "";
-
-  let path = `M ${points[0].x} ${points[0].y}`;
-  for (let index = 0; index < points.length - 1; index += 1) {
-    const p0 = points[index - 1] ?? points[index];
-    const p1 = points[index];
-    const p2 = points[index + 1];
-    const p3 = points[index + 2] ?? p2;
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-    path += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.x} ${p2.y}`;
-  }
-
-  return path;
-}
-
-const CATEGORY_TRAJECTORY_PATH = buildSmoothCategoryTrajectoryPath();
-const CATEGORY_ICON_PLACEHOLDER = categoryPlaceholderIconSrc;
 
 function getCategoryIconFilter(isActive: boolean, useSvgFilter: boolean) {
   if (useSvgFilter) {
@@ -474,46 +429,6 @@ export function CategoriesArc({
       className="categories-arc absolute left-[305px] z-10 h-[183px] w-[1311px] cursor-grab select-none active:cursor-grabbing"
       style={{ top: `${ARC_CONTAINER_TOP}px` }}
     >
-      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-visible">
-        <div
-          className="absolute left-[19.05px] top-[-60.03px] h-[213.56px] w-[1272.75px] bg-[#C8FF00] opacity-[0.22] blur-[24px]"
-        />
-        <div
-          className="absolute"
-          style={{
-            boxSizing: "border-box",
-            left: "1.48%",
-            right: "1.53%",
-            top: "31.8%",
-            bottom: "13.66%",
-            borderRadius: "50%",
-            background: "#D9D9D9",
-            opacity: 0.22,
-            border: "16.7389px solid #C8FF00",
-            filter: "blur(20.15px)",
-            transform: "matrix(-1, 0, 0, 1, 0, 0)",
-          }}
-        />
-        <div className="absolute left-[634px] top-[-89px] h-[272px] w-[24px] rounded-[3px] bg-[#C8FF00] opacity-[0.22] blur-[12.9px]" />
-      </div>
-
-      {/* Временная видимая траектория центров иконок категорий */}
-      <svg
-        aria-hidden
-        viewBox="0 0 1311 183"
-        className="pointer-events-none absolute inset-0 z-[15] h-full w-full overflow-visible"
-      >
-        <path
-          d={CATEGORY_TRAJECTORY_PATH}
-          fill="none"
-          stroke="#FF2D55"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray="8 6"
-        />
-      </svg>
-
       <svg aria-hidden className="pointer-events-none absolute size-0 overflow-hidden">
         <defs>
           <filter
@@ -595,7 +510,7 @@ export function CategoriesArc({
             >
               <img
                 data-category-icon
-                src={item.iconUrl || CATEGORY_ICON_FALLBACK_BY_ID[item.id] || CATEGORY_ICON_PLACEHOLDER}
+                src={item.iconUrl || CATEGORY_ICON_PLACEHOLDER}
                 alt=""
                 draggable={false}
                 className={`pointer-events-none object-contain group-hover:brightness-110 ${

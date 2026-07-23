@@ -26,7 +26,9 @@ export function OnboardingCategoriesForm() {
         setCategories(
           response.data.map((category) => ({
             id: category.id,
-            label: category.name.replace(/^[^\p{L}\p{N}]+\s*/u, "").trim(),
+            label:
+              category.shortName?.trim() ||
+              category.name.replace(/^[^\p{L}\p{N}]+\s*/u, "").trim(),
           })),
         );
       })

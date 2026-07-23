@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getCategories, getCities } from "@/shared/api/catalog";
 import { buildCitySelectOptions } from "@/shared/lib/city-select-options";
-import { categoryItems, getCategoryIconSrc } from "@/shared/ui/icons";
 import type { SelectOption } from "@/shared/ui/select-field";
 
 import type { HomeCategoryItem } from "../types";
@@ -26,32 +25,15 @@ export function useCatalogData() {
     staleTime: 5 * 60_000,
   });
 
-  const apiCategoriesByUiKey = new Map(
-    (categoriesQuery.data?.data ?? []).map((item) => {
-      const uiKey = item.uiKey || item.slug || item.id;
-      return [
-        uiKey,
-        {
-          iconUrl: item.iconUrl ?? null,
-          homeArcOrder: item.homeArcOrder,
-          isVirtual: item.isVirtual,
-        },
-      ] as const;
-    }),
-  );
-
-  // Canonical home-arc set (13): short UI labels + placeholder icons when CDN art is missing.
-  const categories: HomeCategoryItem[] = categoryItems
-    .map((fallback, index) => {
-      const fromApi = apiCategoriesByUiKey.get(fallback.id);
-      return {
-        id: fallback.id,
-        label: fallback.label,
-        iconUrl: fromApi?.iconUrl || getCategoryIconSrc(fallback.icon),
-        homeArcOrder: fromApi?.homeArcOrder ?? index,
-        isVirtual: fromApi?.isVirtual,
-      };
-    })
+  const categories: HomeCategoryItem[] = (categoriesQuery.data?.data ?? [])
+    .filter((item) => Boolean(item.uiKey))
+    .map((item) => ({
+      id: item.uiKey as string,
+      label: item.shortName || item.name,
+      iconUrl: item.iconUrl ?? null,
+      homeArcOrder: item.homeArcOrder,
+      isVirtual: item.isVirtual,
+    }))
     .sort(
       (left, right) =>
         (left.homeArcOrder ?? Number.MAX_SAFE_INTEGER) -
