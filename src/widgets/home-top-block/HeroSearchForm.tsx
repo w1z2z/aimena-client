@@ -14,6 +14,12 @@ import { cityPlaceholder, titlePlaceholder, type Mode } from "./constants";
 const serviceLevelOptions = ["Мастер", "Профессионал", "Специалист", "Новичок"] as const;
 const serviceFormatOptions = ["Онлайн", "Офлайн", "С выездом"] as const;
 
+/** One continuous star split across the two lower panels (464 + 24 gap). */
+const HERO_PANEL_STAR_SIZE = "h-[430px] w-[430px]";
+const HERO_PANEL_STAR_TOP = "top-[98px]";
+const HERO_PANEL_STAR_LEFT = "left-[290px]";
+const HERO_PANEL_STAR_RIGHT = "left-[-198px]";
+
 function HeroBackgroundStar({ className, gradientId }: { className: string; gradientId: string }) {
   return (
     <svg
@@ -87,11 +93,11 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
   ];
 
   return (
-    <div className="relative flex h-[70px] w-[346px] items-center gap-[4px] rounded-[21px] border-[0.5px] border-[#CACACA] bg-white p-[8px]">
+    <div className="relative box-border flex h-[70px] w-[346px] items-center gap-[4px] rounded-[21px] border-[0.5px] border-[#CACACA] bg-white p-[8px]">
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute left-[8px] top-[8px] h-[54px] w-[163px] rounded-[17px] bg-[#8E8BED] transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-          mode === "browse" ? "translate-x-[167px]" : "translate-x-0"
+        className={`pointer-events-none absolute bottom-[8px] left-[8px] top-[8px] w-[calc(50%-10px)] rounded-[17px] bg-[#8E8BED] transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+          mode === "browse" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
         }`}
       />
       {tabs.map((tab) => {
@@ -101,8 +107,8 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
             key={tab.id}
             type="button"
             onClick={() => setMode(tab.id)}
-            className={`relative z-[1] flex h-[54px] flex-1 items-center justify-center gap-[8px] rounded-[17px] px-[16px] text-[14px] font-semibold leading-[120%] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              active ? "text-white" : "text-[#1A1A1A]"
+            className={`relative z-[1] flex h-full flex-1 items-center justify-center gap-[8px] rounded-[17px] px-[16px] text-[14px] font-semibold leading-none transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              active ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
             }`}
           >
             <span>{tab.label}</span>
@@ -259,10 +265,10 @@ function FilterChip({
       type="button"
       tabIndex={tabIndex}
       onClick={onClick}
-      className={`flex h-[25px] shrink-0 items-center justify-center whitespace-nowrap rounded-[16px] px-[12px] text-[12px] font-medium leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
+      className={`flex h-[25px] shrink-0 items-center justify-center whitespace-nowrap rounded-[16px] border-[0.5px] px-[12px] text-[12px] font-medium leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
         active
-          ? "border-0 bg-[#8E8BED] text-white"
-          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+          ? "border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
+          : "border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
       }`}
     >
       {label}
@@ -289,7 +295,7 @@ function HeroExchangeFilters({
   return (
     <div className="relative flex h-[255.5px] w-[464px] flex-col items-start gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
       <HeroBackgroundStar
-        className="pointer-events-none absolute left-[261px] top-[41.5px] z-0 h-[483px] w-[483px]"
+        className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
         gradientId="hero-left-filters-star"
       />
 
@@ -298,15 +304,15 @@ function HeroExchangeFilters({
         <div className="relative box-border flex h-[42px] w-[212px] items-center gap-[4px] rounded-[15px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] p-[4px]">
           <span
             aria-hidden="true"
-            className={`pointer-events-none absolute bottom-[4px] left-[4px] top-[4px] w-[100px] rounded-[13px] bg-[#8E8BED] transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              listingType === "service" ? "translate-x-[104px]" : "translate-x-0"
+            className={`pointer-events-none absolute bottom-[4px] left-[4px] top-[4px] w-[calc(50%-6px)] rounded-[13px] bg-[#8E8BED] transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              listingType === "service" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
             }`}
           />
           <button
             type="button"
             onClick={() => handleListingTypeChange("item")}
-            className={`relative z-[1] flex h-full w-[100px] items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              listingType === "item" ? "text-white" : "text-[#1A1A1A]"
+            className={`relative z-[1] flex h-full flex-1 items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              listingType === "item" ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
             }`}
           >
             Вещь
@@ -314,8 +320,8 @@ function HeroExchangeFilters({
           <button
             type="button"
             onClick={() => handleListingTypeChange("service")}
-            className={`relative z-[1] flex h-full w-[100px] items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              listingType === "service" ? "text-white" : "text-[#1A1A1A]"
+            className={`relative z-[1] flex h-full flex-1 items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              listingType === "service" ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
             }`}
           >
             Услуга
@@ -395,7 +401,7 @@ function HeroAddPanel({ onAddListingClick }: { onAddListingClick: () => void }) 
   return (
     <div className="relative h-[255px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
       <HeroBackgroundStar
-        className="pointer-events-none absolute left-[261px] top-[41.5px] z-0 h-[483px] w-[483px]"
+        className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
         gradientId="hero-left-add-star"
       />
 
@@ -407,7 +413,7 @@ function HeroAddPanel({ onAddListingClick }: { onAddListingClick: () => void }) 
         <button
           type="button"
           onClick={onAddListingClick}
-          className="flex h-[49px] items-center justify-center gap-[12px] rounded-[21px] bg-[#8E8BED] px-[24px] text-white transition-[filter,transform] duration-200 ease-out hover:brightness-110 active:translate-y-[0.5px]"
+          className="flex h-[49px] items-center justify-center gap-[12px] rounded-[21px] bg-[#8E8BED] px-[24px] text-white transition-colors duration-200 ease-out hover:bg-[#9E9EF0] active:bg-[#7E7EDD]"
         >
           <span className="text-[24px] font-extrabold leading-[110%]">+</span>
           <span className="text-[14px] font-semibold leading-[120%]">Добавить объявление</span>
@@ -420,7 +426,10 @@ function HeroAddPanel({ onAddListingClick }: { onAddListingClick: () => void }) 
 function HeroAllVariantsPanel({ onViewAllClick }: { onViewAllClick: () => void }) {
   return (
     <div className="relative h-[255px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
-      <HeroBackgroundStar className="absolute left-[-227px] top-[70px] h-[430px] w-[430px]" gradientId="hero-all-variants-star" />
+      <HeroBackgroundStar
+        className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_RIGHT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
+        gradientId="hero-all-variants-star"
+      />
 
       <h3 className="relative z-10 max-w-[252px] text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
         Посмотрите <span className="text-[#8E8BED]">все</span> варианты
