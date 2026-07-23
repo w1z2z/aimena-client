@@ -1,75 +1,76 @@
 import Link from "next/link";
 
-export const NOTIFICATION_CARD_HEIGHT = 74;
-export const NOTIFICATION_CARD_GAP = 10;
-
 type NotificationCardProps = {
   title: string;
   subtitle?: string;
-  badge?: string;
+  tags?: string[];
   time: string;
   href?: string;
+  imageUrl?: string | null;
 };
 
-const cardClassName =
-  "relative box-border flex h-[74px] w-full shrink-0 gap-[10px] overflow-hidden rounded-[8px] border border-black border-[0.5px] bg-white px-[10px]";
-
-function NotificationAvatar() {
-  return <div className="h-[46px] w-[46px] shrink-0 self-center rounded-full bg-[#1A1A1A]" aria-hidden="true" />;
-}
-
-function NotificationTitle({ title }: { title: string }) {
-  const match = title.match(/^(\p{Extended_Pictographic}+)\s{1,2}(.*)$/u);
-  if (!match) {
-    return <>{title}</>;
-  }
-
-  const [, emoji, text] = match;
-
+function NotificationAvatar({ imageUrl }: { imageUrl?: string | null }) {
   return (
-    <>
-      <span className="inline-block text-[11px] leading-none">{emoji}</span>
-      {text ? <span>{`  ${text}`}</span> : null}
-    </>
+    <div className="relative h-[49px] w-[49px] shrink-0">
+      <div className="h-full w-full overflow-hidden rounded-[15px] bg-[#D9D9D9]">
+        {imageUrl ? <img src={imageUrl} alt="" className="h-full w-full object-cover" /> : null}
+      </div>
+    </div>
   );
 }
 
-export function NotificationCard({ title, subtitle, badge, time, href }: NotificationCardProps) {
+function TagPill({ label }: { label: string }) {
+  return (
+    <span className="inline-flex h-[24px] max-w-full shrink-0 items-center justify-center rounded-[39px] border-[0.5px] border-solid border-[#8E8BED] bg-[#FFFFFF] px-[8px] text-[11px] font-semibold leading-[16px] tracking-[0.002em] text-[#1A1A1A]">
+      <span className="truncate">{label}</span>
+    </span>
+  );
+}
+
+export function NotificationCard({
+  title,
+  subtitle,
+  tags,
+  time,
+  href,
+  imageUrl,
+}: NotificationCardProps) {
   const content = (
     <>
-      <NotificationAvatar />
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-[7px] py-[11px]">
-        <p className="pr-[2px] font-[family-name:var(--font-golos)] text-[14px] leading-[1.1] text-[#1A1A1A]">
-          <NotificationTitle title={title} />
-        </p>
-        {subtitle || badge ? (
-          <div className="flex min-w-0 items-center gap-[8px] pr-[38px]">
-            {subtitle ? (
-              <span className="shrink-0 font-[family-name:var(--font-golos)] text-[14px] leading-none text-[#1A1A1A]">
-                {subtitle}
-              </span>
-            ) : null}
-            {badge ? (
-              <span className="inline-flex min-w-0 max-w-full shrink items-center rounded-[9px] bg-[#1A1A1A] px-[11px] py-[4px] font-[family-name:var(--font-golos)] text-[12px] leading-none text-white">
-                <span className="truncate">{badge}</span>
-              </span>
-            ) : null}
-          </div>
-        ) : null}
+      <div className="flex min-w-0 flex-1 items-start gap-[12px]">
+        <NotificationAvatar imageUrl={imageUrl} />
+        <div className="flex min-w-0 flex-col items-start gap-[12px]">
+          <p className="w-full text-[14px] font-semibold leading-[130%] tracking-[0.001em] text-[#1A1A1A]">
+            {title}
+          </p>
+          {tags && tags.length > 0 ? (
+            <div className="flex flex-wrap items-start gap-[12px]">
+              {tags.map((tag) => (
+                <TagPill key={tag} label={tag} />
+              ))}
+            </div>
+          ) : null}
+          {subtitle ? (
+            <p className="w-full text-[14px] font-normal leading-[170%] text-[#1A1A1A]">{subtitle}</p>
+          ) : null}
+        </div>
       </div>
-      <span className="absolute bottom-[10px] right-[10px] font-[family-name:var(--font-golos)] text-[10px] leading-none text-[#5D5D5D]">
+      <span className="shrink-0 self-end text-[11px] font-semibold leading-[16px] tracking-[0.002em] text-[#1A1A1A]">
         {time}
       </span>
     </>
   );
 
+  const className =
+    "flex w-full items-end justify-between gap-[8px] text-left transition hover:opacity-90";
+
   if (href) {
     return (
-      <Link href={href} className={`${cardClassName} transition hover:bg-[#FAFAFA]`}>
+      <Link href={href} className={className}>
         {content}
       </Link>
     );
   }
 
-  return <div className={cardClassName}>{content}</div>;
+  return <div className={className}>{content}</div>;
 }

@@ -15,7 +15,7 @@ import { Logo } from "./Logo";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { LoginButton } from "./LoginButton";
 import { ProfileDropdown } from "./ProfileDropdown";
-import { BellDotIcon, BellIcon, HeartIcon, SearchIcon } from "@/shared/ui/icons";
+import { BellIcon, HeartIcon, SearchIcon } from "@/shared/ui/icons";
 
 type OpenPanel = "notifications" | "profile" | null;
 
@@ -388,15 +388,7 @@ export function Header() {
                       aria-haspopup="dialog"
                       onClick={() => togglePanel("notifications")}
                     >
-                      <span className="relative inline-flex items-center justify-center">
-                        <BellIcon className="h-[15.4372px] w-[13.8125px] text-black" />
-                        {openPanel !== "notifications" ? (
-                          <>
-                            <BellDotIcon className="absolute -right-[1px] top-[-1px] h-[7px] w-[7px] text-[#FF2056]/25" />
-                            <BellDotIcon className="absolute right-0 top-0 h-[5px] w-[5px] text-[#FF2056]" />
-                          </>
-                        ) : null}
-                      </span>
+                      <BellIcon className="h-[15px] w-[14px] text-black" />
                     </IconButton>
                   }
                 >

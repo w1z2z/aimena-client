@@ -7,15 +7,17 @@ export function HeartIcon({ className, ...props }: IconProps) {
     <svg
       width={HEART_ICON_SIZE.width}
       height={HEART_ICON_SIZE.height}
-      viewBox={`0 0 ${HEART_ICON_SIZE.width} ${HEART_ICON_SIZE.height}`}
+      viewBox="-1 -1 18 16"
       fill="none"
+      overflow="visible"
       aria-hidden
-      className={`block shrink-0 ${className ?? ""}`}
+      className={`block shrink-0 overflow-visible ${className ?? ""}`}
       {...props}
     >
       <path
         d="M9.27113 12.9854L14.2504 8.01339C15.0584 7.18587 15.5073 6.07384 15.4999 4.9182C15.4925 3.76255 15.0293 2.65636 14.2108 1.83924C13.3922 1.02212 12.2841 0.559869 11.1266 0.552628C9.96907 0.545387 8.85529 0.993736 8.02653 1.80055C7.61852 1.38962 7.13322 1.06319 6.5985 0.840003C6.06378 0.616819 5.49018 0.501278 4.91061 0.500011C4.33105 0.498743 3.75694 0.611776 3.22125 0.83262C2.68556 1.05346 2.19883 1.37777 1.78902 1.78692C1.3792 2.19606 1.05437 2.68199 0.833163 3.21681C0.611959 3.75163 0.498741 4.32481 0.500011 4.90343C0.50128 5.48205 0.61701 6.05472 0.840558 6.58857C1.06411 7.12241 1.39107 7.60692 1.80267 8.01427L6.78194 12.9854C7.11206 13.3149 7.55974 13.5 8.02653 13.5C8.49332 13.5 8.941 13.3149 9.27113 12.9854Z"
         stroke="currentColor"
+        strokeWidth="1"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

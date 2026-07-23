@@ -14,28 +14,14 @@ export const Avatar = forwardRef<HTMLButtonElement, AvatarProps>(function Avatar
       ref={ref}
       type="button"
       aria-label="Профиль"
-      className={`relative box-border flex h-[32px] w-[32px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] border-0 bg-[#FFFFFF] p-0 text-[18px] font-semibold leading-none tracking-[-0.036px] text-[#8E8BED] ${className ?? ""}`}
+      className={`box-border flex h-[32px] w-[32px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] border-[0.3px] border-solid border-[#8E8BED] bg-[#FFFFFF] p-0 text-[18px] font-semibold leading-none tracking-[-0.036px] text-[#8E8BED] [appearance:none] ${className ?? ""}`}
       {...props}
     >
       {src ? (
-        <img src={src} alt="" draggable={false} className="absolute inset-0 block h-full w-full object-cover" />
+        <img src={src} alt="" draggable={false} className="h-full w-full object-cover object-center" />
       ) : (
         initial
       )}
-
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-[1] rounded-[13px]"
-        style={{
-          padding: 1,
-          backgroundImage: "linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%)",
-          WebkitMask:
-            "linear-gradient(#ffffff 0 0) content-box, linear-gradient(#ffffff 0 0)",
-          WebkitMaskComposite: "xor",
-          mask: "linear-gradient(#ffffff 0 0) content-box, linear-gradient(#ffffff 0 0)",
-          maskComposite: "exclude",
-        }}
-      />
     </button>
   );
 });
