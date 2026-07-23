@@ -59,6 +59,7 @@ export type ListingsQuery = {
   type?: Array<"item" | "service">;
   priceFrom?: number;
   priceTo?: number;
+  approximatePrice?: number;
   verifiedProvider?: boolean;
   serviceFormats?: Array<"online" | "onsite" | "client">;
 };
@@ -73,6 +74,7 @@ export type RecommendationsQuery = {
   condition?: ApiListingCondition[];
   priceFrom?: number;
   priceTo?: number;
+  approximatePrice?: number;
 };
 
 export type TagSuggestionsResponse = {

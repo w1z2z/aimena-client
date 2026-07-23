@@ -68,8 +68,7 @@ export function useHeroRecommendations({
         query: hero.title.trim() || undefined,
         hasDocuments: hero.mode === "browse" && hero.hasDocuments ? true : undefined,
         condition: backendCondition ? [backendCondition] : undefined,
-        priceFrom: parsedPrice ? Math.max(Math.round(parsedPrice * 0.75), 0) : undefined,
-        priceTo: parsedPrice ?? undefined,
+        approximatePrice: parsedPrice,
       };
 
       const categoryFilters = isAllCategory
@@ -150,8 +149,9 @@ export function useFilteredListings({
       const mappedConditions = appliedFilters.conditions
         .map((conditionId) => mapConditionIdToBackend(conditionId))
         .filter((value): value is NonNullable<typeof value> => Boolean(value));
-      const priceFrom = parsePrice(appliedFilters.priceFrom);
-      const priceTo = parsePrice(appliedFilters.priceTo);
+      const approximatePrice = parsePrice(appliedFilters.approximatePrice);
+      const priceFrom = approximatePrice ? undefined : parsePrice(appliedFilters.priceFrom);
+      const priceTo = approximatePrice ? undefined : parsePrice(appliedFilters.priceTo);
 
       try {
         const response = await getListings(
@@ -177,6 +177,7 @@ export function useFilteredListings({
               appliedFilters.listingMode === "service" && appliedFilters.serviceFormats.length > 0
                 ? appliedFilters.serviceFormats
                 : undefined,
+            approximatePrice,
             priceFrom,
             priceTo,
           },

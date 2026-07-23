@@ -4,8 +4,6 @@ import { useMemo } from "react";
 
 import { BoltIcon } from "@/shared/ui/icons";
 
-import { HERO_CONTENT_SHIFT_UP } from "./constants";
-
 const tickerItems = [
   "Сопровождение сделок до конца",
   "Обмен вместо продажи",
@@ -65,7 +63,7 @@ export function TickerCarousel() {
     <div
       className="home-ticker-carousel pointer-events-none absolute left-[-141px] z-20 h-[34px] w-[2111px] overflow-hidden"
       style={{
-        top: `${1030 - HERO_CONTENT_SHIFT_UP}px`,
+        top: "1040px",
         transform: "translateZ(0)",
       }}
     >

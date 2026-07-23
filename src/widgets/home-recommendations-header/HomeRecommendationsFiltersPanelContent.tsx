@@ -192,6 +192,7 @@ export function HomeRecommendationsFiltersPanelContent() {
     city,
     priceFrom,
     priceTo,
+    approximatePrice,
     datePeriod,
     conditions,
     withSurcharge,
@@ -375,15 +376,27 @@ export function HomeRecommendationsFiltersPanelContent() {
           <div className="home-filters-panel__price-inputs">
             <input
               type="text"
-              value={priceFrom}
-              onChange={(event) => updateFilters({ priceFrom: event.target.value })}
+              value={approximatePrice || priceFrom}
+              onChange={(event) =>
+                updateFilters({
+                  priceFrom: event.target.value,
+                  priceTo: approximatePrice || priceTo,
+                  approximatePrice: "",
+                })
+              }
               className="home-filters-panel__input home-filters-panel__input--narrow"
               placeholder="От"
             />
             <input
               type="text"
-              value={priceTo}
-              onChange={(event) => updateFilters({ priceTo: event.target.value })}
+              value={approximatePrice || priceTo}
+              onChange={(event) =>
+                updateFilters({
+                  priceFrom: approximatePrice || priceFrom,
+                  priceTo: event.target.value,
+                  approximatePrice: "",
+                })
+              }
               className="home-filters-panel__input home-filters-panel__input--narrow"
               placeholder="До"
             />
