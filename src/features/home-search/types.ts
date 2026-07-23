@@ -17,7 +17,6 @@ export type HomeFiltersState = {
   city: string;
   priceFrom: string;
   priceTo: string;
-  approximatePrice: string;
   datePeriod: DateOptionId;
   conditions: ConditionOptionId[];
   withSurcharge: boolean;
@@ -56,7 +55,6 @@ export function createDefaultFilters(): HomeFiltersState {
     city: "",
     priceFrom: "",
     priceTo: "",
-    approximatePrice: "",
     datePeriod: "all",
     conditions: [],
     withSurcharge: false,

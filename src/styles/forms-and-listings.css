@@ -567,6 +567,19 @@
   flex: none;
   width: max-content;
   min-width: 153px;
+  overflow: visible;
+}
+
+/*
+  Toggle panes must NOT use transform: a transformed ancestor clips the
+  switch knob mid-slide (seen on «С документами», not on «С доплатой»).
+*/
+.home-filters-panel__mode-swap--toggle .home-filters-panel__mode-swap-pane {
+  transform: none;
+}
+
+.home-filters-panel__mode-swap--toggle .home-filters-panel__mode-swap-pane.is-active {
+  transform: none;
 }
 
 .home-filters-panel__mode-swap-pane {

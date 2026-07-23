@@ -548,12 +548,17 @@ export default function CreateListingPage() {
 
   const handleIsFreeChange = (next: boolean) => {
     setIsFree(next);
-    if (next) setExchangeEnabled(false);
+    if (next) {
+      // Defer layout collapse so it doesn't hitch the switch knob animation.
+      requestAnimationFrame(() => setExchangeEnabled(false));
+    }
   };
 
   const handleExchangeEnabledChange = (next: boolean) => {
     setExchangeEnabled(next);
-    if (next) setIsFree(false);
+    if (next) {
+      requestAnimationFrame(() => setIsFree(false));
+    }
   };
 
   const handleItemPhotosSelected = (event: ChangeEvent<HTMLInputElement>) => {
@@ -1206,7 +1211,9 @@ export default function CreateListingPage() {
         </section>
 
         <section
-          className={`rounded-[16px] p-6 shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${isFree ? "bg-[#C8FF00]" : "bg-white"}`}
+          className={`create-listing-free-section rounded-[16px] p-6 shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${
+            isFree ? "is-on bg-[#C8FF00]" : "bg-white"
+          }`}
         >
           <div className="flex items-center justify-between gap-6">
             <div className="min-w-0">
@@ -1221,7 +1228,9 @@ export default function CreateListingPage() {
                 Включите, если отдаёте {listingTypeName} без обмена — взамен вы ничего не получите
               </p>
             </div>
-            <Switch checked={isFree} onChange={handleIsFreeChange} />
+            <div className="create-listing-switch-slot">
+              <Switch checked={isFree} onChange={handleIsFreeChange} />
+            </div>
           </div>
         </section>
 
@@ -1233,7 +1242,9 @@ export default function CreateListingPage() {
                 Включите, чтобы выбрать желаемое предложение
               </p>
             </div>
-            <Switch checked={exchangeEnabled} onChange={handleExchangeEnabledChange} />
+            <div className="create-listing-switch-slot">
+              <Switch checked={exchangeEnabled} onChange={handleExchangeEnabledChange} />
+            </div>
           </div>
 
           <div className={`create-listing-exchange-panel${exchangeEnabled ? " is-open" : ""}`}>

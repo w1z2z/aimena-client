@@ -148,9 +148,8 @@ export function useFilteredListings({
       const mappedConditions = appliedFilters.conditions
         .map((conditionId) => mapConditionIdToBackend(conditionId))
         .filter((value): value is NonNullable<typeof value> => Boolean(value));
-      const approximatePrice = parsePrice(appliedFilters.approximatePrice);
-      const priceFrom = approximatePrice ? undefined : parsePrice(appliedFilters.priceFrom);
-      const priceTo = approximatePrice ? undefined : parsePrice(appliedFilters.priceTo);
+      const priceFrom = parsePrice(appliedFilters.priceFrom);
+      const priceTo = parsePrice(appliedFilters.priceTo);
 
       try {
         const response = await getListings(
@@ -172,7 +171,6 @@ export function useFilteredListings({
               appliedFilters.listingMode === "service" && appliedFilters.serviceFormats.length > 0
                 ? appliedFilters.serviceFormats
                 : undefined,
-            approximatePrice,
             priceFrom,
             priceTo,
           },

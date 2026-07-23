@@ -10,6 +10,7 @@ import type {
   SearchMode,
   ServiceFormatId,
 } from "@/features/home-search/types";
+import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
 import { Switch } from "@/shared/ui/switch/Switch";
 import { SelectField } from "@/shared/ui/select-field";
 
@@ -153,7 +154,6 @@ export function HomeRecommendationsFiltersPanelContent() {
     city,
     priceFrom,
     priceTo,
-    approximatePrice,
     datePeriod,
     conditions,
     withSurcharge,
@@ -346,12 +346,12 @@ export function HomeRecommendationsFiltersPanelContent() {
             <div className="home-filters-panel__price-inputs">
               <input
                 type="text"
-                value={approximatePrice || priceFrom}
+                inputMode="numeric"
+                autoComplete="off"
+                value={formatPriceWithSpaces(priceFrom)}
                 onChange={(event) =>
                   updateFilters({
-                    priceFrom: event.target.value,
-                    priceTo: approximatePrice || priceTo,
-                    approximatePrice: "",
+                    priceFrom: extractPriceDigits(event.target.value),
                   })
                 }
                 className="home-filters-panel__input home-filters-panel__input--price"
@@ -359,12 +359,12 @@ export function HomeRecommendationsFiltersPanelContent() {
               />
               <input
                 type="text"
-                value={approximatePrice || priceTo}
+                inputMode="numeric"
+                autoComplete="off"
+                value={formatPriceWithSpaces(priceTo)}
                 onChange={(event) =>
                   updateFilters({
-                    priceFrom: approximatePrice || priceFrom,
-                    priceTo: event.target.value,
-                    approximatePrice: "",
+                    priceTo: extractPriceDigits(event.target.value),
                   })
                 }
                 className="home-filters-panel__input home-filters-panel__input--price"

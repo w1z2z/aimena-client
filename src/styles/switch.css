@@ -1,4 +1,4 @@
-/* Figma 273:10778 — 38×22, knob 18×18 @ 2px, travel 16px */
+/* Figma 273:10778 — 38×22, knob 18×18 @ 2px / 18px */
 .site-switch {
   --switch-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --switch-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-0.12 -0.12 9.02 9.02'%3E%3Cpath fill='%23ffffff' d='M3.74738 0.341297C4.05464 -0.113782 4.72466 -0.113783 5.03192 0.341296L6.32082 2.25026C6.37636 2.33251 6.44718 2.40334 6.52944 2.45888L8.4384 3.74777C8.89348 4.05504 8.89348 4.72505 8.4384 5.03232L6.52944 6.32122C6.44718 6.37675 6.37636 6.44758 6.32082 6.52983L5.03192 8.43879C4.72466 8.89387 4.05464 8.89387 3.74738 8.43879L2.45848 6.52983C2.40294 6.44758 2.33212 6.37675 2.24986 6.32122L0.340901 5.03232C-0.114179 4.72505 -0.11418 4.05504 0.3409 3.74778L2.24986 2.45888C2.33212 2.40334 2.40294 2.33251 2.45848 2.25026L3.74738 0.341297Z'/%3E%3C/svg%3E");
@@ -12,6 +12,7 @@
   margin: 0;
   padding: 0;
   border: none;
+  overflow: visible;
   background: transparent;
   cursor: pointer;
   appearance: none;
@@ -37,7 +38,10 @@
   background: #8e8bed;
 }
 
-/* Knob + star = one element (star via background) — cannot desync */
+/*
+  Animate `left` (not transform): parent panels often use transform/grid
+  animations; nested transforms clip or hitch the knob.
+*/
 .site-switch__knob {
   position: absolute;
   top: 2px;
@@ -52,14 +56,13 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: 10px 10px;
-  transform: translate3d(0, 0, 0);
   transition:
-    transform 500ms var(--switch-ease),
+    left 500ms var(--switch-ease),
     background-color 500ms var(--switch-ease);
 }
 
 .site-switch.is-on .site-switch__knob {
+  left: 18px;
   background-color: #ffffff;
   background-image: var(--switch-star-on);
-  transform: translate3d(16px, 0, 0);
 }
