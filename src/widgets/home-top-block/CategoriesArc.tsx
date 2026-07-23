@@ -90,6 +90,114 @@ function interpolateProfile(
   return lowerValue + (upperValue - lowerValue) * progress;
 }
 
+/** Open arc through icon centers — same trajectory as category icons (not a full ellipse). */
+const CATEGORY_ARC_PATH = (() => {
+  const points: Array<{ x: number; y: number }> = [];
+  const from = -(CATEGORY_PROFILE.length - 1);
+  const to = CATEGORY_PROFILE.length - 1;
+  const step = 0.08;
+
+  for (let distance = from; distance <= to + 1e-9; distance += step) {
+    const abs = Math.abs(distance);
+    const sign = distance < 0 ? -1 : 1;
+    points.push({
+      x: ARC_CENTER_X + (abs < 1e-9 ? 0 : sign * interpolateProfile("offsetX", abs)),
+      y: interpolateProfile("centerY", abs),
+    });
+  }
+
+  return points
+    .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+    .join(" ");
+})();
+
+const CATEGORY_ARC_BACKDROP_MASK = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ARC_CONTAINER_WIDTH} 183" fill="none"><path d="${CATEGORY_ARC_PATH}" stroke="white" stroke-width="220" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+)}")`;
+
+function CategoryArcGlass() {
+  return (
+    <>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          WebkitBackdropFilter: "blur(96px)",
+          backdropFilter: "blur(96px)",
+          WebkitMaskImage: CATEGORY_ARC_BACKDROP_MASK,
+          maskImage: CATEGORY_ARC_BACKDROP_MASK,
+          WebkitMaskSize: "100% 100%",
+          maskSize: "100% 100%",
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskPosition: "center",
+          maskPosition: "center",
+        }}
+      />
+
+      <svg
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0 overflow-visible"
+        width={ARC_CONTAINER_WIDTH}
+        height={183}
+        viewBox={`0 0 ${ARC_CONTAINER_WIDTH} 183`}
+        fill="none"
+      >
+        <defs>
+          <filter
+            id="category-arc-wide-glow"
+            x="-60%"
+            y="-200%"
+            width="220%"
+            height="500%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feGaussianBlur in="SourceGraphic" stdDeviation="72" result="blur" />
+            <feColorMatrix
+              in="blur"
+              type="matrix"
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 0.224 0"
+            />
+          </filter>
+          <filter
+            id="category-arc-rim-blur"
+            x="-40%"
+            y="-160%"
+            width="180%"
+            height="420%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feGaussianBlur in="SourceGraphic" stdDeviation="18" />
+          </filter>
+        </defs>
+
+        <path
+          d={CATEGORY_ARC_PATH}
+          stroke="#C8FF00"
+          strokeWidth={250}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={0.088}
+          filter="url(#category-arc-wide-glow)"
+        />
+
+        <path
+          d={CATEGORY_ARC_PATH}
+          stroke="#C8FF00"
+          strokeWidth={44}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={0.16}
+          filter="url(#category-arc-rim-blur)"
+        />
+      </svg>
+    </>
+  );
+}
+
 function getCategoryIconFilter(isActive: boolean, useSvgFilter: boolean) {
   if (useSvgFilter) {
     return isActive ? "url(#category-icon-shadow-active)" : "url(#category-icon-shadow-inactive)";
@@ -426,9 +534,11 @@ export function CategoriesArc({
       onPointerMove={handleTrackedPointerMove}
       onPointerUp={endPointerTrack}
       onPointerCancel={endPointerTrack}
-      className="categories-arc absolute left-[305px] z-10 h-[183px] w-[1311px] cursor-grab select-none active:cursor-grabbing"
+      className="categories-arc absolute left-[305px] z-10 h-[183px] w-[1311px] cursor-grab overflow-visible select-none active:cursor-grabbing"
       style={{ top: `${ARC_CONTAINER_TOP}px` }}
     >
+      <CategoryArcGlass />
+
       <svg aria-hidden className="pointer-events-none absolute size-0 overflow-hidden">
         <defs>
           <filter
