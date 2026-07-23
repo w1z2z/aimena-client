@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 import { BoltIcon } from "@/shared/ui/icons";
 
-import { BASE_SCENE_WIDTH, HERO_CONTENT_SHIFT_UP } from "./constants";
+import { HERO_CONTENT_SHIFT_UP } from "./constants";
 
 const tickerItems = [
   "Сопровождение сделок до конца",
@@ -63,11 +63,10 @@ export function TickerCarousel() {
 
   return (
     <div
-      className="home-ticker-carousel pointer-events-none absolute left-1/2 z-20 h-[34px] overflow-hidden"
+      className="home-ticker-carousel pointer-events-none absolute left-[-141px] z-20 h-[34px] w-[2111px] overflow-hidden"
       style={{
-        top: `${1172 - HERO_CONTENT_SHIFT_UP}px`,
-        width: `${BASE_SCENE_WIDTH}px`,
-        transform: "translateX(-50%) translateZ(0)",
+        top: `${1030 - HERO_CONTENT_SHIFT_UP}px`,
+        transform: "translateZ(0)",
       }}
     >
       <div className="home-ticker-track flex w-max items-center gap-[12px]">

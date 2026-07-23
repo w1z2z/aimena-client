@@ -39,7 +39,7 @@ export function ListingCard({
   const favoriteMutation = useFavoriteToggle();
   const [favoriteOverride, setFavoriteOverride] = useState<boolean | null>(null);
   const favorite = favoriteOverride ?? isFavorite;
-  const showWants = variant !== "free";
+  const showWants = variant === "exchange";
   const rootClassName = [
     "home-listing-card",
     variant === "hero" ? "home-listing-card--hero" : "",
@@ -102,11 +102,9 @@ export function ListingCard({
       </div>
 
       <div className="home-listing-card__footer">
-        {variant !== "hero" ? (
-          <button type="button" className="home-listing-card__action" onClick={actionHandler}>
-            {actionLabel}
-          </button>
-        ) : null}
+        <button type="button" className="home-listing-card__action" onClick={actionHandler}>
+          {actionLabel}
+        </button>
 
         {showWants ? (
           <div className="home-listing-card__wants">

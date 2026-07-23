@@ -41,12 +41,13 @@ function rebaseDisplayIndexContinuous(displayIndex: number, length: number) {
   return settled + fraction;
 }
 
-const ARC_CENTER_X = 720;
+const ARC_CONTAINER_WIDTH = 1311;
+const ARC_CENTER_X = ARC_CONTAINER_WIDTH / 2;
 const ARC_HORIZONTAL_RADIUS = 620;
 const ARC_VERTICAL_RADIUS = 170;
 const ARC_BASE_Y = 218;
-const ARC_CONTAINER_TOP = -20;
-const ARC_CONTAINER_HEIGHT = 188;
+const ARC_CONTAINER_TOP = 96;
+const ARC_CONTAINER_HEIGHT = 183;
 const ARC_ACTIVE_ICON_SIZE = 102;
 const ARC_GLOW_HORIZONTAL_RADIUS = 735;
 const ARC_ANGLE_STEP = 17.5;
@@ -401,12 +402,12 @@ export function CategoriesArc({
       onPointerMove={handleTrackedPointerMove}
       onPointerUp={endPointerTrack}
       onPointerCancel={endPointerTrack}
-      className="categories-arc absolute left-[288px] z-10 h-[188px] w-[1440px] cursor-grab select-none active:cursor-grabbing"
+      className="categories-arc absolute left-[305px] z-10 h-[183px] w-[1311px] cursor-grab select-none active:cursor-grabbing"
       style={{ top: `${ARC_CONTAINER_TOP}px` }}
     >
       <svg
         aria-hidden
-        viewBox={`0 0 1440 ${ARC_CONTAINER_HEIGHT}`}
+        viewBox={`0 0 ${ARC_CONTAINER_WIDTH} ${ARC_CONTAINER_HEIGHT}`}
         className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
         style={
           isSafari

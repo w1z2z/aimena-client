@@ -10,7 +10,7 @@ function HeroRecommendationsEmpty({
   isAllCategory: boolean;
 }) {
   return (
-    <div className="flex min-h-[427px] w-[342px] flex-col items-center justify-center rounded-[10px] bg-white px-[24px] py-[32px] text-center shadow-[0px_5px_4.95px_rgba(0,0,0,0.25)]">
+    <div className="flex h-[443px] w-[342px] flex-col items-center justify-center rounded-[31px] bg-white px-[24px] py-[32px] text-center">
       <p className="text-[18px] font-semibold text-[#1A1A1A]">Пока ничего не нашли</p>
       <p className="mt-[8px] text-[14px] leading-[1.35] text-[#626262]">
         {isAllCategory
@@ -25,7 +25,7 @@ function HeroRecommendationsEmpty({
 
 function HeroRecommendationsLoading() {
   return (
-    <div className="flex min-h-[427px] w-[342px] items-center justify-center rounded-[10px] bg-white/90 px-[24px] text-center text-[14px] font-medium text-[#626262] shadow-[0px_5px_4.95px_rgba(0,0,0,0.12)]">
+    <div className="flex h-[443px] w-[342px] items-center justify-center rounded-[31px] bg-white/90 px-[24px] text-center text-[14px] font-medium text-[#626262]">
       Подбираем объявления...
     </div>
   );
@@ -47,18 +47,22 @@ export function HeroRecommendationsPanel({
   isAllCategory,
 }: HeroRecommendationsPanelProps) {
   return (
-    <div className="relative h-full w-[454px] rounded-[10px] bg-[#C8FF00] p-[8px]">
-      <div className="mx-auto mb-[8px] mt-[8px] w-[342px] text-left text-[#1A1A1A]">
-        <p className="text-[16px] font-bold leading-[1.2]">{heading}</p>
+    <div className="relative flex h-[535px] w-[464px] flex-col items-start gap-[12px] rounded-[31px] bg-[#C8FF00] p-[24px]">
+      <div className="w-[330px] text-left text-[#1A1A1A]">
+        <p className="text-[24px] font-extrabold leading-[110%] tracking-[-0.003em]">{heading}</p>
       </div>
-      <div className="home-recommendations-scroll mx-auto h-[479px] w-[358px] overflow-y-auto overflow-x-hidden rounded-[10px] p-[8px] snap-y snap-mandatory overscroll-contain">
+
+      <div className="home-recommendations-scroll mx-auto h-[461px] w-[366px] overflow-x-hidden overflow-y-auto overscroll-contain px-[12px] pb-[16px] pt-[2px] snap-y snap-mandatory">
         <div className="flex flex-col items-center gap-[16px]">
           {loading ? (
             <HeroRecommendationsLoading />
           ) : listings.length > 0 ? (
             listings.map((listing) => (
-              <div key={listing.id} data-recommendation-card className="flex w-full snap-center snap-always justify-center">
-                <ListingCard
+              <div
+                key={listing.id}
+                data-recommendation-card
+                className="flex h-[443px] w-[342px] shrink-0 snap-center snap-always justify-center"
+              >                <ListingCard
                   listingId={listing.id}
                   variant="hero"
                   title={listing.title}

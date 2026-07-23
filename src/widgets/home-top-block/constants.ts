@@ -1,10 +1,10 @@
-import { layout, placeholders } from "@/shared/config/tokens";
+import { placeholders } from "@/shared/config/tokens";
 
 export type Mode = "exchange" | "browse" | "all";
 
-export const BASE_SCENE_WIDTH = layout.heroSceneWidth;
-export const HERO_CONTENT_SHIFT_UP = 99;
-export const BASE_SCENE_HEIGHT = 1330 - HERO_CONTENT_SHIFT_UP;
+export const BASE_SCENE_WIDTH = 1921;
+export const HERO_CONTENT_SHIFT_UP = 0;
+export const BASE_SCENE_HEIGHT = 1088;
 
 export const fieldClassName =
   "rounded-[10px] border border-[#CACACA] bg-white px-[12px] font-semibold text-[#3D3D3D] outline-none placeholder:text-[#626262]";
