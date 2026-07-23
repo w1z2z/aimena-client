@@ -42,11 +42,15 @@ const LIST_MAX_HEIGHT = 280;
 const VIEWPORT_PADDING = 8;
 
 function getLabelForValue(options: readonly SelectOption[], value: string) {
-  return options.find((option) => option.value === value && !option.disabled)?.label ?? value;
+  const normalizedValue = value ?? "";
+  return (
+    options.find((option) => option.value === normalizedValue && !option.disabled)?.label ??
+    normalizedValue
+  );
 }
 
 function filterOptions(options: readonly SelectOption[], query: string) {
-  const normalized = query.trim().toLowerCase();
+  const normalized = (query ?? "").trim().toLowerCase();
   if (!normalized) return options;
   return options.filter((option) => option.label.toLowerCase().includes(normalized));
 }
@@ -79,8 +83,9 @@ export function SelectField({
   disabled = false,
   "aria-label": ariaLabel,
 }: SelectFieldProps) {
+  const safeValue = value ?? "";
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(() => getLabelForValue(options, value));
+  const [inputValue, setInputValue] = useState(() => getLabelForValue(options, safeValue));
   const [activeOptionValue, setActiveOptionValue] = useState<string | null>(null);
   const [listStyle, setListStyle] = useState<CSSProperties>({ visibility: "hidden" });
   const rootRef = useRef<HTMLDivElement>(null);
@@ -89,7 +94,7 @@ export function SelectField({
   const listId = useId();
 
   const visibleOptions = useMemo(
-    () => (searchable ? filterOptions(options, inputValue) : options),
+    () => (searchable ? filterOptions(options, inputValue ?? "") : options),
     [inputValue, options, searchable],
   );
   const selectableOptions = useMemo(
@@ -98,12 +103,12 @@ export function SelectField({
   );
 
   useEffect(() => {
-    setInputValue(getLabelForValue(options, value));
+    setInputValue(getLabelForValue(options, safeValue));
     // Intentionally do not depend on options:
     // options are frequently re-fetched while user types, and syncing on each
     // options change would wipe in-progress input before explicit selection.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [safeValue]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -121,10 +126,10 @@ export function SelectField({
         return current;
       }
 
-      const selectedOption = selectableOptions.find((option) => option.value === value);
+      const selectedOption = selectableOptions.find((option) => option.value === safeValue);
       return selectedOption?.value ?? selectableOptions[0].value;
     });
-  }, [isOpen, selectableOptions, value]);
+  }, [isOpen, selectableOptions, safeValue]);
 
   const close = useCallback(() => setIsOpen(false), []);
 
@@ -191,7 +196,11 @@ export function SelectField({
     setInputValue(nextValue);
     setActiveOptionValue(null);
     onInputChange?.(nextValue);
-    if (allowCustomValue) onChange(nextValue);
+    if (allowCustomValue) {
+      onChange(nextValue);
+    } else if (!nextValue.trim() && safeValue) {
+      onChange("");
+    }
     if (!isOpen) setIsOpen(true);
   };
 
@@ -205,21 +214,28 @@ export function SelectField({
   const handleBlur = () => {
     if (!searchable) return;
 
-    const trimmed = inputValue.trim();
+    const trimmed = (inputValue ?? "").trim();
+
+    if (!trimmed) {
+      setInputValue("");
+      if (safeValue) onChange("");
+      return;
+    }
+
     const matched = options.find((option) => option.label.toLowerCase() === trimmed.toLowerCase());
 
     if (matched) {
       setInputValue(matched.label);
-      if (matched.value !== value) onChange(matched.value);
+      if (matched.value !== safeValue) onChange(matched.value);
       return;
     }
 
     if (allowCustomValue) {
-      if (trimmed !== value) onChange(trimmed);
+      if (trimmed !== safeValue) onChange(trimmed);
       return;
     }
 
-    setInputValue(getLabelForValue(options, value));
+    setInputValue(getLabelForValue(options, safeValue));
   };
 
   const moveActiveOption = (direction: 1 | -1) => {
@@ -278,7 +294,7 @@ export function SelectField({
     activeNode?.scrollIntoView({ block: "nearest" });
   }, [activeOptionValue, isOpen]);
 
-  const showPlaceholderState = !value && !inputValue.trim();
+  const showPlaceholderState = !safeValue && !(inputValue ?? "").trim();
   const handleControlMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (disabled) return;
     const target = event.target as HTMLElement;
@@ -323,8 +339,8 @@ export function SelectField({
               <button
                 type="button"
                 role="option"
-                aria-selected={option.value === value}
-                className={`site-select__option${option.value === value ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
+                aria-selected={option.value === safeValue}
+                className={`site-select__option${option.value === safeValue ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
                 data-option-value={option.value}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => handleOptionPick(option)}
@@ -357,7 +373,7 @@ export function SelectField({
           aria-controls={listId}
           aria-autocomplete="list"
           aria-label={ariaLabel}
-          value={inputValue}
+          value={inputValue ?? ""}
           placeholder={placeholder}
           readOnly={!searchable}
           disabled={disabled}

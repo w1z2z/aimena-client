@@ -7,14 +7,22 @@ function parsePrice(value: string) {
   return Number.parseInt(digits, 10);
 }
 
-export function heroToFilters(hero: HomeHeroState): HomeFiltersState {
+export function heroToFilters(
+  hero: HomeHeroState,
+  categoryUiKeyToBackendId: Record<string, string> = {},
+): HomeFiltersState {
   const price = parsePrice(hero.price);
   const conditionKey = CONDITION_LABEL_TO_ID[hero.condition];
+  const categoryParentId =
+    hero.categoryId && hero.categoryId !== "all"
+      ? (categoryUiKeyToBackendId[hero.categoryId] ?? "")
+      : "";
 
   return {
     searchMode: hero.mode === "exchange" ? "have" : "want",
     listingMode: "item",
-    category: hero.categoryId,
+    categoryParentId,
+    categoryChildId: "",
     city: hero.city,
     priceFrom: "",
     priceTo: "",

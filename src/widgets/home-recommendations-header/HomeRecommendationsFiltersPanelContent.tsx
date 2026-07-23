@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { startTransition, useCallback, useMemo } from "react";
 
 import { FILTER_CONDITION_OPTIONS } from "@/entities/listing";
 import { useHomeSearch } from "@/features/home-search";
@@ -10,12 +10,10 @@ import type {
   SearchMode,
   ServiceFormatId,
 } from "@/features/home-search/types";
-import { placeholders } from "@/shared/config/tokens";
-import { ToggleStarIcon } from "@/shared/ui/icons";
+import { Switch } from "@/shared/ui/switch/Switch";
 import { SelectField } from "@/shared/ui/select-field";
 
 const dateOptions = [
-  { id: "all", label: "За всё время" },
   { id: "today", label: "За сегодня" },
   { id: "week", label: "За неделю" },
   { id: "month", label: "За месяц" },
@@ -30,8 +28,6 @@ const serviceFormatOptions = [
   { id: "client", label: "У клиента" },
 ] as const;
 
-const titleQueryPlaceholder = placeholders.listingTitle;
-
 function FilterToggle({
   checked,
   label,
@@ -42,58 +38,67 @@ function FilterToggle({
   onChange: (next: boolean) => void;
 }) {
   return (
-    <label className="home-filters-panel__toggle">
+    <div className="home-filters-panel__toggle">
+      <Switch checked={checked} onChange={onChange} aria-label={label} />
       <button
         type="button"
-        role="switch"
-        aria-checked={checked}
+        className="home-filters-panel__toggle-label"
         onClick={() => onChange(!checked)}
-        className={`home-filters-panel__toggle-track${checked ? " is-on" : ""}`}
       >
-        <span className="home-filters-panel__toggle-knob">
-          <ToggleStarIcon
-            className={`home-filters-panel__toggle-star${checked ? " is-on" : ""}`}
-          />
-        </span>
+        {label}
       </button>
-      <span className="home-filters-panel__toggle-label">{label}</span>
-    </label>
+    </div>
   );
 }
 
 function FilterModeSwitch({
   value,
   onChange,
+  options,
+  "aria-label": ariaLabel,
+  className,
 }: {
-  value: ListingMode;
-  onChange: (next: ListingMode) => void;
+  value: string;
+  onChange: (next: string) => void;
+  options: ReadonlyArray<{ id: string; label: string }>;
+  "aria-label": string;
+  className?: string;
 }) {
+  const activeIndex = Math.max(
+    0,
+    options.findIndex((option) => option.id === value),
+  );
+
   return (
     <div
-      className="home-filters-panel__mode-switch"
-      data-active={value}
+      className={`home-filters-panel__mode-switch${className ? ` ${className}` : ""}`}
+      data-active-index={activeIndex}
       role="radiogroup"
-      aria-label="Тип объявления"
+      aria-label={ariaLabel}
     >
-      <span className="home-filters-panel__mode-switch-indicator" aria-hidden="true" />
-      <button
-        type="button"
-        role="radio"
-        aria-checked={value === "item"}
-        onClick={() => onChange("item")}
-        className={`home-filters-panel__mode-switch-btn${value === "item" ? " is-active" : ""}`}
-      >
-        Вещь
-      </button>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={value === "service"}
-        onClick={() => onChange("service")}
-        className={`home-filters-panel__mode-switch-btn${value === "service" ? " is-active" : ""}`}
-      >
-        Услуга
-      </button>
+      <span
+        aria-hidden="true"
+        className="home-filters-panel__mode-switch-indicator"
+        style={{ transform: `translateX(calc(${activeIndex} * (100% + 4px)))` }}
+      />
+      {options.map((option) => {
+        const active = value === option.id;
+        return (
+          <button
+            key={option.id}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => {
+              if (option.id === value) return;
+              startTransition(() => onChange(option.id));
+            }}
+            className={`home-filters-panel__mode-switch-btn${active ? " is-active" : ""}`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -102,17 +107,13 @@ function FilterPills<T extends string>({
   options,
   selected,
   onToggle,
-  nowrap = true,
 }: {
   options: ReadonlyArray<{ id: T; label: string }>;
   selected: T[];
   onToggle: (id: T) => void;
-  nowrap?: boolean;
 }) {
   return (
-    <div
-      className={`home-filters-panel__pills${nowrap ? " home-filters-panel__pills--nowrap" : ""}`}
-    >
+    <div className="home-filters-panel__pills">
       {options.map((item) => {
         const active = selected.includes(item.id);
         return (
@@ -121,49 +122,12 @@ function FilterPills<T extends string>({
             type="button"
             onClick={() => onToggle(item.id)}
             aria-pressed={active}
-            className={`home-filters-panel__pill home-filters-panel__pill--condition${active ? " is-active" : ""}`}
+            className={`home-filters-panel__pill${active ? " is-active" : ""}`}
           >
             {item.label}
           </button>
         );
       })}
-    </div>
-  );
-}
-
-function FilterSearchModeSwitch({
-  value,
-  onChange,
-}: {
-  value: SearchMode;
-  onChange: (next: SearchMode) => void;
-}) {
-  return (
-    <div
-      className="home-filters-panel__mode-switch"
-      data-active={value}
-      role="radiogroup"
-      aria-label="Режим поиска"
-    >
-      <span className="home-filters-panel__mode-switch-indicator" aria-hidden="true" />
-      <button
-        type="button"
-        role="radio"
-        aria-checked={value === "want"}
-        onClick={() => onChange("want")}
-        className={`home-filters-panel__mode-switch-btn${value === "want" ? " is-active" : ""}`}
-      >
-        Отдают
-      </button>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={value === "have"}
-        onClick={() => onChange("have")}
-        className={`home-filters-panel__mode-switch-btn${value === "have" ? " is-active" : ""}`}
-      >
-        Хотят
-      </button>
     </div>
   );
 }
@@ -178,17 +142,14 @@ export function HomeRecommendationsFiltersPanelContent() {
     onCityInputChange,
     onCityListEndReached,
     pinSelectedCity,
-    categories,
+    categoryTree,
   } = useHomeSearch();
-  const categoryComboboxOptions = categories.map((item) => ({
-    value: item.id,
-    label: item.label,
-  }));
 
   const {
     listingMode,
     searchMode,
-    category,
+    categoryParentId,
+    categoryChildId,
     city,
     priceFrom,
     priceTo,
@@ -201,6 +162,31 @@ export function HomeRecommendationsFiltersPanelContent() {
     verifiedProvider,
     titleQuery,
   } = filters;
+
+  const parentCategoryOptions = useMemo(
+    () =>
+      categoryTree.map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    [categoryTree],
+  );
+
+  const selectedParentCategory = useMemo(
+    () => categoryTree.find((item) => item.id === categoryParentId) ?? null,
+    [categoryParentId, categoryTree],
+  );
+
+  const childCategoryOptions = useMemo(
+    () =>
+      (selectedParentCategory?.children ?? []).map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    [selectedParentCategory],
+  );
+
+  const hasSubcategories = childCategoryOptions.length > 0;
 
   const updateFilters = useCallback(
     (patch: Partial<typeof filters>) => {
@@ -233,180 +219,248 @@ export function HomeRecommendationsFiltersPanelContent() {
     [setFilters],
   );
 
+  const handleListingModeChange = useCallback(
+    (next: string) => {
+      updateFilters({ listingMode: next as ListingMode });
+    },
+    [updateFilters],
+  );
+
   const handleReset = useCallback(() => {
     resetFilters();
   }, [resetFilters]);
 
   return (
     <div className="home-filters-panel">
-      <h3 className="home-filters-panel__title">Фильтры</h3>
-
-      <div className="home-filters-panel__top-row">
-        <div className="home-filters-panel__search-mode">
-          <p className="home-filters-panel__field-label">Искать по</p>
-          <FilterSearchModeSwitch
-            value={searchMode}
-            onChange={(next) => updateFilters({ searchMode: next })}
-          />
-        </div>
-
-        <div className="home-filters-panel__title-query">
-          <p className="home-filters-panel__field-label">Название / тег</p>
-          <input
-            type="text"
-            value={titleQuery}
-            onChange={(event) => updateFilters({ titleQuery: event.target.value })}
-            className="home-filters-panel__input home-filters-panel__input--title-query"
-            placeholder={titleQueryPlaceholder}
-            aria-label="Название или тег"
-          />
-        </div>
-      </div>
-
-      <div className="home-filters-panel__city">
-        <p className="home-filters-panel__field-label home-filters-panel__field-label--golos">
-          Выберите город
-        </p>
-        <SelectField
-          value={city}
-          onChange={(next) => {
-            updateFilters({ city: next });
-            if (!next) {
-              pinSelectedCity(null);
-              return;
-            }
-            const option = cityOptions.find((item) => item.value === next && !item.disabled);
-            if (option) pinSelectedCity(option);
-          }}
-          onInputChange={onCityInputChange}
-          onListEndReached={onCityListEndReached}
-          options={cityOptions}
-          placeholder="Выберите город"
-          variant="filter"
-          allowCustomValue={false}
-          className="home-filters-panel__select-wrap"
-          aria-label="Выберите город"
-        />
-      </div>
-
-      <div className="home-filters-panel__right">
-        <div className="home-filters-panel__right-section">
-          <p className="home-filters-panel__field-label">Тип объявления</p>
-          <FilterModeSwitch
-            value={listingMode}
-            onChange={(next) => updateFilters({ listingMode: next })}
-          />
-        </div>
-
-        <div className="home-filters-panel__right-section">
-          <p className="home-filters-panel__field-label">Категория</p>
-          <SelectField
-            value={category}
-            onChange={(next) => updateFilters({ category: next })}
-            options={categoryComboboxOptions}
-            variant="filter"
-            searchable={false}
-            className="home-filters-panel__select-wrap home-filters-panel__select-wrap--right"
-            aria-label="Категория"
-          />
-        </div>
-
-        {listingMode === "item" ? (
-          <>
-            <div className="home-filters-panel__right-section">
-              <p className="home-filters-panel__field-label">Выберите состояние</p>
-              <FilterPills
-                options={conditionOptions}
-                selected={conditions}
-                onToggle={toggleCondition}
+      <div className="home-filters-panel__body">
+        <div className="home-filters-panel__left">
+          <div className="home-filters-panel__switches-row">
+            <div className="home-filters-panel__switch-group">
+              <p className="home-filters-panel__field-label">Искать по</p>
+              <FilterModeSwitch
+                className="home-filters-panel__mode-switch--search"
+                aria-label="Режим поиска"
+                value={searchMode}
+                onChange={(next) => updateFilters({ searchMode: next as SearchMode })}
+                options={[
+                  { id: "want", label: "Отдают" },
+                  { id: "have", label: "Хотят" },
+                ]}
               />
             </div>
 
-            <div className="home-filters-panel__right-section home-filters-panel__right-section--toggle">
-              <FilterToggle
-                checked={withDocuments}
-                label="С документами"
-                onChange={(next) => updateFilters({ withDocuments: next })}
+            <div className="home-filters-panel__switch-group">
+              <p className="home-filters-panel__field-label">Тип объявления</p>
+              <FilterModeSwitch
+                aria-label="Тип объявления"
+                value={listingMode}
+                onChange={handleListingModeChange}
+                options={[
+                  { id: "item", label: "Вещь" },
+                  { id: "service", label: "Услуга" },
+                ]}
               />
             </div>
-          </>
-        ) : (
-          <>
-            <div className="home-filters-panel__right-section">
-              <p className="home-filters-panel__field-label">Формат оказания</p>
-              <FilterPills
-                options={serviceFormatOptions}
-                selected={serviceFormats}
-                onToggle={toggleServiceFormat}
-              />
-            </div>
+          </div>
 
-            <div className="home-filters-panel__right-section home-filters-panel__right-section--toggle">
-              <FilterToggle
-                checked={verifiedProvider}
-                label="Проверенный исполнитель"
-                onChange={(next) => updateFilters({ verifiedProvider: next })}
-              />
-            </div>
-          </>
-        )}
-      </div>
-
-      <div className="home-filters-panel__date">
-        <p className="home-filters-panel__field-label">Дата публикации:</p>
-        <div className="home-filters-panel__pills home-filters-panel__pills--date">
-          {dateOptions.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => updateFilters({ datePeriod: item.id })}
-              className={`home-filters-panel__pill home-filters-panel__pill--date${datePeriod === item.id ? " is-active" : ""}`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="home-filters-panel__price">
-        <p className="home-filters-panel__field-label home-filters-panel__field-label--golos">
-          Примерная стоимость
-        </p>
-        <div className="home-filters-panel__price-row">
-          <div className="home-filters-panel__price-inputs">
+          <div className="home-filters-panel__field">
+            <p className="home-filters-panel__field-label">Название</p>
             <input
               type="text"
-              value={approximatePrice || priceFrom}
-              onChange={(event) =>
-                updateFilters({
-                  priceFrom: event.target.value,
-                  priceTo: approximatePrice || priceTo,
-                  approximatePrice: "",
-                })
-              }
-              className="home-filters-panel__input home-filters-panel__input--narrow"
-              placeholder="От"
-            />
-            <input
-              type="text"
-              value={approximatePrice || priceTo}
-              onChange={(event) =>
-                updateFilters({
-                  priceFrom: approximatePrice || priceFrom,
-                  priceTo: event.target.value,
-                  approximatePrice: "",
-                })
-              }
-              className="home-filters-panel__input home-filters-panel__input--narrow"
-              placeholder="До"
+              value={titleQuery}
+              onChange={(event) => updateFilters({ titleQuery: event.target.value })}
+              className="home-filters-panel__input"
+              placeholder="Введите название"
+              aria-label="Название"
             />
           </div>
-          <div className="home-filters-panel__surcharge">
+
+          <div className="home-filters-panel__field">
+            <p className="home-filters-panel__field-label">Выберите город</p>
+            <SelectField
+              value={city}
+              onChange={(next) => {
+                updateFilters({ city: next });
+                if (!next) {
+                  pinSelectedCity(null);
+                  return;
+                }
+                const option = cityOptions.find((item) => item.value === next && !item.disabled);
+                if (option) pinSelectedCity(option);
+              }}
+              onInputChange={onCityInputChange}
+              onListEndReached={onCityListEndReached}
+              options={cityOptions}
+              placeholder="Выберите город"
+              variant="filter"
+              allowCustomValue={false}
+              className="home-filters-panel__select-wrap"
+              aria-label="Выберите город"
+            />
+          </div>
+
+          <div className="home-filters-panel__field">
+            <p className="home-filters-panel__field-label">Категория</p>
+            <div className="home-filters-panel__category-row">
+              <div className="home-filters-panel__category-main">
+                <SelectField
+                  value={categoryParentId}
+                  onChange={(next) =>
+                    updateFilters({
+                      categoryParentId: next,
+                      categoryChildId: "",
+                    })
+                  }
+                  options={parentCategoryOptions}
+                  variant="filter"
+                  searchable={false}
+                  placeholder="Введите категорию"
+                  className="home-filters-panel__select-wrap"
+                  aria-label="Категория"
+                />
+              </div>
+              <div
+                className={`home-filters-panel__subcategory${hasSubcategories ? " is-open" : ""}`}
+              >
+                <div className="home-filters-panel__subcategory-inner">
+                  <div className="home-filters-panel__subcategory-content">
+                    <SelectField
+                      value={categoryChildId}
+                      onChange={(next) => updateFilters({ categoryChildId: next })}
+                      options={childCategoryOptions}
+                      variant="filter"
+                      searchable={false}
+                      placeholder="Подкатегория"
+                      className="home-filters-panel__select-wrap"
+                      disabled={!hasSubcategories}
+                      aria-label="Подкатегория"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="home-filters-panel__field home-filters-panel__field--price">
+            <p className="home-filters-panel__field-label">Примерная стоимость</p>
+            <div className="home-filters-panel__price-inputs">
+              <input
+                type="text"
+                value={approximatePrice || priceFrom}
+                onChange={(event) =>
+                  updateFilters({
+                    priceFrom: event.target.value,
+                    priceTo: approximatePrice || priceTo,
+                    approximatePrice: "",
+                  })
+                }
+                className="home-filters-panel__input home-filters-panel__input--price"
+                placeholder="От"
+              />
+              <input
+                type="text"
+                value={approximatePrice || priceTo}
+                onChange={(event) =>
+                  updateFilters({
+                    priceFrom: approximatePrice || priceFrom,
+                    priceTo: event.target.value,
+                    approximatePrice: "",
+                  })
+                }
+                className="home-filters-panel__input home-filters-panel__input--price"
+                placeholder="До"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="home-filters-panel__right">
+          <div className="home-filters-panel__mode-swap">
+            <div
+              className={`home-filters-panel__mode-swap-pane${
+                listingMode === "item" ? " is-active" : ""
+              }`}
+              aria-hidden={listingMode !== "item"}
+              inert={listingMode !== "item" ? true : undefined}
+            >
+              <div className="home-filters-panel__right-section">
+                <p className="home-filters-panel__field-label">Выберите состояние</p>
+                <FilterPills
+                  options={conditionOptions}
+                  selected={conditions}
+                  onToggle={toggleCondition}
+                />
+              </div>
+            </div>
+
+            <div
+              className={`home-filters-panel__mode-swap-pane${
+                listingMode === "service" ? " is-active" : ""
+              }`}
+              aria-hidden={listingMode !== "service"}
+              inert={listingMode !== "service" ? true : undefined}
+            >
+              <div className="home-filters-panel__right-section">
+                <p className="home-filters-panel__field-label">Формат оказания</p>
+                <FilterPills
+                  options={serviceFormatOptions}
+                  selected={serviceFormats}
+                  onToggle={toggleServiceFormat}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="home-filters-panel__right-section">
+            <p className="home-filters-panel__field-label">Дата публикации:</p>
+            <div className="home-filters-panel__pills home-filters-panel__pills--date">
+              {dateOptions.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => updateFilters({ datePeriod: item.id })}
+                  className={`home-filters-panel__pill${datePeriod === item.id ? " is-active" : ""}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="home-filters-panel__toggles-row">
             <FilterToggle
               checked={withSurcharge}
               label="С доплатой"
               onChange={(next) => updateFilters({ withSurcharge: next })}
             />
+            <div className="home-filters-panel__mode-swap home-filters-panel__mode-swap--toggle">
+              <div
+                className={`home-filters-panel__mode-swap-pane${
+                  listingMode === "item" ? " is-active" : ""
+                }`}
+                aria-hidden={listingMode !== "item"}
+                inert={listingMode !== "item" ? true : undefined}
+              >
+                <FilterToggle
+                  checked={withDocuments}
+                  label="С документами"
+                  onChange={(next) => updateFilters({ withDocuments: next })}
+                />
+              </div>
+              <div
+                className={`home-filters-panel__mode-swap-pane${
+                  listingMode === "service" ? " is-active" : ""
+                }`}
+                aria-hidden={listingMode !== "service"}
+                inert={listingMode !== "service" ? true : undefined}
+              >
+                <FilterToggle
+                  checked={verifiedProvider}
+                  label="Проверенный исполнитель"
+                  onChange={(next) => updateFilters({ verifiedProvider: next })}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

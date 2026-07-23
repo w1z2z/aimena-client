@@ -131,21 +131,20 @@ export function useHeroRecommendations({
 
 type FilteredListingsParams = {
   appliedFilters: import("@/features/home-search/types").HomeFiltersState;
-  categoryUiKeyToBackendId: Record<string, string>;
   enabled?: boolean;
 };
 
 export function useFilteredListings({
   appliedFilters,
-  categoryUiKeyToBackendId,
   enabled = true,
 }: FilteredListingsParams) {
   return useQuery({
-    queryKey: [...listingQueryKeys.all, "filtered", appliedFilters, categoryUiKeyToBackendId],
+    queryKey: [...listingQueryKeys.all, "filtered", appliedFilters],
     enabled,
     queryFn: async ({ signal }) => {
       const cityId = appliedFilters.city || undefined;
-      const categoryId = categoryUiKeyToBackendId[appliedFilters.category];
+      const categoryId =
+        appliedFilters.categoryChildId || appliedFilters.categoryParentId || undefined;
       const mappedConditions = appliedFilters.conditions
         .map((conditionId) => mapConditionIdToBackend(conditionId))
         .filter((value): value is NonNullable<typeof value> => Boolean(value));
@@ -162,10 +161,6 @@ export function useFilteredListings({
             searchMode: appliedFilters.searchMode,
             cityId,
             categoryId,
-            categoryUiKey:
-              appliedFilters.category && appliedFilters.category !== "all"
-                ? appliedFilters.category
-                : undefined,
             type: [appliedFilters.listingMode],
             publishedRange:
               appliedFilters.datePeriod === "all" ? undefined : appliedFilters.datePeriod,

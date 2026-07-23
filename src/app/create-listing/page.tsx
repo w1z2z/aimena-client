@@ -806,17 +806,18 @@ export default function CreateListingPage() {
             </p>
           </div>
           <div className="mt-1 rounded-[15px] bg-[linear-gradient(135deg,#8E8BED_0%,#C8FF00_100%)] p-[1px]">
-            <div className="relative inline-flex h-[42px] w-[212px] items-start gap-1 rounded-[15px] bg-[#F2F4F7] p-1">
+            <div className="relative box-border inline-flex h-[42px] w-[212px] items-center gap-[4px] rounded-[15px] border-0 bg-[#F2F4F7] p-[4px]">
               <span
-                className={`pointer-events-none absolute left-1 top-1 h-[34px] w-[100px] rounded-[13px] bg-[#8E8BED] transition-transform duration-200 ease-out ${
-                  listingKind === "service" ? "translate-x-[104px]" : ""
+                aria-hidden="true"
+                className={`pointer-events-none absolute bottom-[4px] left-[4px] top-[4px] w-[calc(50%-6px)] rounded-[13px] bg-[#8E8BED] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  listingKind === "service" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
                 }`}
               />
               <button
                 type="button"
                 onClick={() => handleListingKindChange("item")}
-                className={`relative z-[1] flex h-[34px] w-[100px] items-center justify-center rounded-[13px] px-3 text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
-                  listingKind === "item" ? "text-white" : "text-[#1A1A1A]"
+                className={`relative z-[1] flex h-full flex-1 items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  listingKind === "item" ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
                 }`}
               >
                 Вещь
@@ -824,8 +825,8 @@ export default function CreateListingPage() {
               <button
                 type="button"
                 onClick={() => handleListingKindChange("service")}
-                className={`relative z-[1] flex h-[34px] w-[100px] items-center justify-center rounded-[13px] px-3 text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
-                  listingKind === "service" ? "text-white" : "text-[#1A1A1A]"
+                className={`relative z-[1] flex h-full flex-1 items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  listingKind === "service" ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
                 }`}
               >
                 Услуга
@@ -1064,10 +1065,10 @@ export default function CreateListingPage() {
                         setCondition(item.id);
                         clearError("condition");
                       }}
-                      className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                      className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
                         active
-                          ? "bg-[#8E8BED] text-white"
-                          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+                          ? "border-[0.5px] border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
+                          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
                       }`}
                     >
                       {item.label}
@@ -1092,10 +1093,10 @@ export default function CreateListingPage() {
                           setServiceWorkLevel(item.id);
                           clearError("serviceWorkLevel");
                         }}
-                        className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                        className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
                           active
-                            ? "bg-[#8E8BED] text-white"
-                            : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+                            ? "border-[0.5px] border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
+                            : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
                         }`}
                       >
                         {item.label}
@@ -1123,10 +1124,10 @@ export default function CreateListingPage() {
                           );
                           clearError("serviceFormat");
                         }}
-                        className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                        className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
                           active
-                            ? "bg-[#8E8BED] text-white"
-                            : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+                            ? "border-[0.5px] border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
+                            : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
                         }`}
                       >
                         {item.label}
@@ -1189,10 +1190,10 @@ export default function CreateListingPage() {
                       key={item.id}
                       type="button"
                       onClick={() => setExtraPay(item.id)}
-                      className={`flex h-12 items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                      className={`flex h-12 items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
                         active
-                          ? "bg-[#8E8BED] text-white"
-                          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+                          ? "border-[0.5px] border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
+                          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
                       }`}
                     >
                       {item.label}

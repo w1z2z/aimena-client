@@ -4,6 +4,7 @@
 @import "../styles/header.css";
 @import "../styles/home-sections.css";
 @import "../styles/forms-and-listings.css";
+@import "../styles/switch.css";
 
 @theme {
   --color-brand: #1a1a1a;

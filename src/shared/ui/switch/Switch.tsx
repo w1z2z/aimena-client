@@ -4,27 +4,22 @@ type SwitchProps = {
   checked: boolean;
   onChange: (next: boolean) => void;
   className?: string;
+  "aria-label"?: string;
 };
 
-export function Switch({ checked, onChange, className }: SwitchProps) {
+export function Switch({ checked, onChange, className, "aria-label": ariaLabel }: SwitchProps) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={ariaLabel}
       onClick={() => onChange(!checked)}
-      className={`relative h-[24px] w-[44px] shrink-0 overflow-visible rounded-full border border-[#8E8BED] transition-colors duration-200 ${
-        checked ? "bg-[#8E8BED]" : "bg-white"
-      }${className ? ` ${className}` : ""}`}
+      className={`site-switch${checked ? " is-on" : ""}${className ? ` ${className}` : ""}`}
     >
-      <span
-        className={`absolute top-[2px] flex h-[18px] w-[18px] items-center justify-center overflow-visible rounded-full transition-[left,background-color] duration-200 ease-out ${
-          checked ? "left-[22px] bg-white" : "left-[2px] bg-[#8E8BED]"
-        }`}
-      >
-        <ToggleStarIcon
-          className={`h-[9px] w-[9px] ${checked ? "text-[#8E8BED]" : "text-white"}`}
-        />
+      <span className="site-switch__track" aria-hidden />
+      <span className="site-switch__knob" aria-hidden>
+        <ToggleStarIcon className="site-switch__star" />
       </span>
     </button>
   );

@@ -1,0 +1,70 @@
+/* Figma 273:10778 — 38×22 track, 18×18 knob @ 2px, travel 16px */
+.site-switch {
+  position: relative;
+  box-sizing: border-box;
+  width: 38px;
+  height: 22px;
+  flex: none;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.site-switch:focus-visible {
+  outline: 2px solid #8e8bed;
+  outline-offset: 2px;
+}
+
+.site-switch__track {
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0;
+  border: 1px solid #8e8bed;
+  border-radius: 11px;
+  background: #ffffff;
+  transition: background-color 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-switch.is-on .site-switch__track {
+  background: #8e8bed;
+}
+
+.site-switch__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 1;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #8e8bed;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 500ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-switch.is-on .site-switch__knob {
+  background: #ffffff;
+  transform: translate3d(16px, 0, 0);
+}
+
+.site-switch__star {
+  display: block;
+  width: 10px;
+  height: 10px;
+  color: #ffffff;
+  transition: color 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-switch.is-on .site-switch__star {
+  color: #8e8bed;
+}

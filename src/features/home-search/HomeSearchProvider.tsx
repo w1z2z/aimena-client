@@ -14,7 +14,7 @@ import type { ListingCardData } from "@/entities/listing";
 import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
 import type { SelectOption } from "@/shared/ui/select-field";
 
-import { useCatalogData } from "./hooks/useCatalogData";
+import { useCatalogData, type HomeCategoryTreeNode } from "./hooks/useCatalogData";
 import { useFilteredListings, useHeroRecommendations } from "./hooks/useHomeListingsData";
 import { heroToFilters } from "./filter-listings";
 import {
@@ -55,6 +55,7 @@ type HomeSearchContextValue = {
   onCityListEndReached: () => void;
   pinSelectedCity: (option: SelectOption | null) => void;
   categories: HomeCategoryItem[];
+  categoryTree: HomeCategoryTreeNode[];
 };
 
 const HomeSearchContext = createContext<HomeSearchContextValue | null>(null);
@@ -72,7 +73,7 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
   const [appliedFilters, setAppliedFilters] = useState<HomeFiltersState>(createDefaultFilters);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
-  const { categories, categoryUiKeyToBackendId } = useCatalogData();
+  const { categories, categoryTree, categoryUiKeyToBackendId } = useCatalogData();
   const selectedCityId = city || filters.city;
   const { cityOptions, onCityInputChange, onCityListEndReached } = useCitySelectOptions({
     selectedCityId,
@@ -94,7 +95,6 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
 
   const filteredListingsQuery = useFilteredListings({
     appliedFilters,
-    categoryUiKeyToBackendId,
   });
 
   const heroRecommendationsQuery = useHeroRecommendations({
@@ -144,13 +144,13 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
   }, [filters]);
 
   const applyHeroToFilters = useCallback(() => {
-    const nextFilters = heroToFilters(hero);
+    const nextFilters = heroToFilters(hero, categoryUiKeyToBackendId);
     setFilters(nextFilters);
     setAppliedFilters(nextFilters);
-  }, [hero]);
+  }, [categoryUiKeyToBackendId, hero]);
 
   const openFiltersAndScroll = useCallback(() => {
-    const nextFilters = heroToFilters(hero);
+    const nextFilters = heroToFilters(hero, categoryUiKeyToBackendId);
     setFilters(nextFilters);
     setAppliedFilters(nextFilters);
     setIsFiltersOpen(true);
@@ -161,7 +161,7 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
         block: "start",
       });
     });
-  }, [hero]);
+  }, [categoryUiKeyToBackendId, hero]);
 
   const value = useMemo<HomeSearchContextValue>(
     () => ({
@@ -191,12 +191,15 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       onCityListEndReached,
       pinSelectedCity,
       categories,
+      categoryTree,
     }),
     [
       applyFilters,
       applyHeroToFilters,
       appliedFilters,
       categories,
+      categoryTree,
+      categoryUiKeyToBackendId,
       cityOptions,
       filteredListingsQuery.data,
       filters,

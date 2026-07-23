@@ -12,7 +12,8 @@ export type ServiceFormatId = "online" | "onsite" | "client";
 export type HomeFiltersState = {
   searchMode: SearchMode;
   listingMode: ListingMode;
-  category: string;
+  categoryParentId: string;
+  categoryChildId: string;
   city: string;
   priceFrom: string;
   priceTo: string;
@@ -50,7 +51,8 @@ export function createDefaultFilters(): HomeFiltersState {
   return {
     searchMode: "want",
     listingMode: "item",
-    category: "all",
+    categoryParentId: "",
+    categoryChildId: "",
     city: "",
     priceFrom: "",
     priceTo: "",
