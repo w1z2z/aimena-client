@@ -14,7 +14,9 @@ import {
 
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getCategories, getCities, type ApiCategoryNode, type ApiCity } from "@/shared/api/catalog";
-import { getListingTagSuggestions } from "@/shared/api/listings";
+import { ApiError } from "@/shared/api/http";
+import { uploadListingFileViaBackend } from "@/shared/api/media";
+import { createListingDraft, getListingTagSuggestions, publishListing } from "@/shared/api/listings";
 import { buildCitySelectOptions } from "@/shared/lib/city-select-options";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
@@ -26,11 +28,12 @@ import { ListingPublishedModal } from "./ListingPublishedModal";
 type ConditionId = "excellent" | "new" | "good" | "used" | "needs_repair";
 type ExtraPayId = "none" | "i_pay" | "they_pay";
 type ListingKind = "item" | "service";
-type ServiceFormatId = "online" | "onsite" | "client";
+type ServiceFormatId = "online" | "offline" | "onsite";
 type ServiceWorkLevelId = "master" | "professional" | "specialist" | "junior";
 
 type FieldErrors = {
   title?: string;
+  description?: string;
   category?: string;
   city?: string;
   condition?: string;
@@ -42,6 +45,7 @@ type FieldErrors = {
 /** Order matches visual top→bottom on the page */
 const FIELD_SCROLL_ORDER: Array<keyof FieldErrors> = [
   "title",
+  "description",
   "category",
   "city",
   "photos",
@@ -68,8 +72,8 @@ const EXTRA_PAY_OPTIONS: Array<{ id: ExtraPayId; label: string }> = [
 
 const SERVICE_FORMAT_OPTIONS: Array<{ id: ServiceFormatId; label: string }> = [
   { id: "online", label: "Онлайн" },
-  { id: "onsite", label: "Выезд" },
-  { id: "client", label: "У клиента" },
+  { id: "offline", label: "Офлайн" },
+  { id: "onsite", label: "С выездом" },
 ];
 
 const SERVICE_WORK_LEVEL_OPTIONS: Array<{ id: ServiceWorkLevelId; label: string }> = [
@@ -98,6 +102,7 @@ type CategoryTreeNode = ApiCategoryNode & {
 type PhotoItem = {
   id: string;
   previewUrl: string;
+  file: File;
 };
 
 type TagSuggestionItem = {
@@ -126,6 +131,7 @@ function createPhotoItems(files: FileList | File[]): PhotoItem[] {
     .map((file) => ({
       id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
       previewUrl: URL.createObjectURL(file),
+      file,
     }));
 }
 
@@ -307,6 +313,7 @@ export default function CreateListingPage() {
   const priceMeasureRef = useRef<HTMLSpanElement>(null);
   const [listingKind, setListingKind] = useState<ListingKind>("item");
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [priceDigits, setPriceDigits] = useState("");
   const [priceTextWidth, setPriceTextWidth] = useState(0);
   const [categoryTree, setCategoryTree] = useState<CategoryTreeNode[]>([]);
@@ -338,6 +345,8 @@ export default function CreateListingPage() {
     null,
   );
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPublishedModalOpen, setIsPublishedModalOpen] = useState(false);
   const itemPhotoGrid = getItemPhotoGridLayout(itemPhotos.length);
   const docPhotoGrid = getDocPhotoGridLayout(docPhotos.length);
@@ -374,6 +383,7 @@ export default function CreateListingPage() {
       })),
     [selectedWantsParentCategory],
   );
+  const finalWantsCategoryId = wantsChildCategoryId ?? wantsParentCategoryId;
   const tagSuggestions = useMemo<TagSuggestionItem[]>(() => {
     const normalizedInput = wantsTagInput.trim().toLowerCase();
     const existingMatches = suggestedTags
@@ -733,10 +743,20 @@ export default function CreateListingPage() {
     clearError("city");
   };
 
-  const validateAndPublish = () => {
+  const uploadPhotos = async (photos: PhotoItem[]) => {
+    const uploadIds: string[] = [];
+    for (const photo of photos) {
+      const uploaded = await uploadListingFileViaBackend(photo.file);
+      uploadIds.push(uploaded.uploadId);
+    }
+    return uploadIds;
+  };
+
+  const validateAndPublish = async () => {
     const nextErrors: FieldErrors = {};
 
     if (!title.trim()) nextErrors.title = `Вы не добавили наименование ${listingTypeLabel}`;
+    if (!description.trim()) nextErrors.description = "Добавьте описание";
     if (!finalCategoryId) nextErrors.category = `Выберите категорию ${listingTypeLabel}`;
     if (!cityId) {
       nextErrors.city = "Выберите город из списка или вставьте его из профиля";
@@ -761,7 +781,57 @@ export default function CreateListingPage() {
       return;
     }
 
-    setIsPublishedModalOpen(true);
+    if (isSubmitting) return;
+
+    const categoryId = finalCategoryId;
+    const selectedCityId = cityId;
+    if (!categoryId || !selectedCityId) {
+      return;
+    }
+
+    setSubmitError(null);
+    setIsSubmitting(true);
+    try {
+      const [itemUploadIds, documentUploadIds] = await Promise.all([
+        uploadPhotos(itemPhotos),
+        uploadPhotos(docPhotos),
+      ]);
+
+      const wantsCategoryId =
+        exchangeEnabled && !isFree ? (finalWantsCategoryId ?? undefined) : undefined;
+      const wantsPayloadTags = exchangeEnabled && !isFree ? wantsTags : [];
+      const estimatedPrice = priceDigits ? Number(priceDigits) : undefined;
+
+      const created = await createListingDraft({
+        type: listingKind,
+        serviceFormats: listingKind === "service" ? serviceFormats : undefined,
+        title: title.trim(),
+        description: description.trim(),
+        categoryId,
+        wantsCategoryId,
+        cityId: selectedCityId,
+        condition: listingKind === "item" ? condition ?? undefined : undefined,
+        estimatedPrice,
+        extraPay: isFree ? "none" : extraPay,
+        isFree,
+        wantsTags: wantsPayloadTags,
+        itemUploadIds,
+        documentUploadIds,
+      });
+
+      await publishListing(created.listing.id);
+      setIsPublishedModalOpen(true);
+    } catch (error: unknown) {
+      if (error instanceof ApiError) {
+        setSubmitError(error.message);
+      } else if (error instanceof Error) {
+        setSubmitError(error.message);
+      } else {
+        setSubmitError("Не удалось опубликовать объявление. Попробуйте снова.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -1007,14 +1077,22 @@ export default function CreateListingPage() {
         <section className="rounded-[16px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
           <h3 className={SECTION_TITLE_CLASS}>Дополнительная информация</h3>
 
-          <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>
-            Опишите вашу {listingTypeName} подробнее (до 2000 символов)
-          </p>
-          <textarea
-            maxLength={2000}
-            placeholder="Введите описание...."
-            className="mt-2 h-[150px] w-full resize-none rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 py-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
-          />
+          <div id={fieldAnchorId("description")}>
+            <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>
+              Опишите вашу {listingTypeName} подробнее (до 2000 символов)
+            </p>
+            <textarea
+              maxLength={2000}
+              value={description}
+              onChange={(event) => {
+                setDescription(event.target.value);
+                clearError("description");
+              }}
+              placeholder="Введите описание...."
+              className="mt-2 h-[150px] w-full resize-none rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 py-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
+            />
+            <FieldError message={errors.description} />
+          </div>
 
           {listingKind === "item" ? (
             <div id={fieldAnchorId("condition")}>
@@ -1419,13 +1497,20 @@ export default function CreateListingPage() {
           </div>
         </section>
 
+        {submitError ? (
+          <p className="m-0 text-[14px] font-normal leading-[170%] text-[#FF2056]">
+            {submitError}
+          </p>
+        ) : null}
+
         <div className="flex w-full items-center gap-3">
           <button
             type="button"
             onClick={validateAndPublish}
+            disabled={isSubmitting}
             className="flex h-[63px] flex-1 items-center justify-center rounded-[21px] bg-[#8E8BED] px-[74px] py-4 text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-white"
           >
-            Опубликовать объявление           
+            {isSubmitting ? "Публикация..." : "Опубликовать объявление"}
           </button>
           <button
             type="button"

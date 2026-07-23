@@ -79,6 +79,30 @@ export type TagSuggestionsResponse = {
   data: string[];
 };
 
+export type CreateListingPayload = {
+  type: "item" | "service";
+  serviceFormats?: Array<"online" | "offline" | "onsite">;
+  title: string;
+  description: string;
+  categoryId: string;
+  wantsCategoryId?: string;
+  cityId: string;
+  condition?: ApiListingCondition;
+  estimatedPrice?: number;
+  extraPay?: "none" | "i_pay" | "they_pay";
+  isFree?: boolean;
+  wantsTags?: string[];
+  itemUploadIds?: string[];
+  documentUploadIds?: string[];
+};
+
+export type CreateListingResponse = {
+  listing: {
+    id: string;
+    status: "draft" | "active" | "archived";
+  };
+};
+
 export function getListings(query: ListingsQuery, signal?: AbortSignal) {
   return httpRequest<ApiListResponse<ApiListingCard>>("/listings", {
     query,
@@ -100,5 +124,18 @@ export function getListingTagSuggestions(
   return httpRequest<TagSuggestionsResponse>("/listings/tags/suggest", {
     query: params,
     signal,
+  });
+}
+
+export function createListingDraft(payload: CreateListingPayload) {
+  return httpRequest<CreateListingResponse>("/listings", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export function publishListing(listingId: string) {
+  return httpRequest<CreateListingResponse>(`/listings/${listingId}/publish`, {
+    method: "POST",
   });
 }
