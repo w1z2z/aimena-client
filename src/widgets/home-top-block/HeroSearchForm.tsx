@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 
 import { HERO_CONDITION_OPTIONS } from "@/entities/listing";
+import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
+import { StarMiniIcon } from "@/shared/ui/icons";
 import viewAllArrow from "@/shared/ui/icons/view-all-arrow.svg";
 import type { SelectOption } from "@/shared/ui/select-field";
 import { SelectField } from "@/shared/ui/select-field";
 
-import { cityPlaceholder, pricePlaceholder, titlePlaceholder, type Mode } from "./constants";
+import { cityPlaceholder, titlePlaceholder, type Mode } from "./constants";
 
 const serviceLevelOptions = ["Мастер", "Профессионал", "Специалист", "Новичок"] as const;
 const serviceFormatOptions = ["Онлайн", "Офлайн", "С выездом"] as const;
@@ -71,6 +73,8 @@ export type ModeFormFieldsProps = {
   city: string;
   setCity: (value: string) => void;
   cityOptions: SelectOption[];
+  onCityInputChange: (value: string) => void;
+  onCityListEndReached: () => void;
   condition: string;
   setCondition: (value: string) => void;
   onViewAllClick: () => void;
@@ -83,7 +87,13 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
   ];
 
   return (
-    <div className="flex h-[70px] w-[346px] items-center gap-[4px] rounded-[21px] border-[0.5px] border-[#CACACA] bg-white p-[8px]">
+    <div className="relative flex h-[70px] w-[346px] items-center gap-[4px] rounded-[21px] border-[0.5px] border-[#CACACA] bg-white p-[8px]">
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none absolute left-[8px] top-[8px] h-[54px] w-[163px] rounded-[17px] bg-[#8E8BED] transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+          mode === "browse" ? "translate-x-[167px]" : "translate-x-0"
+        }`}
+      />
       {tabs.map((tab) => {
         const active = mode === tab.id;
         return (
@@ -91,8 +101,8 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
             key={tab.id}
             type="button"
             onClick={() => setMode(tab.id)}
-            className={`flex h-[54px] flex-1 items-center justify-center gap-[8px] rounded-[17px] px-[16px] text-[14px] font-semibold leading-[120%] transition ${
-              active ? "bg-[#8E8BED] text-white" : "bg-white text-[#1A1A1A]"
+            className={`relative z-[1] flex h-[54px] flex-1 items-center justify-center gap-[8px] rounded-[17px] px-[16px] text-[14px] font-semibold leading-[120%] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              active ? "text-white" : "text-[#1A1A1A]"
             }`}
           >
             <span>{tab.label}</span>
@@ -129,6 +139,58 @@ function LabeledInput({
   );
 }
 
+function HeroPriceInput({
+  priceDigits,
+  setPrice,
+}: {
+  priceDigits: string;
+  setPrice: (value: string) => void;
+}) {
+  const priceMeasureRef = useRef<HTMLSpanElement>(null);
+  const [priceTextWidth, setPriceTextWidth] = useState(0);
+  const formattedPrice = formatPriceWithSpaces(priceDigits);
+
+  useLayoutEffect(() => {
+    const node = priceMeasureRef.current;
+    if (!node) return;
+    setPriceTextWidth(node.getBoundingClientRect().width);
+  }, [formattedPrice]);
+
+  return (
+    <div className="w-[250px] flex-1">
+      <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Примерная стоимость</p>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-[12px] top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#3D3D3D]">
+          ~
+        </span>
+        <input
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          value={formattedPrice}
+          onChange={(event) => setPrice(extractPriceDigits(event.target.value))}
+          placeholder="0"
+          className="h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white pl-[28px] pr-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[#3D3D3D]"
+          aria-label="Примерная стоимость"
+        />
+        <span
+          ref={priceMeasureRef}
+          aria-hidden="true"
+          className="pointer-events-none invisible absolute left-[28px] top-1/2 -translate-y-1/2 whitespace-pre text-[14px] font-normal leading-[170%]"
+        >
+          {formattedPrice || "0"}
+        </span>
+        <span
+          className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#3D3D3D]"
+          style={{ left: `calc(28px + ${priceTextWidth}px + 4px)` }}
+        >
+          руб.
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function TopFields({
   title,
   setTitle,
@@ -137,7 +199,20 @@ function TopFields({
   city,
   setCity,
   cityOptions,
-}: Pick<ModeFormFieldsProps, "title" | "setTitle" | "price" | "setPrice" | "city" | "setCity" | "cityOptions">) {
+  onCityInputChange,
+  onCityListEndReached,
+}: Pick<
+  ModeFormFieldsProps,
+  | "title"
+  | "setTitle"
+  | "price"
+  | "setPrice"
+  | "city"
+  | "setCity"
+  | "cityOptions"
+  | "onCityInputChange"
+  | "onCityListEndReached"
+>) {
   return (
     <div className="flex h-[69px] gap-[12px]">
       <LabeledInput
@@ -148,27 +223,50 @@ function TopFields({
         className="w-[379px]"
       />
 
-      <LabeledInput
-        label="Примерная стоимость"
-        value={price}
-        onChange={setPrice}
-        placeholder={pricePlaceholder}
-        className="w-[250px] flex-1"
-      />
+      <HeroPriceInput priceDigits={price} setPrice={setPrice} />
 
       <div className="w-[250px] flex-1">
         <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Город</p>
         <SelectField
           value={city}
           onChange={setCity}
+          onInputChange={onCityInputChange}
+          onListEndReached={onCityListEndReached}
           options={cityOptions}
           placeholder={cityPlaceholder}
           variant="hero"
-          allowCustomValue
+          allowCustomValue={false}
           aria-label="Город"
         />
       </div>
     </div>
+  );
+}
+
+function FilterChip({
+  label,
+  active,
+  onClick,
+  tabIndex,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  tabIndex: number;
+}) {
+  return (
+    <button
+      type="button"
+      tabIndex={tabIndex}
+      onClick={onClick}
+      className={`flex h-[25px] shrink-0 items-center justify-center whitespace-nowrap rounded-[16px] px-[12px] text-[12px] font-medium leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
+        active
+          ? "border-0 bg-[#8E8BED] text-white"
+          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -177,83 +275,117 @@ function HeroExchangeFilters({
   setCondition,
 }: Pick<ModeFormFieldsProps, "condition" | "setCondition">) {
   const [listingType, setListingType] = useState<"item" | "service">("item");
-  const options = listingType === "item" ? HERO_CONDITION_OPTIONS : serviceLevelOptions;
-  const secondaryOptions = listingType === "service" ? serviceFormatOptions : null;
+  const [serviceLevel, setServiceLevel] = useState("");
+  const [serviceFormat, setServiceFormat] = useState("");
+
+  const handleListingTypeChange = (next: "item" | "service") => {
+    if (next === listingType) return;
+    setListingType(next);
+    setCondition("");
+    setServiceLevel("");
+    setServiceFormat("");
+  };
 
   return (
-    <div className="relative h-[255px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
-      <HeroBackgroundStar className="absolute left-[261px] top-[70px] h-[430px] w-[430px]" gradientId="hero-left-filters-star" />
+    <div className="relative flex h-[255.5px] w-[464px] flex-col items-start gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+      <HeroBackgroundStar
+        className="pointer-events-none absolute left-[261px] top-[41.5px] z-0 h-[483px] w-[483px]"
+        gradientId="hero-left-filters-star"
+      />
 
-      <div className="relative z-10 space-y-[24px]">
-        <div className="space-y-[12px]">
-          <p className="text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Тип объявления</p>
-          <div className="flex h-[42px] w-[212px] gap-[4px] rounded-[15px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] p-[4px]">
-            <button
-              type="button"
-              onClick={() => setListingType("item")}
-              className={`h-[34px] w-[100px] rounded-[13px] text-[14px] font-semibold leading-[120%] ${
-                listingType === "item" ? "bg-[#8E8BED] text-white" : "bg-transparent text-[#1A1A1A]"
-              }`}
-            >
-              Вещь
-            </button>
-            <button
-              type="button"
-              onClick={() => setListingType("service")}
-              className={`h-[34px] w-[100px] rounded-[13px] text-[14px] font-semibold leading-[120%] ${
-                listingType === "service" ? "bg-[#8E8BED] text-white" : "bg-transparent text-[#1A1A1A]"
-              }`}
-            >
-              Услуга
-            </button>
-          </div>
+      <div className="relative z-[1] flex w-[212px] flex-col items-start gap-[12px]">
+        <p className="flex h-[10px] items-center text-[14px] font-normal leading-none text-[#1A1A1A]">Тип объявления</p>
+        <div className="relative box-border flex h-[42px] w-[212px] items-center gap-[4px] rounded-[15px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] p-[4px]">
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute bottom-[4px] left-[4px] top-[4px] w-[100px] rounded-[13px] bg-[#8E8BED] transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              listingType === "service" ? "translate-x-[104px]" : "translate-x-0"
+            }`}
+          />
+          <button
+            type="button"
+            onClick={() => handleListingTypeChange("item")}
+            className={`relative z-[1] flex h-full w-[100px] items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              listingType === "item" ? "text-white" : "text-[#1A1A1A]"
+            }`}
+          >
+            Вещь
+          </button>
+          <button
+            type="button"
+            onClick={() => handleListingTypeChange("service")}
+            className={`relative z-[1] flex h-full w-[100px] items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              listingType === "service" ? "text-white" : "text-[#1A1A1A]"
+            }`}
+          >
+            Услуга
+          </button>
         </div>
+      </div>
 
-        <div className="space-y-[8px]">
-          <p className="text-[14px] font-normal leading-[170%] text-[#1A1A1A]">
-            {listingType === "item" ? "Выберите состояние" : "Выберите уровень работы"}
-          </p>
-          <div className="flex flex-wrap gap-[8px]">
-            {options.map((item) => {
-              const active = condition === item;
-              return (
-                <button
-                  key={item}
-                  type="button"
+      <div className="relative z-[2] grid w-full min-h-0 flex-1 content-start">
+        <div
+          className={`col-start-1 row-start-1 flex w-full flex-col gap-[8px] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+            listingType === "item"
+              ? "translate-y-0 opacity-100"
+              : "pointer-events-none translate-y-1 opacity-0"
+          }`}
+          aria-hidden={listingType !== "item"}
+        >
+          <p className="flex h-[10px] items-center text-[14px] font-normal leading-none text-[#1A1A1A]">Выберите состояние</p>
+          <div className="flex w-full flex-wrap content-start gap-[8px]">
+            {HERO_CONDITION_OPTIONS.map((item) => (
+              <Fragment key={item}>
+                {item === "Требует ремонта" ? <span className="h-0 w-full basis-full" aria-hidden="true" /> : null}
+                <FilterChip
+                  label={item}
+                  active={condition === item}
                   onClick={() => setCondition(item)}
-                  className={`h-[26px] rounded-[16px] border-[0.5px] px-[12px] text-[12px] font-medium leading-[120%] ${
-                    active ? "border-[#1A1A1A] bg-[#1A1A1A] text-white" : "border-[#CACACA] bg-white text-[#1A1A1A]"
-                  }`}
-                >
-                  {item}
-                </button>
-              );
-            })}
+                  tabIndex={listingType === "item" ? 0 : -1}
+                />
+              </Fragment>
+            ))}
           </div>
         </div>
 
-        {secondaryOptions ? (
-          <div className="space-y-[8px]">
-            <p className="text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Формат оказания</p>
-            <div className="flex flex-wrap gap-[8px]">
-              {secondaryOptions.map((item) => {
-                const active = condition === item;
-                return (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => setCondition(item)}
-                    className={`h-[26px] rounded-[16px] border-[0.5px] px-[12px] text-[14px] font-semibold leading-[120%] ${
-                      active ? "border-[#1A1A1A] bg-[#1A1A1A] text-white" : "border-[#CACACA] bg-white text-[#1A1A1A]"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                );
-              })}
+        <div
+          className={`col-start-1 row-start-1 flex w-full flex-col gap-[24px] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+            listingType === "service"
+              ? "translate-y-0 opacity-100"
+              : "pointer-events-none -translate-y-1 opacity-0"
+          }`}
+          aria-hidden={listingType !== "service"}
+        >
+          <div className="flex w-full flex-col gap-[8px]">
+            <p className="flex h-[10px] items-center text-[14px] font-normal leading-none text-[#1A1A1A]">Выберите уровень работы</p>
+            <div className="flex flex-nowrap gap-[8px]">
+              {serviceLevelOptions.map((item) => (
+                <FilterChip
+                  key={item}
+                  label={item}
+                  active={serviceLevel === item}
+                  onClick={() => setServiceLevel(item)}
+                  tabIndex={listingType === "service" ? 0 : -1}
+                />
+              ))}
             </div>
           </div>
-        ) : null}
+
+          <div className="flex w-full flex-col gap-[8px]">
+            <p className="flex h-[10px] items-center text-[14px] font-normal leading-none text-[#1A1A1A]">Формат оказания</p>
+            <div className="flex flex-nowrap gap-[8px]">
+              {serviceFormatOptions.map((item) => (
+                <FilterChip
+                  key={item}
+                  label={item}
+                  active={serviceFormat === item}
+                  onClick={() => setServiceFormat(item)}
+                  tabIndex={listingType === "service" ? 0 : -1}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -262,18 +394,20 @@ function HeroExchangeFilters({
 function HeroAddPanel({ onAddListingClick }: { onAddListingClick: () => void }) {
   return (
     <div className="relative h-[255px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
-      <HeroBackgroundStar className="absolute left-[261px] top-[70px] h-[430px] w-[430px]" gradientId="hero-left-add-star-1" />
-      <HeroBackgroundStar className="absolute left-[218px] top-[160px] h-[577px] w-[577px]" gradientId="hero-left-add-star-2" />
+      <HeroBackgroundStar
+        className="pointer-events-none absolute left-[261px] top-[41.5px] z-0 h-[483px] w-[483px]"
+        gradientId="hero-left-add-star"
+      />
 
-      <div className="relative z-10 flex h-full flex-col items-center justify-between">
-        <div className="h-[68px]" aria-hidden="true" />
-        <p className="text-center text-[14px] font-normal leading-[170%] text-[#1A1A1A]">
+      <div className="relative z-10 flex h-full flex-col items-start justify-between">
+        <StarMiniIcon className="h-[60px] w-[60px]" />
+        <p className="text-left text-[14px] font-normal leading-[170%] text-[#1A1A1A]">
           Вся информация сохранится для будущего создания объявления
         </p>
         <button
           type="button"
           onClick={onAddListingClick}
-          className="flex h-[49px] items-center justify-center gap-[12px] rounded-[21px] bg-[#8E8BED] px-[24px] text-white"
+          className="flex h-[49px] items-center justify-center gap-[12px] rounded-[21px] bg-[#8E8BED] px-[24px] text-white transition-[filter,transform] duration-200 ease-out hover:brightness-110 active:translate-y-[0.5px]"
         >
           <span className="text-[24px] font-extrabold leading-[110%]">+</span>
           <span className="text-[14px] font-semibold leading-[120%]">Добавить объявление</span>
@@ -289,13 +423,13 @@ function HeroAllVariantsPanel({ onViewAllClick }: { onViewAllClick: () => void }
       <HeroBackgroundStar className="absolute left-[-227px] top-[70px] h-[430px] w-[430px]" gradientId="hero-all-variants-star" />
 
       <h3 className="relative z-10 max-w-[252px] text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
-        Посмотрите все варианты
+        Посмотрите <span className="text-[#8E8BED]">все</span> варианты
       </h3>
 
       <button
         type="button"
         onClick={onViewAllClick}
-        className="absolute left-[55.17%] right-[9.7%] top-[17.81%] bottom-[18.4%] rounded-full bg-[#8E8BED] p-0 text-white"
+        className="absolute left-[55.17%] right-[9.7%] top-[17.81%] bottom-[18.4%] rounded-full bg-[#8E8BED] p-0 text-white transition-colors duration-200 ease-out hover:bg-[#9E9EF0] active:bg-[#7E7EDD]"
       >
         <span className="pointer-events-none absolute inset-[6.13%_6.44%_6.75%_6.44%] rounded-full border border-white" />
         <span className="pointer-events-none absolute left-[53px] top-[31px] h-[48.44px] w-[58.45px]">
@@ -322,6 +456,8 @@ export function ModeFormColumn({
   city,
   setCity,
   cityOptions,
+  onCityInputChange,
+  onCityListEndReached,
   condition,
   setCondition,
   onAddListingClick,
@@ -334,9 +470,26 @@ export function ModeFormColumn({
       <div className="h-[255px] w-full rounded-[31px] bg-[#C8FF00] p-[24px]">
         <div className="mb-[48px] flex items-center justify-between">
           <div>
-            <h2 className="text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
-              {isExchange ? "Что хотите обменять?" : "Что хотите посмотреть?"}
-            </h2>
+            <div className="grid">
+              <h2
+                className={`col-start-1 row-start-1 whitespace-nowrap text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+                  isExchange
+                    ? "translate-y-0 opacity-100"
+                    : "pointer-events-none -translate-y-2 opacity-0"
+                }`}
+              >
+                Что хотите <span className="text-[#8E8BED]">обменять</span>?
+              </h2>
+              <h2
+                className={`col-start-1 row-start-1 whitespace-nowrap text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+                  !isExchange
+                    ? "translate-y-0 opacity-100"
+                    : "pointer-events-none translate-y-2 opacity-0"
+                }`}
+              >
+                Что хотите <span className="text-[#8E8BED]">посмотреть</span>?
+              </h2>
+            </div>
             <p className="mt-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Можно ввести не все поля</p>
           </div>
           <TopModeToggle mode={mode} setMode={setMode} />
@@ -350,15 +503,34 @@ export function ModeFormColumn({
           city={city}
           setCity={setCity}
           cityOptions={cityOptions}
+          onCityInputChange={onCityInputChange}
+          onCityListEndReached={onCityListEndReached}
         />
       </div>
 
       <div className="relative flex h-[255px] gap-[24px]">
-        {isExchange ? (
-          <HeroExchangeFilters condition={condition} setCondition={setCondition} />
-        ) : (
-          <HeroAddPanel onAddListingClick={onAddListingClick} />
-        )}
+        <div className="relative h-[255px] w-[464px] shrink-0">
+          <div
+            className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              isExchange
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none translate-y-2 opacity-0"
+            }`}
+            aria-hidden={!isExchange}
+          >
+            <HeroExchangeFilters condition={condition} setCondition={setCondition} />
+          </div>
+          <div
+            className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              !isExchange
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none -translate-y-2 opacity-0"
+            }`}
+            aria-hidden={isExchange}
+          >
+            <HeroAddPanel onAddListingClick={onAddListingClick} />
+          </div>
+        </div>
 
         <HeroAllVariantsPanel onViewAllClick={onViewAllClick} />
       </div>

@@ -18,5 +18,6 @@ export { HeartIcon } from "./HeartIcon";
 export { LogoutIcon } from "./LogoutIcon";
 export { LogoIcon } from "./LogoIcon";
 export { SearchIcon } from "./SearchIcon";
+export { StarMiniIcon } from "./StarMiniIcon";
 export { TagsIcon } from "./TagsIcon";
 export { ToggleStarIcon } from "./ToggleStarIcon";

@@ -29,6 +29,8 @@ export function HomeTopBlock() {
     heroRecommendationsLoading,
     openFiltersAndScroll,
     cityOptions,
+    onCityInputChange,
+    onCityListEndReached,
     categories,
   } = useHomeSearch();
 
@@ -84,6 +86,8 @@ export function HomeTopBlock() {
                   city={city}
                   setCity={setCity}
                   cityOptions={cityOptions}
+                  onCityInputChange={onCityInputChange}
+                  onCityListEndReached={onCityListEndReached}
                   condition={condition}
                   setCondition={setCondition}
                 />

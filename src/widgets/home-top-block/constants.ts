@@ -6,5 +6,4 @@ export const HERO_CONTENT_SHIFT_UP = 0;
 export const BASE_SCENE_HEIGHT = 1088;
 
 export const titlePlaceholder = placeholders.listingTitle;
-export const pricePlaceholder = placeholders.listingPrice;
-export const cityPlaceholder = placeholders.city;
+export const cityPlaceholder = "Начните вводить город";

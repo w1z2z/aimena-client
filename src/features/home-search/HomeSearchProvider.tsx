@@ -11,6 +11,8 @@ import {
 } from "react";
 
 import type { ListingCardData } from "@/entities/listing";
+import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
+import type { SelectOption } from "@/shared/ui/select-field";
 
 import { useCatalogData } from "./hooks/useCatalogData";
 import { useFilteredListings, useHeroRecommendations } from "./hooks/useHomeListingsData";
@@ -48,25 +50,34 @@ type HomeSearchContextValue = {
   heroRecommendationsLoading: boolean;
   filteredListings: ListingCardData[];
   listingsCount: number;
-  cityOptions: import("@/shared/ui/select-field").SelectOption[];
+  cityOptions: SelectOption[];
+  onCityInputChange: (value: string) => void;
+  onCityListEndReached: () => void;
+  pinSelectedCity: (option: SelectOption | null) => void;
   categories: HomeCategoryItem[];
 };
 
 const HomeSearchContext = createContext<HomeSearchContextValue | null>(null);
 
 export function HomeSearchProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<HomeSearchMode>("exchange");
+  const [mode, setMode] = useState<HomeSearchMode>("browse");
   const [categoryId, setCategoryId] = useState<string>("all");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [city, setCity] = useState("");
+  const [pinnedCityOption, setPinnedCityOption] = useState<SelectOption | null>(null);
   const [hasDocuments, setHasDocuments] = useState(false);
   const [condition, setCondition] = useState(DEFAULT_HERO_CONDITION);
   const [filters, setFilters] = useState<HomeFiltersState>(createDefaultFilters);
   const [appliedFilters, setAppliedFilters] = useState<HomeFiltersState>(createDefaultFilters);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
-  const { categories, categoryUiKeyToBackendId, cityNameToId, cityOptions } = useCatalogData();
+  const { categories, categoryUiKeyToBackendId } = useCatalogData();
+  const selectedCityId = city || filters.city;
+  const { cityOptions, onCityInputChange, onCityListEndReached } = useCitySelectOptions({
+    selectedCityId,
+    pinnedOption: pinnedCityOption,
+  });
 
   const hero = useMemo<HomeHeroState>(
     () => ({
@@ -83,21 +94,37 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
 
   const filteredListingsQuery = useFilteredListings({
     appliedFilters,
-    cityNameToId,
     categoryUiKeyToBackendId,
   });
 
   const heroRecommendationsQuery = useHeroRecommendations({
     hero,
-    cityNameToId,
     categoryUiKeyToBackendId,
   });
+
+  const pinSelectedCity = useCallback((option: SelectOption | null) => {
+    setPinnedCityOption(option);
+  }, []);
+
+  const handleSetCity = useCallback(
+    (nextCity: string) => {
+      setCity(nextCity);
+      if (!nextCity) {
+        setPinnedCityOption(null);
+        return;
+      }
+      const option = cityOptions.find((item) => item.value === nextCity && !item.disabled);
+      if (option) setPinnedCityOption(option);
+    },
+    [cityOptions],
+  );
 
   const resetFilters = useCallback(() => {
     const defaults = createDefaultFilters();
     setFilters(defaults);
     setAppliedFilters(defaults);
-  }, []);
+    if (!city) setPinnedCityOption(null);
+  }, [city]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -143,7 +170,7 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       setCategoryId,
       setTitle,
       setPrice,
-      setCity,
+      setCity: handleSetCity,
       setHasDocuments,
       setCondition,
       filters,
@@ -160,6 +187,9 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       filteredListings: filteredListingsQuery.data?.items ?? [],
       listingsCount: filteredListingsQuery.data?.total ?? 0,
       cityOptions,
+      onCityInputChange,
+      onCityListEndReached,
+      pinSelectedCity,
       categories,
     }),
     [
@@ -170,11 +200,15 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       cityOptions,
       filteredListingsQuery.data,
       filters,
+      handleSetCity,
       hero,
       heroRecommendationsQuery.data,
       heroRecommendationsQuery.isLoading,
       isFiltersOpen,
+      onCityInputChange,
+      onCityListEndReached,
       openFiltersAndScroll,
+      pinSelectedCity,
       resetFilters,
     ],
   );

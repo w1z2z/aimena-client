@@ -25,10 +25,6 @@ function parsePrice(value: string): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-function normalizeLookupKey(value: string): string {
-  return value.trim().toLowerCase();
-}
-
 function shuffleItems<T>(items: T[]): T[] {
   const next = [...items];
 
@@ -42,32 +38,24 @@ function shuffleItems<T>(items: T[]): T[] {
 
 type HeroRecommendationsParams = {
   hero: HomeHeroState;
-  cityNameToId: Record<string, string>;
   categoryUiKeyToBackendId: Record<string, string>;
   enabled?: boolean;
 };
 
 export function useHeroRecommendations({
   hero,
-  cityNameToId,
   categoryUiKeyToBackendId,
   enabled = true,
 }: HeroRecommendationsParams) {
   return useQuery({
-    queryKey: [
-      ...listingQueryKeys.all,
-      "hero-recommendations",
-      hero,
-      cityNameToId,
-      categoryUiKeyToBackendId,
-    ],
+    queryKey: [...listingQueryKeys.all, "hero-recommendations", hero, categoryUiKeyToBackendId],
     enabled,
     queryFn: async ({ signal }) => {
       const isAllCategory = hero.categoryId === "all";
       const categoryBackendId = isAllCategory
         ? undefined
         : categoryUiKeyToBackendId[hero.categoryId];
-      const cityId = cityNameToId[normalizeLookupKey(hero.city)];
+      const cityId = hero.city || undefined;
       const parsedPrice = parsePrice(hero.price);
       const conditionId = mapConditionLabelToId(hero.condition);
       const backendCondition =
@@ -144,28 +132,20 @@ export function useHeroRecommendations({
 
 type FilteredListingsParams = {
   appliedFilters: import("@/features/home-search/types").HomeFiltersState;
-  cityNameToId: Record<string, string>;
   categoryUiKeyToBackendId: Record<string, string>;
   enabled?: boolean;
 };
 
 export function useFilteredListings({
   appliedFilters,
-  cityNameToId,
   categoryUiKeyToBackendId,
   enabled = true,
 }: FilteredListingsParams) {
   return useQuery({
-    queryKey: [
-      ...listingQueryKeys.all,
-      "filtered",
-      appliedFilters,
-      cityNameToId,
-      categoryUiKeyToBackendId,
-    ],
+    queryKey: [...listingQueryKeys.all, "filtered", appliedFilters, categoryUiKeyToBackendId],
     enabled,
     queryFn: async ({ signal }) => {
-      const cityId = cityNameToId[normalizeLookupKey(appliedFilters.city)];
+      const cityId = appliedFilters.city || undefined;
       const categoryId = categoryUiKeyToBackendId[appliedFilters.category];
       const mappedConditions = appliedFilters.conditions
         .map((conditionId) => mapConditionIdToBackend(conditionId))

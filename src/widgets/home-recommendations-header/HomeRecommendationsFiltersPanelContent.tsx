@@ -169,7 +169,17 @@ function FilterSearchModeSwitch({
 }
 
 export function HomeRecommendationsFiltersPanelContent() {
-  const { filters, setFilters, resetFilters, applyFilters, cityOptions, categories } = useHomeSearch();
+  const {
+    filters,
+    setFilters,
+    resetFilters,
+    applyFilters,
+    cityOptions,
+    onCityInputChange,
+    onCityListEndReached,
+    pinSelectedCity,
+    categories,
+  } = useHomeSearch();
   const categoryComboboxOptions = categories.map((item) => ({
     value: item.id,
     label: item.label,
@@ -258,11 +268,21 @@ export function HomeRecommendationsFiltersPanelContent() {
         </p>
         <SelectField
           value={city}
-          onChange={(next) => updateFilters({ city: next })}
+          onChange={(next) => {
+            updateFilters({ city: next });
+            if (!next) {
+              pinSelectedCity(null);
+              return;
+            }
+            const option = cityOptions.find((item) => item.value === next && !item.disabled);
+            if (option) pinSelectedCity(option);
+          }}
+          onInputChange={onCityInputChange}
+          onListEndReached={onCityListEndReached}
           options={cityOptions}
           placeholder="Выберите город"
           variant="filter"
-          allowCustomValue
+          allowCustomValue={false}
           className="home-filters-panel__select-wrap"
           aria-label="Выберите город"
         />
