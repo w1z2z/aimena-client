@@ -1,5 +1,3 @@
-import { ToggleStarIcon } from "@/shared/ui/icons";
-
 type SwitchProps = {
   checked: boolean;
   onChange: (next: boolean) => void;
@@ -18,9 +16,7 @@ export function Switch({ checked, onChange, className, "aria-label": ariaLabel }
       className={`site-switch${checked ? " is-on" : ""}${className ? ` ${className}` : ""}`}
     >
       <span className="site-switch__track" aria-hidden />
-      <span className="site-switch__knob" aria-hidden>
-        <ToggleStarIcon className="site-switch__star" />
-      </span>
+      <span className="site-switch__knob" aria-hidden />
     </button>
   );
 }
