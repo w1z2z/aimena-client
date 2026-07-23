@@ -25,75 +25,31 @@ import { Switch } from "@/shared/ui/switch/Switch";
 
 import { ListingPublishedModal } from "./ListingPublishedModal";
 
-type ConditionId = "excellent" | "new" | "good" | "used" | "needs_repair";
-type ExtraPayId = "none" | "i_pay" | "they_pay";
-type ListingKind = "item" | "service";
-type ServiceFormatId = "online" | "offline" | "onsite";
-type ServiceWorkLevelId = "master" | "professional" | "specialist" | "junior";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  CITY_FETCH_DEBOUNCE_MS,
+  CONDITION_OPTIONS,
+  DOCUMENT_PHOTO_SLOTS,
+  EXTRA_PAY_OPTIONS,
+  FIELD_ERROR_CLASS,
+  FIELD_SCROLL_ORDER,
+  HEADER_SCROLL_OFFSET_PX,
+  ITEM_PHOTO_MAX_ROWS,
+  ITEM_PHOTO_SLOTS,
+  ITEM_PHOTOS_PER_ROW,
+  MAX_PHOTO_BYTES,
+  SERVICE_FORMAT_OPTIONS,
+  SERVICE_WORK_LEVEL_OPTIONS,
+  TAGS_FETCH_DEBOUNCE_MS,
+  WANTS_TAGS_LIMIT,
+  type ConditionId,
+  type ExtraPayId,
+  type FieldErrors,
+  type ListingKind,
+  type ServiceFormatId,
+  type ServiceWorkLevelId,
+} from "./constants";
 
-type FieldErrors = {
-  title?: string;
-  description?: string;
-  category?: string;
-  city?: string;
-  condition?: string;
-  serviceWorkLevel?: string;
-  serviceFormat?: string;
-  photos?: string;
-};
-
-/** Order matches visual top→bottom on the page */
-const FIELD_SCROLL_ORDER: Array<keyof FieldErrors> = [
-  "title",
-  "description",
-  "category",
-  "city",
-  "photos",
-  "condition",
-  "serviceWorkLevel",
-  "serviceFormat",
-];
-
-const HEADER_SCROLL_OFFSET_PX = 72;
-
-const CONDITION_OPTIONS: Array<{ id: ConditionId; label: string }> = [
-  { id: "excellent", label: "Отличное" },
-  { id: "new", label: "Новое" },
-  { id: "good", label: "Хорошее" },
-  { id: "used", label: "Б/у" },
-  { id: "needs_repair", label: "Нужен ремонт" },
-];
-
-const EXTRA_PAY_OPTIONS: Array<{ id: ExtraPayId; label: string }> = [
-  { id: "none", label: "Без доплаты" },
-  { id: "i_pay", label: "Готов доплатить" },
-  { id: "they_pay", label: "Хочу доплату" },
-];
-
-const SERVICE_FORMAT_OPTIONS: Array<{ id: ServiceFormatId; label: string }> = [
-  { id: "online", label: "Онлайн" },
-  { id: "offline", label: "Офлайн" },
-  { id: "onsite", label: "С выездом" },
-];
-
-const SERVICE_WORK_LEVEL_OPTIONS: Array<{ id: ServiceWorkLevelId; label: string }> = [
-  { id: "master", label: "Мастер" },
-  { id: "professional", label: "Профессионал" },
-  { id: "specialist", label: "Специалист" },
-  { id: "junior", label: "Новичок" },
-];
-
-const ITEM_PHOTO_SLOTS = 10;
-const ITEM_PHOTOS_PER_ROW = 5;
-const ITEM_PHOTO_MAX_ROWS = 2;
-const DOCUMENT_PHOTO_SLOTS = 5;
-const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/jpg,image/webp";
-const WANTS_TAGS_LIMIT = 10;
-
-const FIELD_ERROR_CLASS = "m-0 mt-1 text-[14px] font-normal leading-[170%] text-[#FF2056]";
-const CITY_FETCH_DEBOUNCE_MS = 250;
-const TAGS_FETCH_DEBOUNCE_MS = 200;
 
 type CategoryTreeNode = ApiCategoryNode & {
   children?: Array<{ id: string; name: string; slug: string }>;

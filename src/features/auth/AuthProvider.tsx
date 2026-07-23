@@ -67,7 +67,6 @@ function clearAuthStorage() {
 
   window.localStorage.removeItem(AUTH_ACCESS_TOKEN_STORAGE_KEY);
   window.localStorage.removeItem(AUTH_USER_STORAGE_KEY);
-  window.localStorage.removeItem("swaply-auth-mock");
 }
 
 function readAccessToken() {

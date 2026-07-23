@@ -1,16 +1,3 @@
-export const colors = {
-  brand: "#1A1A1A",
-  accent: "#8E8BED",
-  lime: "#C8FF00",
-  surface: "#F8F8F5",
-  surfaceMuted: "#F0E8FF",
-  textPrimary: "#1A1A1A",
-  textSecondary: "#3D3D3D",
-  textMuted: "#626262",
-  border: "#CACACA",
-  white: "#FFFFFF",
-} as const;
-
 export const layout = {
   cardWidth: 342,
   cardGap: 24,

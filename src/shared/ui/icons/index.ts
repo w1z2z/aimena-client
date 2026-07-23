@@ -1,10 +1,6 @@
 export type { IconProps } from "./types";
-export type { CategoryId, CategoryItem } from "./category-icons";
-export {
-  categoryItems,
-  categoryPlaceholderIconSrc,
-  getCategoryIconSrc,
-} from "./category-icons";
+
+export { categoryPlaceholderIconSrc } from "./category-placeholder";
 
 export { AuthStarIcon } from "./AuthStarIcon";
 export { BellIcon } from "./BellIcon";
@@ -16,7 +12,6 @@ export { BoltIcon } from "./BoltIcon";
 export { ChatBubbleIcon } from "./ChatBubbleIcon";
 export { ChevronIcon } from "./ChevronIcon";
 export { DeleteIcon } from "./DeleteIcon";
-export { ExchangeBadgeIcon } from "./ExchangeBadgeIcon";
 export { FilterIcon } from "./FilterIcon";
 export { FreePromoStarIcon } from "./FreePromoStarIcon";
 export { HeartIcon } from "./HeartIcon";
@@ -25,6 +20,3 @@ export { LogoIcon } from "./LogoIcon";
 export { SearchIcon } from "./SearchIcon";
 export { TagsIcon } from "./TagsIcon";
 export { ToggleStarIcon } from "./ToggleStarIcon";
-export { WantAllIcon } from "./WantAllIcon";
-export { WantBrowseIcon } from "./WantBrowseIcon";
-export { WantExchangeIcon } from "./WantExchangeIcon";

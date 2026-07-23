@@ -20,7 +20,7 @@ const golosText = Golos_Text({
 
 export const metadata: Metadata = {
   title: "Aimena",
-  description: "Frontend skeleton for Aimena marketplace",
+  description: "Обмен вещами и услугами без продаж",
 };
 
 export default function RootLayout({

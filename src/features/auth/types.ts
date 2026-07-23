@@ -8,8 +8,3 @@ export type AuthUser = {
   cityId: string | null;
   city: string | null;
 };
-
-export type AuthState = {
-  user: AuthUser | null;
-  isAuthenticated: boolean;
-};

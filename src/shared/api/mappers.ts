@@ -1,5 +1,3 @@
-"use client";
-
 import type { AuthUser } from "@/features/auth/types";
 
 import type { BackendUserMe } from "./auth";
@@ -30,5 +28,3 @@ export function mapBackendUserToAuthUser(user: BackendUserMe): AuthUser {
     city,
   };
 }
-
-export { mapApiListingToCard as mapListingCardToHomeCard } from "@/entities/listing";

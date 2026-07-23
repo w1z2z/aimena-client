@@ -1,8 +1,7 @@
 "use client";
 
+import { ListingCard } from "@/entities/listing";
 import { useHomeSearch } from "@/features/home-search";
-
-import { ExchangeListingCard } from "./ExchangeListingCard";
 
 export function HomeListingsGrid() {
   const { filteredListings } = useHomeSearch();
@@ -21,7 +20,18 @@ export function HomeListingsGrid() {
   return (
     <div className="home-listings-grid" aria-label="Лента объявлений">
       {visibleListings.map((listing) => (
-        <ExchangeListingCard key={listing.id} {...listing} />
+        <ListingCard
+          key={listing.id}
+          listingId={listing.id}
+          variant="exchange"
+          title={listing.title}
+          city={listing.city}
+          condition={listing.condition}
+          coverImageUrl={listing.coverImageUrl}
+          wants={listing.wants}
+          wantsMore={listing.wantsMore}
+          isFavorite={listing.isFavorite}
+        />
       ))}
     </div>
   );

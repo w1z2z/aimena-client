@@ -24,7 +24,6 @@ export function HomeTopBlock() {
     setTitle,
     setPrice,
     setCity,
-    setHasDocuments,
     setCondition,
     heroRecommendations,
     heroRecommendationsLoading,
@@ -33,7 +32,7 @@ export function HomeTopBlock() {
     categories,
   } = useHomeSearch();
 
-  const { mode, title, price, city, hasDocuments, condition, categoryId } = hero;
+  const { mode, title, price, city, condition, categoryId } = hero;
   const isExchange = mode === "exchange";
   const isAllCategory = categoryId === "all";
   const recommendationsHeading = "Варианты обмена";
@@ -85,8 +84,6 @@ export function HomeTopBlock() {
                   city={city}
                   setCity={setCity}
                   cityOptions={cityOptions}
-                  hasDocuments={hasDocuments}
-                  setHasDocuments={setHasDocuments}
                   condition={condition}
                   setCondition={setCondition}
                 />

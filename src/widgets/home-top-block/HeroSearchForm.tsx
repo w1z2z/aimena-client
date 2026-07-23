@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 
-import { WantBrowseIcon, WantExchangeIcon } from "@/shared/ui/icons";
+import { HERO_CONDITION_OPTIONS } from "@/entities/listing";
 import viewAllArrow from "@/shared/ui/icons/view-all-arrow.svg";
 import type { SelectOption } from "@/shared/ui/select-field";
 import { SelectField } from "@/shared/ui/select-field";
 
 import { cityPlaceholder, pricePlaceholder, titlePlaceholder, type Mode } from "./constants";
 
-const itemConditionOptions = ["Отличное", "Новое", "Хорошее", "Б.у", "Требует ремонта"] as const;
 const serviceLevelOptions = ["Мастер", "Профессионал", "Специалист", "Новичок"] as const;
 const serviceFormatOptions = ["Онлайн", "Офлайн", "С выездом"] as const;
 
@@ -64,7 +63,7 @@ function HeroViewAllArrow() {
 
 export type ModeFormFieldsProps = {
   mode: Mode;
-  setMode: (value: Extract<Mode, "exchange" | "browse">) => void;
+  setMode: (value: Mode) => void;
   title: string;
   setTitle: (value: string) => void;
   price: string;
@@ -72,8 +71,6 @@ export type ModeFormFieldsProps = {
   city: string;
   setCity: (value: string) => void;
   cityOptions: SelectOption[];
-  hasDocuments: boolean;
-  setHasDocuments: (value: boolean | ((prev: boolean) => boolean)) => void;
   condition: string;
   setCondition: (value: string) => void;
   onViewAllClick: () => void;
@@ -180,7 +177,7 @@ function HeroExchangeFilters({
   setCondition,
 }: Pick<ModeFormFieldsProps, "condition" | "setCondition">) {
   const [listingType, setListingType] = useState<"item" | "service">("item");
-  const options = listingType === "item" ? itemConditionOptions : serviceLevelOptions;
+  const options = listingType === "item" ? HERO_CONDITION_OPTIONS : serviceLevelOptions;
   const secondaryOptions = listingType === "service" ? serviceFormatOptions : null;
 
   return (
