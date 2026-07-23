@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getCategories, getCities } from "@/shared/api/catalog";
 import { buildCitySelectOptions } from "@/shared/lib/city-select-options";
+import { categoryItems, getCategoryIconSrc } from "@/shared/ui/icons";
 import type { SelectOption } from "@/shared/ui/select-field";
 
 import type { HomeCategoryItem } from "../types";
@@ -25,20 +26,37 @@ export function useCatalogData() {
     staleTime: 5 * 60_000,
   });
 
-  const categories: HomeCategoryItem[] =
-    categoriesQuery.data?.data
-      .map((item) => ({
-        id: item.uiKey || item.slug || item.id,
-        label: item.name.replace(/^[^\p{L}\p{N}]+\s*/u, "").trim(),
-        iconUrl: item.iconUrl ?? null,
-        homeArcOrder: item.homeArcOrder,
-        isVirtual: item.isVirtual,
-      }))
-      .sort(
-        (left, right) =>
-          (left.homeArcOrder ?? Number.MAX_SAFE_INTEGER) -
-          (right.homeArcOrder ?? Number.MAX_SAFE_INTEGER),
-      ) ?? [];
+  const apiCategoriesByUiKey = new Map(
+    (categoriesQuery.data?.data ?? []).map((item) => {
+      const uiKey = item.uiKey || item.slug || item.id;
+      return [
+        uiKey,
+        {
+          iconUrl: item.iconUrl ?? null,
+          homeArcOrder: item.homeArcOrder,
+          isVirtual: item.isVirtual,
+        },
+      ] as const;
+    }),
+  );
+
+  // Canonical home-arc set (13): short UI labels + placeholder icons when CDN art is missing.
+  const categories: HomeCategoryItem[] = categoryItems
+    .map((fallback, index) => {
+      const fromApi = apiCategoriesByUiKey.get(fallback.id);
+      return {
+        id: fallback.id,
+        label: fallback.label,
+        iconUrl: fromApi?.iconUrl || getCategoryIconSrc(fallback.icon),
+        homeArcOrder: fromApi?.homeArcOrder ?? index,
+        isVirtual: fromApi?.isVirtual,
+      };
+    })
+    .sort(
+      (left, right) =>
+        (left.homeArcOrder ?? Number.MAX_SAFE_INTEGER) -
+        (right.homeArcOrder ?? Number.MAX_SAFE_INTEGER),
+    );
 
   const categoryUiKeyToBackendId: Record<string, string> = {};
   for (const item of categoriesQuery.data?.data ?? []) {

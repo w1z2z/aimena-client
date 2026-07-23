@@ -66,10 +66,8 @@ export function HomeTopBlock() {
             <section className="relative h-[1088px] w-[1921px] -translate-x-[240px] bg-[#1A1A1A]">
               <CategoriesArc categories={categories} onCategoryChange={handleCategoryChange} />
 
-              <h1
-                className="absolute left-[685px] top-[289px] w-[552px] text-[40px] font-bold leading-[40px]"
-              >
-                Обменивайтесь <span className="text-[#8E8BED]">без продаж</span> и лишних переговоров
+              <h1 className="absolute left-[685px] top-[289px] w-max whitespace-nowrap text-[40px] font-bold leading-[40px] tracking-[-0.005em]">
+                Обменивайтесь <span className="text-[#8E8BED]">без продаж</span>
               </h1>
 
               <div

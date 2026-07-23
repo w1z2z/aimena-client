@@ -10,7 +10,7 @@ import {
 } from "react";
 
 import type { HomeCategoryItem } from "@/features/home-search/types";
-import { categoryItems, getCategoryIconSrc } from "@/shared/ui/icons";
+import { categoryItems, categoryPlaceholderIconSrc, getCategoryIconSrc } from "@/shared/ui/icons";
 
 import { useIsSafari } from "./lib/safari";
 
@@ -43,28 +43,97 @@ function rebaseDisplayIndexContinuous(displayIndex: number, length: number) {
 
 const ARC_CONTAINER_WIDTH = 1311;
 const ARC_CENTER_X = ARC_CONTAINER_WIDTH / 2;
-const ARC_HORIZONTAL_RADIUS = 620;
-const ARC_VERTICAL_RADIUS = 170;
-const ARC_BASE_Y = 218;
+/** Figma section-category: top 96, left 305, 1311×183 */
 const ARC_CONTAINER_TOP = 96;
-const ARC_CONTAINER_HEIGHT = 183;
-const ARC_ACTIVE_ICON_SIZE = 102;
-const ARC_GLOW_HORIZONTAL_RADIUS = 735;
-const ARC_ANGLE_STEP = 17.5;
-const ARC_ACTIVE_ICON_CENTER_Y = ARC_BASE_Y - ARC_VERTICAL_RADIUS + ARC_ACTIVE_ICON_SIZE / 2;
-const ARC_GLOW_BASE_Y = ARC_ACTIVE_ICON_CENTER_Y + ARC_VERTICAL_RADIUS;
-const ARC_GLOW_PATH = `M ${ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y} A ${ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_VERTICAL_RADIUS} 0 0 1 ${ARC_CENTER_X + ARC_GLOW_HORIZONTAL_RADIUS} ${ARC_GLOW_BASE_Y}`;
 const CATEGORY_DRAG_CLICK_THRESHOLD = 6;
 const CATEGORY_DRAG_PIXELS_PER_STEP = 88;
-const CATEGORY_ACTIVE_SCALE_BOOST = 0.05;
-const CATEGORY_ACTIVE_SIZE_BOOST = 6;
-const CATEGORY_ACTIVE_LABEL_BOOST = 1;
+
+type CategoryProfileStep = {
+  offsetX: number;
+  /** Вертикальный центр иконки на дуге (ровная траектория). */
+  centerY: number;
+  iconWidth: number;
+  iconHeight: number;
+  labelSize: number;
+  labelLineHeight: number;
+  opacity: number;
+};
+
+/**
+ * Симметричный профиль: индекс — расстояние от центра.
+ * centerY задаёт ровную дугу; top иконки = centerY − iconHeight / 2.
+ */
+const CATEGORY_PROFILE: readonly CategoryProfileStep[] = [
+  { offsetX: 0, centerY: 48, iconWidth: 94, iconHeight: 92, labelSize: 14, labelLineHeight: 17, opacity: 1 },
+  { offsetX: 137, centerY: 52, iconWidth: 67, iconHeight: 59, labelSize: 14, labelLineHeight: 17, opacity: 1 },
+  { offsetX: 268, centerY: 58, iconWidth: 47, iconHeight: 59.5, labelSize: 14, labelLineHeight: 17, opacity: 1 },
+  { offsetX: 384, centerY: 70, iconWidth: 48, iconHeight: 45, labelSize: 11.3, labelLineHeight: 16, opacity: 1 },
+  { offsetX: 505, centerY: 90, iconWidth: 44, iconHeight: 41, labelSize: 9.2, labelLineHeight: 13, opacity: 0.85 },
+  { offsetX: 572, centerY: 118, iconWidth: 28, iconHeight: 28, labelSize: 7.3, labelLineHeight: 10, opacity: 0.72 },
+  { offsetX: 528, centerY: 150, iconWidth: 16, iconHeight: 16, labelSize: 3.6, labelLineHeight: 5, opacity: 0.6 },
+] as const;
 
 const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(200, 255, 0, 0.35))";
 const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
 const CATEGORY_ICON_FALLBACK_BY_ID: Record<string, string> = Object.fromEntries(
   categoryItems.map((item) => [item.id, getCategoryIconSrc(item.icon)]),
 );
+
+function interpolateProfile(
+  property: keyof Omit<CategoryProfileStep, "opacity"> | "opacity",
+  distance: number,
+) {
+  const bounded = Math.min(Math.abs(distance), CATEGORY_PROFILE.length - 1);
+  const lowerIndex = Math.floor(bounded);
+  const upperIndex = Math.min(lowerIndex + 1, CATEGORY_PROFILE.length - 1);
+  const progress = bounded - lowerIndex;
+  const lowerValue = CATEGORY_PROFILE[lowerIndex][property];
+  const upperValue = CATEGORY_PROFILE[upperIndex][property];
+  return lowerValue + (upperValue - lowerValue) * progress;
+}
+
+function getTrajectoryPoint(offsetX: number, centerY: number, direction: -1 | 0 | 1) {
+  return {
+    x: ARC_CENTER_X + direction * offsetX,
+    y: centerY,
+  };
+}
+
+function buildSmoothCategoryTrajectoryPath() {
+  const points: Array<{ x: number; y: number }> = [];
+  const maxDistance = CATEGORY_PROFILE.length - 1;
+
+  for (let distance = -maxDistance; distance <= maxDistance; distance += 0.04) {
+    const direction = distance === 0 ? 0 : ((distance < 0 ? -1 : 1) as -1 | 1);
+    points.push(
+      getTrajectoryPoint(
+        interpolateProfile("offsetX", distance),
+        interpolateProfile("centerY", distance),
+        direction,
+      ),
+    );
+  }
+
+  if (points.length < 2) return "";
+
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const p0 = points[index - 1] ?? points[index];
+    const p1 = points[index];
+    const p2 = points[index + 1];
+    const p3 = points[index + 2] ?? p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    path += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.x} ${p2.y}`;
+  }
+
+  return path;
+}
+
+const CATEGORY_TRAJECTORY_PATH = buildSmoothCategoryTrajectoryPath();
+const CATEGORY_ICON_PLACEHOLDER = categoryPlaceholderIconSrc;
 
 function getCategoryIconFilter(isActive: boolean, useSvgFilter: boolean) {
   if (useSvgFilter) {
@@ -78,37 +147,36 @@ type CategoryLayout = {
   x: number;
   y: number;
   scale: number;
-  iconSize: number;
+  iconWidth: number;
+  iconHeight: number;
   opacity: number;
   isFar: boolean;
   isActive: boolean;
   labelSize: number;
+  labelLineHeight: number;
   labelOpacity: number;
 };
 
 function computeCategoryLayout(index: number, displayIndex: number, length: number): CategoryLayout {
   const distance = getWrappedDistanceFloat(index, displayIndex, length);
-  const maxVisibleDistance = 4;
-  const distanceFactor = Math.min(1, Math.abs(distance) / maxVisibleDistance);
+  const maxVisibleDistance = CATEGORY_PROFILE.length - 1;
   const isFar = Math.abs(distance) > maxVisibleDistance + 0.05;
-  const angle = distance * ARC_ANGLE_STEP;
-  const rad = (angle * Math.PI) / 180;
-  const centerProximity = Math.max(0, 1 - Math.abs(distance) / 0.45);
-  const scale = 1 - distanceFactor * 0.42 + centerProximity * CATEGORY_ACTIVE_SCALE_BOOST;
-  const iconSize = 102 - distanceFactor * 64 + centerProximity * CATEGORY_ACTIVE_SIZE_BOOST;
-  const arcTopY = ARC_BASE_Y - Math.cos(rad) * ARC_VERTICAL_RADIUS;
-  const scaledIconHeight = iconSize * scale;
+  const direction = Math.sign(distance);
+  const iconHeight = interpolateProfile("iconHeight", distance);
+  const centerY = interpolateProfile("centerY", distance);
 
   return {
-    x: ARC_CENTER_X + Math.sin(rad) * ARC_HORIZONTAL_RADIUS,
-    y: arcTopY - (scaledIconHeight - ARC_ACTIVE_ICON_SIZE) / 2,
-    scale,
-    iconSize,
-    opacity: isFar ? 0 : 1 - distanceFactor * 0.5,
+    x: ARC_CENTER_X + direction * interpolateProfile("offsetX", distance),
+    y: centerY - iconHeight / 2,
+    scale: 1,
+    iconWidth: interpolateProfile("iconWidth", distance),
+    iconHeight,
+    opacity: isFar ? 0 : interpolateProfile("opacity", distance),
     isFar,
     isActive: Math.abs(distance) < 0.05,
-    labelSize: Math.max(10, 14 - distanceFactor * 6) + centerProximity * CATEGORY_ACTIVE_LABEL_BOOST,
-    labelOpacity: Math.abs(distance) < 0.05 ? 1 : 0.8,
+    labelSize: interpolateProfile("labelSize", distance),
+    labelLineHeight: interpolateProfile("labelLineHeight", distance),
+    labelOpacity: isFar ? 0 : interpolateProfile("opacity", distance),
   };
 }
 
@@ -138,8 +206,8 @@ function applyCategoryLayout(
   iconWrap.style.transform = `scale(${layout.scale})`;
   iconWrap.style.transformOrigin = "top center";
 
-  img.style.width = `${layout.iconSize}px`;
-  img.style.height = `${layout.iconSize}px`;
+  img.style.width = `${layout.iconWidth}px`;
+  img.style.height = `${layout.iconHeight}px`;
 
   if (!skipFilters) {
     const filter = getCategoryIconFilter(layout.isActive, useSvgIconFilter);
@@ -153,6 +221,7 @@ function applyCategoryLayout(
   }
 
   label.style.fontSize = `${layout.labelSize}px`;
+  label.style.lineHeight = `${layout.labelLineHeight}px`;
   label.style.opacity = String(layout.labelOpacity);
 
   if (!skipAria) {
@@ -405,128 +474,70 @@ export function CategoriesArc({
       className="categories-arc absolute left-[305px] z-10 h-[183px] w-[1311px] cursor-grab select-none active:cursor-grabbing"
       style={{ top: `${ARC_CONTAINER_TOP}px` }}
     >
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-visible">
+        <div
+          className="absolute left-[19.05px] top-[-60.03px] h-[213.56px] w-[1272.75px] bg-[#C8FF00] opacity-[0.22] blur-[24px]"
+        />
+        <div
+          className="absolute"
+          style={{
+            boxSizing: "border-box",
+            left: "1.48%",
+            right: "1.53%",
+            top: "31.8%",
+            bottom: "13.66%",
+            borderRadius: "50%",
+            background: "#D9D9D9",
+            opacity: 0.22,
+            border: "16.7389px solid #C8FF00",
+            filter: "blur(20.15px)",
+            transform: "matrix(-1, 0, 0, 1, 0, 0)",
+          }}
+        />
+        <div className="absolute left-[634px] top-[-89px] h-[272px] w-[24px] rounded-[3px] bg-[#C8FF00] opacity-[0.22] blur-[12.9px]" />
+      </div>
+
+      {/* Временная видимая траектория центров иконок категорий */}
       <svg
         aria-hidden
-        viewBox={`0 0 ${ARC_CONTAINER_WIDTH} ${ARC_CONTAINER_HEIGHT}`}
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
-        style={
-          isSafari
-            ? {
-                filter: "blur(44px)",
-                WebkitFilter: "blur(44px)",
-              }
-            : undefined
-        }
+        viewBox="0 0 1311 183"
+        className="pointer-events-none absolute inset-0 z-[15] h-full w-full overflow-visible"
       >
-        <defs>
-          {!isSafari && (
-            <>
-              <filter
-                id="categories-arc-glow-soft"
-                x="-65%"
-                y="-170%"
-                width="230%"
-                height="440%"
-                colorInterpolationFilters="sRGB"
-              >
-                <feGaussianBlur in="SourceGraphic" stdDeviation="72" edgeMode="none" />
-              </filter>
-              <filter
-                id="categories-arc-glow-core"
-                x="-55%"
-                y="-145%"
-                width="210%"
-                height="390%"
-                colorInterpolationFilters="sRGB"
-              >
-                <feGaussianBlur in="SourceGraphic" stdDeviation="42" edgeMode="none" />
-              </filter>
-              <filter
-                id="category-icon-shadow-active"
-                x="-120%"
-                y="-120%"
-                width="340%"
-                height="340%"
-                colorInterpolationFilters="sRGB"
-              >
-                <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(200, 255, 0)" floodOpacity="0.35" />
-              </filter>
-              <filter
-                id="category-icon-shadow-inactive"
-                x="-120%"
-                y="-120%"
-                width="340%"
-                height="340%"
-                colorInterpolationFilters="sRGB"
-              >
-                <feDropShadow dx="0" dy="8" stdDeviation="9" floodColor="rgb(0, 0, 0)" floodOpacity="0.35" />
-              </filter>
-            </>
-          )}
-          <linearGradient
-            id="categories-arc-glow-gradient"
-            x1={ARC_CENTER_X - ARC_GLOW_HORIZONTAL_RADIUS}
-            y1="0"
-            x2={ARC_CENTER_X + ARC_GLOW_HORIZONTAL_RADIUS}
-            y2="0"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0%" stopColor="#C8FF00" stopOpacity="0" />
-            <stop offset="16%" stopColor="#C8FF00" stopOpacity="0.2" />
-            <stop offset="50%" stopColor="#C8FF00" stopOpacity="0.46" />
-            <stop offset="84%" stopColor="#C8FF00" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#C8FF00" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
         <path
-          className="categories-arc-glow"
-          d={ARC_GLOW_PATH}
+          d={CATEGORY_TRAJECTORY_PATH}
           fill="none"
-          stroke="url(#categories-arc-glow-gradient)"
-          strokeWidth="156"
+          stroke="#FF2D55"
+          strokeWidth="3"
           strokeLinecap="round"
-          opacity="0.2"
-          filter={isSafari ? undefined : "url(#categories-arc-glow-soft)"}
-        />
-        <path
-          className="categories-arc-glow"
-          d={ARC_GLOW_PATH}
-          fill="none"
-          stroke="url(#categories-arc-glow-gradient)"
-          strokeWidth="88"
-          strokeLinecap="round"
-          opacity="0.34"
-          filter={isSafari ? undefined : "url(#categories-arc-glow-core)"}
+          strokeLinejoin="round"
+          strokeDasharray="8 6"
         />
       </svg>
 
-      {isSafari && (
-        <svg aria-hidden className="pointer-events-none absolute size-0 overflow-hidden">
-          <defs>
-            <filter
-              id="category-icon-shadow-active"
-              x="-120%"
-              y="-120%"
-              width="340%"
-              height="340%"
-              colorInterpolationFilters="sRGB"
-            >
-              <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(200, 255, 0)" floodOpacity="0.35" />
-            </filter>
-            <filter
-              id="category-icon-shadow-inactive"
-              x="-120%"
-              y="-120%"
-              width="340%"
-              height="340%"
-              colorInterpolationFilters="sRGB"
-            >
-              <feDropShadow dx="0" dy="8" stdDeviation="9" floodColor="rgb(0, 0, 0)" floodOpacity="0.35" />
-            </filter>
-          </defs>
-        </svg>
-      )}
+      <svg aria-hidden className="pointer-events-none absolute size-0 overflow-hidden">
+        <defs>
+          <filter
+            id="category-icon-shadow-active"
+            x="-120%"
+            y="-120%"
+            width="340%"
+            height="340%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(200, 255, 0)" floodOpacity="0.35" />
+          </filter>
+          <filter
+            id="category-icon-shadow-inactive"
+            x="-120%"
+            y="-120%"
+            width="340%"
+            height="340%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feDropShadow dx="0" dy="8" stdDeviation="9" floodColor="rgb(0, 0, 0)" floodOpacity="0.35" />
+          </filter>
+        </defs>
+      </svg>
 
       {categories.map((item, index) => {
         const layout = computeCategoryLayout(index, initialIndex, length);
@@ -584,7 +595,7 @@ export function CategoriesArc({
             >
               <img
                 data-category-icon
-                src={item.iconUrl || CATEGORY_ICON_FALLBACK_BY_ID[item.id] || "about:blank"}
+                src={item.iconUrl || CATEGORY_ICON_FALLBACK_BY_ID[item.id] || CATEGORY_ICON_PLACEHOLDER}
                 alt=""
                 draggable={false}
                 className={`pointer-events-none object-contain group-hover:brightness-110 ${
@@ -593,15 +604,19 @@ export function CategoriesArc({
                     : "drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)]"
                 }`}
                 style={{
-                  height: `${layout.iconSize}px`,
-                  width: `${layout.iconSize}px`,
+                  height: `${layout.iconHeight}px`,
+                  width: `${layout.iconWidth}px`,
                 }}
               />
             </span>
             <span
               data-category-label
               className="mt-[8px] text-center font-semibold tracking-[-0.002em] text-white"
-              style={{ fontSize: `${layout.labelSize}px`, opacity: layout.labelOpacity }}
+              style={{
+                fontSize: `${layout.labelSize}px`,
+                lineHeight: `${layout.labelLineHeight}px`,
+                opacity: layout.labelOpacity,
+              }}
             >
               {item.label}
             </span>
