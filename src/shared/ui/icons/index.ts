@@ -13,7 +13,6 @@ export { ChatBubbleIcon } from "./ChatBubbleIcon";
 export { ChevronIcon } from "./ChevronIcon";
 export { DeleteIcon } from "./DeleteIcon";
 export { FilterIcon } from "./FilterIcon";
-export { FreePromoStarIcon } from "./FreePromoStarIcon";
 export { HeartIcon } from "./HeartIcon";
 export { LogoutIcon } from "./LogoutIcon";
 export { LogoIcon } from "./LogoIcon";

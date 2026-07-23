@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, startTransition, useLayoutEffect, useRef, useState } from "react";
 
 import { HERO_CONDITION_OPTIONS } from "@/entities/listing";
 import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
@@ -13,6 +13,13 @@ import { cityPlaceholder, titlePlaceholder, type Mode } from "./constants";
 
 const serviceLevelOptions = ["Мастер", "Профессионал", "Специалист", "Новичок"] as const;
 const serviceFormatOptions = ["Онлайн", "Офлайн", "С выездом"] as const;
+
+/** Shared motion for nested listing-type swaps inside exchange filters. */
+const HERO_SWAP_EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
+const HERO_SWAP_DURATION = "duration-500";
+const HERO_SWAP_TRANSITION = `transition-all ${HERO_SWAP_DURATION} ${HERO_SWAP_EASE}`;
+const HERO_COLOR_TRANSITION = `transition-colors ${HERO_SWAP_DURATION} ${HERO_SWAP_EASE}`;
+const HERO_TRANSFORM_TRANSITION = `transition-transform ${HERO_SWAP_DURATION} ${HERO_SWAP_EASE}`;
 
 /** One continuous star split across the two lower panels (464 + 24 gap). */
 const HERO_PANEL_STAR_SIZE = "h-[430px] w-[430px]";
@@ -86,6 +93,40 @@ export type ModeFormFieldsProps = {
   onViewAllClick: () => void;
 };
 
+function ModeHeading({ isExchange }: { isExchange: boolean }) {
+  const exchangeWordRef = useRef<HTMLSpanElement>(null);
+  const browseWordRef = useRef<HTMLSpanElement>(null);
+  const [wordWidth, setWordWidth] = useState<number | null>(null);
+
+  useLayoutEffect(() => {
+    const activeNode = isExchange ? exchangeWordRef.current : browseWordRef.current;
+    if (!activeNode) return;
+    setWordWidth(activeNode.getBoundingClientRect().width);
+  }, [isExchange]);
+
+  return (
+    <h2 className="whitespace-nowrap text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
+      Что хотите{" "}
+      <span className="hero-mode-word" style={wordWidth == null ? undefined : { width: `${wordWidth}px` }}>
+        <span
+          ref={exchangeWordRef}
+          className={`hero-mode-title ${isExchange ? "is-active" : "is-hidden"}`}
+        >
+          <span className="text-[#8E8BED]">обменять</span>
+          <span className="text-[#1A1A1A]">?</span>
+        </span>
+        <span
+          ref={browseWordRef}
+          className={`hero-mode-title ${!isExchange ? "is-active" : "is-hidden"}`}
+        >
+          <span className="text-[#8E8BED]">посмотреть</span>
+          <span className="text-[#1A1A1A]">?</span>
+        </span>
+      </span>
+    </h2>
+  );
+}
+
 function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "setMode">) {
   const tabs = [
     { id: "exchange" as const, label: "Хочу обменять" },
@@ -96,7 +137,7 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
     <div className="relative box-border flex h-[70px] w-[346px] items-center gap-[4px] rounded-[21px] border-[0.5px] border-[#CACACA] bg-white p-[8px]">
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute bottom-[8px] left-[8px] top-[8px] w-[calc(50%-10px)] rounded-[17px] bg-[#8E8BED] transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+        className={`hero-mode-pill pointer-events-none absolute bottom-[8px] left-[8px] top-[8px] w-[calc(50%-10px)] rounded-[17px] bg-[#8E8BED] ${
           mode === "browse" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
         }`}
       />
@@ -106,8 +147,8 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
           <button
             key={tab.id}
             type="button"
-            onClick={() => setMode(tab.id)}
-            className={`relative z-[1] flex h-full flex-1 items-center justify-center gap-[8px] rounded-[17px] px-[16px] text-[14px] font-semibold leading-none transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+            onClick={() => startTransition(() => setMode(tab.id))}
+            className={`hero-mode-pill-label relative z-[1] flex h-full flex-1 items-center justify-center gap-[8px] rounded-[17px] px-[16px] text-[14px] font-semibold leading-none ${
               active ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
             }`}
           >
@@ -304,14 +345,14 @@ function HeroExchangeFilters({
         <div className="relative box-border flex h-[42px] w-[212px] items-center gap-[4px] rounded-[15px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] p-[4px]">
           <span
             aria-hidden="true"
-            className={`pointer-events-none absolute bottom-[4px] left-[4px] top-[4px] w-[calc(50%-6px)] rounded-[13px] bg-[#8E8BED] transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+            className={`pointer-events-none absolute bottom-[4px] left-[4px] top-[4px] w-[calc(50%-6px)] rounded-[13px] bg-[#8E8BED] ${HERO_TRANSFORM_TRANSITION} ${
               listingType === "service" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
             }`}
           />
           <button
             type="button"
             onClick={() => handleListingTypeChange("item")}
-            className={`relative z-[1] flex h-full flex-1 items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+            className={`relative z-[1] flex h-full flex-1 items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] ${HERO_COLOR_TRANSITION} ${
               listingType === "item" ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
             }`}
           >
@@ -320,7 +361,7 @@ function HeroExchangeFilters({
           <button
             type="button"
             onClick={() => handleListingTypeChange("service")}
-            className={`relative z-[1] flex h-full flex-1 items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] transition-colors duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+            className={`relative z-[1] flex h-full flex-1 items-center justify-center rounded-[13px] text-[14px] font-semibold leading-none tracking-[0.001em] ${HERO_COLOR_TRANSITION} ${
               listingType === "service" ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
             }`}
           >
@@ -331,10 +372,10 @@ function HeroExchangeFilters({
 
       <div className="relative z-[2] grid w-full min-h-0 flex-1 content-start">
         <div
-          className={`col-start-1 row-start-1 flex w-full flex-col gap-[8px] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+          className={`col-start-1 row-start-1 flex w-full flex-col gap-[8px] ${HERO_SWAP_TRANSITION} ${
             listingType === "item"
               ? "translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-1 opacity-0"
+              : "pointer-events-none translate-y-1.5 opacity-0"
           }`}
           aria-hidden={listingType !== "item"}
         >
@@ -355,10 +396,10 @@ function HeroExchangeFilters({
         </div>
 
         <div
-          className={`col-start-1 row-start-1 flex w-full flex-col gap-[24px] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+          className={`col-start-1 row-start-1 flex w-full flex-col gap-[24px] ${HERO_SWAP_TRANSITION} ${
             listingType === "service"
               ? "translate-y-0 opacity-100"
-              : "pointer-events-none -translate-y-1 opacity-0"
+              : "pointer-events-none -translate-y-1.5 opacity-0"
           }`}
           aria-hidden={listingType !== "service"}
         >
@@ -479,26 +520,7 @@ export function ModeFormColumn({
       <div className="h-[255px] w-full rounded-[31px] bg-[#C8FF00] p-[24px]">
         <div className="mb-[48px] flex items-center justify-between">
           <div>
-            <div className="grid">
-              <h2
-                className={`col-start-1 row-start-1 whitespace-nowrap text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-                  isExchange
-                    ? "translate-y-0 opacity-100"
-                    : "pointer-events-none -translate-y-2 opacity-0"
-                }`}
-              >
-                Что хотите <span className="text-[#8E8BED]">обменять</span>?
-              </h2>
-              <h2
-                className={`col-start-1 row-start-1 whitespace-nowrap text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-                  !isExchange
-                    ? "translate-y-0 opacity-100"
-                    : "pointer-events-none translate-y-2 opacity-0"
-                }`}
-              >
-                Что хотите <span className="text-[#8E8BED]">посмотреть</span>?
-              </h2>
-            </div>
+            <ModeHeading isExchange={isExchange} />
             <p className="mt-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Можно ввести не все поля</p>
           </div>
           <TopModeToggle mode={mode} setMode={setMode} />
@@ -518,22 +540,18 @@ export function ModeFormColumn({
       </div>
 
       <div className="relative flex h-[255px] gap-[24px]">
-        <div className="relative h-[255px] w-[464px] shrink-0">
+        <div className="relative h-[255px] w-[464px] shrink-0 overflow-hidden rounded-[31px]">
           <div
-            className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              isExchange
-                ? "translate-y-0 opacity-100"
-                : "pointer-events-none translate-y-2 opacity-0"
+            className={`hero-mode-layer absolute inset-0 ${
+              isExchange ? "is-active" : "is-exit-down"
             }`}
             aria-hidden={!isExchange}
           >
             <HeroExchangeFilters condition={condition} setCondition={setCondition} />
           </div>
           <div
-            className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              !isExchange
-                ? "translate-y-0 opacity-100"
-                : "pointer-events-none -translate-y-2 opacity-0"
+            className={`hero-mode-layer absolute inset-0 ${
+              !isExchange ? "is-active" : "is-exit-up"
             }`}
             aria-hidden={isExchange}
           >

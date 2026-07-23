@@ -3,7 +3,7 @@ import type { ApiListingCard } from "@/shared/api/listings";
 import { mapApiConditionToLabel } from "./conditions";
 import type { ListingCardData } from "./types";
 
-function buildWantsPreview(listing: ApiListingCard): { wants: string[]; wantsMore: number } {
+function buildWantsPreview(listing: ApiListingCard): string[] {
   const normalizedTextParts = listing.wantsText
     .split(/[,\n;]+/)
     .map((part) =>
@@ -25,24 +25,16 @@ function buildWantsPreview(listing: ApiListingCard): { wants: string[]; wantsMor
   const tags = listing.wantsTags.map((tag) => tag.trim()).filter(Boolean);
   candidates.push(...tags);
 
-  const deduped = [...new Map(candidates.map((value) => [value.toLowerCase(), value])).values()];
-
-  return {
-    wants: deduped.slice(0, 2),
-    wantsMore: Math.max(deduped.length - 2, 0),
-  };
+  return [...new Map(candidates.map((value) => [value.toLowerCase(), value])).values()];
 }
 
 export function mapApiListingToCard(listing: ApiListingCard): ListingCardData {
-  const wants = buildWantsPreview(listing);
-
   return {
     id: listing.id,
     title: listing.title,
     city: listing.city.name,
     condition: mapApiConditionToLabel(listing.condition),
-    wants: wants.wants,
-    wantsMore: wants.wantsMore,
+    wants: buildWantsPreview(listing),
     hasDocuments: listing.hasDocuments,
     isFree: listing.isFree,
     price: listing.estimatedPrice ?? 0,

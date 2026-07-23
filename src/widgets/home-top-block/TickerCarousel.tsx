@@ -13,6 +13,8 @@ const tickerItems = [
   "Показываем то, что вас заинтересует",
 ] as const;
 
+const tickerPinColors = ["#8E8BED", "#C8FF00"] as const;
+
 type TickerPinGlowRect = {
   left?: string;
   right?: string;
@@ -24,7 +26,7 @@ const tickerPinGlowRects: TickerPinGlowRect[] = [
   { left: "-8px", top: "17px" },
 ];
 
-function TickerPin({ label }: { label: string }) {
+function TickerPin({ label, glowColor }: { label: string; glowColor: string }) {
   return (
     <div className="home-ticker-pin glass-surface relative flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] overflow-hidden rounded-[16.327px] px-[18px] py-[12px]">
       {tickerPinGlowRects.map((rect) => (
@@ -36,7 +38,7 @@ function TickerPin({ label }: { label: string }) {
             left: rect.left,
             right: rect.right,
             top: rect.top,
-            backgroundColor: "#8E8BED",
+            backgroundColor: glowColor,
             transform: "rotate(-39.36deg)",
           }}
         />
@@ -70,7 +72,7 @@ export function TickerCarousel() {
       <div className="home-ticker-track flex w-max items-center gap-[12px]">
         {loopItems.map((item, idx) => (
           <div key={`${item}-${idx}`} className="flex shrink-0 items-center gap-[12px]">
-            <TickerPin label={item} />
+            <TickerPin label={item} glowColor={tickerPinColors[idx % 2]} />
             <TickerBolt />
           </div>
         ))}

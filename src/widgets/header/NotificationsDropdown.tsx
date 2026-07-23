@@ -43,7 +43,7 @@ const notifications = [
 
 export function NotificationsDropdown() {
   return (
-    <HeaderDropdownPanel className="box-border flex w-[412px] flex-col items-center justify-center rounded-[31px] bg-[#FFFFFF] p-[24px] text-[#1A1A1A]">
+    <HeaderDropdownPanel className="box-border flex w-[412px] flex-col items-center justify-center rounded-[31px] p-[24px] text-[#1A1A1A]">
       <div className="flex w-full flex-col items-stretch gap-[24px]">
         {notifications.map((item) => (
           <NotificationCard

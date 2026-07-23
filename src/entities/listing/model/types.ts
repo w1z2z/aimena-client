@@ -6,7 +6,6 @@ export type ListingCardData = {
   city: string;
   condition: string;
   wants: string[];
-  wantsMore: number;
   hasDocuments: boolean;
   isFree: boolean;
   price: number;

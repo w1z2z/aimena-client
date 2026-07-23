@@ -29,7 +29,6 @@ export function HomeListingsGrid() {
           condition={listing.condition}
           coverImageUrl={listing.coverImageUrl}
           wants={listing.wants}
-          wantsMore={listing.wantsMore}
           isFavorite={listing.isFavorite}
         />
       ))}

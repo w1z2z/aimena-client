@@ -7,8 +7,12 @@ import type { ListingCardPreview } from "@/entities/listing";
 import { ChevronIcon } from "@/shared/ui/icons";
 
 import {
+  CARD_GAP,
   CARD_WIDTH,
-  CAROUSEL_VISIBLE_WIDTH,
+  CAROUSEL_EDGE_MASK,
+  CAROUSEL_EDGE_PADDING,
+  CAROUSEL_OUTER_WIDTH,
+  CAROUSEL_SHADOW_Y_PADDING,
 } from "./constants";
 import { useInfiniteCarousel } from "./useInfiniteCarousel";
 
@@ -35,6 +39,18 @@ function CarouselArrowButton({
   );
 }
 
+function CarouselEdgeMask({ side }: { side: "left" | "right" }) {
+  return (
+    <div
+      aria-hidden
+      className={`home-free-carousel-edge-mask pointer-events-none absolute inset-y-0 z-[1] bg-surface-muted ${
+        side === "left" ? "left-0" : "right-0"
+      }`}
+      style={{ width: `${CAROUSEL_EDGE_MASK}px` }}
+    />
+  );
+}
+
 export function FreeGiveawayCarousel({ listings }: { listings: ListingCardPreview[] }) {
   const itemCount = listings.length;
   const { carouselRef, scrollByStep, pauseAutoAdvance, resumeAutoAdvance } =
@@ -46,19 +62,29 @@ export function FreeGiveawayCarousel({ listings }: { listings: ListingCardPrevie
 
   return (
     <div
-      className="home-free-carousel-viewport relative shrink-0 overflow-hidden rounded-[20px]"
-      style={{ width: `${CAROUSEL_VISIBLE_WIDTH}px` }}
+      className="home-free-carousel-viewport relative shrink-0"
+      style={{
+        width: `${CAROUSEL_OUTER_WIDTH}px`,
+        margin: `-${CAROUSEL_SHADOW_Y_PADDING}px 0`,
+      }}
       onMouseEnter={pauseAutoAdvance}
       onMouseLeave={resumeAutoAdvance}
     >
       <div
         ref={carouselRef}
-        className="home-free-carousel flex snap-x snap-mandatory gap-[24px] overflow-x-auto overscroll-x-contain"
+        className="home-free-carousel flex snap-x snap-mandatory overscroll-x-contain"
+        style={{
+          width: `${CAROUSEL_OUTER_WIDTH}px`,
+          padding: `${CAROUSEL_SHADOW_Y_PADDING}px ${CAROUSEL_EDGE_PADDING}px`,
+          scrollPadding: `0 ${CAROUSEL_EDGE_PADDING}px`,
+          gap: `${CARD_GAP}px`,
+          boxSizing: "border-box",
+        }}
       >
         {loopListings.map((listing, index) => (
           <div
             key={`${listing.id}-${index}`}
-            className="w-[342px] shrink-0 snap-start snap-always"
+            className="home-free-carousel__item shrink-0 snap-start snap-always"
             style={{ width: `${CARD_WIDTH}px` }}
           >
             <ListingCard
@@ -73,6 +99,8 @@ export function FreeGiveawayCarousel({ listings }: { listings: ListingCardPrevie
           </div>
         ))}
       </div>
+      <CarouselEdgeMask side="left" />
+      <CarouselEdgeMask side="right" />
       {itemCount > 1 ? (
         <>
           <CarouselArrowButton direction="left" onClick={() => scrollByStep(-1)} />

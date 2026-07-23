@@ -28,7 +28,7 @@ export function ProfileDropdown({ onClose }: ProfileDropdownProps) {
   };
 
   return (
-    <HeaderDropdownPanel className="box-border flex w-[412px] flex-col items-start justify-center gap-[24px] rounded-[31px] bg-[#FFFFFF] p-[24px] text-[#1A1A1A]">
+    <HeaderDropdownPanel className="box-border flex w-[412px] flex-col items-start justify-center gap-[24px] rounded-[31px] p-[24px] text-[#1A1A1A]">
       <div className="flex min-h-[64px] w-full items-center gap-[12px]">
         <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-[21px] bg-[#D9D9D9] text-[24px] font-extrabold leading-none text-[#1A1A1A]">
           {user.avatarUrl ? (

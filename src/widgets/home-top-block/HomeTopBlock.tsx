@@ -37,7 +37,11 @@ export function HomeTopBlock() {
   const { mode, title, price, city, condition, categoryId } = hero;
   const isExchange = mode === "exchange";
   const isAllCategory = categoryId === "all";
-  const recommendationsHeading = "Варианты обмена";
+  const recommendationsHeading = (
+    <>
+      Варианты <span className="text-[#8E8BED]">обмена</span>
+    </>
+  );
 
   const handleCreateListing = useCallback(() => {
     guardAuth("create-listing", () => router.push("/create-listing"));
