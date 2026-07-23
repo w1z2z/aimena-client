@@ -80,6 +80,7 @@ export function SelectField({
 }: SelectFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(() => getLabelForValue(options, value));
+  const [activeOptionValue, setActiveOptionValue] = useState<string | null>(null);
   const [listStyle, setListStyle] = useState<CSSProperties>({ visibility: "hidden" });
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -90,6 +91,10 @@ export function SelectField({
     () => (searchable ? filterOptions(options, inputValue) : options),
     [inputValue, options, searchable],
   );
+  const selectableOptions = useMemo(
+    () => visibleOptions.filter((option) => !option.disabled),
+    [visibleOptions],
+  );
 
   useEffect(() => {
     setInputValue(getLabelForValue(options, value));
@@ -98,6 +103,27 @@ export function SelectField({
     // options change would wipe in-progress input before explicit selection.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveOptionValue(null);
+      return;
+    }
+
+    if (selectableOptions.length === 0) {
+      setActiveOptionValue(null);
+      return;
+    }
+
+    setActiveOptionValue((current) => {
+      if (current && selectableOptions.some((option) => option.value === current)) {
+        return current;
+      }
+
+      const selectedOption = selectableOptions.find((option) => option.value === value);
+      return selectedOption?.value ?? selectableOptions[0].value;
+    });
+  }, [isOpen, selectableOptions, value]);
 
   const close = useCallback(() => setIsOpen(false), []);
 
@@ -162,6 +188,7 @@ export function SelectField({
 
   const handleInputChange = (nextValue: string) => {
     setInputValue(nextValue);
+    setActiveOptionValue(null);
     onInputChange?.(nextValue);
     if (allowCustomValue) onChange(nextValue);
     if (!isOpen) setIsOpen(true);
@@ -193,6 +220,62 @@ export function SelectField({
 
     setInputValue(getLabelForValue(options, value));
   };
+
+  const moveActiveOption = (direction: 1 | -1) => {
+    if (selectableOptions.length === 0) return;
+
+    setActiveOptionValue((current) => {
+      if (!current) {
+        return direction > 0
+          ? selectableOptions[0].value
+          : selectableOptions[selectableOptions.length - 1].value;
+      }
+
+      const currentIndex = selectableOptions.findIndex((option) => option.value === current);
+      if (currentIndex < 0) {
+        return direction > 0
+          ? selectableOptions[0].value
+          : selectableOptions[selectableOptions.length - 1].value;
+      }
+
+      const nextIndex = (currentIndex + direction + selectableOptions.length) % selectableOptions.length;
+      return selectableOptions[nextIndex].value;
+    });
+  };
+
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (disabled) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      if (!isOpen) setIsOpen(true);
+      moveActiveOption(1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!isOpen) setIsOpen(true);
+      moveActiveOption(-1);
+      return;
+    }
+
+    if (event.key === "Enter") {
+      if (selectableOptions.length === 0) return;
+      event.preventDefault();
+      const optionToPick =
+        selectableOptions.find((option) => option.value === activeOptionValue) ?? selectableOptions[0];
+      handleOptionPick(optionToPick);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen || !activeOptionValue || !listRef.current) return;
+    const activeNode = listRef.current.querySelector<HTMLButtonElement>(
+      `[data-option-value="${CSS.escape(activeOptionValue)}"]`,
+    );
+    activeNode?.scrollIntoView({ block: "nearest" });
+  }, [activeOptionValue, isOpen]);
 
   const showPlaceholderState = !value && !inputValue.trim();
   const handleControlMouseDown = (event: MouseEvent<HTMLDivElement>) => {
@@ -240,9 +323,11 @@ export function SelectField({
                 type="button"
                 role="option"
                 aria-selected={option.value === value}
-                className={`site-select__option${option.value === value ? " is-selected" : ""}`}
+                className={`site-select__option${option.value === value ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
+                data-option-value={option.value}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => handleOptionPick(option)}
+                onMouseEnter={() => setActiveOptionValue(option.value)}
               >
                 {option.label}
               </button>
@@ -276,6 +361,7 @@ export function SelectField({
           readOnly={!searchable}
           disabled={disabled}
           onChange={(event) => handleInputChange(event.target.value)}
+          onKeyDown={handleInputKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
           onBlur={handleBlur}
           onMouseDown={(event) => {

@@ -1,7 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+  type KeyboardEvent,
+} from "react";
 
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getCategories, getCities, type ApiCategoryNode, type ApiCity } from "@/shared/api/catalog";
@@ -18,12 +27,14 @@ type ConditionId = "excellent" | "new" | "good" | "used" | "needs_repair";
 type ExtraPayId = "none" | "i_pay" | "they_pay";
 type ListingKind = "item" | "service";
 type ServiceFormatId = "online" | "onsite" | "client";
+type ServiceWorkLevelId = "master" | "professional" | "specialist" | "junior";
 
 type FieldErrors = {
   title?: string;
   category?: string;
   city?: string;
   condition?: string;
+  serviceWorkLevel?: string;
   serviceFormat?: string;
   photos?: string;
 };
@@ -35,6 +46,7 @@ const FIELD_SCROLL_ORDER: Array<keyof FieldErrors> = [
   "city",
   "photos",
   "condition",
+  "serviceWorkLevel",
   "serviceFormat",
 ];
 
@@ -58,6 +70,13 @@ const SERVICE_FORMAT_OPTIONS: Array<{ id: ServiceFormatId; label: string }> = [
   { id: "online", label: "Онлайн" },
   { id: "onsite", label: "Выезд" },
   { id: "client", label: "У клиента" },
+];
+
+const SERVICE_WORK_LEVEL_OPTIONS: Array<{ id: ServiceWorkLevelId; label: string }> = [
+  { id: "master", label: "Мастер" },
+  { id: "professional", label: "Профессионал" },
+  { id: "specialist", label: "Специалист" },
+  { id: "junior", label: "Новичок" },
 ];
 
 const ITEM_PHOTO_SLOTS = 10;
@@ -87,6 +106,8 @@ type TagSuggestionItem = {
   isCreateAction?: boolean;
 };
 
+type PhotoKind = "item" | "doc";
+
 function mergeCitiesById(current: ApiCity[], incoming: ApiCity[]): ApiCity[] {
   if (incoming.length === 0) return current;
   const seen = new Set(current.map((cityItem) => cityItem.id));
@@ -114,6 +135,21 @@ function revokePhotoUrls(photos: PhotoItem[]) {
   }
 }
 
+function reorderPhotos(photos: PhotoItem[], sourceId: string, dropIndex: number): PhotoItem[] {
+  const sourceIndex = photos.findIndex((photo) => photo.id === sourceId);
+  if (sourceIndex < 0) {
+    return photos;
+  }
+
+  const normalizedDropIndex = Math.max(0, Math.min(dropIndex, photos.length));
+  const next = [...photos];
+  const [moved] = next.splice(sourceIndex, 1);
+  const adjustedDropIndex =
+    sourceIndex < normalizedDropIndex ? normalizedDropIndex - 1 : normalizedDropIndex;
+  next.splice(adjustedDropIndex, 0, moved);
+  return next;
+}
+
 function getItemPhotoGridLayout(photoCount: number) {
   const hasAddSlot = photoCount < ITEM_PHOTO_SLOTS;
   const totalCells = photoCount + (hasAddSlot ? 1 : 0);
@@ -130,6 +166,11 @@ function getDocPhotoGridLayout(photoCount: number) {
   const hasAddSlot = photoCount < DOCUMENT_PHOTO_SLOTS;
 
   return { visibleSlots: ITEM_PHOTOS_PER_ROW, hasAddSlot };
+}
+
+function formatPriceWithSpaces(rawDigits: string) {
+  if (!rawDigits) return "";
+  return rawDigits.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
 const EXCHANGE_FIELD_INPUT_CLASS =
@@ -152,26 +193,77 @@ function PlaceholderImage() {
   );
 }
 
-function PhotoCard({ previewUrl, onDelete }: { previewUrl?: string; onDelete: () => void }) {
+function PhotoCard({
+  previewUrl,
+  onDelete,
+  draggable = false,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+  isDragging = false,
+  showPrimaryBadge = false,
+}: {
+  previewUrl?: string;
+  onDelete: () => void;
+  draggable?: boolean;
+  onDragStart?: (event: DragEvent<HTMLDivElement>) => void;
+  onDragOver?: (event: DragEvent<HTMLDivElement>) => void;
+  onDrop?: (event: DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: (event: DragEvent<HTMLDivElement>) => void;
+  isDragging?: boolean;
+  showPrimaryBadge?: boolean;
+}) {
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-[21px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7]">
+    <div
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={`relative aspect-square w-full select-none overflow-hidden rounded-[21px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] transition ${
+        isDragging ? "cursor-grabbing opacity-60" : draggable ? "cursor-grab" : ""
+      }`}
+    >
+      {showPrimaryBadge ? (
+        <span className="absolute left-[10px] top-[10px] z-[2] rounded-[999px] bg-[#8E8BED] px-2.5 py-1 text-[12px] font-semibold leading-none text-white">
+          Основное
+        </span>
+      ) : null}
       <button
         type="button"
         onClick={onDelete}
         aria-label="Удалить фото"
         className="absolute right-[10px] top-[10px] z-[1] flex items-center justify-center"
       >
-        <DeleteIcon className="h-[23.695px] w-[21.326px] text-black" />
+        <DeleteIcon className="h-[23.695px] w-[21.326px] text-white" />
       </button>
       {previewUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={previewUrl} alt="" className="h-full w-full object-cover" />
+        <img src={previewUrl} alt="" draggable={false} className="h-full w-full cursor-grab object-cover" />
       ) : (
         <div className="flex h-full items-center justify-center">
           <PlaceholderImage />
         </div>
       )}
     </div>
+  );
+}
+
+function PhotoDropGap({
+  onDragOver,
+  onDrop,
+}: {
+  onDragOver?: (event: DragEvent<HTMLDivElement>) => void;
+  onDrop?: (event: DragEvent<HTMLDivElement>) => void;
+}) {
+  return (
+    <div
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      className="aspect-square w-full rounded-[21px] border-[1.5px] border-dashed border-[#8E8BED] bg-[#8E8BED]/12"
+      aria-hidden="true"
+    />
   );
 }
 
@@ -212,8 +304,11 @@ export default function CreateListingPage() {
   const { user } = useAuth();
   const itemPhotosInputRef = useRef<HTMLInputElement>(null);
   const docPhotosInputRef = useRef<HTMLInputElement>(null);
+  const priceMeasureRef = useRef<HTMLSpanElement>(null);
   const [listingKind, setListingKind] = useState<ListingKind>("item");
   const [title, setTitle] = useState("");
+  const [priceDigits, setPriceDigits] = useState("");
+  const [priceTextWidth, setPriceTextWidth] = useState(0);
   const [categoryTree, setCategoryTree] = useState<CategoryTreeNode[]>([]);
   const [parentCategoryId, setParentCategoryId] = useState<string | null>(null);
   const [childCategoryId, setChildCategoryId] = useState<string | null>(null);
@@ -231,12 +326,17 @@ export default function CreateListingPage() {
   const [cityPageCount, setCityPageCount] = useState(1);
   const [isCityLoading, setIsCityLoading] = useState(false);
   const [condition, setCondition] = useState<ConditionId | null>(null);
+  const [serviceWorkLevel, setServiceWorkLevel] = useState<ServiceWorkLevelId | null>(null);
   const [serviceFormats, setServiceFormats] = useState<ServiceFormatId[]>([]);
   const [extraPay, setExtraPay] = useState<ExtraPayId>("none");
   const [isFree, setIsFree] = useState(false);
   const [exchangeEnabled, setExchangeEnabled] = useState(false);
   const [itemPhotos, setItemPhotos] = useState<PhotoItem[]>([]);
   const [docPhotos, setDocPhotos] = useState<PhotoItem[]>([]);
+  const [dragSource, setDragSource] = useState<{ kind: PhotoKind; id: string } | null>(null);
+  const [dragInsertIndex, setDragInsertIndex] = useState<{ kind: PhotoKind; index: number } | null>(
+    null,
+  );
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isPublishedModalOpen, setIsPublishedModalOpen] = useState(false);
   const itemPhotoGrid = getItemPhotoGridLayout(itemPhotos.length);
@@ -456,8 +556,29 @@ export default function CreateListingPage() {
     });
   };
 
+  const handleListingKindChange = (nextKind: ListingKind) => {
+    if (nextKind === listingKind) return;
+    setListingKind(nextKind);
+    setItemPhotos((current) => {
+      revokePhotoUrls(current);
+      return [];
+    });
+    setDocPhotos((current) => {
+      revokePhotoUrls(current);
+      return [];
+    });
+    resetPhotoDragState();
+  };
+
   const listingTypeLabel = listingKind === "item" ? "вещи" : "услуги";
   const listingTypeName = listingKind === "item" ? "вещь" : "услугу";
+  const formattedPrice = formatPriceWithSpaces(priceDigits);
+
+  useLayoutEffect(() => {
+    const node = priceMeasureRef.current;
+    if (!node) return;
+    setPriceTextWidth(node.getBoundingClientRect().width);
+  }, [formattedPrice]);
 
   const handleIsFreeChange = (next: boolean) => {
     setIsFree(next);
@@ -479,7 +600,7 @@ export default function CreateListingPage() {
       return;
     }
 
-    const nextPhotos = createPhotoItems(Array.from(files).slice(0, remaining));
+    const nextPhotos = createPhotoItems(Array.from(files)).slice(0, remaining);
     if (nextPhotos.length > 0) {
       setItemPhotos((current) => [...current, ...nextPhotos]);
       clearError("photos");
@@ -497,7 +618,7 @@ export default function CreateListingPage() {
       return;
     }
 
-    const nextPhotos = createPhotoItems(Array.from(files).slice(0, remaining));
+    const nextPhotos = createPhotoItems(Array.from(files)).slice(0, remaining);
     if (nextPhotos.length > 0) {
       setDocPhotos((current) => [...current, ...nextPhotos]);
     }
@@ -518,6 +639,54 @@ export default function CreateListingPage() {
       if (target) URL.revokeObjectURL(target.previewUrl);
       return current.filter((photo) => photo.id !== photoId);
     });
+  };
+
+  const handlePhotoDragStart = (
+    event: DragEvent<HTMLDivElement>,
+    kind: PhotoKind,
+    photoId: string,
+    photoIndex: number,
+  ) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    event.dataTransfer.setDragImage(event.currentTarget, rect.width / 2, rect.height / 2);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", photoId);
+    setDragSource({ kind, id: photoId });
+    setDragInsertIndex({ kind, index: photoIndex });
+  };
+
+  const handlePhotoDragOver = (event: DragEvent<HTMLDivElement>, kind: PhotoKind, dropIndex: number) => {
+    if (!dragSource || dragSource.kind !== kind) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    if (dragInsertIndex?.kind === kind && dragInsertIndex.index === dropIndex) return;
+    setDragInsertIndex({ kind, index: dropIndex });
+  };
+
+  const getDropIndexFromCard = (event: DragEvent<HTMLDivElement>, photoIndex: number) => {
+    const targetRect = event.currentTarget.getBoundingClientRect();
+    const pointerX = event.clientX - targetRect.left;
+    return pointerX < targetRect.width / 2 ? photoIndex : photoIndex + 1;
+  };
+
+  const handlePhotoDrop = (event: DragEvent<HTMLDivElement>, kind: PhotoKind, dropIndex: number) => {
+    event.preventDefault();
+    if (!dragSource || dragSource.kind !== kind) return;
+    const sourceId = dragSource.id;
+
+    if (kind === "item") {
+      setItemPhotos((current) => reorderPhotos(current, sourceId, dropIndex));
+      resetPhotoDragState();
+      return;
+    }
+
+    setDocPhotos((current) => reorderPhotos(current, sourceId, dropIndex));
+    resetPhotoDragState();
+  };
+
+  const resetPhotoDragState = () => {
+    setDragSource(null);
+    setDragInsertIndex(null);
   };
 
   const addWantsTag = (rawTag: string) => {
@@ -575,6 +744,9 @@ export default function CreateListingPage() {
     if (listingKind === "item" && !condition) {
       nextErrors.condition = "Вы не выбрали состояние вашей вещи";
     }
+    if (listingKind === "service" && !serviceWorkLevel) {
+      nextErrors.serviceWorkLevel = "Выберите уровень работы";
+    }
     if (listingKind === "service" && serviceFormats.length === 0) {
       nextErrors.serviceFormat = "Выберите хотя бы один формат оказания услуги";
     }
@@ -616,7 +788,7 @@ export default function CreateListingPage() {
               />
               <button
                 type="button"
-                onClick={() => setListingKind("item")}
+                onClick={() => handleListingKindChange("item")}
                 className={`relative z-[1] flex h-[34px] w-[100px] items-center justify-center rounded-[13px] px-3 text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
                   listingKind === "item" ? "text-white" : "text-[#1A1A1A]"
                 }`}
@@ -625,7 +797,7 @@ export default function CreateListingPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setListingKind("service")}
+                onClick={() => handleListingKindChange("service")}
                 className={`relative z-[1] flex h-[34px] w-[100px] items-center justify-center rounded-[13px] px-3 text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
                   listingKind === "service" ? "text-white" : "text-[#1A1A1A]"
                 }`}
@@ -672,23 +844,30 @@ export default function CreateListingPage() {
                 allowCustomValue={false}
                 aria-label={`Категория ${listingTypeLabel}`}
               />
-              {childCategoryOptions.length > 0 ? (
-                <div className="mt-2">
-                  <SelectField
-                    value={childCategoryId ?? ""}
-                    onChange={(value) => {
-                      setChildCategoryId(value || null);
-                    }}
-                    options={childCategoryOptions}
-                    placeholder="Уточните подкатегорию (необязательно)"
-                    variant="field"
-                    className="create-listing-city-select"
-                    searchable={false}
-                    allowCustomValue={false}
-                    aria-label={`Подкатегория ${listingTypeLabel}`}
-                  />
+              <div
+                className={`create-listing-subcategory-panel${
+                  childCategoryOptions.length > 0 ? " is-open" : ""
+                }`}
+              >
+                <div className="create-listing-subcategory-panel__inner">
+                  <div className="create-listing-subcategory-panel__content mt-2">
+                    <SelectField
+                      value={childCategoryId ?? ""}
+                      onChange={(value) => {
+                        setChildCategoryId(value || null);
+                      }}
+                      options={childCategoryOptions}
+                      placeholder="Уточните подкатегорию (необязательно)"
+                      variant="field"
+                      className="create-listing-city-select"
+                      searchable={false}
+                      allowCustomValue={false}
+                      disabled={childCategoryOptions.length === 0}
+                      aria-label={`Подкатегория ${listingTypeLabel}`}
+                    />
+                  </div>
                 </div>
-              ) : null}
+              </div>
               <FieldError message={errors.category} />
             </div>
             <div id={fieldAnchorId("city")}>
@@ -744,28 +923,82 @@ export default function CreateListingPage() {
           />
           <div className="relative mt-4 box-border w-full rounded-[6.82px] border-[0.5px] border-dashed border-[#CACACA] p-6">
             <div className="relative grid grid-cols-5 gap-3">
-              {Array.from({ length: itemPhotoGrid.visibleSlots }).map((_, index) => {
-                if (index < itemPhotos.length) {
-                  const photo = itemPhotos[index];
-                  return (
-                    <PhotoCard
-                      key={photo.id}
-                      previewUrl={photo.previewUrl}
-                      onDelete={() => removeItemPhoto(photo.id)}
-                    />
-                  );
+              {(() => {
+                const showGap = dragSource?.kind === "item" && dragInsertIndex?.kind === "item";
+                const dropIndex = showGap ? dragInsertIndex.index : -1;
+                const cells: Array<
+                  | { type: "photo"; photo: PhotoItem; photoIndex: number }
+                  | { type: "add" }
+                  | { type: "gap"; dropIndex: number }
+                  | { type: "empty"; id: string }
+                > = [];
+
+                for (let index = 0; index <= itemPhotos.length; index += 1) {
+                  if (showGap && dropIndex === index) {
+                    cells.push({ type: "gap", dropIndex: index });
+                  }
+                  if (index < itemPhotos.length) {
+                    cells.push({ type: "photo", photo: itemPhotos[index], photoIndex: index });
+                  }
                 }
-                if (itemPhotoGrid.hasAddSlot && index === itemPhotos.length) {
-                  return (
-                    <AddPhotoCard
-                      key={`item-photo-add-${index}`}
-                      label="+ Добавить"
-                      onClick={() => itemPhotosInputRef.current?.click()}
-                    />
-                  );
+
+                if (itemPhotoGrid.hasAddSlot) {
+                  cells.push({ type: "add" });
                 }
-                return null;
-              })}
+
+                const minSlots = itemPhotoGrid.visibleSlots + (showGap ? 1 : 0);
+                while (cells.length < minSlots) {
+                  cells.push({ type: "empty", id: `item-empty-${cells.length}` });
+                }
+
+                return cells.map((cell, index) => {
+                  if (cell.type === "photo") {
+                    const photo = cell.photo;
+                    return (
+                      <PhotoCard
+                        key={photo.id}
+                        previewUrl={photo.previewUrl}
+                        onDelete={() => removeItemPhoto(photo.id)}
+                        draggable
+                        onDragStart={(event) =>
+                          handlePhotoDragStart(event, "item", photo.id, cell.photoIndex)
+                        }
+                        onDragOver={(event) =>
+                          handlePhotoDragOver(event, "item", getDropIndexFromCard(event, cell.photoIndex))
+                        }
+                        onDrop={(event) =>
+                          handlePhotoDrop(event, "item", getDropIndexFromCard(event, cell.photoIndex))
+                        }
+                        onDragEnd={resetPhotoDragState}
+                        isDragging={dragSource?.kind === "item" && dragSource.id === photo.id}
+                        showPrimaryBadge={cell.photoIndex === 0}
+                      />
+                    );
+                  }
+
+                  if (cell.type === "add") {
+                    return (
+                      <AddPhotoCard
+                        key={`item-photo-add-${index}`}
+                        label="+ Добавить"
+                        onClick={() => itemPhotosInputRef.current?.click()}
+                      />
+                    );
+                  }
+
+                  if (cell.type === "gap") {
+                    return (
+                      <PhotoDropGap
+                        key={`item-photo-gap-${index}`}
+                        onDragOver={(event) => handlePhotoDragOver(event, "item", cell.dropIndex)}
+                        onDrop={(event) => handlePhotoDrop(event, "item", cell.dropIndex)}
+                      />
+                    );
+                  }
+
+                  return <div key={cell.id} className="aspect-square w-full" aria-hidden="true" />;
+                });
+              })()}
             </div>
           </div>
           <FieldError message={errors.photos} />
@@ -779,7 +1012,7 @@ export default function CreateListingPage() {
           </p>
           <textarea
             maxLength={2000}
-            placeholder="Введите...."
+            placeholder="Введите описание...."
             className="mt-2 h-[150px] w-full resize-none rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 py-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
           />
 
@@ -811,36 +1044,65 @@ export default function CreateListingPage() {
               <FieldError message={errors.condition} />
             </div>
           ) : (
-            <div id={fieldAnchorId("serviceFormat")}>
-              <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Формат оказания услуги *</p>
-              <div className="mt-2 flex flex-wrap gap-3">
-                {SERVICE_FORMAT_OPTIONS.map((item) => {
-                  const active = serviceFormats.includes(item.id);
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        setServiceFormats((current) =>
-                          current.includes(item.id)
-                            ? current.filter((currentItem) => currentItem !== item.id)
-                            : [...current, item.id],
-                        );
-                        clearError("serviceFormat");
-                      }}
-                      className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
-                        active
-                          ? "bg-[#8E8BED] text-white"
-                          : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
+            <>
+              <div id={fieldAnchorId("serviceWorkLevel")}>
+                <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Выберите уровень работы *</p>
+                <div className="mt-2 flex flex-wrap gap-3">
+                  {SERVICE_WORK_LEVEL_OPTIONS.map((item) => {
+                    const active = serviceWorkLevel === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setServiceWorkLevel(item.id);
+                          clearError("serviceWorkLevel");
+                        }}
+                        className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                          active
+                            ? "bg-[#8E8BED] text-white"
+                            : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <FieldError message={errors.serviceWorkLevel} />
               </div>
-              <FieldError message={errors.serviceFormat} />
-            </div>
+
+              <div id={fieldAnchorId("serviceFormat")}>
+                <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Формат оказания услуги *</p>
+                <div className="mt-2 flex flex-wrap gap-3">
+                  {SERVICE_FORMAT_OPTIONS.map((item) => {
+                    const active = serviceFormats.includes(item.id);
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setServiceFormats((current) =>
+                            current.includes(item.id)
+                              ? current.filter((currentItem) => currentItem !== item.id)
+                              : [...current, item.id],
+                          );
+                          clearError("serviceFormat");
+                        }}
+                        className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] ${
+                          active
+                            ? "bg-[#8E8BED] text-white"
+                            : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A]"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <FieldError message={errors.serviceFormat} />
+              </div>
+            </>
           )}
 
           <div className="mt-4 grid gap-4">
@@ -849,11 +1111,36 @@ export default function CreateListingPage() {
                 Напишите примерную стоимость вашей {listingTypeName} (другим будет легче предложить
                 равноценный обмен)
               </p>
-              <input
-                type="text"
-                placeholder={`Введите стоимость вашей ${listingTypeName}`}
-                className="h-11 w-full rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
-              />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#3D3D3D]">
+                  ~
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={formattedPrice}
+                  onChange={(event) => {
+                    const nextDigits = event.target.value.replace(/\D/g, "");
+                    setPriceDigits(nextDigits);
+                  }}
+                  placeholder="0"
+                  className="h-11 w-full rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] pl-6 pr-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
+                />
+                <span
+                  ref={priceMeasureRef}
+                  aria-hidden="true"
+                  className="pointer-events-none invisible absolute left-6 top-1/2 -translate-y-1/2 whitespace-pre text-[14px] font-normal leading-[170%]"
+                >
+                  {formattedPrice || "0"}
+                </span>
+                <span
+                  className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#3D3D3D]"
+                  style={{ left: `calc(1.5rem + ${priceTextWidth}px + 0.25rem)` }}
+                >
+                  руб.
+                </span>
+              </div>
             </div>
 
             <div>
@@ -935,21 +1222,30 @@ export default function CreateListingPage() {
                     allowCustomValue={false}
                     aria-label="Желаемая категория"
                   />
-                  {wantsChildCategoryOptions.length > 0 ? (
-                    <SelectField
-                      value={wantsChildCategoryId ?? ""}
-                      onChange={(value) => {
-                        setWantsChildCategoryId(value || null);
-                      }}
-                      options={wantsChildCategoryOptions}
-                      placeholder="Уточните подкатегорию (необязательно)"
-                      variant="field"
-                      className="create-listing-exchange-select"
-                      searchable={false}
-                      allowCustomValue={false}
-                      aria-label="Желаемая подкатегория"
-                    />
-                  ) : null}
+                  <div
+                    className={`create-listing-subcategory-panel${
+                      wantsChildCategoryOptions.length > 0 ? " is-open" : ""
+                    }`}
+                  >
+                    <div className="create-listing-subcategory-panel__inner">
+                      <div className="create-listing-subcategory-panel__content mt-2">
+                        <SelectField
+                          value={wantsChildCategoryId ?? ""}
+                          onChange={(value) => {
+                            setWantsChildCategoryId(value || null);
+                          }}
+                          options={wantsChildCategoryOptions}
+                          placeholder="Уточните подкатегорию (необязательно)"
+                          variant="field"
+                          className="create-listing-exchange-select"
+                          searchable={false}
+                          allowCustomValue={false}
+                          disabled={wantsChildCategoryOptions.length === 0}
+                          aria-label="Желаемая подкатегория"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="grid gap-2">
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
@@ -1044,28 +1340,81 @@ export default function CreateListingPage() {
           />
           <div className="relative mt-4 box-border w-full rounded-[6.82px] border-[0.5px] border-dashed border-[#CACACA] p-6">
             <div className="relative grid grid-cols-5 gap-3">
-              {Array.from({ length: docPhotoGrid.visibleSlots }).map((_, index) => {
-                if (index < docPhotos.length) {
-                  const photo = docPhotos[index];
-                  return (
-                    <PhotoCard
-                      key={photo.id}
-                      previewUrl={photo.previewUrl}
-                      onDelete={() => removeDocPhoto(photo.id)}
-                    />
-                  );
+              {(() => {
+                const showGap = dragSource?.kind === "doc" && dragInsertIndex?.kind === "doc";
+                const dropIndex = showGap ? dragInsertIndex.index : -1;
+                const cells: Array<
+                  | { type: "photo"; photo: PhotoItem; photoIndex: number }
+                  | { type: "add" }
+                  | { type: "gap"; dropIndex: number }
+                  | { type: "empty"; id: string }
+                > = [];
+
+                for (let index = 0; index <= docPhotos.length; index += 1) {
+                  if (showGap && dropIndex === index) {
+                    cells.push({ type: "gap", dropIndex: index });
+                  }
+                  if (index < docPhotos.length) {
+                    cells.push({ type: "photo", photo: docPhotos[index], photoIndex: index });
+                  }
                 }
-                if (docPhotoGrid.hasAddSlot && index === docPhotos.length) {
-                  return (
-                    <AddPhotoCard
-                      key={`doc-photo-add-${index}`}
-                      label="+ Добавить"
-                      onClick={() => docPhotosInputRef.current?.click()}
-                    />
-                  );
+
+                if (docPhotoGrid.hasAddSlot) {
+                  cells.push({ type: "add" });
                 }
-                return null;
-              })}
+
+                const minSlots = docPhotoGrid.visibleSlots + (showGap ? 1 : 0);
+                while (cells.length < minSlots) {
+                  cells.push({ type: "empty", id: `doc-empty-${cells.length}` });
+                }
+
+                return cells.map((cell, index) => {
+                  if (cell.type === "photo") {
+                    const photo = cell.photo;
+                    return (
+                      <PhotoCard
+                        key={photo.id}
+                        previewUrl={photo.previewUrl}
+                        onDelete={() => removeDocPhoto(photo.id)}
+                        draggable
+                        onDragStart={(event) =>
+                          handlePhotoDragStart(event, "doc", photo.id, cell.photoIndex)
+                        }
+                        onDragOver={(event) =>
+                          handlePhotoDragOver(event, "doc", getDropIndexFromCard(event, cell.photoIndex))
+                        }
+                        onDrop={(event) =>
+                          handlePhotoDrop(event, "doc", getDropIndexFromCard(event, cell.photoIndex))
+                        }
+                        onDragEnd={resetPhotoDragState}
+                        isDragging={dragSource?.kind === "doc" && dragSource.id === photo.id}
+                      />
+                    );
+                  }
+
+                  if (cell.type === "add") {
+                    return (
+                      <AddPhotoCard
+                        key={`doc-photo-add-${index}`}
+                        label="+ Добавить"
+                        onClick={() => docPhotosInputRef.current?.click()}
+                      />
+                    );
+                  }
+
+                  if (cell.type === "gap") {
+                    return (
+                      <PhotoDropGap
+                        key={`doc-photo-gap-${index}`}
+                        onDragOver={(event) => handlePhotoDragOver(event, "doc", cell.dropIndex)}
+                        onDrop={(event) => handlePhotoDrop(event, "doc", cell.dropIndex)}
+                      />
+                    );
+                  }
+
+                  return <div key={cell.id} className="aspect-square w-full" aria-hidden="true" />;
+                });
+              })()}
             </div>
           </div>
         </section>
