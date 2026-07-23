@@ -2,12 +2,18 @@ import { useId } from "react";
 
 import type { IconProps } from "./types";
 
+/** Path extends slightly past 0..60 — viewBox includes full shape. */
+export const STAR_MINI_ICON_SIZE = { width: 60, height: 60 } as const;
+const STAR_MINI_VIEWBOX = "-1 -1 62.25 62.25";
+
 export function StarMiniIcon({ className, ...props }: IconProps) {
   const gradientId = useId();
 
   return (
     <svg
-      viewBox="0 0 60 60"
+      width={STAR_MINI_ICON_SIZE.width}
+      height={STAR_MINI_ICON_SIZE.height}
+      viewBox={STAR_MINI_VIEWBOX}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden

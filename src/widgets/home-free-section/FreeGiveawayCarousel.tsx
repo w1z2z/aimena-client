@@ -30,7 +30,7 @@ function CarouselArrowButton({
         isLeft ? "left-[14px]" : "right-[14px]"
       }`}
     >
-      <ChevronIcon direction={direction} className="h-[25px] w-[15px] text-brand" />
+      <ChevronIcon direction={direction} className="h-[26px] w-[16px] text-brand" />
     </button>
   );
 }

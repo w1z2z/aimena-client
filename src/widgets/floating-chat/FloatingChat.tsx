@@ -35,8 +35,8 @@ function NotificationDot({ className }: { className?: string }) {
 
 function ChatBubbleWithBadge({ className }: { className?: string }) {
   return (
-    <span className={`relative inline-flex ${className ?? ""}`}>
-      <ChatBubbleIcon className="size-full text-[#1A1A1A]" />
+    <span className={`relative inline-flex items-center justify-center ${className ?? ""}`}>
+      <ChatBubbleIcon className="h-auto w-full text-[#1A1A1A]" />
       <NotificationDot className="right-0 top-0 translate-x-[15%] -translate-y-[15%]" />
     </span>
   );
@@ -44,7 +44,14 @@ function ChatBubbleWithBadge({ className }: { className?: string }) {
 
 function CloseIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 25 25" fill="none" aria-hidden className={className}>
+    <svg
+      width={25}
+      height={25}
+      viewBox="0 0 25 25"
+      fill="none"
+      aria-hidden
+      className={`block shrink-0 ${className ?? ""}`}
+    >
       <path
         d="M6.5 6.5L18.5 18.5M18.5 6.5L6.5 18.5"
         stroke="currentColor"

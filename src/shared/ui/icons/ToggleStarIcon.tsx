@@ -3,10 +3,16 @@ import type { IconProps } from "./types";
 const STAR_PATH =
   "M3.74738 0.341877C4.05464 -0.113203 4.72466 -0.113203 5.03192 0.341876L6.32082 2.25084C6.37636 2.33309 6.44718 2.40392 6.52944 2.45946L8.4384 3.74835C8.89348 4.05562 8.89348 4.72563 8.4384 5.0329L6.52944 6.32179C6.44718 6.37733 6.37636 6.44816 6.32082 6.53041L5.03192 8.43937C4.72466 8.89445 4.05464 8.89445 3.74738 8.43937L2.45848 6.53041C2.40294 6.44816 2.33212 6.37733 2.24986 6.32179L0.340901 5.0329C-0.114179 4.72563 -0.11418 4.05562 0.3409 3.74835L2.24986 2.45946C2.33212 2.40392 2.40294 2.33309 2.45848 2.25084L3.74738 0.341877Z";
 
+/** Path spans ~0..8.78 — viewBox padded to fit full star. */
+export const TOGGLE_STAR_ICON_SIZE = { width: 9, height: 9 } as const;
+const TOGGLE_STAR_VIEWBOX = "-0.12 -0.12 9.02 9.02";
+
 export function ToggleStarIcon({ className, ...props }: IconProps) {
   return (
     <svg
-      viewBox="-0.12 -0.12 9.02 9.02"
+      width={TOGGLE_STAR_ICON_SIZE.width}
+      height={TOGGLE_STAR_ICON_SIZE.height}
+      viewBox={TOGGLE_STAR_VIEWBOX}
       fill="none"
       aria-hidden
       className={`block shrink-0 ${className ?? ""}`}

@@ -1,8 +1,18 @@
 import type { IconProps } from "./types";
 
+export const FILTER_ICON_SIZE = { width: 16, height: 14 } as const;
+
 export function FilterIcon({ className, ...props }: IconProps) {
   return (
-    <svg viewBox="0 0 16 14" fill="none" aria-hidden className={className} {...props}>
+    <svg
+      width={FILTER_ICON_SIZE.width}
+      height={FILTER_ICON_SIZE.height}
+      viewBox={`0 0 ${FILTER_ICON_SIZE.width} ${FILTER_ICON_SIZE.height}`}
+      fill="none"
+      aria-hidden
+      className={`block shrink-0 ${className ?? ""}`}
+      {...props}
+    >
       <path
         d="M1 2.5H15M1 7H15M1 11.5H15"
         stroke="currentColor"

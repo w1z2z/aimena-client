@@ -1,12 +1,17 @@
 import type { IconProps } from "./types";
 
+export const EYE_ICON_SIZE = { width: 19, height: 19 } as const;
+
 export function EyeIcon({ className, ...props }: IconProps) {
   return (
     <svg
-      viewBox="0 0 19 19"
+      width={EYE_ICON_SIZE.width}
+      height={EYE_ICON_SIZE.height}
+      viewBox={`0 0 ${EYE_ICON_SIZE.width} ${EYE_ICON_SIZE.height}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      aria-hidden
+      className={`block shrink-0 ${className ?? ""}`}
       {...props}
     >
       <path

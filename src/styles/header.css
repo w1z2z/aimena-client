@@ -39,6 +39,7 @@
 
 .site-header {
   isolation: isolate;
+  overflow: visible;
 }
 
 .site-header__backdrop {
@@ -73,6 +74,7 @@
 .site-header__inner {
   position: relative;
   z-index: 1;
+  overflow: visible;
 }
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {

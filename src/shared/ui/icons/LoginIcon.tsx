@@ -1,12 +1,17 @@
 import type { IconProps } from "./types";
 
+export const LOGIN_ICON_SIZE = { width: 16, height: 16 } as const;
+
 export function LoginIcon({ className, ...props }: IconProps) {
   return (
     <svg
-      viewBox="0 0 16 16"
+      width={LOGIN_ICON_SIZE.width}
+      height={LOGIN_ICON_SIZE.height}
+      viewBox={`0 0 ${LOGIN_ICON_SIZE.width} ${LOGIN_ICON_SIZE.height}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      aria-hidden
+      className={`block shrink-0 ${className ?? ""}`}
       {...props}
     >
       <path

@@ -9,14 +9,20 @@ const gradientY1 = `${50 + gradientCos * 50}%`;
 const gradientX2 = `${50 + gradientSin * 50}%`;
 const gradientY2 = `${50 - gradientCos * 50}%`;
 
+/** viewBox padded so star tips are not clipped. */
+export const FREE_PROMO_STAR_ICON_SIZE = { width: 535, height: 535 } as const;
+const FREE_PROMO_STAR_VIEWBOX = "-8 -8 551 551";
+
 export function FreePromoStarIcon({ className, ...props }: IconProps) {
   return (
     <svg
-      viewBox="-8 -8 551 551"
+      width={FREE_PROMO_STAR_ICON_SIZE.width}
+      height={FREE_PROMO_STAR_ICON_SIZE.height}
+      viewBox={FREE_PROMO_STAR_VIEWBOX}
       fill="none"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden
-      className={className}
+      className={`block shrink-0 ${className ?? ""}`}
       {...props}
     >
       <path

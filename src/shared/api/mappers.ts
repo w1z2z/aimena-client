@@ -22,6 +22,7 @@ export function mapBackendUserToAuthUser(user: BackendUserMe): AuthUser {
     name: displayName,
     email: user.email,
     avatarInitial: getAvatarInitial(displayName, user.email),
+    avatarUrl: user.profile?.avatarUrl ?? null,
     onboardingCompleted: user.profile?.onboardingCompleted ?? false,
     favoriteCategories,
     cityId,

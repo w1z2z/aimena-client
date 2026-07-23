@@ -193,9 +193,14 @@ export function Header() {
     };
   }, []);
 
-  const closeSearchWithAnimation = () => {
+  const closeSearchWithAnimation = (options?: { clear?: boolean }) => {
     if (searchCloseTimerRef.current !== null) {
       window.clearTimeout(searchCloseTimerRef.current);
+    }
+
+    if (options?.clear) {
+      setSearchQuery("");
+      setSearchSuggestions([]);
     }
 
     setIsSearchClosing(true);
@@ -248,14 +253,14 @@ export function Header() {
             }`}
           >
             {isSearchExpanded || isSearchClosing ? (
-              <div className="flex h-full w-full items-center gap-[9px] rounded-[13px] border border-[#8E8BED] border-[0.5px] bg-transparent px-[8px]">
+              <div className="flex h-full w-full items-center gap-[9px] rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-transparent px-[8px]">
                 <button
                   type="button"
                   aria-label="Поиск"
                   onClick={handleSearchToggle}
                   className="flex h-[16px] w-[16px] shrink-0 items-center justify-center text-[#8E8BED]"
                 >
-                  <SearchIcon className="h-[16px] w-[16px]" />
+                  <SearchIcon className="h-[13px] w-[13px]" />
                 </button>
                 <input
                   ref={searchInputRef}
@@ -303,15 +308,30 @@ export function Header() {
                   }}
                   placeholder=""
                   aria-label="Поиск по объявлениям"
-                  className="h-[24px] w-[220px] bg-transparent text-[14px] font-normal leading-[170%] text-[#8E8BED] outline-none placeholder:text-[#8E8BED]"
+                  className="h-[24px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-[170%] text-[#8E8BED] outline-none placeholder:text-[#8E8BED]"
                 />
+                <button
+                  type="button"
+                  aria-label="Закрыть поиск"
+                  onClick={() => closeSearchWithAnimation({ clear: true })}
+                  className="ml-auto flex h-[16px] w-[16px] shrink-0 items-center justify-center text-[#8E8BED] transition hover:opacity-70"
+                >
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" aria-hidden className="block h-[12px] w-[12px]">
+                    <path
+                      d="M1 1L11 11M11 1L1 11"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
               </div>
             ) : (
               <button
                 type="button"
                 aria-label="Поиск"
                 onClick={handleSearchToggle}
-                className="flex h-[32px] w-[32px] items-center justify-center rounded-[13px] border border-[#8E8BED] border-[0.3px] bg-transparent text-[#8E8BED] transition hover:bg-[#8E8BED]/5 active:translate-y-[0.5px]"
+                className="flex h-[32px] w-[32px] items-center justify-center rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-transparent text-[#8E8BED] transition-colors hover:bg-[#8E8BED]/5"
               >
                 <SearchIcon className="h-[13px] w-[13px]" />
               </button>
@@ -368,12 +388,12 @@ export function Header() {
                       aria-haspopup="dialog"
                       onClick={() => togglePanel("notifications")}
                     >
-                      <span className="relative block h-[32px] w-[32px]">
-                        <BellIcon className="absolute left-[28.12%] top-[9px] h-[14.62px] w-[13.81px] text-black" />
+                      <span className="relative inline-flex items-center justify-center">
+                        <BellIcon className="h-[15.4372px] w-[13.8125px] text-black" />
                         {openPanel !== "notifications" ? (
                           <>
-                            <BellDotIcon className="absolute left-[19px] top-[4px] h-[7px] w-[7px] text-[#FF2056]/25" />
-                            <BellDotIcon className="absolute left-[20px] top-[5px] h-[5px] w-[5px] text-[#FF2056]" />
+                            <BellDotIcon className="absolute -right-[1px] top-[-1px] h-[7px] w-[7px] text-[#FF2056]/25" />
+                            <BellDotIcon className="absolute right-0 top-0 h-[5px] w-[5px] text-[#FF2056]" />
                           </>
                         ) : null}
                       </span>
@@ -384,9 +404,7 @@ export function Header() {
                 </HeaderDropdown>
 
                 <IconButton label="Избранное" onClick={() => router.push("/favorites")}>
-                  <span className="relative block h-[32px] w-[32px]">
-                    <HeartIcon className="absolute left-1/2 top-[10px] h-[13px] w-[16px] -translate-x-1/2 text-black" />
-                  </span>
+                  <HeartIcon className="h-[14px] w-[16px] text-black" />
                 </IconButton>
 
                 <HeaderDropdown
@@ -396,6 +414,7 @@ export function Header() {
                   trigger={
                     <Avatar
                       initial={user.avatarInitial}
+                      src={user.avatarUrl}
                       aria-expanded={openPanel === "profile"}
                       aria-haspopup="dialog"
                       onClick={() => togglePanel("profile")}

@@ -51,7 +51,7 @@ function TickerPin({ label }: { label: string }) {
 function TickerBolt() {
   return (
     <span className="flex h-[25.163px] w-[18.815px] shrink-0 items-center justify-center">
-      <BoltIcon className="h-[22.443px] w-[13.466px] rotate-[15deg]" />
+      <BoltIcon className="h-[24.4428px] w-[15.4656px] rotate-[15deg]" />
     </span>
   );
 }

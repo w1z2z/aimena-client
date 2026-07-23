@@ -23,7 +23,7 @@ export function Switch({ checked, onChange, className }: SwitchProps) {
         }`}
       >
         <ToggleStarIcon
-          className={`h-[10px] w-[10px] translate-y-[-0.5px] ${checked ? "text-[#8E8BED]" : "text-white"}`}
+          className={`h-[9px] w-[9px] ${checked ? "text-[#8E8BED]" : "text-white"}`}
         />
       </span>
     </button>

@@ -3,6 +3,7 @@ export type AuthUser = {
   name: string;
   email: string;
   avatarInitial: string;
+  avatarUrl: string | null;
   onboardingCompleted: boolean;
   favoriteCategories: string[];
   cityId: string | null;

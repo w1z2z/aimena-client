@@ -46,7 +46,11 @@ function readStoredUser(): AuthUser | null {
   try {
     const raw = window.localStorage.getItem(AUTH_USER_STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as AuthUser;
+    const parsed = JSON.parse(raw) as AuthUser;
+    return {
+      ...parsed,
+      avatarUrl: parsed.avatarUrl ?? null,
+    };
   } catch {
     return null;
   }

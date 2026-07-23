@@ -198,7 +198,7 @@ function PhotoCard({
         aria-label="Удалить фото"
         className="absolute right-[10px] top-[10px] z-[1] flex items-center justify-center"
       >
-        <DeleteIcon className="h-[23.695px] w-[21.326px] text-white" />
+        <DeleteIcon className="h-[26px] w-[24px] text-white" />
       </button>
       {previewUrl ? (
         // eslint-disable-next-line @next/next/no-img-element

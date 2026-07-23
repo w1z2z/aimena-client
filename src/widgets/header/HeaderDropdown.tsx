@@ -60,7 +60,7 @@ export function HeaderDropdown({ open, onOpenChange, trigger, children, panelLab
   }, [open, onOpenChange]);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative flex h-[32px] items-center">
       {trigger}
       {isMounted ? (
         <div

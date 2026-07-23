@@ -1,8 +1,18 @@
 import type { IconProps } from "./types";
 
+export const DELETE_ICON_SIZE = { width: 24, height: 26 } as const;
+
 export function DeleteIcon({ className, ...props }: IconProps) {
   return (
-    <svg viewBox="0 0 24 26" fill="none" aria-hidden className={className} {...props}>
+    <svg
+      width={DELETE_ICON_SIZE.width}
+      height={DELETE_ICON_SIZE.height}
+      viewBox={`0 0 ${DELETE_ICON_SIZE.width} ${DELETE_ICON_SIZE.height}`}
+      fill="none"
+      aria-hidden
+      className={`block shrink-0 ${className ?? ""}`}
+      {...props}
+    >
       <path
         d="M20.5491 5.14648L19.8149 17.024C19.6272 20.0586 19.5335 21.576 18.7729 22.6669C18.3967 23.2062 17.9126 23.6614 17.351 24.0035C16.2153 24.6954 14.6951 24.6954 11.6546 24.6954C8.61017 24.6954 7.08794 24.6954 5.95144 24.0022C5.38955 23.6595 4.90521 23.2035 4.52926 22.6633C3.76886 21.5707 3.67713 20.0512 3.49368 17.0123L2.77734 5.14648"
         stroke="currentColor"

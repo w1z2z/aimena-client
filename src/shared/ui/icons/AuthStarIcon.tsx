@@ -1,12 +1,17 @@
 import type { IconProps } from "./types";
 
+export const AUTH_STAR_ICON_SIZE = { width: 138, height: 138 } as const;
+
 export function AuthStarIcon({ className, ...props }: IconProps) {
   return (
     <svg
-      viewBox="0 0 138 138"
+      width={AUTH_STAR_ICON_SIZE.width}
+      height={AUTH_STAR_ICON_SIZE.height}
+      viewBox={`0 0 ${AUTH_STAR_ICON_SIZE.width} ${AUTH_STAR_ICON_SIZE.height}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      aria-hidden
+      className={`block shrink-0 ${className ?? ""}`}
       {...props}
     >
       <path
@@ -14,7 +19,14 @@ export function AuthStarIcon({ className, ...props }: IconProps) {
         fill="url(#auth_star_gradient)"
       />
       <defs>
-        <linearGradient id="auth_star_gradient" x1="17" y1="12" x2="121" y2="115.5" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="auth_star_gradient"
+          x1="17"
+          y1="12"
+          x2="121"
+          y2="115.5"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#8E8BED" />
           <stop offset="0.5" stopColor="#A987BD" />
           <stop offset="1" stopColor="#C8FF00" />

@@ -77,7 +77,7 @@ export function NotificationsDropdown() {
 
   return (
     <HeaderDropdownPanel
-      className="w-[334px] bg-[#F2F4F7] p-[10px]"
+      className="w-[334px] rounded-[8px] bg-[#F2F4F7] p-[10px]"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
