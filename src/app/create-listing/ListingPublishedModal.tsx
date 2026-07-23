@@ -8,10 +8,9 @@ const TRANSITION_MS = 320;
 
 type ListingPublishedModalProps = {
   open: boolean;
-  onClose: () => void;
 };
 
-export function ListingPublishedModal({ open, onClose }: ListingPublishedModalProps) {
+export function ListingPublishedModal({ open }: ListingPublishedModalProps) {
   const [mounted, setMounted] = useState(open);
   const [visible, setVisible] = useState(false);
 
@@ -42,17 +41,10 @@ export function ListingPublishedModal({ open, onClose }: ListingPublishedModalPr
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
     return () => {
       document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [mounted, onClose]);
+  }, [mounted]);
 
   if (!mounted || typeof document === "undefined") return null;
 
@@ -60,7 +52,6 @@ export function ListingPublishedModal({ open, onClose }: ListingPublishedModalPr
     <div
       className={`listing-published-modal${visible ? " is-visible" : ""}`}
       role="presentation"
-      onClick={onClose}
     >
       <div
         className="listing-published-modal__card"
@@ -78,7 +69,7 @@ export function ListingPublishedModal({ open, onClose }: ListingPublishedModalPr
           Теперь можете начинать обмениваться с другими!
         </p>
 
-        <Link href="/" className="listing-published-modal__button" onClick={onClose}>
+        <Link href="/" className="listing-published-modal__button">
           Вернуться в ленту
         </Link>
       </div>

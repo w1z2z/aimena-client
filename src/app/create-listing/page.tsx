@@ -1522,10 +1522,7 @@ export default function CreateListingPage() {
         </div>
       </div>
 
-      <ListingPublishedModal
-        open={isPublishedModalOpen}
-        onClose={() => setIsPublishedModalOpen(false)}
-      />
+      <ListingPublishedModal open={isPublishedModalOpen} />
     </main>
   );
 }
