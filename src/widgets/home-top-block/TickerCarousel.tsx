@@ -63,7 +63,7 @@ export function TickerCarousel() {
 
   return (
     <div
-      className="home-ticker-carousel pointer-events-none absolute left-[-141px] z-20 h-[34px] w-[2111px] overflow-hidden"
+      className="home-ticker-carousel pointer-events-none absolute left-[241px] z-20 h-[34px] w-[1440px] overflow-hidden"
       style={{
         top: "1040px",
         transform: "translateZ(0)",
