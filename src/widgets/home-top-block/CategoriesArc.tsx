@@ -117,10 +117,13 @@ const CATEGORY_ARC_BACKDROP_MASK = `url("data:image/svg+xml,${encodeURIComponent
 
 function CategoryArcGlass() {
   return (
-    <>
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-0 overflow-visible"
+      style={{ transform: "translateZ(0)" }}
+    >
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-0"
+        className="absolute inset-0"
         style={{
           WebkitBackdropFilter: "blur(96px)",
           backdropFilter: "blur(96px)",
@@ -136,8 +139,7 @@ function CategoryArcGlass() {
       />
 
       <svg
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 overflow-visible"
+        className="absolute inset-0 overflow-visible"
         width={ARC_CONTAINER_WIDTH}
         height={183}
         viewBox={`0 0 ${ARC_CONTAINER_WIDTH} 183`}
@@ -194,7 +196,7 @@ function CategoryArcGlass() {
           filter="url(#category-arc-rim-blur)"
         />
       </svg>
-    </>
+    </div>
   );
 }
 
@@ -209,7 +211,6 @@ function getCategoryIconFilter(isActive: boolean, useSvgFilter: boolean) {
 type CategoryLayout = {
   x: number;
   y: number;
-  scale: number;
   iconWidth: number;
   iconHeight: number;
   opacity: number;
@@ -231,7 +232,6 @@ function computeCategoryLayout(index: number, displayIndex: number, length: numb
   return {
     x: ARC_CENTER_X + direction * interpolateProfile("offsetX", distance),
     y: centerY - iconHeight / 2,
-    scale: 1,
     iconWidth: interpolateProfile("iconWidth", distance),
     iconHeight,
     opacity: isFar ? 0 : interpolateProfile("opacity", distance),
@@ -256,31 +256,24 @@ function applyCategoryLayout(
   useSvgIconFilter: boolean,
   options?: { skipFilters?: boolean; skipAria?: boolean },
 ) {
-  const { button, iconWrap, img, label } = refs;
+  const { button, img, label } = refs;
   const skipFilters = options?.skipFilters ?? false;
   const skipAria = options?.skipAria ?? false;
 
-  button.style.left = `${layout.x}px`;
-  button.style.top = `${layout.y}px`;
-  button.style.transform = "translateX(-50%)";
+  button.style.transform = `translate3d(${layout.x}px, ${layout.y}px, 0) translateX(-50%)`;
   button.style.opacity = String(layout.opacity);
   button.style.pointerEvents = layout.isFar ? "none" : "auto";
-
-  iconWrap.style.transform = `scale(${layout.scale})`;
-  iconWrap.style.transformOrigin = "top center";
 
   img.style.width = `${layout.iconWidth}px`;
   img.style.height = `${layout.iconHeight}px`;
 
-  if (!skipFilters) {
+  if (skipFilters) {
+    img.style.filter = "none";
+    img.style.webkitFilter = "none";
+  } else {
     const filter = getCategoryIconFilter(layout.isActive, useSvgIconFilter);
-    if (useSvgIconFilter) {
-      img.style.filter = filter;
-      img.style.webkitFilter = filter;
-    } else {
-      img.style.removeProperty("filter");
-      img.style.removeProperty("-webkit-filter");
-    }
+    img.style.filter = filter;
+    img.style.webkitFilter = filter;
   }
 
   label.style.fontSize = `${layout.labelSize}px`;
@@ -315,6 +308,7 @@ export function CategoriesArc({
   const isAnimatingRef = useRef(false);
   const isSafari = useIsSafari();
   const animationRef = useRef<number | null>(null);
+  const dragFrameRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
   const hasDraggedRef = useRef(false);
   const dragStartXRef = useRef(0);
@@ -345,6 +339,13 @@ export function CategoriesArc({
     [categories, length],
   );
 
+  const setInteractionWillChange = useCallback((enabled: boolean) => {
+    itemRefs.current.forEach((refs) => {
+      if (!refs) return;
+      refs.button.style.willChange = enabled ? "transform, opacity" : "auto";
+    });
+  }, []);
+
   const animateDisplayIndex = useCallback(
     (targetValue: number, duration: number, onComplete?: () => void) => {
       const from = displayIndexRef.current;
@@ -360,12 +361,7 @@ export function CategoriesArc({
       }
 
       isAnimatingRef.current = true;
-      itemRefs.current.forEach((refs) => {
-        if (refs) {
-          refs.button.style.willChange = "transform, opacity";
-          refs.iconWrap.style.willChange = "transform";
-        }
-      });
+      setInteractionWillChange(true);
 
       const startTime = performance.now();
 
@@ -384,12 +380,7 @@ export function CategoriesArc({
 
         displayIndexRef.current = targetValue;
         isAnimatingRef.current = false;
-        itemRefs.current.forEach((refs) => {
-          if (refs) {
-            refs.button.style.willChange = "auto";
-            refs.iconWrap.style.willChange = "auto";
-          }
-        });
+        setInteractionWillChange(false);
         applyAllLayouts(targetValue);
         animationRef.current = null;
         onComplete?.();
@@ -397,7 +388,7 @@ export function CategoriesArc({
 
       animationRef.current = requestAnimationFrame(tick);
     },
-    [applyAllLayouts],
+    [applyAllLayouts, setInteractionWillChange],
   );
 
   const notifyCategorySettled = useCallback(
@@ -430,6 +421,7 @@ export function CategoriesArc({
     const delta = targetDisplay - from;
 
     if (Math.abs(delta) < 0.001) {
+      setInteractionWillChange(false);
       notifyCategorySettled(settled);
       applyAllLayouts(settled);
       return;
@@ -439,22 +431,26 @@ export function CategoriesArc({
       notifyCategorySettled(settled);
       applyAllLayouts(settled);
     });
-  }, [animateDisplayIndex, applyAllLayouts, length, notifyCategorySettled]);
+  }, [animateDisplayIndex, applyAllLayouts, length, notifyCategorySettled, setInteractionWillChange]);
 
   const blurButtonAfterPointer = (event: PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
   };
 
-  const beginPointerTrack = useCallback((event: PointerEvent<HTMLElement>, tapIndex: number | null) => {
-    if (event.button !== 0) return;
+  const beginPointerTrack = useCallback(
+    (event: PointerEvent<HTMLElement>, tapIndex: number | null) => {
+      if (event.button !== 0) return;
 
-    isDraggingRef.current = true;
-    hasDraggedRef.current = false;
-    pendingTapIndexRef.current = tapIndex;
-    dragStartXRef.current = event.clientX;
-    dragStartDisplayIndexRef.current = displayIndexRef.current;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }, []);
+      isDraggingRef.current = true;
+      hasDraggedRef.current = false;
+      pendingTapIndexRef.current = tapIndex;
+      dragStartXRef.current = event.clientX;
+      dragStartDisplayIndexRef.current = displayIndexRef.current;
+      setInteractionWillChange(true);
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+    [setInteractionWillChange],
+  );
 
   const handleTrackedPointerMove = useCallback(
     (event: PointerEvent<HTMLElement>) => {
@@ -478,7 +474,13 @@ export function CategoriesArc({
       }
 
       displayIndexRef.current = rebasedDisplayIndex;
-      applyAllLayouts(rebasedDisplayIndex, { skipFilters: true, skipAria: true });
+
+      if (dragFrameRef.current !== null) return;
+
+      dragFrameRef.current = requestAnimationFrame(() => {
+        dragFrameRef.current = null;
+        applyAllLayouts(displayIndexRef.current, { skipFilters: true, skipAria: true });
+      });
     },
     [applyAllLayouts, length],
   );
@@ -493,18 +495,26 @@ export function CategoriesArc({
 
       isDraggingRef.current = false;
 
+      if (dragFrameRef.current !== null) {
+        cancelAnimationFrame(dragFrameRef.current);
+        dragFrameRef.current = null;
+        applyAllLayouts(displayIndexRef.current, { skipFilters: true, skipAria: true });
+      }
+
       if (hasDraggedRef.current) {
         settleAfterDrag();
         pendingTapIndexRef.current = null;
         return;
       }
 
+      setInteractionWillChange(false);
+
       if (pendingTapIndexRef.current !== null) {
         goToIndex(pendingTapIndexRef.current);
         pendingTapIndexRef.current = null;
       }
     },
-    [goToIndex, settleAfterDrag],
+    [applyAllLayouts, goToIndex, setInteractionWillChange, settleAfterDrag],
   );
 
   const handleContainerPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -521,6 +531,9 @@ export function CategoriesArc({
     return () => {
       if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current);
+      }
+      if (dragFrameRef.current !== null) {
+        cancelAnimationFrame(dragFrameRef.current);
       }
       isAnimatingRef.current = false;
     };
@@ -564,90 +577,83 @@ export function CategoriesArc({
         </defs>
       </svg>
 
-      {categories.map((item, index) => {
-        const layout = computeCategoryLayout(index, initialIndex, length);
-        const distance = getWrappedDistanceFloat(index, initialIndex, length);
+      <div className="absolute inset-0 z-[1] overflow-visible" style={{ transform: "translateZ(0)" }}>
+        {categories.map((item, index) => {
+          const layout = computeCategoryLayout(index, initialIndex, length);
+          const distance = getWrappedDistanceFloat(index, initialIndex, length);
 
-        return (
-          <button
-            key={item.id}
-            ref={(element) => {
-              if (!element) {
-                itemRefs.current[index] = null;
-                return;
-              }
+          return (
+            <button
+              key={item.id}
+              ref={(element) => {
+                if (!element) {
+                  itemRefs.current[index] = null;
+                  return;
+                }
 
-              const iconWrap = element.querySelector<HTMLElement>("[data-category-icon-wrap]");
-              const img = element.querySelector<HTMLImageElement>("[data-category-icon]");
-              const label = element.querySelector<HTMLElement>("[data-category-label]");
-              if (!iconWrap || !img || !label) return;
+                const iconWrap = element.querySelector<HTMLElement>("[data-category-icon-wrap]");
+                const img = element.querySelector<HTMLImageElement>("[data-category-icon]");
+                const label = element.querySelector<HTMLElement>("[data-category-label]");
+                if (!iconWrap || !img || !label) return;
 
-              itemRefs.current[index] = { button: element, iconWrap, img, label };
-            }}
-            type="button"
-            onPointerDown={(event) => {
-              event.stopPropagation();
-              beginPointerTrack(event, index);
-            }}
-            onPointerMove={handleTrackedPointerMove}
-            onPointerUp={(event) => {
-              endPointerTrack(event);
-              blurButtonAfterPointer(event);
-            }}
-            onPointerCancel={(event) => {
-              endPointerTrack(event);
-              blurButtonAfterPointer(event);
-            }}
-            aria-label={item.label}
-            aria-current={layout.isActive ? "true" : undefined}
-            data-category-button
-            className="group absolute flex flex-col items-center border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:outline-none"
-            style={{
-              left: `${layout.x}px`,
-              top: `${layout.y}px`,
-              transform: "translateX(-50%)",
-              opacity: layout.opacity,
-              zIndex: 20 - Math.abs(distance),
-              pointerEvents: layout.isFar ? "none" : "auto",
-              WebkitAppearance: "none",
-              appearance: "none",
-            }}
-          >
-            <span
-              data-category-icon-wrap
-              className="inline-block origin-top"
-              style={{ transform: `scale(${layout.scale})` }}
-            >
-              <img
-                data-category-icon
-                src={item.iconUrl || CATEGORY_ICON_PLACEHOLDER}
-                alt=""
-                draggable={false}
-                className={`pointer-events-none object-contain group-hover:brightness-110 ${
-                  layout.isActive
-                    ? "drop-shadow-[0_10px_24px_rgba(200,255,0,0.35)]"
-                    : "drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)]"
-                }`}
-                style={{
-                  height: `${layout.iconHeight}px`,
-                  width: `${layout.iconWidth}px`,
-                }}
-              />
-            </span>
-            <span
-              data-category-label
-              className="mt-[8px] text-center font-semibold tracking-[-0.002em] text-white"
+                itemRefs.current[index] = { button: element, iconWrap, img, label };
+              }}
+              type="button"
+              onPointerDown={(event) => {
+                event.stopPropagation();
+                beginPointerTrack(event, index);
+              }}
+              onPointerMove={handleTrackedPointerMove}
+              onPointerUp={(event) => {
+                endPointerTrack(event);
+                blurButtonAfterPointer(event);
+              }}
+              onPointerCancel={(event) => {
+                endPointerTrack(event);
+                blurButtonAfterPointer(event);
+              }}
+              aria-label={item.label}
+              aria-current={layout.isActive ? "true" : undefined}
+              data-category-button
+              className="group absolute left-0 top-0 flex flex-col items-center border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:outline-none"
               style={{
-                fontSize: `${layout.labelSize}px`,
-                lineHeight: `${layout.labelLineHeight}px`,
-                opacity: layout.labelOpacity,
+                transform: `translate3d(${layout.x}px, ${layout.y}px, 0) translateX(-50%)`,
+                opacity: layout.opacity,
+                zIndex: 20 - Math.abs(distance),
+                pointerEvents: layout.isFar ? "none" : "auto",
+                WebkitAppearance: "none",
+                appearance: "none",
               }}
             >
-              {item.label}
-            </span>
-          </button>
-        );
-      })}
+              <span data-category-icon-wrap className="inline-block">
+                <img
+                  data-category-icon
+                  src={item.iconUrl || CATEGORY_ICON_PLACEHOLDER}
+                  alt=""
+                  draggable={false}
+                  className="pointer-events-none object-contain group-hover:brightness-110"
+                  style={{
+                    width: `${layout.iconWidth}px`,
+                    height: `${layout.iconHeight}px`,
+                    filter: layout.isActive ? CATEGORY_ICON_ACTIVE_SHADOW : CATEGORY_ICON_INACTIVE_SHADOW,
+                  }}
+                />
+              </span>
+              <span
+                data-category-label
+                className="mt-[8px] text-center font-semibold tracking-[-0.002em] text-white"
+                style={{
+                  fontSize: `${layout.labelSize}px`,
+                  lineHeight: `${layout.labelLineHeight}px`,
+                  opacity: layout.labelOpacity,
+                }}
+              >
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
