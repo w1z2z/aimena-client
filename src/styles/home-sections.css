@@ -535,6 +535,47 @@
 
 .home-filters-panel__input--price {
   width: 217px;
+  padding-right: 44px;
+}
+
+.home-filters-panel__price-field {
+  position: relative;
+  width: 217px;
+}
+
+.home-filters-panel__price-field .home-filters-panel__input--price {
+  width: 100%;
+}
+
+.home-filters-panel__price-measure {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  z-index: 0;
+  overflow: hidden;
+  max-width: calc(100% - 56px);
+  transform: translateY(-50%);
+  color: transparent;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
+  white-space: pre;
+}
+
+.home-filters-panel__price-suffix {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  transform: translateY(-50%);
+  color: #3d3d3d;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
+  white-space: nowrap;
 }
 
 .home-filters-panel__select-wrap {

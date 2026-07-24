@@ -84,10 +84,14 @@ export function RegisterForm() {
             Зарегистрироваться
           </AuthButton>
 
-          <p className="max-w-[494px] text-center text-[14px] leading-[1.36] text-[#1A1A1A]">
+          <p className="max-w-[494px] text-center font-[family-name:var(--font-manrope)] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">
             Регистрируясь, вы соглашаетесь с{" "}
-            <AuthLink href="/terms" className="text-[14px]">
-              Правилами пользования сервисом и Политикой конфиденциальности
+            <AuthLink href="/terms" variant="inline">
+              Правилами пользования сервисом
+            </AuthLink>{" "}
+            и{" "}
+            <AuthLink href="/privacy" variant="inline">
+              Политикой конфиденциальности
             </AuthLink>{" "}
             и даёте согласие на получение рассылок.
           </p>

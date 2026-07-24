@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { ApiError } from "@/shared/api/http";
 import { getListings, getRecommendations } from "@/shared/api/listings";
@@ -16,6 +16,7 @@ import type { HomeHeroState } from "@/features/home-search/types";
 
 const HERO_RECOMMENDATIONS_LIMIT = 5;
 const HERO_RANDOM_POOL_SIZE = 24;
+const FILTERED_LISTINGS_PAGE_SIZE = 12;
 
 function parsePrice(value: string): number | undefined {
   const digits = value.replace(/\D/g, "");
@@ -138,10 +139,11 @@ export function useFilteredListings({
   appliedFilters,
   enabled = true,
 }: FilteredListingsParams) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [...listingQueryKeys.all, "filtered", appliedFilters],
     enabled,
-    queryFn: async ({ signal }) => {
+    initialPageParam: 1,
+    queryFn: async ({ pageParam, signal }) => {
       const cityId = appliedFilters.city || undefined;
       const categoryId =
         appliedFilters.categoryChildId || appliedFilters.categoryParentId || undefined;
@@ -154,8 +156,8 @@ export function useFilteredListings({
       try {
         const response = await getListings(
           {
-            page: 1,
-            pageSize: 24,
+            page: pageParam,
+            pageSize: FILTERED_LISTINGS_PAGE_SIZE,
             query: appliedFilters.titleQuery.trim() || undefined,
             searchMode: appliedFilters.searchMode,
             cityId,
@@ -177,17 +179,31 @@ export function useFilteredListings({
           signal,
         );
 
+        if (process.env.NODE_ENV === "development") {
+          console.log("[home-feed]", {
+            page: response.meta.page,
+            pageSize: response.meta.pageSize,
+            received: response.data.length,
+            total: response.meta.total,
+            pageCount: response.meta.pageCount,
+          });
+        }
+
         return {
           items: response.data.map(mapApiListingToCard) as ListingCardData[],
           total: response.meta.total,
+          page: response.meta.page,
+          pageCount: response.meta.pageCount,
         };
       } catch (requestError) {
         if (requestError instanceof ApiError && requestError.status === 404) {
-          return { items: [], total: 0 };
+          return { items: [], total: 0, page: pageParam, pageCount: 0 };
         }
         throw requestError;
       }
     },
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.pageCount ? lastPage.page + 1 : undefined,
     placeholderData: (previous) => previous,
   });
 }

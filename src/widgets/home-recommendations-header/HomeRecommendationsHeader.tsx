@@ -7,7 +7,6 @@ import { useHomeSearch } from "@/features/home-search";
 import { FilterIcon } from "@/shared/ui/icons";
 
 import { HomeListingsGrid } from "@/widgets/home-listings-grid/HomeListingsGrid";
-import { HomeListingsViewAllLink } from "@/widgets/home-listings-grid/HomeListingsViewAllLink";
 
 import { HomeRecommendationsFiltersPanelContent } from "./HomeRecommendationsFiltersPanelContent";
 
@@ -72,7 +71,6 @@ export function HomeRecommendationsHeader() {
         </div>
 
         <HomeListingsGrid />
-        <HomeListingsViewAllLink />
       </div>
     </section>
   );

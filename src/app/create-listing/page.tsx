@@ -18,6 +18,7 @@ import { ApiError } from "@/shared/api/http";
 import { uploadListingFileViaBackend } from "@/shared/api/media";
 import { createListingDraft, getListingTagSuggestions, publishListing } from "@/shared/api/listings";
 import { buildCitySelectOptions } from "@/shared/lib/city-select-options";
+import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
 import { DeleteIcon } from "@/shared/ui/icons";
@@ -128,11 +129,6 @@ function getDocPhotoGridLayout(photoCount: number) {
   const hasAddSlot = photoCount < DOCUMENT_PHOTO_SLOTS;
 
   return { visibleSlots: ITEM_PHOTOS_PER_ROW, hasAddSlot };
-}
-
-function formatPriceWithSpaces(rawDigits: string) {
-  if (!rawDigits) return "";
-  return rawDigits.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
 const EXCHANGE_FIELD_INPUT_CLASS =
@@ -1161,7 +1157,7 @@ export default function CreateListingPage() {
                   autoComplete="off"
                   value={formattedPrice}
                   onChange={(event) => {
-                    const nextDigits = event.target.value.replace(/\D/g, "");
+                    const nextDigits = extractPriceDigits(event.target.value);
                     setPriceDigits(nextDigits);
                   }}
                   placeholder="0"

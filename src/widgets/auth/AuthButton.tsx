@@ -21,7 +21,7 @@ export function AuthButton({
   return (
     <button
       type="button"
-      className={`flex h-[62px] items-center justify-center rounded-[9.33px] px-[74px] py-[16px] text-[24px] font-extrabold leading-[32px] tracking-[-0.072px] transition active:translate-y-[0.5px] disabled:cursor-not-allowed disabled:opacity-60 ${fullWidth ? "w-full" : ""} ${variantClassName[variant]} ${className ?? ""}`}
+      className={`flex h-[62px] items-center justify-center rounded-[9.33px] px-[74px] py-[16px] font-[family-name:var(--font-manrope)] text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] transition active:translate-y-[0.5px] disabled:cursor-not-allowed disabled:opacity-60 ${fullWidth ? "w-full" : ""} ${variantClassName[variant]} ${className ?? ""}`}
       {...props}
     >
       {children}

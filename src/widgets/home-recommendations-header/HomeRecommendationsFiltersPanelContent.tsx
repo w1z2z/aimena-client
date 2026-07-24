@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useCallback, useMemo } from "react";
+import { startTransition, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { FILTER_CONDITION_OPTIONS } from "@/entities/listing";
 import { useHomeSearch } from "@/features/home-search";
@@ -28,6 +28,59 @@ const serviceFormatOptions = [
   { id: "onsite", label: "Выезд" },
   { id: "client", label: "У клиента" },
 ] as const;
+
+function FilterPriceInput({
+  value,
+  onChange,
+  placeholder,
+  "aria-label": ariaLabel,
+}: {
+  value: string;
+  onChange: (digits: string) => void;
+  placeholder: string;
+  "aria-label": string;
+}) {
+  const measureRef = useRef<HTMLSpanElement>(null);
+  const [textWidth, setTextWidth] = useState(0);
+  const formatted = formatPriceWithSpaces(value);
+
+  useLayoutEffect(() => {
+    const node = measureRef.current;
+    if (!node) return;
+    setTextWidth(node.getBoundingClientRect().width);
+  }, [formatted]);
+
+  return (
+    <div className="home-filters-panel__price-field">
+      <input
+        type="text"
+        inputMode="numeric"
+        autoComplete="off"
+        spellCheck={false}
+        value={formatted}
+        onChange={(event) => onChange(extractPriceDigits(event.target.value))}
+        className="home-filters-panel__input home-filters-panel__input--price"
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+      />
+      <span
+        ref={measureRef}
+        aria-hidden="true"
+        className="home-filters-panel__price-measure"
+      >
+        {formatted}
+      </span>
+      {formatted ? (
+        <span
+          className="home-filters-panel__price-suffix"
+          style={{ left: `calc(12px + ${textWidth}px + 4px)` }}
+        >
+          руб.
+        </span>
+      ) : null}
+    </div>
+  );
+}
 
 function FilterToggle({
   checked,
@@ -344,31 +397,17 @@ export function HomeRecommendationsFiltersPanelContent() {
           <div className="home-filters-panel__field home-filters-panel__field--price">
             <p className="home-filters-panel__field-label">Примерная стоимость</p>
             <div className="home-filters-panel__price-inputs">
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
-                value={formatPriceWithSpaces(priceFrom)}
-                onChange={(event) =>
-                  updateFilters({
-                    priceFrom: extractPriceDigits(event.target.value),
-                  })
-                }
-                className="home-filters-panel__input home-filters-panel__input--price"
+              <FilterPriceInput
+                value={priceFrom}
+                onChange={(digits) => updateFilters({ priceFrom: digits })}
                 placeholder="От"
+                aria-label="Цена от"
               />
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
-                value={formatPriceWithSpaces(priceTo)}
-                onChange={(event) =>
-                  updateFilters({
-                    priceTo: extractPriceDigits(event.target.value),
-                  })
-                }
-                className="home-filters-panel__input home-filters-panel__input--price"
+              <FilterPriceInput
+                value={priceTo}
+                onChange={(digits) => updateFilters({ priceTo: digits })}
                 placeholder="До"
+                aria-label="Цена до"
               />
             </div>
           </div>

@@ -248,8 +248,14 @@ export function Header() {
 
           <div
             ref={searchRef}
-            className={`absolute top-[10px] h-[32px] transition-all duration-300 ease-out ${
-              isSearchExpanded ? "left-[136px] w-[903px]" : "left-[1007px] w-[32px]"
+            className={`absolute top-[10px] h-[32px] transition-[width] duration-300 ease-out ${
+              isSearchExpanded || isSearchClosing
+                ? isAuthenticated
+                  ? "right-[calc(100%-1039px)] w-[903px]"
+                  : "right-[311px] w-[903px]"
+                : isAuthenticated
+                  ? "right-[calc(100%-1039px)] w-[32px]"
+                  : "pointer-events-none right-[311px] w-[32px] opacity-0"
             }`}
           >
             {isSearchExpanded || isSearchClosing ? (
@@ -326,7 +332,7 @@ export function Header() {
                   </svg>
                 </button>
               </div>
-            ) : (
+            ) : isAuthenticated ? (
               <button
                 type="button"
                 aria-label="Поиск"
@@ -335,7 +341,7 @@ export function Header() {
               >
                 <SearchIcon className="h-[13px] w-[13px]" />
               </button>
-            )}
+            ) : null}
 
             {isSearchExpanded && (isSearchLoading || searchQuery.trim().length >= 2) ? (
               <div className="absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] border border-[#8E8BED] border-[0.5px] bg-transparent shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur-[2px]">
@@ -370,7 +376,24 @@ export function Header() {
             ) : null}
           </div>
 
-          <div className="absolute left-[1049px] top-[11px] flex h-[32px] w-[387px] items-center justify-end gap-[16px]">
+          <div
+            className={`absolute top-[11px] flex h-[32px] items-center gap-[16px] ${
+              isAuthenticated
+                ? "left-[1049px] w-[387px] justify-end"
+                : "right-[4px] justify-end"
+            }`}
+          >
+            {!isAuthenticated && !isSearchExpanded && !isSearchClosing ? (
+              <button
+                type="button"
+                aria-label="Поиск"
+                onClick={handleSearchToggle}
+                className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-transparent text-[#8E8BED] transition-colors hover:bg-[#8E8BED]/5"
+              >
+                <SearchIcon className="h-[13px] w-[13px]" />
+              </button>
+            ) : null}
+
             <ButtonPrimary className="w-[243px]" onClick={handleCreateListing}>
               Разместить предложение
             </ButtonPrimary>

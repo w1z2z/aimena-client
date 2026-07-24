@@ -10,12 +10,12 @@ import "./globals.css";
 
 const manrope = Manrope({
   variable: "--font-manrope",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
 });
 
 const golosText = Golos_Text({
   variable: "--font-golos",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
 });
 
 export const metadata: Metadata = {

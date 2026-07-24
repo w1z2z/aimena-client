@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 
 import type { RegistrationPromptReason } from "../registration-prompt";
 import { registrationPromptCopy } from "../registration-prompt";
-import { LogoIcon } from "@/shared/ui/icons";
+import { AuthPromptIcon } from "@/shared/ui/icons";
 
 const TRANSITION_MS = 320;
 
@@ -89,28 +89,30 @@ export function RegistrationPromptModal({ open, reason, onClose }: RegistrationP
         aria-describedby="registration-prompt-subtitle"
         onClick={(event) => event.stopPropagation()}
       >
-        <button
-          type="button"
-          aria-label="Закрыть"
-          className="registration-prompt-modal__close"
-          onClick={onClose}
-        >
-          <CloseIcon />
-        </button>
+        <div className="registration-prompt-modal__card-inner">
+          <button
+            type="button"
+            aria-label="Закрыть"
+            className="registration-prompt-modal__close"
+            onClick={onClose}
+          >
+            <CloseIcon />
+          </button>
 
-        <LogoIcon className="registration-prompt-modal__logo" aria-hidden="true" />
+          <AuthPromptIcon className="registration-prompt-modal__logo" aria-hidden="true" />
 
-        <h2 id="registration-prompt-title" className="registration-prompt-modal__title">
-          Для продолжения необходимо авторизоваться
-        </h2>
+          <h2 id="registration-prompt-title" className="registration-prompt-modal__title">
+            Для продолжения необходимо авторизоваться
+          </h2>
 
-        <p id="registration-prompt-subtitle" className="registration-prompt-modal__subtitle">
-          {subtitle}
-        </p>
+          <p id="registration-prompt-subtitle" className="registration-prompt-modal__subtitle">
+            {subtitle}
+          </p>
 
-        <Link href="/login" className="registration-prompt-modal__button" onClick={onClose}>
-          Авторизация
-        </Link>
+          <Link href="/login" className="registration-prompt-modal__button" onClick={onClose}>
+            Авторизация
+          </Link>
+        </div>
       </div>
     </div>,
     document.body,

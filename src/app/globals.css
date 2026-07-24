@@ -5,6 +5,7 @@
 @import "../styles/home-sections.css";
 @import "../styles/forms-and-listings.css";
 @import "../styles/switch.css";
+@import "../styles/auth.css";
 
 @theme {
   --color-brand: #1a1a1a;
@@ -93,6 +94,30 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+a.auth-link {
+  color: #8e8bed;
+  text-decoration: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: auto;
+}
+
+a.auth-link--inline {
+  display: inline;
+  vertical-align: baseline;
+  line-height: inherit;
+}
+
+a.auth-link--nav {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 100%;
+}
+
+a.auth-link:hover {
+  color: #7a77e0;
 }
 
 button,

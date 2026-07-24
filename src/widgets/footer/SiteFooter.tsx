@@ -65,10 +65,10 @@ export function SiteFooter() {
         <div className="site-footer__bottom">
           <p className="site-footer__copyright">© {new Date().getFullYear()} Aimena</p>
           <div className="site-footer__legal">
-            <Link href="#" className="site-footer__legal-link">
+            <Link href="/privacy" className="site-footer__legal-link">
               Политика конфиденциальности
             </Link>
-            <Link href="#" className="site-footer__legal-link">
+            <Link href="/terms" className="site-footer__legal-link">
               Пользовательское соглашение
             </Link>
           </div>

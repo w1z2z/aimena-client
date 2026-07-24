@@ -2,7 +2,9 @@ export type { IconProps } from "./types";
 
 export { categoryPlaceholderIconSrc } from "./category-placeholder";
 
-export { AuthStarIcon } from "./AuthStarIcon";
+export { AuthStarIcon, AUTH_STAR_ICON_SIZE } from "./AuthStarIcon";
+export { AuthUnionIcon, AUTH_UNION_ICON_SIZE } from "./AuthUnionIcon";
+export { AuthPromptIcon, AUTH_PROMPT_ICON_SIZE } from "./AuthPromptIcon";
 export { BellIcon } from "./BellIcon";
 export { BellDotIcon } from "./BellDotIcon";
 export { EyeIcon } from "./EyeIcon";

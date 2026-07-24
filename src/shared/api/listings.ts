@@ -38,6 +38,8 @@ export type ApiListResponse<T> = {
     page: number;
     pageSize: number;
     pageCount: number;
+    hasNextPage?: boolean;
+    hasPrevPage?: boolean;
   };
 };
 

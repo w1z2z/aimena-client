@@ -50,6 +50,10 @@ type HomeSearchContextValue = {
   heroRecommendationsLoading: boolean;
   filteredListings: ListingCardData[];
   listingsCount: number;
+  filteredListingsLoading: boolean;
+  fetchNextFilteredPage: () => void;
+  hasNextFilteredPage: boolean;
+  isFetchingNextFilteredPage: boolean;
   cityOptions: SelectOption[];
   onCityInputChange: (value: string) => void;
   onCityListEndReached: () => void;
@@ -163,6 +167,20 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     });
   }, [categoryUiKeyToBackendId, hero]);
 
+  const filteredListings = useMemo(
+    () => filteredListingsQuery.data?.pages.flatMap((page) => page.items) ?? [],
+    [filteredListingsQuery.data],
+  );
+
+  const listingsCount = filteredListingsQuery.data?.pages[0]?.total ?? 0;
+
+  const fetchNextFilteredPage = useCallback(() => {
+    if (!filteredListingsQuery.hasNextPage || filteredListingsQuery.isFetchingNextPage) {
+      return;
+    }
+    void filteredListingsQuery.fetchNextPage();
+  }, [filteredListingsQuery]);
+
   const value = useMemo<HomeSearchContextValue>(
     () => ({
       hero,
@@ -184,8 +202,12 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       setIsFiltersOpen,
       heroRecommendations: heroRecommendationsQuery.data ?? [],
       heroRecommendationsLoading: heroRecommendationsQuery.isLoading,
-      filteredListings: filteredListingsQuery.data?.items ?? [],
-      listingsCount: filteredListingsQuery.data?.total ?? 0,
+      filteredListings,
+      listingsCount,
+      filteredListingsLoading: filteredListingsQuery.isLoading,
+      fetchNextFilteredPage,
+      hasNextFilteredPage: Boolean(filteredListingsQuery.hasNextPage),
+      isFetchingNextFilteredPage: filteredListingsQuery.isFetchingNextPage,
       cityOptions,
       onCityInputChange,
       onCityListEndReached,
@@ -199,15 +221,19 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       appliedFilters,
       categories,
       categoryTree,
-      categoryUiKeyToBackendId,
       cityOptions,
-      filteredListingsQuery.data,
+      fetchNextFilteredPage,
+      filteredListings,
+      filteredListingsQuery.hasNextPage,
+      filteredListingsQuery.isFetchingNextPage,
+      filteredListingsQuery.isLoading,
       filters,
       handleSetCity,
       hero,
       heroRecommendationsQuery.data,
       heroRecommendationsQuery.isLoading,
       isFiltersOpen,
+      listingsCount,
       onCityInputChange,
       onCityListEndReached,
       openFiltersAndScroll,

@@ -16,18 +16,19 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
   const [visible, setVisible] = useState(false);
   const isPassword = type === "password";
   const inputType = isPassword && visible ? "text" : type;
+  const withToggle = showPasswordToggle && isPassword;
 
   return (
-    <label className="relative block w-full">
+    <label className="auth-input-field relative block w-full max-w-[508px]">
       <span className="sr-only">{label}</span>
       <input
         ref={ref}
         type={inputType}
         placeholder={label}
-        className="h-[48px] w-full rounded-[10px] border border-[#3D3D3D] border-[0.5px] bg-white px-[12px] py-[8px] text-[16px] font-bold leading-[20px] tracking-[0.016px] text-[#1A1A1A] placeholder:text-[#3D3D3D] outline-none transition focus:border-[#8E8BED]"
+        className={`auth-input${withToggle ? " auth-input--with-toggle" : ""}`}
         {...props}
       />
-      {showPasswordToggle && isPassword ? (
+      {withToggle ? (
         <button
           type="button"
           tabIndex={-1}

@@ -7,9 +7,9 @@ export function LoginButton() {
     <Link
       href="/login"
       aria-label="Войти"
-      className="flex h-[32px] w-[32px] items-center justify-center rounded-[8px] bg-[#D9D9D9] text-[#1A1A1A] transition-colors hover:bg-[#d3d3d3]"
+      className="box-border flex h-[32px] w-[32px] items-center justify-center overflow-visible rounded-[13px] border-[0.3px] border-solid border-[#8E8BED] bg-[#FFFFFF] text-black transition-colors hover:bg-[#fafaff]"
     >
-      <LoginIcon className="h-[16px] w-[16px]" />
+      <LoginIcon className="h-[16px] w-[16px] text-black" />
     </Link>
   );
 }
