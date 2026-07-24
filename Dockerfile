@@ -37,6 +37,8 @@ ENV PORT=3000
 
 WORKDIR /app
 
+# standalone does not include public/; without this, /free-promo-star.png etc. 404 in prod
+COPY --from=build --chown=node:node /app/public ./public
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 
