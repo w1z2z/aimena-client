@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, startTransition, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 
 import { HERO_CONDITION_OPTIONS } from "@/entities/listing";
 import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
@@ -137,7 +137,7 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
     <div className="relative box-border flex h-[70px] w-[346px] items-center gap-[4px] rounded-[21px] border-[0.5px] border-[#CACACA] bg-white p-[8px]">
       <span
         aria-hidden="true"
-        className={`hero-mode-pill pointer-events-none absolute bottom-[8px] left-[8px] top-[8px] w-[calc(50%-10px)] rounded-[17px] bg-[#8E8BED] ${
+        className={`pointer-events-none absolute bottom-[8px] left-[8px] top-[8px] w-[calc(50%-10px)] rounded-[17px] bg-[#8E8BED] ${HERO_TRANSFORM_TRANSITION} ${
           mode === "browse" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
         }`}
       />
@@ -147,8 +147,11 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
           <button
             key={tab.id}
             type="button"
-            onClick={() => startTransition(() => setMode(tab.id))}
-            className={`hero-mode-pill-label relative z-[1] flex h-full flex-1 items-center justify-center gap-[8px] rounded-[17px] px-[16px] text-[14px] font-semibold leading-none ${
+            onClick={() => {
+              if (mode === tab.id) return;
+              setMode(tab.id);
+            }}
+            className={`relative z-[1] flex h-full flex-1 items-center justify-center gap-[8px] rounded-[17px] px-[16px] text-[14px] font-semibold leading-none ${HERO_COLOR_TRANSITION} ${
               active ? "text-white" : "text-[#1A1A1A] hover:text-[#8E8BED]"
             }`}
           >
@@ -540,18 +543,22 @@ export function ModeFormColumn({
       </div>
 
       <div className="relative flex h-[255px] gap-[24px]">
-        <div className="relative h-[255px] w-[464px] shrink-0 overflow-hidden rounded-[31px]">
+        <div className="relative grid h-[255px] w-[464px] shrink-0 overflow-hidden rounded-[31px]">
           <div
-            className={`hero-mode-layer absolute inset-0 ${
-              isExchange ? "is-active" : "is-exit-down"
+            className={`col-start-1 row-start-1 ${HERO_SWAP_TRANSITION} ${
+              isExchange
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none translate-y-1.5 opacity-0"
             }`}
             aria-hidden={!isExchange}
           >
             <HeroExchangeFilters condition={condition} setCondition={setCondition} />
           </div>
           <div
-            className={`hero-mode-layer absolute inset-0 ${
-              !isExchange ? "is-active" : "is-exit-up"
+            className={`col-start-1 row-start-1 ${HERO_SWAP_TRANSITION} ${
+              !isExchange
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none -translate-y-1.5 opacity-0"
             }`}
             aria-hidden={isExchange}
           >
