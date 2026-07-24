@@ -259,7 +259,7 @@ export function Header() {
             }`}
           >
             {isSearchExpanded || isSearchClosing ? (
-              <div className="flex h-full w-full items-center gap-[9px] rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-transparent px-[8px]">
+              <div className="site-header-search flex h-full w-full items-center gap-[9px] rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] px-[8px]">
                 <button
                   type="button"
                   aria-label="Поиск"
@@ -344,7 +344,7 @@ export function Header() {
             ) : null}
 
             {isSearchExpanded && (isSearchLoading || searchQuery.trim().length >= 2) ? (
-              <div className="absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] border border-[#8E8BED] border-[0.5px] bg-transparent shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur-[2px]">
+              <div className="site-header-search absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] border border-[#8E8BED] border-[0.5px] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
                 {isSearchLoading ? (
                   <p className="px-[12px] py-[10px] text-[14px] text-[#8E8BED]">Ищем...</p>
                 ) : searchSuggestions.length > 0 ? (
