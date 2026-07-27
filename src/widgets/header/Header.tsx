@@ -206,6 +206,7 @@ export function Header() {
     setIsSearchClosing(true);
     setIsSearchExpanded(false);
     setActiveSearchSuggestionIndex(-1);
+    searchInputRef.current?.blur();
     searchCloseTimerRef.current = window.setTimeout(() => {
       setIsSearchClosing(false);
       searchCloseTimerRef.current = null;
@@ -221,7 +222,9 @@ export function Header() {
       setIsSearchClosing(false);
       setIsSearchExpanded(true);
       setActiveSearchSuggestionIndex(-1);
-      window.requestAnimationFrame(() => searchInputRef.current?.focus());
+      window.requestAnimationFrame(() => {
+        searchInputRef.current?.focus({ preventScroll: true });
+      });
       return;
     }
 
@@ -322,22 +325,22 @@ export function Header() {
                   placeholder=""
                   aria-label="Поиск по объявлениям"
                   tabIndex={isSearchClosing ? -1 : 0}
-                  className={`h-[24px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-[170%] outline-none ring-0 transition-opacity duration-200 focus:outline-none focus:ring-0 focus-visible:outline-none ${
+                  className={
                     isSearchClosing
-                      ? "pointer-events-none opacity-0"
-                      : "text-[#1A1A1A] placeholder:text-[#1A1A1A]/60 opacity-100"
-                  }`}
+                      ? "pointer-events-none absolute h-0 w-0 opacity-0"
+                      : "h-[24px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
+                  }
                 />
                 <button
                   type="button"
                   aria-label="Закрыть поиск"
                   onClick={() => closeSearchWithAnimation({ clear: true })}
                   tabIndex={isSearchClosing ? -1 : 0}
-                  className={`ml-auto flex h-[16px] w-[16px] shrink-0 items-center justify-center outline-none transition-[opacity,color] duration-200 focus:outline-none focus-visible:outline-none ${
+                  className={
                     isSearchClosing
-                      ? "pointer-events-none opacity-0"
-                      : "text-[#1A1A1A] opacity-100 hover:opacity-70"
-                  }`}
+                      ? "pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
+                      : "ml-auto flex h-[16px] w-[16px] shrink-0 items-center justify-center text-[#1A1A1A] outline-none transition hover:opacity-70 focus:outline-none focus-visible:outline-none"
+                  }
                 >
                   <svg viewBox="0 0 12 12" width="12" height="12" fill="none" aria-hidden className="block h-[12px] w-[12px]">
                     <path
