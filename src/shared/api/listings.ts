@@ -139,7 +139,12 @@ export function createListingDraft(payload: CreateListingPayload) {
 }
 
 export function getMyListings(
-  query: { page?: number; pageSize?: number; status?: ApiListingCard["status"][] } = {},
+  query: {
+    page?: number;
+    pageSize?: number;
+    status?: ApiListingCard["status"][];
+    sort?: "newest" | "oldest";
+  } = {},
   signal?: AbortSignal,
 ) {
   return httpRequest<ApiListResponse<ApiListingCard>>("/listings/me", {

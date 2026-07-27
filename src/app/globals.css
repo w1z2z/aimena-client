@@ -6,6 +6,7 @@
 @import "../styles/forms-and-listings.css";
 @import "../styles/switch.css";
 @import "../styles/auth.css";
+@import "../styles/profile.css";
 
 @theme {
   --color-brand: #1a1a1a;

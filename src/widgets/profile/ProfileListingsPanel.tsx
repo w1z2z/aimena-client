@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { ListingCard, mapApiConditionToLabel } from "@/entities/listing";
@@ -25,30 +26,70 @@ const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
   archived: "Нет завершённых объявлений.",
 };
 
+type SortOrder = "newest" | "oldest";
+
+function supportsViewTransitions() {
+  return (
+    typeof document !== "undefined" &&
+    typeof (document as Document & { startViewTransition?: unknown }).startViewTransition ===
+      "function"
+  );
+}
+
+function runWithViewTransition(update: () => void) {
+  if (supportsViewTransitions()) {
+    (
+      document as Document & {
+        startViewTransition: (callback: () => void) => unknown;
+      }
+    ).startViewTransition(() => {
+      flushSync(update);
+    });
+    return true;
+  }
+  update();
+  return false;
+}
+
 export function ProfileListingsPanel() {
   const { user, accessToken } = useAuth();
-  const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [sort, setSort] = useState<SortOrder>("newest");
   const [statusFilter, setStatusFilter] = useState<ProfileListingStatusFilter>("all");
+  const [gridAnimate, setGridAnimate] = useState(false);
 
   const statusQuery: ApiListingCard["status"][] =
     statusFilter === "all" ? ["active", "archived"] : [statusFilter];
 
   const listingsQuery = useQuery({
-    queryKey: ["profile-listings-me", user?.id, statusFilter],
+    queryKey: ["profile-listings-me", user?.id, statusFilter, sort],
     queryFn: ({ signal }) =>
-      getMyListings({ page: 1, pageSize: 50, status: statusQuery }, signal),
+      getMyListings(
+        { page: 1, pageSize: 50, status: statusQuery, sort },
+        signal,
+      ),
     enabled: Boolean(user?.id && accessToken),
+    placeholderData: (previous) => previous,
   });
 
-  const listings = useMemo(() => {
-    const items = listingsQuery.data?.data ?? [];
-    const sorted = [...items].sort((a, b) => {
-      const aTime = new Date(a.publishedAt ?? a.createdAt).getTime();
-      const bTime = new Date(b.publishedAt ?? b.createdAt).getTime();
-      return sort === "newest" ? bTime - aTime : aTime - bTime;
-    });
-    return sorted;
-  }, [listingsQuery.data?.data, sort]);
+  const listings = listingsQuery.data?.data ?? [];
+
+  const animateListChange = (update: () => void) => {
+    const usedViewTransition = runWithViewTransition(update);
+    if (!usedViewTransition) {
+      setGridAnimate(true);
+      window.setTimeout(() => setGridAnimate(false), 400);
+    }
+  };
+
+  const handleSortChange = (next: SortOrder) => {
+    if (next === sort) return;
+    animateListChange(() => setSort(next));
+  };
+
+  const handleStatusFilterChange = (next: ProfileListingStatusFilter) => {
+    if (next === statusFilter) return;
+    animateListChange(() => setStatusFilter(next));
+  };
 
   const total = listingsQuery.data?.meta.total ?? listings.length;
   const countLabel = `${total} ${pluralRu(total, "объявление", "объявления", "объявлений")}`;
@@ -57,9 +98,9 @@ export function ProfileListingsPanel() {
 
   if (!user) {
     body = null;
-  } else if (listingsQuery.isLoading) {
+  } else if (listingsQuery.isLoading && listings.length === 0) {
     body = <p className="text-[16px] font-semibold text-[#626262]">Загрузка объявлений…</p>;
-  } else if (listingsQuery.isError) {
+  } else if (listingsQuery.isError && listings.length === 0) {
     body = (
       <p className="text-[16px] font-semibold text-[#FF2056]">Не удалось загрузить объявления.</p>
     );
@@ -69,21 +110,33 @@ export function ProfileListingsPanel() {
     );
   } else {
     body = (
-      <div className="grid grid-cols-3 gap-x-6 gap-y-12">
+      <div
+        className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12"
+        data-animate={gridAnimate ? "true" : undefined}
+      >
         {listings.map((listing) => (
-          <ListingCard
+          <div
             key={listing.id}
-            listingId={listing.id}
-            variant="mine"
-            title={listing.title}
-            city={listing.city.name}
-            condition={mapApiConditionToLabel(listing.condition)}
-            coverImageUrl={listing.coverImageUrl}
-            wants={listing.wantsTags}
-            isFavorite={listing.isFavorite}
-            status={STATUS_LABEL[listing.status] ?? null}
-            hideAction
-          />
+            className="profile-listing-card-slot"
+            style={
+              {
+                viewTransitionName: `profile-listing-${listing.id}`,
+              } as CSSProperties
+            }
+          >
+            <ListingCard
+              listingId={listing.id}
+              variant="mine"
+              title={listing.title}
+              city={listing.city.name}
+              condition={mapApiConditionToLabel(listing.condition)}
+              coverImageUrl={listing.coverImageUrl}
+              wants={listing.wantsTags}
+              isFavorite={listing.isFavorite}
+              status={STATUS_LABEL[listing.status] ?? null}
+              hideAction
+            />
+          </div>
         ))}
       </div>
     );
@@ -100,10 +153,10 @@ export function ProfileListingsPanel() {
       </div>
 
       {/* 48px от счётчика до карточек; фильтр/сортировка — 8px над сеткой */}
-      <div className="relative mt-12 w-full">
-        <div className="absolute bottom-full right-0 mb-2 flex items-center gap-3">
-          <ProfileStatusFilter value={statusFilter} onChange={setStatusFilter} />
-          <ProfileSortControl value={sort} onChange={setSort} />
+      <div className="relative mt-12 w-full overflow-visible">
+        <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center gap-3 overflow-visible">
+          <ProfileStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
+          <ProfileSortControl value={sort} onChange={handleSortChange} />
         </div>
         {body}
       </div>
