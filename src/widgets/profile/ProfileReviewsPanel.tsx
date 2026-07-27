@@ -79,11 +79,11 @@ export function ProfileReviewsPanel() {
                     <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
                       {review.author}
                     </p>
-                    <div className="flex items-center justify-center gap-0.5 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
+                    <div className="box-border flex h-6 w-auto min-w-[72px] shrink-0 items-center justify-center gap-0.5 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
                       <img
                         src="/profile/icon-points-bolt.svg"
                         alt=""
-                        className="h-[6px] w-[3.5px]"
+                        className="h-[11px] w-auto"
                       />
                       <span className="text-[11px] font-semibold leading-4 tracking-[0.02em] text-white">
                         {review.points}

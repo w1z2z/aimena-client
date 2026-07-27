@@ -67,7 +67,36 @@ export function ProfileDealsPanel() {
       </div>
 
       <div className="relative mt-12 w-full">
-        <div className="absolute bottom-full right-0 mb-2">
+        <div className="absolute bottom-full left-0 right-0 mb-2 flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span
+                className="size-3 shrink-0 rounded-full border-[0.5px] border-solid border-[#CACACA] bg-[#C8FF00]"
+                aria-hidden
+              />
+              <span className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">
+                Успешно
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="size-3 shrink-0 rounded-full border-[0.5px] border-solid border-[#CACACA] bg-[#8E8BED]"
+                aria-hidden
+              />
+              <span className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">
+                В процессе
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="size-3 shrink-0 rounded-full border-[0.5px] border-solid border-[#CACACA] bg-[#FF2056]"
+                aria-hidden
+              />
+              <span className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">
+                Не состоялся
+              </span>
+            </div>
+          </div>
           <ProfileSortControl value={sort} onChange={setSort} />
         </div>
 
@@ -115,6 +144,13 @@ export function ProfileDealsPanel() {
 
                 {/* Получил */}
                 <div className="flex min-w-0 flex-1 items-start gap-3">
+                  <div className="relative size-[80px] shrink-0 overflow-hidden rounded-[21px] bg-[#EBEBEB]">
+                    <img
+                      src="/profile/deal-got.png"
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                  </div>
                   <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
                     <p className="text-[11px] font-semibold leading-4 tracking-[0.02em] text-[#636363]">
                       Получил
@@ -126,13 +162,6 @@ export function ProfileDealsPanel() {
                       <img src="/profile/icon-gallery.svg" alt="" className="h-[6px] w-2" />
                     </div>
                   </div>
-                  <div className="relative size-[80px] shrink-0 overflow-hidden rounded-[21px] bg-[#EBEBEB]">
-                    <img
-                      src="/profile/deal-got.png"
-                      alt=""
-                      className="size-full object-cover"
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -143,11 +172,11 @@ export function ProfileDealsPanel() {
                       {deal.partnerName.charAt(0)}
                     </div>
                   </div>
-                  <p className="w-[115px] text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
+                  <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
                     {deal.partnerName}
                   </p>
-                  <div className="flex items-center justify-center gap-0.5 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
-                    <img src="/profile/icon-points-bolt.svg" alt="" className="h-[6px] w-[4px]" />
+                  <div className="box-border flex h-6 w-auto min-w-[72px] shrink-0 items-center justify-center gap-0.5 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
+                    <img src="/profile/icon-points-bolt.svg" alt="" className="h-[11px] w-auto" />
                     <span className="text-[11px] font-semibold leading-4 tracking-[0.02em] text-white">
                       {deal.points}
                     </span>
@@ -158,14 +187,14 @@ export function ProfileDealsPanel() {
                   {deal.canReview ? (
                     <button
                       type="button"
-                      className="rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-[#C8FF00] p-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]"
+                      className="box-border flex h-[34px] w-[133px] shrink-0 items-center justify-center rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-[#C8FF00] text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]"
                     >
                       Оставить отзыв
                     </button>
                   ) : null}
                   <button
                     type="button"
-                    className="rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-white p-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]"
+                    className="box-border flex h-[34px] w-[133px] shrink-0 items-center justify-center rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-white text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]"
                   >
                     Открыть чат
                   </button>
