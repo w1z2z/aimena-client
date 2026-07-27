@@ -138,6 +138,7 @@ export function ListingCard({
   const actionLabel = variant === "free" ? "Отдаю даром" : "Быстрый обмен";
   const actionHandler = variant === "free" || variant === "mine" ? undefined : handleExchangeClick;
   const hideFooterAction = hideAction || variant === "mine";
+  const hasWants = truncatedWants.length > 0;
   const visibleWants = truncatedWants.slice(0, visibleCount);
   const wantsMore = Math.max(wants.length - visibleCount, 0);
 
@@ -186,31 +187,43 @@ export function ListingCard({
         {showWants ? (
           <div className="home-listing-card__wants">
             <TagsIcon className="home-listing-card__wants-icon" aria-hidden="true" />
-            <div ref={pillsRef} className="home-listing-card__wants-pills">
-              {visibleWants.map((item) => (
-                <span
-                  key={item.full}
-                  className="home-listing-card__want-pill"
-                  title={item.full !== item.label ? item.full : undefined}
+            {hasWants ? (
+              <>
+                <div ref={pillsRef} className="home-listing-card__wants-pills">
+                  {visibleWants.map((item) => (
+                    <span
+                      key={item.full}
+                      className="home-listing-card__want-pill"
+                      title={item.full !== item.label ? item.full : undefined}
+                    >
+                      {item.label}
+                    </span>
+                  ))}
+                </div>
+                {wantsMore > 0 ? (
+                  <span className="home-listing-card__wants-more">+{wantsMore}</span>
+                ) : null}
+                <div
+                  ref={measureRef}
+                  className="home-listing-card__wants-measure"
+                  aria-hidden="true"
                 >
-                  {item.label}
-                </span>
-              ))}
-            </div>
-            {wantsMore > 0 ? (
-              <span className="home-listing-card__wants-more">+{wantsMore}</span>
-            ) : null}
-            <div
-              ref={measureRef}
-              className="home-listing-card__wants-measure"
-              aria-hidden="true"
-            >
-              {truncatedWants.slice(0, WANTS_MAX_VISIBLE).map((item) => (
-                <span key={item.full} data-want-measure-pill className="home-listing-card__want-pill">
-                  {item.label}
-                </span>
-              ))}
-            </div>
+                  {truncatedWants.slice(0, WANTS_MAX_VISIBLE).map((item) => (
+                    <span
+                      key={item.full}
+                      data-want-measure-pill
+                      className="home-listing-card__want-pill"
+                    >
+                      {item.label}
+                    </span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="home-listing-card__wants-pills">
+                <span className="home-listing-card__want-pill">Любые варианты</span>
+              </div>
+            )}
           </div>
         ) : null}
       </div>
