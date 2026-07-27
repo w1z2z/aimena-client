@@ -68,6 +68,8 @@ function readStoredUser(): AuthUser | null {
       ratingAvg: parsed.ratingAvg ?? 0,
       ratingCount: parsed.ratingCount ?? 0,
       createdAt: parsed.createdAt ?? null,
+      showCompletedListings: parsed.showCompletedListings ?? true,
+      hidePersonalData: parsed.hidePersonalData ?? true,
     };
   } catch {
     return null;

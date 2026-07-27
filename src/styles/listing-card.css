@@ -80,6 +80,8 @@
   left: 8px;
   bottom: 9px;
   gap: 10px;
+  flex-wrap: wrap;
+  max-width: calc(100% - 56px);
 }
 
 .home-listing-card--mine .home-listing-card__footer {
@@ -214,6 +216,12 @@
   line-height: 16px;
   letter-spacing: 0.002em;
   text-align: center;
+}
+
+.home-listing-card__tag--status {
+  border-color: #8e8bed;
+  background: rgba(243, 237, 255, 0.92);
+  color: #8e8bed;
 }
 
 .home-listing-card__footer {

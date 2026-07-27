@@ -71,34 +71,16 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <div className="flex w-[153px] flex-col items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F3EDFF] p-3">
-              <p className="text-center text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-                Шоколадки
-              </p>
-              <div className="flex items-center justify-center gap-1">
-                <span className="relative size-[17px] overflow-hidden rounded-[8.5px] bg-white">
-                  <img
-                    src={PROFILE_ASSETS.chocolate}
-                    alt=""
-                    className="absolute inset-0 size-full object-cover"
-                  />
-                </span>
-                <p className="text-[20px] font-bold leading-5 tracking-[0.02px] text-[#8E8BED]">0</p>
-              </div>
-            </div>
-
-            <div className="flex w-[141px] flex-col items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F3EDFF] p-3 text-center">
-              <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-                Отзывов
-              </p>
-              <p className="text-[20px] font-bold leading-5 tracking-[0.02px] text-[#8E8BED]">
-                {formatProfileNumber(user.ratingCount)}
-              </p>
-            </div>
+          <div className="flex h-[95px] w-full flex-col items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F3EDFF] p-6">
+            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
+              Отзывов
+            </p>
+            <p className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#8E8BED]">
+              {formatProfileNumber(user.ratingCount)}
+            </p>
           </div>
 
-          <div className="flex h-[72px] w-full flex-col items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F3EDFF] p-6">
+          <div className="flex h-[95px] w-full flex-col items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F3EDFF] p-6">
             <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
               Обменов
             </p>
@@ -109,7 +91,7 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
         </div>
 
         <p className="relative z-[1] text-center text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
-          {joined ? `На Aimena с ${joined}` : "На Aimena"}
+          {joined ? `На Аймена с ${joined}` : "На Аймена"}
         </p>
       </div>
 

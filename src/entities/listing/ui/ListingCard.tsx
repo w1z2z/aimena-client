@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { useAuthGate } from "@/features/auth";
 import { useFavoriteToggle } from "@/features/favorites";
@@ -33,6 +33,8 @@ export type ListingCardProps = {
   coverImageUrl?: string | null;
   wants?: string[];
   isFavorite?: boolean;
+  /** Own-profile status label (e.g. «Активно»). */
+  status?: string | null;
   /** Hide CTA like «Быстрый обмен» (e.g. own profile listings). */
   hideAction?: boolean;
   className?: string;
@@ -47,6 +49,7 @@ export function ListingCard({
   coverImageUrl,
   wants = [],
   isFavorite = false,
+  status,
   hideAction = false,
   className,
 }: ListingCardProps) {
@@ -78,6 +81,13 @@ export function ListingCard({
   ]
     .filter(Boolean)
     .join(" ");
+
+  // Drop optimistic override only once the parent prop catches up (cache update).
+  useEffect(() => {
+    if (favoriteOverride !== null && favoriteOverride === isFavorite) {
+      setFavoriteOverride(null);
+    }
+  }, [favoriteOverride, isFavorite]);
 
   useLayoutEffect(() => {
     if (!showWants || truncatedWants.length === 0) {
@@ -118,13 +128,14 @@ export function ListingCard({
   }, [showWants, truncatedWants]);
 
   const handleFavoriteClick = () => {
+    if (favoriteMutation.isPending || favoriteOverride !== null) return;
+
     guardAuth("favorites", () => {
       const previous = favorite;
       setFavoriteOverride(!previous);
       favoriteMutation.mutate(
         { listingId, isFavorite: previous },
         {
-          onSuccess: () => setFavoriteOverride(null),
           onError: () => setFavoriteOverride(null),
         },
       );
@@ -172,6 +183,7 @@ export function ListingCard({
           />
         </button>
         <div className="home-listing-card__tags">
+          {status ? <span className="home-listing-card__tag home-listing-card__tag--status">{status}</span> : null}
           <span className="home-listing-card__tag">{city}</span>
           <span className="home-listing-card__tag">{condition}</span>
         </div>

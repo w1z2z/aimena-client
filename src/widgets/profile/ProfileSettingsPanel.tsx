@@ -16,7 +16,7 @@ import { Switch } from "@/shared/ui/switch/Switch";
 import { PROFILE_ASSETS } from "./constants";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
-const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const CREDENTIALS_FIELD_CLASS =
   "box-border flex h-12 min-w-0 w-full items-center rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-[#F2F4F7] px-3 py-2 text-[14px] font-normal leading-[1.7] text-[#1A1A1A]";
@@ -51,6 +51,8 @@ export function ProfileSettingsPanel() {
     if (!user) return;
     setDisplayName(user.name);
     setCityId(user.cityId ?? "");
+    setShowCompleted(user.showCompletedListings);
+    setHidePersonal(user.hidePersonalData);
     if (user.cityId && user.city) {
       setPinnedCity({ value: user.cityId, label: user.city });
     } else {
@@ -69,6 +71,8 @@ export function ProfileSettingsPanel() {
   const resetForm = () => {
     setDisplayName(user.name);
     setCityId(user.cityId ?? "");
+    setShowCompleted(user.showCompletedListings);
+    setHidePersonal(user.hidePersonalData);
     if (user.cityId && user.city) {
       setPinnedCity({ value: user.cityId, label: user.city });
     } else {
@@ -87,7 +91,7 @@ export function ProfileSettingsPanel() {
     if (!file) return;
 
     if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
-      setError("Нужен JPEG, PNG, WebP или GIF.");
+      setError("Нужен JPEG, PNG или WebP.");
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
@@ -166,8 +170,15 @@ export function ProfileSettingsPanel() {
         setIsUploadingAvatar(false);
       }
 
-      const payload: { displayName: string; cityId?: string } = {
+      const payload: {
+        displayName: string;
+        cityId?: string;
+        showCompletedListings: boolean;
+        hidePersonalData: boolean;
+      } = {
         displayName: trimmedName,
+        showCompletedListings: showCompleted,
+        hidePersonalData: hidePersonal,
       };
       if (cityId) payload.cityId = cityId;
 
@@ -327,7 +338,7 @@ export function ProfileSettingsPanel() {
                   {isUploadingAvatar ? "Загрузка…" : "Загрузить фото"}
                 </span>
                 <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#969D9D]">
-                  PNG, JPG до 5 МБ
+                  JPEG, PNG, WebP до 2 МБ
                 </span>
               </button>
             </div>

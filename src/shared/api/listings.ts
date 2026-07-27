@@ -138,6 +138,16 @@ export function createListingDraft(payload: CreateListingPayload) {
   });
 }
 
+export function getMyListings(
+  query: { page?: number; pageSize?: number; status?: ApiListingCard["status"][] } = {},
+  signal?: AbortSignal,
+) {
+  return httpRequest<ApiListResponse<ApiListingCard>>("/listings/me", {
+    query,
+    signal,
+  });
+}
+
 export function publishListing(listingId: string) {
   return httpRequest<CreateListingResponse>(`/listings/${listingId}/publish`, {
     method: "POST",

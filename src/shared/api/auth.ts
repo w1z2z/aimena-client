@@ -32,12 +32,16 @@ export type BackendUserMeProfile = {
   city: { id: string; name: string; regionName: string | null; slug: string } | null;
   interests: Array<{ id: string; name: string; slug: string }>;
   onboardingCompleted: boolean;
+  showCompletedListings: boolean;
+  hidePersonalData: boolean;
 };
 
 export type UpdateMePayload = {
   displayName?: string;
   cityId?: string;
   bio?: string;
+  showCompletedListings?: boolean;
+  hidePersonalData?: boolean;
 };
 
 export type BackendUserMe = {

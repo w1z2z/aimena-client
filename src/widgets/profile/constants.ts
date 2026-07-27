@@ -2,7 +2,6 @@ export const PROFILE_ASSETS = {
   verified: "/profile/icon-verified.svg",
   pin: "/profile/icon-pin.svg",
   bolt: "/profile/icon-bolt.svg",
-  chocolate: "/profile/icon-chocolate.png",
   sortChevron: "/profile/icon-sort-chevron.svg",
   upload: "/profile/icon-upload.svg",
   settings: "/profile/icon-settings.svg",

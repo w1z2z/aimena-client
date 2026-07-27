@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 import { ListingCard, type ListingCardData } from "@/entities/listing";
 
@@ -67,6 +67,7 @@ export function HeroRecommendationsPanel({
   isExchange,
   isAllCategory,
 }: HeroRecommendationsPanelProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   const [displayed, setDisplayed] = useState<DisplayedRecommendations>({
     loading,
@@ -78,7 +79,7 @@ export function HeroRecommendationsPanel({
   const latestPropsRef = useRef({ loading, listings, isExchange, isAllCategory });
   latestPropsRef.current = { loading, listings, isExchange, isAllCategory };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isFirstModeRender.current) {
       isFirstModeRender.current = false;
       return;
@@ -93,10 +94,22 @@ export function HeroRecommendationsPanel({
     return () => window.clearTimeout(swapTimer);
   }, [isExchange]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!visible || displayed.isExchange !== isExchange) return;
     setDisplayed({ loading, listings, isExchange, isAllCategory });
   }, [visible, loading, listings, isExchange, isAllCategory, displayed.isExchange]);
+
+  const scrollKey = displayed.loading
+    ? "loading"
+    : displayed.listings.length > 0
+      ? displayed.listings.map((item) => item.id).join("-")
+      : "empty";
+
+  useLayoutEffect(() => {
+    const node = scrollRef.current;
+    if (!node) return;
+    node.scrollTop = 0;
+  }, [scrollKey, visible]);
 
   return (
     <div className="relative flex h-[535px] w-[464px] flex-col items-center gap-[12px] rounded-[31px] bg-[#C8FF00] p-[24px]">
@@ -104,7 +117,11 @@ export function HeroRecommendationsPanel({
         <p className="text-[24px] font-extrabold leading-[110%] tracking-[-0.003em]">{heading}</p>
       </div>
 
-      <div className="home-recommendations-scroll h-[461px] w-[366px] overflow-x-hidden overflow-y-auto overscroll-contain px-[12px] pb-[16px] pt-[2px] snap-y snap-mandatory">
+      <div
+        key={scrollKey}
+        ref={scrollRef}
+        className="home-recommendations-scroll h-[461px] w-[366px] overflow-x-hidden overflow-y-auto overscroll-contain px-[12px] pb-[16px] pt-[2px] [overflow-anchor:none]"
+      >
         <div
           className={`hero-recommendations-fade flex flex-col items-center gap-[16px] ${
             visible ? "is-visible" : "is-hidden"
@@ -117,7 +134,7 @@ export function HeroRecommendationsPanel({
               <div
                 key={listing.id}
                 data-recommendation-card
-                className="flex h-[443px] w-[342px] shrink-0 snap-center snap-always justify-center"
+                className="flex h-[443px] w-[342px] shrink-0 justify-center"
               >
                 <ListingCard
                   listingId={listing.id}

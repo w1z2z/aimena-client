@@ -15,4 +15,6 @@ export type AuthUser = {
   ratingAvg: number;
   ratingCount: number;
   createdAt: string | null;
+  showCompletedListings: boolean;
+  hidePersonalData: boolean;
 };

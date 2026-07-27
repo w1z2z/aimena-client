@@ -39,6 +39,17 @@ function updateFavoriteInQueryData(
   }
 
   const record = data as Record<string, unknown>;
+
+  // useInfiniteQuery: { pages: [{ items | data: [...] }], pageParams }
+  if (Array.isArray(record.pages)) {
+    return {
+      ...record,
+      pages: record.pages.map((page) =>
+        updateFavoriteInQueryData(page, listingId, isFavorite),
+      ),
+    };
+  }
+
   if (Array.isArray(record.data)) {
     return {
       ...record,
@@ -56,6 +67,15 @@ function updateFavoriteInQueryData(
   return data;
 }
 
+function isListingFavoriteQuery(queryKey: readonly unknown[]) {
+  const root = queryKey[0];
+  return (
+    root === listingQueryKeys.all[0] ||
+    root === favoriteQueryKeys.all[0] ||
+    root === "profile-listings-me"
+  );
+}
+
 export function useFavoriteToggle() {
   const queryClient = useQueryClient();
 
@@ -71,7 +91,7 @@ export function useFavoriteToggle() {
     onSuccess: async (_data, variables) => {
       const nextFavorite = !variables.isFavorite;
       queryClient.setQueriesData(
-        { queryKey: listingQueryKeys.all },
+        { predicate: (query) => isListingFavoriteQuery(query.queryKey) },
         (data) => updateFavoriteInQueryData(data, variables.listingId, nextFavorite),
       );
       await queryClient.invalidateQueries({ queryKey: favoriteQueryKeys.all });
