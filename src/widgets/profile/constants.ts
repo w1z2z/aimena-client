@@ -45,10 +45,3 @@ export function pluralRu(count: number, one: string, few: string, many: string) 
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
   return many;
 }
-
-export function maskEmail(email: string) {
-  const [local, domain] = email.split("@");
-  if (!local || !domain) return email;
-  if (local.length <= 3) return `${local[0] ?? ""}••••@${domain}`;
-  return `${local.slice(0, 1)}••••••••••••••${local.slice(-2)}@${domain}`;
-}

@@ -146,6 +146,13 @@ export function uploadAvatar(accessToken: string, file: File) {
   });
 }
 
+export function deleteAvatar(accessToken: string) {
+  return httpRequest<BackendUserMeResponse>("/users/me/avatar", {
+    method: "DELETE",
+    token: accessToken,
+  });
+}
+
 export function getUserListingsBySlug(
   slug: string,
   query: { page?: number; pageSize?: number } = {},

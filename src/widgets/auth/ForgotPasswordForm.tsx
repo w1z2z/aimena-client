@@ -12,9 +12,38 @@ import { AuthFormFields } from "./AuthMessage";
 import { AuthInput } from "./AuthInput";
 import { AuthTitle } from "./AuthTypography";
 
-export function ForgotPasswordForm() {
+export type ForgotPasswordVariant = "forgot" | "change";
+
+type ForgotPasswordFormProps = {
+  variant?: ForgotPasswordVariant;
+  initialEmail?: string;
+};
+
+const COPY: Record<
+  ForgotPasswordVariant,
+  { title: string; subtitle: string; submit: string; sentPath: string }
+> = {
+  forgot: {
+    title: "Забыли пароль?",
+    subtitle: "Введите почту, которая привязана к аккаунту для сброса пароля",
+    submit: "Сбросить пароль",
+    sentPath: "/forgot-password/sent",
+  },
+  change: {
+    title: "Сменить пароль",
+    subtitle: "Введите почту, которая привязана к аккаунту для смены пароля",
+    submit: "Сменить пароль",
+    sentPath: "/change-password/sent",
+  },
+};
+
+export function ForgotPasswordForm({
+  variant = "forgot",
+  initialEmail = "",
+}: ForgotPasswordFormProps) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const copy = COPY[variant];
+  const [email, setEmail] = useState(initialEmail);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +55,7 @@ export function ForgotPasswordForm() {
     setIsSubmitting(true);
     try {
       await forgotPassword(email.trim());
-      router.push(`/forgot-password/sent?email=${encodeURIComponent(email.trim())}`);
+      router.push(`${copy.sentPath}?email=${encodeURIComponent(email.trim())}`);
     } catch (requestError) {
       setError(
         requestError instanceof ApiError
@@ -40,10 +69,10 @@ export function ForgotPasswordForm() {
 
   return (
     <AuthCard className="gap-[48px]">
-      <AuthTitle>Забыли пароль?</AuthTitle>
+      <AuthTitle>{copy.title}</AuthTitle>
 
       <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-[48px]">
-        <AuthFormFields subtitle="Введите почту, которая привязана к аккаунту для сброса пароля">
+        <AuthFormFields subtitle={copy.subtitle}>
           <AuthInput
             label="Email"
             type="email"
@@ -56,7 +85,7 @@ export function ForgotPasswordForm() {
         </AuthFormFields>
 
         <AuthButton type="submit" disabled={isSubmitting}>
-          Сбросить пароль
+          {copy.submit}
         </AuthButton>
       </form>
     </AuthCard>

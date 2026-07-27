@@ -2,18 +2,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type MouseEvent } from "react";
 
 import { useAuth } from "@/features/auth";
-import { updateMe, uploadAvatar } from "@/shared/api/auth";
+import { deleteAvatar, updateMe, uploadAvatar } from "@/shared/api/auth";
 import { ApiError } from "@/shared/api/http";
 import { mapBackendUserToAuthUser } from "@/shared/api/mappers";
 import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
-import { EyeIcon, EyeOffIcon, LogoutIcon } from "@/shared/ui/icons";
+import { DeleteIcon, LogoutIcon } from "@/shared/ui/icons";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
 import { Switch } from "@/shared/ui/switch/Switch";
 
-import { maskEmail, PROFILE_ASSETS } from "./constants";
+import { PROFILE_ASSETS } from "./constants";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -22,9 +22,7 @@ const CREDENTIALS_FIELD_CLASS =
   "box-border flex h-12 min-w-0 w-full items-center rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-[#F2F4F7] px-3 py-2 text-[14px] font-normal leading-[1.7] text-[#1A1A1A]";
 
 const CREDENTIALS_BUTTON_CLASS =
-  "box-border flex h-12 w-full items-center justify-center rounded-[18px] bg-[#8E8BED] px-4 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-white transition hover:brightness-[0.98]";
-
-const CREDENTIALS_ROW_CLASS = "grid grid-cols-[minmax(0,1fr)_218px] items-center gap-3";
+  "box-border flex h-12 w-[218px] shrink-0 items-center justify-center rounded-[18px] bg-[#8E8BED] px-4 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-white transition hover:brightness-[0.98]";
 
 export function ProfileSettingsPanel() {
   const router = useRouter();
@@ -34,11 +32,11 @@ export function ProfileSettingsPanel() {
   const [displayName, setDisplayName] = useState("");
   const [cityId, setCityId] = useState("");
   const [pinnedCity, setPinnedCity] = useState<SelectOption | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [showCompleted, setShowCompleted] = useState(true);
   const [hidePersonal, setHidePersonal] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
   const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
   const [pendingAvatarPreview, setPendingAvatarPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +99,43 @@ export function ProfileSettingsPanel() {
     setPendingAvatar(file);
     setPendingAvatarPreview(URL.createObjectURL(file));
     setError(null);
+  };
+
+  const handleAvatarRemove = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (pendingAvatar || pendingAvatarPreview) {
+      if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+      setPendingAvatar(null);
+      setPendingAvatarPreview(null);
+      setError(null);
+      return;
+    }
+
+    if (!user.avatarUrl) return;
+    if (!accessToken) {
+      setError("Сессия истекла. Войдите снова.");
+      return;
+    }
+
+    setIsRemovingAvatar(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await deleteAvatar(accessToken);
+      applyUser(mapBackendUserToAuthUser(response.user));
+      setMessage("Аватар удалён.");
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError
+          ? requestError.message
+          : "Не удалось удалить аватар.",
+      );
+    } finally {
+      setIsRemovingAvatar(false);
+    }
   };
 
   const handleSave = async (event?: FormEvent) => {
@@ -199,35 +234,15 @@ export function ProfileSettingsPanel() {
             <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
               Электронная почта
             </p>
-            <div className={CREDENTIALS_ROW_CLASS}>
+            <div className="flex items-center gap-3">
               <div className={CREDENTIALS_FIELD_CLASS}>
-                <p className="truncate">{maskEmail(user.email)}</p>
+                <p className="break-all">{user.email}</p>
               </div>
-              <button type="button" className={CREDENTIALS_BUTTON_CLASS}>
-                Поменять почту
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">Пароль</p>
-            <div className={CREDENTIALS_ROW_CLASS}>
-              <div className={`${CREDENTIALS_FIELD_CLASS} relative pr-12`}>
-                <p>•••••••••••••••••••••</p>
-                <button
-                  type="button"
-                  aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#1A1A1A]"
-                  onClick={() => setShowPassword((current) => !current)}
-                >
-                  {showPassword ? (
-                    <EyeOffIcon className="h-[13px] w-[19px]" />
-                  ) : (
-                    <EyeIcon className="h-[13px] w-[19px]" />
-                  )}
-                </button>
-              </div>
-              <button type="button" className={CREDENTIALS_BUTTON_CLASS}>
+              <button
+                type="button"
+                className={CREDENTIALS_BUTTON_CLASS}
+                onClick={() => router.push("/change-password")}
+              >
                 Поменять пароль
               </button>
             </div>
@@ -276,27 +291,46 @@ export function ProfileSettingsPanel() {
 
           <div className="flex flex-col gap-2">
             <span className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">Аватар</span>
-            <button
-              type="button"
-              onClick={() => avatarInputRef.current?.click()}
-              className="relative flex h-[124px] w-full items-center gap-3 overflow-hidden rounded-[18px] border-[0.5px] border-dashed border-[#CACACA] bg-white px-3 text-left"
-            >
-              <span className="flex size-[98px] shrink-0 items-center justify-center overflow-hidden rounded-[10px] border-[0.2px] border-solid border-[#CACACA] bg-[#F2F4F7]">
+            <div className="relative flex h-[124px] w-full items-center gap-3 overflow-hidden rounded-[18px] border-[0.5px] border-dashed border-[#CACACA] bg-white px-3">
+              <div className="group relative size-[98px] shrink-0">
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={isRemovingAvatar}
+                  className="flex size-full items-center justify-center overflow-hidden rounded-[10px] border-[0.2px] border-solid border-[#CACACA] bg-[#F2F4F7] disabled:opacity-60"
+                >
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="" className="size-full object-cover" />
+                  ) : (
+                    <img src={PROFILE_ASSETS.upload} alt="" className="h-6 w-8" />
+                  )}
+                </button>
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="" className="size-full object-cover" />
-                ) : (
-                  <img src={PROFILE_ASSETS.upload} alt="" className="h-6 w-8" />
-                )}
-              </span>
-              <span className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    aria-label="Удалить аватар"
+                    disabled={isRemovingAvatar || isSaving}
+                    onClick={(event) => void handleAvatarRemove(event)}
+                    className="absolute inset-0 flex items-center justify-center rounded-[10px] bg-[#1A1A1A]/0 text-white opacity-0 transition group-hover:bg-[#1A1A1A]/55 group-hover:opacity-100 focus-visible:bg-[#1A1A1A]/55 focus-visible:opacity-100 disabled:pointer-events-none"
+                  >
+                    <DeleteIcon className="h-[22px] w-[20px]" />
+                  </button>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={isRemovingAvatar}
+                className="flex min-w-0 flex-1 flex-col gap-1 text-left disabled:opacity-60"
+              >
                 <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
                   {isUploadingAvatar ? "Загрузка…" : "Загрузить фото"}
                 </span>
                 <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#969D9D]">
                   PNG, JPG до 5 МБ
                 </span>
-              </span>
-            </button>
+              </button>
+            </div>
             <input
               ref={avatarInputRef}
               type="file"
