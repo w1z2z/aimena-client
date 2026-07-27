@@ -27,5 +27,12 @@ export function mapBackendUserToAuthUser(user: BackendUserMe): AuthUser {
     favoriteCategories,
     cityId,
     city,
+    slug: user.profile?.slug ?? null,
+    bio: user.profile?.bio ?? null,
+    verified: user.profile?.verified ?? false,
+    swapsCount: user.profile?.swapsCount ?? 0,
+    ratingAvg: user.profile?.ratingAvg ?? 0,
+    ratingCount: user.profile?.ratingCount ?? 0,
+    createdAt: user.createdAt ?? null,
   };
 }

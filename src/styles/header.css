@@ -99,19 +99,21 @@
   }
 }
 
-/* Search field / suggestions — same surface as scrolled header */
+/* Search field / suggestions — Figma btn-search--active */
 .site-header-search {
-  background-color: rgb(26 26 26 / 72%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  backdrop-filter: blur(16px) saturate(140%);
+  box-sizing: border-box;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
 
-@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .site-header-search {
-    background-color: rgb(26 26 26 / 92%);
-  }
+.site-header-search-field {
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
+.site-header-search-dropdown {
+  background-color: #ffffff;
+  color: #1a1a1a;
 }
 
 .home-ticker-pin {

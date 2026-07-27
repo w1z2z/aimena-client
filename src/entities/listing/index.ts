@@ -6,6 +6,7 @@ export {
   CONDITION_TO_BACKEND,
   FILTER_CONDITION_OPTIONS,
   HERO_CONDITION_OPTIONS,
+  mapApiConditionToLabel,
   mapConditionIdToBackend,
   mapConditionLabelToId,
 } from "./model/conditions";

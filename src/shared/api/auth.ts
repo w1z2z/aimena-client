@@ -1,6 +1,7 @@
 "use client";
 
 import { httpRequest } from "./http";
+import type { ApiListingCard, ApiListResponse } from "./listings";
 
 type BackendProfile = {
   displayName: string;
@@ -22,11 +23,21 @@ export type BackendAuthPayload = {
 export type BackendUserMeProfile = {
   displayName: string;
   slug: string;
+  bio: string | null;
   avatarUrl: string | null;
   verified: boolean;
+  swapsCount: number;
+  ratingAvg: number;
+  ratingCount: number;
   city: { id: string; name: string; regionName: string | null; slug: string } | null;
   interests: Array<{ id: string; name: string; slug: string }>;
   onboardingCompleted: boolean;
+};
+
+export type UpdateMePayload = {
+  displayName?: string;
+  cityId?: string;
+  bio?: string;
 };
 
 export type BackendUserMe = {
@@ -114,5 +125,34 @@ export function updateOnboarding(
     method: "PATCH",
     token: accessToken,
     body: payload,
+  });
+}
+
+export function updateMe(accessToken: string, payload: UpdateMePayload) {
+  return httpRequest<BackendUserMeResponse>("/users/me", {
+    method: "PATCH",
+    token: accessToken,
+    body: payload,
+  });
+}
+
+export function uploadAvatar(accessToken: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return httpRequest<BackendUserMeResponse>("/users/me/avatar", {
+    method: "POST",
+    token: accessToken,
+    body: formData,
+  });
+}
+
+export function getUserListingsBySlug(
+  slug: string,
+  query: { page?: number; pageSize?: number } = {},
+  signal?: AbortSignal,
+) {
+  return httpRequest<ApiListResponse<ApiListingCard>>(`/users/${slug}/listings`, {
+    query,
+    signal,
   });
 }

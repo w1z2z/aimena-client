@@ -248,8 +248,8 @@ export function Header() {
 
           <div
             ref={searchRef}
-            className={`absolute top-[10px] h-[32px] transition-[width] duration-300 ease-out ${
-              isSearchExpanded || isSearchClosing
+            className={`absolute top-[10px] h-[32px] transition-[width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              isSearchExpanded && !isSearchClosing
                 ? isAuthenticated
                   ? "right-[calc(100%-1039px)] w-[903px]"
                   : "right-[311px] w-[903px]"
@@ -258,13 +258,20 @@ export function Header() {
                   : "pointer-events-none right-[311px] w-[32px] opacity-0"
             }`}
           >
+            <div className="h-full w-full overflow-hidden">
             {isSearchExpanded || isSearchClosing ? (
-              <div className="site-header-search flex h-full w-full items-center gap-[9px] rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] px-[8px]">
+              <div
+                className={`site-header-search flex h-full w-full items-center gap-[9px] rounded-[13px] border-[0.5px] border-solid px-[8px] transition-[border-color,background-color,color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+                  isSearchClosing
+                    ? "border-[#8E8BED] bg-transparent text-[#8E8BED]"
+                    : "site-header-search-field border-[#1A1A1A]"
+                }`}
+              >
                 <button
                   type="button"
                   aria-label="Поиск"
                   onClick={handleSearchToggle}
-                  className="flex h-[16px] w-[16px] shrink-0 items-center justify-center text-[#8E8BED]"
+                  className="flex h-[16px] w-[16px] shrink-0 items-center justify-center outline-none focus:outline-none focus-visible:outline-none"
                 >
                   <SearchIcon className="h-[13px] w-[13px]" />
                 </button>
@@ -314,13 +321,23 @@ export function Header() {
                   }}
                   placeholder=""
                   aria-label="Поиск по объявлениям"
-                  className="h-[24px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-[170%] text-[#8E8BED] outline-none placeholder:text-[#8E8BED]"
+                  tabIndex={isSearchClosing ? -1 : 0}
+                  className={`h-[24px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-[170%] outline-none ring-0 transition-opacity duration-200 focus:outline-none focus:ring-0 focus-visible:outline-none ${
+                    isSearchClosing
+                      ? "pointer-events-none opacity-0"
+                      : "text-[#1A1A1A] placeholder:text-[#1A1A1A]/60 opacity-100"
+                  }`}
                 />
                 <button
                   type="button"
                   aria-label="Закрыть поиск"
                   onClick={() => closeSearchWithAnimation({ clear: true })}
-                  className="ml-auto flex h-[16px] w-[16px] shrink-0 items-center justify-center text-[#8E8BED] transition hover:opacity-70"
+                  tabIndex={isSearchClosing ? -1 : 0}
+                  className={`ml-auto flex h-[16px] w-[16px] shrink-0 items-center justify-center outline-none transition-[opacity,color] duration-200 focus:outline-none focus-visible:outline-none ${
+                    isSearchClosing
+                      ? "pointer-events-none opacity-0"
+                      : "text-[#1A1A1A] opacity-100 hover:opacity-70"
+                  }`}
                 >
                   <svg viewBox="0 0 12 12" width="12" height="12" fill="none" aria-hidden className="block h-[12px] w-[12px]">
                     <path
@@ -342,11 +359,12 @@ export function Header() {
                 <SearchIcon className="h-[13px] w-[13px]" />
               </button>
             ) : null}
+            </div>
 
             {isSearchExpanded && (isSearchLoading || searchQuery.trim().length >= 2) ? (
-              <div className="site-header-search absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] border border-[#8E8BED] border-[0.5px] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
+              <div className="site-header-search site-header-search-dropdown absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
                 {isSearchLoading ? (
-                  <p className="px-[12px] py-[10px] text-[14px] text-[#8E8BED]">Ищем...</p>
+                  <p className="px-[12px] py-[10px] text-[14px] text-[#3D3D3D]">Ищем...</p>
                 ) : searchSuggestions.length > 0 ? (
                   <ul className="max-h-[260px] overflow-y-auto">
                     {searchSuggestions.map((title, index) => (
@@ -360,8 +378,8 @@ export function Header() {
                             router.push(`/listings?search=${encodeURIComponent(title)}`);
                             closeSearchWithAnimation();
                           }}
-                          className={`block w-full px-[12px] py-[10px] text-left text-[14px] text-[#8E8BED] transition hover:bg-[#8E8BED]/10 ${
-                            index === activeSearchSuggestionIndex ? "bg-[#8E8BED]/10" : ""
+                          className={`block w-full px-[12px] py-[10px] text-left text-[14px] text-[#3D3D3D] outline-none transition hover:bg-[#1A1A1A]/6 focus:outline-none focus-visible:outline-none ${
+                            index === activeSearchSuggestionIndex ? "bg-[#1A1A1A]/6" : ""
                           }`}
                         >
                           {title}
@@ -370,7 +388,7 @@ export function Header() {
                     ))}
                   </ul>
                 ) : searchQuery.trim().length >= 2 ? (
-                  <p className="px-[12px] py-[10px] text-[14px] text-[#8E8BED]">Ничего не найдено</p>
+                  <p className="px-[12px] py-[10px] text-[14px] text-[#3D3D3D]">Ничего не найдено</p>
                 ) : null}
               </div>
             ) : null}

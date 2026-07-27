@@ -8,4 +8,11 @@ export type AuthUser = {
   favoriteCategories: string[];
   cityId: string | null;
   city: string | null;
+  slug: string | null;
+  bio: string | null;
+  verified: boolean;
+  swapsCount: number;
+  ratingAvg: number;
+  ratingCount: number;
+  createdAt: string | null;
 };

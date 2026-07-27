@@ -1,10 +1,12 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+"use client";
+
+import { ProfileLayout } from "@/widgets/profile/ProfileLayout";
+import { ProfileListingsPanel } from "@/widgets/profile/ProfileListingsPanel";
 
 export default function ProfilePage() {
   return (
-    <PageStub
-      title="My Profile"
-      description="Личный кабинет: карточки пользователя и управление профилем."
-    />
+    <ProfileLayout active="listings">
+      <ProfileListingsPanel />
+    </ProfileLayout>
   );
 }

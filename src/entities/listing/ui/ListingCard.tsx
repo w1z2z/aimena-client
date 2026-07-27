@@ -33,6 +33,8 @@ export type ListingCardProps = {
   coverImageUrl?: string | null;
   wants?: string[];
   isFavorite?: boolean;
+  /** Hide CTA like «Быстрый обмен» (e.g. own profile listings). */
+  hideAction?: boolean;
   className?: string;
 };
 
@@ -45,6 +47,7 @@ export function ListingCard({
   coverImageUrl,
   wants = [],
   isFavorite = false,
+  hideAction = false,
   className,
 }: ListingCardProps) {
   const { guardAuth } = useAuthGate();
@@ -53,7 +56,7 @@ export function ListingCard({
   const pillsRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const favorite = favoriteOverride ?? isFavorite;
-  const showWants = variant === "exchange";
+  const showWants = variant === "exchange" || variant === "mine";
   const listingHref = `/listings/${listingId}`;
   const truncatedWants = useMemo(
     () =>
@@ -70,6 +73,7 @@ export function ListingCard({
     "home-listing-card",
     variant === "hero" ? "home-listing-card--hero" : "",
     variant === "free" ? "home-listing-card--free" : "",
+    variant === "mine" ? "home-listing-card--mine" : "",
     className,
   ]
     .filter(Boolean)
@@ -132,7 +136,8 @@ export function ListingCard({
   };
 
   const actionLabel = variant === "free" ? "Отдаю даром" : "Быстрый обмен";
-  const actionHandler = variant === "free" ? undefined : handleExchangeClick;
+  const actionHandler = variant === "free" || variant === "mine" ? undefined : handleExchangeClick;
+  const hideFooterAction = hideAction || variant === "mine";
   const visibleWants = truncatedWants.slice(0, visibleCount);
   const wantsMore = Math.max(wants.length - visibleCount, 0);
 
@@ -172,9 +177,11 @@ export function ListingCard({
       </div>
 
       <div className="home-listing-card__footer">
-        <button type="button" className="home-listing-card__action" onClick={actionHandler}>
-          {actionLabel}
-        </button>
+        {hideFooterAction ? null : (
+          <button type="button" className="home-listing-card__action" onClick={actionHandler}>
+            {actionLabel}
+          </button>
+        )}
 
         {showWants ? (
           <div className="home-listing-card__wants">

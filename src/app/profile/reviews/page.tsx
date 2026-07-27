@@ -1,10 +1,12 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+"use client";
+
+import { ProfileLayout } from "@/widgets/profile/ProfileLayout";
+import { ProfileReviewsPanel } from "@/widgets/profile/ProfileReviewsPanel";
 
 export default function ProfileReviewsPage() {
   return (
-    <PageStub
-      title="Profile Reviews"
-      description="Отзывы и рейтинг пользователя после завершенных обменов."
-    />
+    <ProfileLayout active="reviews">
+      <ProfileReviewsPanel />
+    </ProfileLayout>
   );
 }

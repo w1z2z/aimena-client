@@ -29,6 +29,7 @@ import type { AuthUser } from "./types";
 
 type AuthContextValue = {
   user: AuthUser | null;
+  accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ needsOnboarding: boolean }>;
@@ -36,6 +37,7 @@ type AuthContextValue = {
   logout: () => Promise<void>;
   completeOnboarding: (categories: string[], cityId: string | null) => Promise<void>;
   markOnboardingSkipped: () => void;
+  applyUser: (user: AuthUser) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -46,10 +48,26 @@ function readStoredUser(): AuthUser | null {
   try {
     const raw = window.localStorage.getItem(AUTH_USER_STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as AuthUser;
+    const parsed = JSON.parse(raw) as Partial<AuthUser>;
+    if (!parsed.id || !parsed.email) return null;
+
     return {
-      ...parsed,
+      id: parsed.id,
+      name: parsed.name ?? "Пользователь",
+      email: parsed.email,
+      avatarInitial: parsed.avatarInitial ?? "U",
       avatarUrl: parsed.avatarUrl ?? null,
+      onboardingCompleted: parsed.onboardingCompleted ?? false,
+      favoriteCategories: parsed.favoriteCategories ?? [],
+      cityId: parsed.cityId ?? null,
+      city: parsed.city ?? null,
+      slug: parsed.slug ?? null,
+      bio: parsed.bio ?? null,
+      verified: parsed.verified ?? false,
+      swapsCount: parsed.swapsCount ?? 0,
+      ratingAvg: parsed.ratingAvg ?? 0,
+      ratingCount: parsed.ratingCount ?? 0,
+      createdAt: parsed.createdAt ?? null,
     };
   } catch {
     return null;
@@ -240,9 +258,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, [persistUser, user]);
 
+  const applyUser = useCallback(
+    (nextUser: AuthUser) => {
+      persistUser(nextUser);
+    },
+    [persistUser],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user: hydrated ? user : null,
+      accessToken: hydrated ? accessToken : null,
       isAuthenticated: hydrated ? Boolean(user) : false,
       isLoading: !hydrated || sessionLoading,
       login,
@@ -250,8 +276,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       completeOnboarding,
       markOnboardingSkipped,
+      applyUser,
     }),
-    [hydrated, user, sessionLoading, login, register, logout, completeOnboarding, markOnboardingSkipped],
+    [
+      hydrated,
+      user,
+      accessToken,
+      sessionLoading,
+      login,
+      register,
+      logout,
+      completeOnboarding,
+      markOnboardingSkipped,
+      applyUser,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

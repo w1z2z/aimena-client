@@ -1,4 +1,4 @@
-export type ListingCardVariant = "exchange" | "free" | "hero";
+export type ListingCardVariant = "exchange" | "free" | "hero" | "mine";
 
 export type ListingCardData = {
   id: string;

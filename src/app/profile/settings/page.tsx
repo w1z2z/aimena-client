@@ -1,10 +1,12 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+"use client";
+
+import { ProfileLayout } from "@/widgets/profile/ProfileLayout";
+import { ProfileSettingsPanel } from "@/widgets/profile/ProfileSettingsPanel";
 
 export default function ProfileSettingsPage() {
   return (
-    <PageStub
-      title="Profile Settings"
-      description="Настройки аккаунта, контактные данные и персональные параметры."
-    />
+    <ProfileLayout active="settings">
+      <ProfileSettingsPanel />
+    </ProfileLayout>
   );
 }

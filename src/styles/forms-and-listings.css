@@ -99,6 +99,25 @@
   box-shadow: none;
 }
 
+.profile-settings-city.site-select--field .site-select__input {
+  box-sizing: border-box;
+  height: 48px;
+  border-radius: 18px;
+  border: 0.5px solid #cacaca;
+  background: #f2f4f7;
+  padding: 8px 40px 8px 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: #1a1a1a;
+}
+
+.profile-settings-city.site-select--field .site-select__input:focus,
+.profile-settings-city.site-select--field.is-open .site-select__input {
+  border-color: #8e8bed;
+  box-shadow: none;
+}
+
 .create-listing-exchange-select.site-select--field .site-select__input {
   height: 48px;
   border: 0.5px solid #cacaca;

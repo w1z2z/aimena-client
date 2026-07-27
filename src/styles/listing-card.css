@@ -42,6 +42,51 @@
   background: #8e8bed;
 }
 
+/* Profile «Ваши объявления» — card-profile-mine */
+.home-listing-card--mine {
+  height: 452px;
+  border: none;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.home-listing-card--mine:hover {
+  box-shadow: none;
+}
+
+.home-listing-card--mine .home-listing-card__title {
+  height: 18px;
+  min-height: 18px;
+  border-radius: 10px 10px 0 0;
+  padding: 1px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 120%;
+  letter-spacing: 0.001em;
+}
+
+.home-listing-card--mine .home-listing-card__title span {
+  width: 252px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.home-listing-card--mine .home-listing-card__favorite {
+  top: 12px;
+  right: 12px;
+}
+
+.home-listing-card--mine .home-listing-card__tags {
+  left: 8px;
+  bottom: 9px;
+  gap: 10px;
+}
+
+.home-listing-card--mine .home-listing-card__footer {
+  height: 44px;
+  padding: 0 10px;
+}
+
 .home-listing-card--hero .home-listing-card__wants {
   display: none;
 }
