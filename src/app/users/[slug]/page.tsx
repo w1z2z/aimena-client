@@ -1,10 +1,12 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+"use client";
+
+import { PublicProfileLayout } from "@/widgets/profile/PublicProfileLayout";
+import { PublicProfileListingsPanel } from "@/widgets/profile/PublicProfileListingsPanel";
 
 export default function PublicProfilePage() {
   return (
-    <PageStub
-      title="Public Profile"
-      description="Публичный профиль пользователя и его объявления."
-    />
+    <PublicProfileLayout active="listings">
+      <PublicProfileListingsPanel />
+    </PublicProfileLayout>
   );
 }

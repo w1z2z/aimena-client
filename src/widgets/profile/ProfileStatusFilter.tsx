@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { PROFILE_ASSETS } from "./constants";
 
@@ -42,6 +42,7 @@ export function ProfileStatusFilter({ value, onChange }: ProfileStatusFilterProp
     <div
       ref={rootRef}
       className="profile-status-filter relative overflow-visible"
+      style={{ viewTransitionName: "none" } as CSSProperties}
       onMouseLeave={() => setOpen(false)}
     >
       <button

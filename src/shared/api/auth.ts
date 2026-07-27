@@ -157,9 +157,45 @@ export function deleteAvatar(accessToken: string) {
   });
 }
 
+export type BackendPublicProfile = {
+  displayName: string;
+  slug: string;
+  bio: string | null;
+  avatarUrl: string | null;
+  verified: boolean;
+  swapsCount: number;
+  ratingAvg: number;
+  ratingCount: number;
+  city: {
+    id: string;
+    name: string;
+    regionName: string | null;
+    slug: string;
+    displayName?: string;
+  } | null;
+  joinedAt: string;
+  showCompletedListings: boolean;
+};
+
+type BackendPublicProfileResponse = {
+  profile: BackendPublicProfile;
+};
+
+export function getPublicProfile(slug: string, signal?: AbortSignal) {
+  return httpRequest<BackendPublicProfileResponse>(`/users/${slug}`, {
+    method: "GET",
+    signal,
+  });
+}
+
 export function getUserListingsBySlug(
   slug: string,
-  query: { page?: number; pageSize?: number } = {},
+  query: {
+    page?: number;
+    pageSize?: number;
+    status?: ApiListingCard["status"][];
+    sort?: "newest" | "oldest";
+  } = {},
   signal?: AbortSignal,
 ) {
   return httpRequest<ApiListResponse<ApiListingCard>>(`/users/${slug}/listings`, {

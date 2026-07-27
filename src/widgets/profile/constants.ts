@@ -12,6 +12,8 @@ export const PROFILE_ASSETS = {
 
 export type ProfileSection = "listings" | "deals" | "reviews" | "settings";
 
+export type PublicProfileSection = "listings" | "deals";
+
 export const PROFILE_NAV: Array<{
   id: ProfileSection;
   href: string;
@@ -23,6 +25,18 @@ export const PROFILE_NAV: Array<{
   { id: "deals", href: "/profile/deals", label: "История обменов", icon: "deals" },
   { id: "reviews", href: "/profile/reviews", label: "Ваши отзывы", icon: "reviews" },
 ];
+
+export function getPublicProfileNav(slug: string): Array<{
+  id: PublicProfileSection;
+  href: string;
+  label: string;
+  icon: keyof typeof PROFILE_ASSETS;
+}> {
+  return [
+    { id: "listings", href: `/users/${slug}`, label: "Объявления", icon: "listings" },
+    { id: "deals", href: `/users/${slug}/deals`, label: "История обменов", icon: "deals" },
+  ];
+}
 
 export function formatJoinedMonth(createdAt: string | null | undefined) {
   if (!createdAt) return null;

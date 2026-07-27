@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { PROFILE_ASSETS } from "./constants";
 
@@ -40,6 +40,7 @@ export function ProfileSortControl({ value, onChange }: ProfileSortControlProps)
     <div
       ref={rootRef}
       className="profile-sort-control relative overflow-visible"
+      style={{ viewTransitionName: "none" } as CSSProperties}
       onMouseLeave={() => setOpen(false)}
     >
       <button
