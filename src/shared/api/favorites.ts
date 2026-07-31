@@ -25,6 +25,12 @@ export function removeFavorite(listingId: string) {
   });
 }
 
+export function removeInactiveFavorites() {
+  return httpRequest<{ removed: number }>("/favorites/me/inactive", {
+    method: "DELETE",
+  });
+}
+
 export function getFavorites(query: FavoritesQuery = {}, signal?: AbortSignal) {
   return httpRequest<ApiListResponse<ApiListingCard>>("/favorites/me", {
     query,

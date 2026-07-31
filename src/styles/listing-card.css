@@ -332,9 +332,24 @@
   filter: brightness(1.25);
 }
 
+.home-listing-card__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  filter: none;
+}
+
+.home-listing-card__action:disabled:hover {
+  filter: none;
+}
+
 .home-listing-card--free .home-listing-card__action:hover,
 .home-listing-card__action--free:hover {
   filter: brightness(0.98);
+}
+
+.home-listing-card--free .home-listing-card__action:disabled:hover,
+.home-listing-card__action--free:disabled:hover {
+  filter: none;
 }
 
 .home-listing-card__wants {

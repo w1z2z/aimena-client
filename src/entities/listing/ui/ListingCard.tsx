@@ -174,7 +174,7 @@ export function ListingCard({
 
   const actionLabel = freeListing ? "Отдаю даром" : "Быстрый обмен";
   const actionHandler = unavailable ? undefined : handleExchangeClick;
-  const hideFooterAction = hideAction || unavailable;
+  const hideFooterAction = hideAction;
   const hasWants = truncatedWants.length > 0;
   const visibleWants = truncatedWants.slice(0, visibleCount);
   const wantsMore = freeListing ? 0 : Math.max(wants.length - visibleCount, 0);
@@ -260,6 +260,8 @@ export function ListingCard({
               .filter(Boolean)
               .join(" ")}
             onClick={actionHandler}
+            disabled={unavailable}
+            aria-disabled={unavailable}
           >
             {actionLabel}
           </button>

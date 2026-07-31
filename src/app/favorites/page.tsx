@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ListingCard, mapApiListingToCard } from "@/entities/listing";
 import { useAuth } from "@/features/auth";
 import { favoriteQueryKeys } from "@/features/favorites";
-import { getFavorites } from "@/shared/api/favorites";
+import { getFavorites, removeInactiveFavorites } from "@/shared/api/favorites";
 import { Header } from "@/widgets/header/Header";
 
 const PAGE = 1;
@@ -23,6 +23,7 @@ function pluralOffers(count: number) {
 
 export default function FavoritesPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const favoritesQuery = useQuery({
     queryKey: favoriteQueryKeys.list(PAGE, PAGE_SIZE),
@@ -30,12 +31,18 @@ export default function FavoritesPage() {
     enabled: isAuthenticated,
   });
 
+  const removeInactiveMutation = useMutation({
+    mutationFn: removeInactiveFavorites,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: favoriteQueryKeys.all });
+    },
+  });
+
   const listings = (favoritesQuery.data?.data ?? []).map(mapApiListingToCard);
   const total = favoritesQuery.data?.meta.total ?? listings.length;
+  const hasInactive = listings.some((listing) => !listing.isAvailable);
 
-  let body = (
-    <p className="favorites-page__status">Загрузка…</p>
-  );
+  let body = <p className="favorites-page__status">Загрузка…</p>;
 
   if (!authLoading && !isAuthenticated) {
     body = (
@@ -77,23 +84,37 @@ export default function FavoritesPage() {
     );
   } else if (isAuthenticated && listings.length > 0) {
     body = (
-      <div className="favorites-page__grid" aria-label="Избранные объявления">
-        {listings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            listingId={listing.id}
-            variant="exchange"
-            title={listing.title}
-            city={listing.city}
-            condition={listing.condition}
-            coverImageUrl={listing.coverImageUrl}
-            wants={listing.wants}
-            isFree={listing.isFree}
-            isFavorite={listing.isFavorite}
-            ownerId={listing.ownerId}
-            unavailable={!listing.isAvailable}
-          />
-        ))}
+      <div className="favorites-page__list">
+        {hasInactive ? (
+          <div className="favorites-page__toolbar">
+            <button
+              type="button"
+              className="favorites-page__clear-inactive"
+              disabled={removeInactiveMutation.isPending}
+              onClick={() => removeInactiveMutation.mutate()}
+            >
+              {removeInactiveMutation.isPending ? "Удаление…" : "Удалить неактивные"}
+            </button>
+          </div>
+        ) : null}
+        <div className="favorites-page__grid" aria-label="Избранные объявления">
+          {listings.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              listingId={listing.id}
+              variant="exchange"
+              title={listing.title}
+              city={listing.city}
+              condition={listing.condition}
+              coverImageUrl={listing.coverImageUrl}
+              wants={listing.wants}
+              isFree={listing.isFree}
+              isFavorite={listing.isFavorite}
+              ownerId={listing.ownerId}
+              unavailable={!listing.isAvailable}
+            />
+          ))}
+        </div>
       </div>
     );
   }
