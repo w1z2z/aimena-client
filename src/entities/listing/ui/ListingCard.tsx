@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { useAuthGate } from "@/features/auth";
 import { useFavoriteToggle } from "@/features/favorites";
@@ -39,6 +39,8 @@ export type ListingCardProps = {
   status?: string | null;
   /** Greyscale cover (e.g. unpublished / archived). */
   imageMuted?: boolean;
+  /** Optional control in the title row (e.g. owner actions menu). */
+  titleAccessory?: ReactNode;
   /** Hide CTA like «Быстрый обмен» (e.g. own profile listings). */
   hideAction?: boolean;
   className?: string;
@@ -56,6 +58,7 @@ export function ListingCard({
   isFavorite = false,
   status,
   imageMuted = false,
+  titleAccessory,
   hideAction = false,
   className,
 }: ListingCardProps) {
@@ -86,6 +89,7 @@ export function ListingCard({
     variant === "free" ? "home-listing-card--free" : "",
     variant === "mine" ? "home-listing-card--mine" : "",
     imageMuted ? "home-listing-card--muted" : "",
+    titleAccessory ? "home-listing-card--has-title-accessory" : "",
     className,
   ]
     .filter(Boolean)
@@ -168,6 +172,9 @@ export function ListingCard({
         <Link href={listingHref} className="home-listing-card__title-link">
           <span>{title}</span>
         </Link>
+        {titleAccessory ? (
+          <div className="home-listing-card__title-accessory">{titleAccessory}</div>
+        ) : null}
       </div>
 
       <div className="home-listing-card__media">

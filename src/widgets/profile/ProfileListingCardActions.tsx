@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { listingQueryKeys } from "@/entities/listing";
@@ -12,6 +12,7 @@ import {
   type ApiListingCard,
 } from "@/shared/api/listings";
 import { ApiError } from "@/shared/api/http";
+import { MoreDotsIcon } from "@/shared/ui/icons";
 import { ListingConfirmModal } from "@/widgets/listing-detail/ListingConfirmModal";
 
 type ConfirmKind = "pause" | "delete";
@@ -21,6 +22,7 @@ type ProfileListingCardActionsProps = {
   status: ApiListingCard["status"];
 };
 
+const PANEL_CLOSE_MS = 220;
 const PROFILE_LISTINGS_QUERY_KEY = ["profile-listings-me"] as const;
 
 async function invalidateListingCaches(
@@ -38,10 +40,57 @@ export function ProfileListingCardActions({
   listingId,
   status,
 }: ProfileListingCardActionsProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const panelId = useId();
+  const [open, setOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [modal, setModal] = useState<ConfirmKind | null>(null);
   const [pendingAction, setPendingAction] = useState<ConfirmKind | "publish" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setIsMounted(true);
+      const frameId = window.requestAnimationFrame(() => setIsVisible(true));
+      return () => window.cancelAnimationFrame(frameId);
+    }
+
+    setIsVisible(false);
+    const timeoutId = window.setTimeout(() => setIsMounted(false), PANEL_CLOSE_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  const closeMenu = () => setOpen(false);
+
+  const closeModal = () => {
+    if (pendingAction) return;
+    setModal(null);
+    setActionError(null);
+  };
 
   const confirmConfig = useMemo(() => {
     if (modal === "pause") {
@@ -70,12 +119,6 @@ export function ProfileListingCardActions({
     return null;
   }, [modal]);
 
-  const closeModal = () => {
-    if (pendingAction) return;
-    setModal(null);
-    setActionError(null);
-  };
-
   const handlePause = async () => {
     if (pendingAction) return;
     setActionError(null);
@@ -84,6 +127,7 @@ export function ProfileListingCardActions({
       await pauseListing(listingId);
       await invalidateListingCaches(queryClient, listingId);
       setModal(null);
+      closeMenu();
     } catch (error) {
       setActionError(
         error instanceof ApiError ? error.message : "Не удалось снять с публикации",
@@ -100,6 +144,7 @@ export function ProfileListingCardActions({
     try {
       await publishListing(listingId);
       await invalidateListingCaches(queryClient, listingId);
+      closeMenu();
     } catch (error) {
       setActionError(
         error instanceof ApiError ? error.message : "Не удалось опубликовать объявление",
@@ -117,6 +162,7 @@ export function ProfileListingCardActions({
       await deleteListing(listingId);
       await invalidateListingCaches(queryClient, listingId);
       setModal(null);
+      closeMenu();
     } catch (error) {
       setActionError(error instanceof ApiError ? error.message : "Не удалось удалить объявление");
     } finally {
@@ -125,53 +171,98 @@ export function ProfileListingCardActions({
   };
 
   return (
-    <div className="profile-listing-card-actions">
-      {status === "active" ? (
-        <button
-          type="button"
-          className="profile-listing-card-actions__btn"
-          disabled={pendingAction !== null}
-          onClick={() => {
-            setActionError(null);
-            setModal("pause");
-          }}
-        >
-          Снять с публикации
-        </button>
-      ) : (
-        <button
-          type="button"
-          className="profile-listing-card-actions__btn"
-          disabled={pendingAction !== null}
-          onClick={() => {
-            void handlePublish();
-          }}
-        >
-          {status === "draft" ? "Опубликовать" : "Опубликовать снова"}
-        </button>
-      )}
-
-      <Link
-        href={`/listings/${listingId}/edit`}
-        className="profile-listing-card-actions__btn profile-listing-card-actions__btn--link"
-      >
-        Редактировать
-      </Link>
-
+    <div
+      ref={containerRef}
+      className={[
+        "profile-listing-menu",
+        open || isMounted ? "profile-listing-menu--open" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <button
         type="button"
-        className="profile-listing-card-actions__btn profile-listing-card-actions__btn--danger"
-        disabled={pendingAction !== null}
-        onClick={() => {
+        className="profile-listing-menu__trigger"
+        aria-label="Действия с объявлением"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={isMounted ? panelId : undefined}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
           setActionError(null);
-          setModal("delete");
+          setOpen((value) => !value);
         }}
       >
-        Удалить
+        <MoreDotsIcon className="text-[#1A1A1A]" />
       </button>
 
-      {actionError && !modal ? (
-        <p className="profile-listing-card-actions__error">{actionError}</p>
+      {isMounted ? (
+        <div
+          id={panelId}
+          role="dialog"
+          aria-label="Действия с объявлением"
+          aria-hidden={!isVisible}
+          className={[
+            "profile-listing-menu__panel",
+            isVisible ? "profile-listing-menu__panel--open" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {status === "active" ? (
+            <button
+              type="button"
+              className="profile-listing-menu__item"
+              disabled={pendingAction !== null}
+              onClick={() => {
+                closeMenu();
+                setActionError(null);
+                setModal("pause");
+              }}
+            >
+              Снять с публикации
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="profile-listing-menu__item"
+              disabled={pendingAction !== null}
+              onClick={() => {
+                void handlePublish();
+              }}
+            >
+              {status === "draft" ? "Опубликовать" : "Опубликовать снова"}
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="profile-listing-menu__item"
+            disabled={pendingAction !== null}
+            onClick={() => {
+              closeMenu();
+              router.push(`/listings/${listingId}/edit`);
+            }}
+          >
+            Редактировать объявление
+          </button>
+
+          <button
+            type="button"
+            className="profile-listing-menu__item profile-listing-menu__item--danger"
+            disabled={pendingAction !== null}
+            onClick={() => {
+              closeMenu();
+              setActionError(null);
+              setModal("delete");
+            }}
+          >
+            Удалить объявление
+          </button>
+
+          {actionError ? <p className="profile-listing-menu__error">{actionError}</p> : null}
+        </div>
       ) : null}
 
       <ListingConfirmModal

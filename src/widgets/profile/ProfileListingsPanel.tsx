@@ -83,8 +83,10 @@ export function ProfileListingsPanel() {
               status={STATUS_LABEL[listing.status] ?? null}
               hideAction
               imageMuted={listing.status === "archived"}
+              titleAccessory={
+                <ProfileListingCardActions listingId={listing.id} status={listing.status} />
+              }
             />
-            <ProfileListingCardActions listingId={listing.id} status={listing.status} />
           </div>
         ))}
       </div>
