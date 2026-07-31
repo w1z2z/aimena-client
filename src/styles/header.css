@@ -124,6 +124,9 @@
 /* Recommendations list scrollbar tuning */
 .home-recommendations-scroll {
   scrollbar-width: thin;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: 2px;
+  scroll-padding-bottom: 16px;
 }
 
 .home-recommendations-scroll::-webkit-scrollbar {
@@ -141,5 +144,10 @@
 .home-recommendations-scroll::-webkit-scrollbar-thumb:hover {
   background: rgb(142 139 237 / 70%);
   background-clip: content-box;
+}
+
+.home-recommendations-scroll [data-recommendation-card] {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
