@@ -18,7 +18,7 @@ export type ApiListingCard = {
   wantsText: string;
   wantsTags: string[];
   condition: ApiListingCondition;
-  extraPay: "none" | "i_pay" | "they_pay";
+  extraPay: "none" | "i_pay" | "they_pay" | "both";
   hasDocuments: boolean;
   isFree: boolean;
   estimatedPrice: number | null;
@@ -60,7 +60,7 @@ export type ApiListingDetail = {
   description: string;
   condition: ApiListingCondition;
   estimatedPrice: number | null;
-  extraPay: "none" | "i_pay" | "they_pay";
+  extraPay: "none" | "i_pay" | "they_pay" | "both";
   isFree: boolean;
   hasDocuments: boolean;
   wantsText: string;
@@ -142,7 +142,7 @@ export type CreateListingPayload = {
   cityId: string;
   condition?: ApiListingCondition;
   estimatedPrice?: number | null;
-  extraPay?: "none" | "i_pay" | "they_pay";
+  extraPay?: "none" | "i_pay" | "they_pay" | "both";
   isFree?: boolean;
   wantsTags?: string[];
   itemUploadIds?: string[];

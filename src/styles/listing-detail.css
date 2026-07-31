@@ -370,18 +370,24 @@
 }
 
 .listing-detail-pill {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  height: 26px;
+  padding: 0 12px;
   border: 0.5px solid #cacaca;
   border-radius: 21px;
   background: #fff;
   color: #1a1a1a;
+  font-family: var(--font-manrope), Manrope, sans-serif;
   font-size: 14px;
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.014px;
+  font-style: normal;
+  line-height: 120%;
+  letter-spacing: 0.001em;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .listing-detail-wants {
@@ -410,18 +416,24 @@
 }
 
 .listing-detail-wants__tag {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  height: 26px;
+  padding: 0 12px;
   border: 0.5px solid #cacaca;
   border-radius: 44px;
   background: #fff;
   color: #1a1a1a;
+  font-family: var(--font-manrope), Manrope, sans-serif;
   font-size: 14px;
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.014px;
+  font-style: normal;
+  line-height: 120%;
+  letter-spacing: 0.001em;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .listing-detail-stats {

@@ -580,7 +580,13 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         );
         setServiceWorkLevel(listing.type === "service" ? "specialist" : null);
         setServiceFormats(nextFormats);
-        setExtraPay(listing.extraPay);
+        setExtraPay(
+          listing.extraPay === "i_pay" ||
+            listing.extraPay === "they_pay" ||
+            listing.extraPay === "both"
+            ? listing.extraPay
+            : "none",
+        );
         setIsFree(listing.isFree);
         setItemPhotos(photosFromListingImages(listing.images, "item"));
         setDocPhotos(photosFromListingImages(listing.images, "document"));

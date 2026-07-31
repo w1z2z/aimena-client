@@ -1,5 +1,5 @@
 export type ConditionId = "excellent" | "new" | "good" | "used" | "needs_repair";
-export type ExtraPayId = "none" | "i_pay" | "they_pay";
+export type ExtraPayId = "none" | "i_pay" | "they_pay" | "both";
 export type ListingKind = "item" | "service";
 export type ServiceFormatId = "online" | "offline" | "onsite";
 export type ServiceWorkLevelId = "master" | "professional" | "specialist" | "junior";
@@ -42,6 +42,7 @@ export const EXTRA_PAY_OPTIONS: Array<{ id: ExtraPayId; label: string }> = [
   { id: "none", label: "Без доплаты" },
   { id: "i_pay", label: "Готов доплатить" },
   { id: "they_pay", label: "Хочу доплату" },
+  { id: "both", label: "В обе стороны" },
 ];
 
 export const SERVICE_FORMAT_OPTIONS: Array<{ id: ServiceFormatId; label: string }> = [

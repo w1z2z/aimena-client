@@ -319,10 +319,8 @@
 
 .home-listing-card__want-pill {
   box-sizing: border-box;
-  display: flex;
+  display: block;
   flex: none;
-  align-items: center;
-  justify-content: center;
   max-width: 120px;
   height: 24px;
   overflow: hidden;
@@ -334,7 +332,7 @@
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 24px;
   letter-spacing: 0.002em;
   text-align: center;
   text-overflow: ellipsis;
