@@ -12,11 +12,12 @@ import {
   publishListing,
   type ApiListingDetail,
 } from "@/shared/api/listings";
+import { createReport } from "@/shared/api/reports";
 import { ApiError } from "@/shared/api/http";
 import { MenuSquareIcon } from "@/shared/ui/icons";
 
 import { ListingConfirmModal } from "./ListingConfirmModal";
-import { ListingReportModal } from "./ListingReportModal";
+import { ListingReportModal, type ReportReasonId } from "./ListingReportModal";
 
 type ListingActionsMenuProps = {
   listingId: string;
@@ -26,7 +27,7 @@ type ListingActionsMenuProps = {
 
 type ConfirmKind = "pause" | "delete";
 type ModalKind = ConfirmKind | "report" | null;
-type PendingKind = ConfirmKind | "publish" | null;
+type PendingKind = ConfirmKind | "publish" | "report" | null;
 
 const PANEL_CLOSE_MS = 220;
 const PROFILE_LISTINGS_QUERY_KEY = ["profile-listings-me"] as const;
@@ -176,6 +177,32 @@ export function ListingActionsMenu({
     }
   };
 
+  const handleReport = async (payload: { reason: ReportReasonId; comment: string }) => {
+    if (pendingAction) return;
+    setActionError(null);
+    setPendingAction("report");
+    try {
+      await createReport({
+        targetType: "listing",
+        targetId: listingId,
+        reason: payload.reason,
+        comment: payload.comment || undefined,
+      });
+      setModal(null);
+      closeMenu();
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.status === 409
+            ? "Вы уже жаловались на это объявление"
+            : error.message
+          : "Не удалось отправить жалобу";
+      setActionError(message);
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
   return (
     <div ref={containerRef} className="listing-detail-actions">
       <button
@@ -292,7 +319,12 @@ export function ListingActionsMenu({
 
       <ListingReportModal
         open={modal === "report"}
-        onSubmit={() => setModal(null)}
+        targetType="listing"
+        pending={pendingAction === "report"}
+        error={modal === "report" ? actionError : null}
+        onSubmit={(payload) => {
+          void handleReport(payload);
+        }}
         onClose={closeModal}
       />
     </div>

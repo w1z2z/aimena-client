@@ -3,39 +3,61 @@
 import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 
+import type { ReportReason, ReportTargetType } from "@/shared/api/reports";
 import { ListingActionStarIcon } from "@/shared/ui/icons";
 
 const TRANSITION_MS = 320;
 
-export const REPORT_REASONS = [
-  { id: "fraud", label: "Мошенничество или обман" },
-  { id: "abuse", label: "Оскорбительное поведение" },
-  { id: "fake", label: "Фейковый аккаунт / бот" },
-  { id: "prohibited", label: "Запрещенный товар" },
-  { id: "spam", label: "Спам" },
+export const LISTING_REPORT_REASONS = [
+  { id: "wrong_info", label: "Неверное описание / фото" },
+  { id: "prohibited", label: "Запрещённый товар / услуга" },
+  { id: "fraud", label: "Похоже на обман" },
+  { id: "spam", label: "Спам / реклама" },
+  { id: "already_gone", label: "Уже отдали / неактуально" },
+  { id: "wrong_category", label: "Неверная категория" },
   { id: "other", label: "Другое" },
-] as const;
+] as const satisfies readonly { id: ReportReason; label: string }[];
 
-export type ReportReasonId = (typeof REPORT_REASONS)[number]["id"];
+export const USER_REPORT_REASONS = [
+  { id: "abuse", label: "Оскорбления / токсичность" },
+  { id: "fraud", label: "Мошенничество" },
+  { id: "no_show", label: "Не приходит / срывает договорённости" },
+  { id: "fake", label: "Фейковый аккаунт / бот" },
+  { id: "spam", label: "Спам / навязчивые сообщения" },
+  { id: "impersonation", label: "Выдаёт себя за другого" },
+  { id: "other", label: "Другое" },
+] as const satisfies readonly { id: ReportReason; label: string }[];
+
+/** @deprecated use LISTING_REPORT_REASONS / USER_REPORT_REASONS */
+export const REPORT_REASONS = LISTING_REPORT_REASONS;
+
+export type ReportReasonId = ReportReason;
 
 type ListingReportModalProps = {
   open: boolean;
+  targetType: ReportTargetType;
   pending?: boolean;
-  onSubmit: (payload: { reason: ReportReasonId; comment: string }) => void;
+  error?: string | null;
+  onSubmit: (payload: { reason: ReportReason; comment: string }) => void;
   onClose: () => void;
 };
 
 export function ListingReportModal({
   open,
+  targetType,
   pending = false,
+  error = null,
   onSubmit,
   onClose,
 }: ListingReportModalProps) {
   const titleId = useId();
   const [mounted, setMounted] = useState(open);
   const [visible, setVisible] = useState(false);
-  const [reason, setReason] = useState<ReportReasonId | null>(null);
+  const [reason, setReason] = useState<ReportReason | null>(null);
   const [comment, setComment] = useState("");
+
+  const reasons =
+    targetType === "user" ? USER_REPORT_REASONS : LISTING_REPORT_REASONS;
 
   useEffect(() => {
     if (open) {
@@ -93,11 +115,13 @@ export function ListingReportModal({
       >
         <ListingActionStarIcon className="listing-action-modal__star" />
         <h2 id={titleId} className="listing-action-modal__title">
-          Выберите причину жалобы
+          {targetType === "user"
+            ? "Пожаловаться на пользователя"
+            : "Пожаловаться на объявление"}
         </h2>
 
         <div className="listing-report-reasons" role="radiogroup" aria-label="Причина жалобы">
-          {REPORT_REASONS.map((item) => {
+          {reasons.map((item) => {
             const selected = reason === item.id;
             return (
               <button
@@ -106,6 +130,7 @@ export function ListingReportModal({
                 role="radio"
                 aria-checked={selected}
                 className="listing-report-reasons__item"
+                disabled={pending}
                 onClick={() => setReason(item.id)}
               >
                 <span
@@ -129,8 +154,11 @@ export function ListingReportModal({
             value={comment}
             onChange={(event) => setComment(event.target.value)}
             placeholder="Опишите ситуацию, чтобы мы лучше смогли в ней разобраться"
+            disabled={pending}
           />
         </label>
+
+        {error ? <p className="listing-action-modal__error">{error}</p> : null}
 
         <div className="listing-action-modal__actions">
           <button

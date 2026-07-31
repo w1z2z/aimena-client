@@ -3,7 +3,8 @@ export type RegistrationPromptReason =
   | "favorites"
   | "chat"
   | "propose-exchange"
-  | "report-listing";
+  | "report-listing"
+  | "report-user";
 
 export const registrationPromptCopy: Record<
   RegistrationPromptReason,
@@ -23,5 +24,8 @@ export const registrationPromptCopy: Record<
   },
   "report-listing": {
     subtitle: "Авторизуйтесь, чтобы пожаловаться на объявление",
+  },
+  "report-user": {
+    subtitle: "Авторизуйтесь, чтобы пожаловаться на пользователя",
   },
 };

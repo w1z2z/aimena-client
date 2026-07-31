@@ -158,6 +158,7 @@ export function deleteAvatar(accessToken: string) {
 }
 
 export type BackendPublicProfile = {
+  id: string;
   displayName: string;
   slug: string;
   bio: string | null;
