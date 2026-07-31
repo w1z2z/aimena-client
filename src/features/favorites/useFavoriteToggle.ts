@@ -29,9 +29,17 @@ function updateFavoriteInQueryData(
   data: unknown,
   listingId: string,
   isFavorite: boolean,
+  options?: { removeFromList?: boolean },
 ): unknown {
   if (Array.isArray(data)) {
-    return data.map((item) => updateFavoriteItem(item, listingId, isFavorite));
+    const mapped = data.map((item) => updateFavoriteItem(item, listingId, isFavorite));
+    if (options?.removeFromList && !isFavorite) {
+      return mapped.filter((item) => {
+        if (!item || typeof item !== "object") return true;
+        return (item as Record<string, unknown>).id !== listingId;
+      });
+    }
+    return mapped;
   }
 
   if (!data || typeof data !== "object") {
@@ -45,15 +53,37 @@ function updateFavoriteInQueryData(
     return {
       ...record,
       pages: record.pages.map((page) =>
-        updateFavoriteInQueryData(page, listingId, isFavorite),
+        updateFavoriteInQueryData(page, listingId, isFavorite, options),
       ),
     };
   }
 
   if (Array.isArray(record.data)) {
+    const nextData = record.data.map((item) =>
+      updateFavoriteItem(item, listingId, isFavorite),
+    );
     return {
       ...record,
-      data: record.data.map((item) => updateFavoriteItem(item, listingId, isFavorite)),
+      data:
+        options?.removeFromList && !isFavorite
+          ? nextData.filter((item) => {
+              if (!item || typeof item !== "object") return true;
+              return (item as Record<string, unknown>).id !== listingId;
+            })
+          : nextData,
+      meta:
+        options?.removeFromList &&
+        !isFavorite &&
+        record.meta &&
+        typeof record.meta === "object"
+          ? {
+              ...(record.meta as Record<string, unknown>),
+              total: Math.max(
+                0,
+                Number((record.meta as Record<string, unknown>).total ?? 0) - 1,
+              ),
+            }
+          : record.meta,
     };
   }
 
@@ -99,8 +129,19 @@ export function useFavoriteToggle() {
     onSuccess: async (_data, variables) => {
       const nextFavorite = !variables.isFavorite;
       queryClient.setQueriesData(
-        { predicate: (query) => isListingFavoriteQuery(query.queryKey) },
+        {
+          predicate: (query) =>
+            isListingFavoriteQuery(query.queryKey) &&
+            query.queryKey[0] !== favoriteQueryKeys.all[0],
+        },
         (data) => updateFavoriteInQueryData(data, variables.listingId, nextFavorite),
+      );
+      queryClient.setQueriesData(
+        { queryKey: favoriteQueryKeys.all },
+        (data) =>
+          updateFavoriteInQueryData(data, variables.listingId, nextFavorite, {
+            removeFromList: true,
+          }),
       );
       await queryClient.invalidateQueries({ queryKey: favoriteQueryKeys.all });
     },

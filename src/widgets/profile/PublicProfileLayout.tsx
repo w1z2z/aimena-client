@@ -97,7 +97,7 @@ export function PublicProfileLayout({ active, children }: PublicProfileLayoutPro
         <div className="mx-auto flex w-full max-w-[1440px] items-start gap-6">
           <PublicProfileSidebar profile={profile} active={active} />
           <div className="relative min-w-0 w-[1074px] shrink-0">
-            <div className="absolute right-0 top-0 z-50">
+            <div className="absolute right-0 top-0 z-10">
               <PublicProfileActionsMenu userId={profile.id} />
             </div>
             {children}

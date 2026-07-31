@@ -12,6 +12,7 @@ export type ListingCardData = {
   price: number;
   coverImageUrl: string | null;
   isFavorite: boolean;
+  isAvailable: boolean;
 };
 
 export type ListingCardPreview = Pick<

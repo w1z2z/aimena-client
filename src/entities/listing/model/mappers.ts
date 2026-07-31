@@ -50,5 +50,6 @@ export function mapApiListingToCard(listing: ApiListingCard): ListingCardData {
     price: listing.estimatedPrice ?? 0,
     coverImageUrl: listing.coverImageUrl,
     isFavorite: listing.isFavorite,
+    isAvailable: listing.isAvailable !== false,
   };
 }

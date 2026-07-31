@@ -30,6 +30,7 @@ export type ApiListingCard = {
   city: { id: string; name: string; regionName: string | null; slug: string };
   coverImageUrl: string | null;
   isFavorite: boolean;
+  isAvailable?: boolean;
 };
 
 export type ApiListingImage = {

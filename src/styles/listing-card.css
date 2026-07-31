@@ -38,11 +38,6 @@
   height: auto;
 }
 
-.home-listing-card--free .home-listing-card__action {
-  background: #8e8bed;
-  border-radius: 21px;
-}
-
 /* Profile listings — card-profile-mine (own: wants only; public: CTA + wants) */
 .home-listing-card--mine {
   height: auto;
@@ -194,6 +189,33 @@
   pointer-events: none;
 }
 
+.home-listing-card--unavailable .home-listing-card__media::after {
+  display: none;
+}
+
+.home-listing-card__unavailable {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(26, 26, 26, 0.55);
+  pointer-events: none;
+}
+
+.home-listing-card__unavailable span {
+  max-width: 220px;
+  color: #ffffff;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
 .home-listing-card__favorite {
   position: absolute;
   top: 10px;
@@ -294,8 +316,25 @@
   border-radius: 21px;
 }
 
+/* Free listing CTA — lilac */
+.home-listing-card__action--free {
+  background: #8e8bed;
+  border-radius: 10px;
+}
+
+/* Home «Отдаю даром» carousel — rounded */
+.home-listing-card--free .home-listing-card__action {
+  background: #8e8bed;
+  border-radius: 21px;
+}
+
 .home-listing-card__action:hover {
   filter: brightness(1.25);
+}
+
+.home-listing-card--free .home-listing-card__action:hover,
+.home-listing-card__action--free:hover {
+  filter: brightness(0.98);
 }
 
 .home-listing-card__wants {
@@ -347,8 +386,10 @@
 
 .home-listing-card__want-pill {
   box-sizing: border-box;
-  display: block;
+  display: flex;
   flex: none;
+  align-items: center;
+  justify-content: center;
   max-width: 120px;
   height: 24px;
   overflow: hidden;
@@ -360,7 +401,7 @@
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
   font-weight: 600;
-  line-height: 24px;
+  line-height: 1;
   letter-spacing: 0.002em;
   text-align: center;
   text-overflow: ellipsis;

@@ -47,6 +47,8 @@ export type ListingCardProps = {
   hideAction?: boolean;
   /** Force-hide favorite (e.g. own profile without waiting for ownerId). */
   hideFavorite?: boolean;
+  /** Listing is no longer publicly available — overlay + no navigation. */
+  unavailable?: boolean;
   className?: string;
 };
 
@@ -66,6 +68,7 @@ export function ListingCard({
   titleAccessory,
   hideAction = false,
   hideFavorite = false,
+  unavailable = false,
   className,
 }: ListingCardProps) {
   const { user } = useAuth();
@@ -97,7 +100,8 @@ export function ListingCard({
     variant === "hero" ? "home-listing-card--hero" : "",
     variant === "free" ? "home-listing-card--free" : "",
     variant === "mine" ? "home-listing-card--mine" : "",
-    imageMuted ? "home-listing-card--muted" : "",
+    imageMuted || unavailable ? "home-listing-card--muted" : "",
+    unavailable ? "home-listing-card--unavailable" : "",
     titleAccessory ? "home-listing-card--has-title-accessory" : "",
     className,
   ]
@@ -168,32 +172,57 @@ export function ListingCard({
     guardAuth("propose-exchange");
   };
 
-  const actionLabel = variant === "free" ? "Отдаю даром" : "Быстрый обмен";
-  const actionHandler = variant === "free" ? undefined : handleExchangeClick;
-  const hideFooterAction = hideAction;
+  const actionLabel = freeListing ? "Отдаю даром" : "Быстрый обмен";
+  const actionHandler = unavailable ? undefined : handleExchangeClick;
+  const hideFooterAction = hideAction || unavailable;
   const hasWants = truncatedWants.length > 0;
   const visibleWants = truncatedWants.slice(0, visibleCount);
   const wantsMore = freeListing ? 0 : Math.max(wants.length - visibleCount, 0);
 
+  const titleNode = unavailable ? (
+    <span className="home-listing-card__title-link">
+      <span>{title}</span>
+    </span>
+  ) : (
+    <Link href={listingHref} className="home-listing-card__title-link">
+      <span>{title}</span>
+    </Link>
+  );
+
+  const mediaNode = (
+    <>
+      <img
+        src={coverImageUrl || LISTING_PLACEHOLDER_IMAGE}
+        alt=""
+        className="home-listing-card__image"
+      />
+      {unavailable ? (
+        <div className="home-listing-card__unavailable" aria-hidden="true">
+          <span>Объявление больше недоступно</span>
+        </div>
+      ) : null}
+    </>
+  );
+
   return (
     <article className={rootClassName}>
       <div className="home-listing-card__title">
-        <Link href={listingHref} className="home-listing-card__title-link">
-          <span>{title}</span>
-        </Link>
+        {titleNode}
         {titleAccessory ? (
           <div className="home-listing-card__title-accessory">{titleAccessory}</div>
         ) : null}
       </div>
 
       <div className="home-listing-card__media">
-        <Link href={listingHref} className="home-listing-card__media-link" aria-label={title}>
-          <img
-            src={coverImageUrl || LISTING_PLACEHOLDER_IMAGE}
-            alt=""
-            className="home-listing-card__image"
-          />
-        </Link>
+        {unavailable ? (
+          <div className="home-listing-card__media-link" aria-label={title}>
+            {mediaNode}
+          </div>
+        ) : (
+          <Link href={listingHref} className="home-listing-card__media-link" aria-label={title}>
+            {mediaNode}
+          </Link>
+        )}
         {isOwnListing ? null : (
           <button
             type="button"
@@ -209,16 +238,29 @@ export function ListingCard({
             />
           </button>
         )}
-        <div className="home-listing-card__tags">
-          {status ? <span className="home-listing-card__tag home-listing-card__tag--status">{status}</span> : null}
-          <span className="home-listing-card__tag">{city}</span>
-          <span className="home-listing-card__tag">{condition}</span>
-        </div>
+        {unavailable ? null : (
+          <div className="home-listing-card__tags">
+            {status ? (
+              <span className="home-listing-card__tag home-listing-card__tag--status">{status}</span>
+            ) : null}
+            <span className="home-listing-card__tag">{city}</span>
+            <span className="home-listing-card__tag">{condition}</span>
+          </div>
+        )}
       </div>
 
       <div className="home-listing-card__footer">
         {hideFooterAction ? null : (
-          <button type="button" className="home-listing-card__action" onClick={actionHandler}>
+          <button
+            type="button"
+            className={[
+              "home-listing-card__action",
+              freeListing ? "home-listing-card__action--free" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={actionHandler}
+          >
             {actionLabel}
           </button>
         )}
