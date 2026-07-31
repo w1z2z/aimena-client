@@ -60,7 +60,7 @@
   height: 28px;
   min-height: 28px;
   border-radius: 10px 10px 0 0;
-  padding: 0 40px 0 12px;
+  padding: 0 52px 0 12px;
   font-size: 14px;
   font-weight: 600;
   line-height: 120%;
@@ -84,7 +84,7 @@
 .home-listing-card__title-accessory {
   position: absolute;
   top: 0;
-  right: 8px;
+  right: 12px;
   bottom: 0;
   z-index: 5;
   display: flex;
