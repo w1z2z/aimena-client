@@ -8,6 +8,7 @@ import { HomeFreeGiveawaySection } from "@/widgets/home-free-section/HomeFreeGiv
 import { HomeRecommendationsHeader } from "@/widgets/home-recommendations-header/HomeRecommendationsHeader";
 import { HomeTopBlock } from "@/widgets/home-top-block/HomeTopBlock";
 import { HomeSearchProvider } from "@/features/home-search";
+import { peekHomeTitleSearch } from "@/shared/lib/home-title-search";
 
 function forcePageScrollTop() {
   window.scrollTo(0, 0);
@@ -25,6 +26,8 @@ export function HomePageContent() {
 
   useLayoutEffect(() => {
     if (pathname !== "/") return;
+    // Header search scrolls to the feed — don't fight it with a top lock.
+    if (peekHomeTitleSearch()) return;
 
     const previous = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";

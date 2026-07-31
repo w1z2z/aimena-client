@@ -14,6 +14,8 @@ export const favoriteQueryKeys = {
   all: ["favorites"] as const,
   list: (page = 1, pageSize = 24) =>
     [...favoriteQueryKeys.all, "list", { page, pageSize }] as const,
+  infinite: (pageSize: number) =>
+    [...favoriteQueryKeys.all, "infinite", { pageSize }] as const,
 };
 
 function updateFavoriteItem(item: unknown, listingId: string, isFavorite: boolean) {

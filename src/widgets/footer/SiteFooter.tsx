@@ -7,7 +7,7 @@ const footerNav = [
     title: "Сервис",
     links: [
       { label: "Объявления", href: "/listings" },
-      { label: "Отдаю даром", href: "/listings" },
+      { label: "Отдаю даром", href: "/free" },
       { label: "Разместить", href: "/create-listing" },
       { label: "Чаты", href: "/chats" },
     ],

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { PROMO_HEIGHT, PROMO_WIDTH } from "./constants";
 
 export function FreePromoBanner() {
@@ -18,15 +20,16 @@ export function FreePromoBanner() {
         </p>
       </div>
 
-      <button
-        type="button"
+      <Link
+        href="/free"
         className="relative z-[1] box-border flex h-[48px] w-[225px] shrink-0 items-center justify-center gap-[6px] rounded-[16px] border-[0.5px] border-solid border-[#CACACA] bg-[#8E8BED] px-[24px] py-[16px] transition hover:brightness-105 active:translate-y-[0.5px]"
       >
         <span className="flex h-[16px] w-[177px] items-center justify-center text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#F8F8F5]">
           Посмотреть
         </span>
-      </button>
+      </Link>
 
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/free-promo-star.png"
         alt=""

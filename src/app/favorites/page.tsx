@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 import { ListingCard, mapApiListingToCard } from "@/entities/listing";
 import { useAuth } from "@/features/auth";
 import { favoriteQueryKeys } from "@/features/favorites";
 import { getFavorites, removeInactiveFavorites } from "@/shared/api/favorites";
+import { useInfiniteScrollSentinel } from "@/shared/lib/use-infinite-scroll-sentinel";
 import { Header } from "@/widgets/header/Header";
 
-const PAGE = 1;
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 24;
 
 function pluralOffers(count: number) {
   const mod10 = count % 10;
@@ -25,10 +26,25 @@ export default function FavoritesPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const favoritesQuery = useQuery({
-    queryKey: favoriteQueryKeys.list(PAGE, PAGE_SIZE),
-    queryFn: ({ signal }) => getFavorites({ page: PAGE, pageSize: PAGE_SIZE }, signal),
+
+  const favoritesQuery = useInfiniteQuery({
+    queryKey: favoriteQueryKeys.infinite(PAGE_SIZE),
     enabled: isAuthenticated,
+    initialPageParam: 1,
+    queryFn: async ({ pageParam, signal }) => {
+      const response = await getFavorites(
+        { page: pageParam, pageSize: PAGE_SIZE },
+        signal,
+      );
+      return {
+        items: response.data.map(mapApiListingToCard),
+        total: response.meta.total,
+        page: response.meta.page,
+        pageCount: response.meta.pageCount,
+      };
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.pageCount ? lastPage.page + 1 : undefined,
   });
 
   const removeInactiveMutation = useMutation({
@@ -38,9 +54,21 @@ export default function FavoritesPage() {
     },
   });
 
-  const listings = (favoritesQuery.data?.data ?? []).map(mapApiListingToCard);
-  const total = favoritesQuery.data?.meta.total ?? listings.length;
+  const listings = useMemo(
+    () => favoritesQuery.data?.pages.flatMap((page) => page.items) ?? [],
+    [favoritesQuery.data],
+  );
+  const total = favoritesQuery.data?.pages[0]?.total ?? listings.length;
   const hasInactive = listings.some((listing) => !listing.isAvailable);
+
+  const sentinelRef = useInfiniteScrollSentinel({
+    hasNextPage: Boolean(favoritesQuery.hasNextPage),
+    isFetchingNextPage: favoritesQuery.isFetchingNextPage,
+    fetchNextPage: () => {
+      if (!favoritesQuery.hasNextPage || favoritesQuery.isFetchingNextPage) return;
+      void favoritesQuery.fetchNextPage();
+    },
+  });
 
   let body = <p className="favorites-page__status">Загрузка…</p>;
 
@@ -65,7 +93,11 @@ export default function FavoritesPage() {
         Не удалось загрузить избранное.
       </p>
     );
-  } else if (isAuthenticated && favoritesQuery.isSuccess && listings.length === 0) {
+  } else if (
+    isAuthenticated &&
+    !favoritesQuery.isLoading &&
+    listings.length === 0
+  ) {
     body = (
       <div className="favorites-page__empty">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -115,6 +147,10 @@ export default function FavoritesPage() {
             />
           ))}
         </div>
+        <div ref={sentinelRef} className="favorites-page__sentinel" aria-hidden />
+        {favoritesQuery.isFetchingNextPage ? (
+          <p className="favorites-page__loading-more">Загрузка…</p>
+        ) : null}
       </div>
     );
   }
@@ -124,7 +160,11 @@ export default function FavoritesPage() {
       <Header />
       <main className="favorites-page__main">
         <h1 className="favorites-page__title">Избранное</h1>
-        {isAuthenticated && favoritesQuery.isSuccess ? (
+        {isAuthenticated && listings.length > 0 ? (
+          <p className="favorites-page__count">
+            {total} {pluralOffers(total)}
+          </p>
+        ) : isAuthenticated && favoritesQuery.isSuccess ? (
           <p className="favorites-page__count">
             {total} {pluralOffers(total)}
           </p>

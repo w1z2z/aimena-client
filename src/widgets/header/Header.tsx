@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { useAuth, useAuthGate } from "@/features/auth";
 import { getListings } from "@/shared/api/listings";
+import { requestHomeTitleSearch } from "@/shared/lib/home-title-search";
 
 import { Avatar } from "./Avatar";
 import { ButtonPrimary } from "./ButtonPrimary";
@@ -19,6 +20,11 @@ import { BellIcon, HeartIcon, SearchIcon } from "@/shared/ui/icons";
 
 type OpenPanel = "notifications" | "profile" | null;
 
+type SearchSuggestion = {
+  id: string;
+  title: string;
+};
+
 function getPageScrollTop() {
   return Math.max(
     window.pageYOffset,
@@ -30,6 +36,7 @@ function getPageScrollTop() {
 
 export function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, user } = useAuth();
   const { guardAuth } = useAuthGate();
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -41,7 +48,7 @@ export function Header() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [isSearchClosing, setIsSearchClosing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [activeSearchSuggestionIndex, setActiveSearchSuggestionIndex] = useState<number>(-1);
 
@@ -88,9 +95,10 @@ export function Header() {
       return;
     }
 
+    // Keep highlight only if user already navigated/hovered; never auto-pick first item.
     setActiveSearchSuggestionIndex((current) => {
       if (current >= 0 && current < searchSuggestions.length) return current;
-      return 0;
+      return -1;
     });
   }, [isSearchExpanded, searchSuggestions]);
 
@@ -121,15 +129,18 @@ export function Header() {
       setIsSearchLoading(true);
       void getListings({ page: 1, pageSize: 10, query: trimmedQuery }, controller.signal)
         .then((response) => {
-          const uniqueTitles = Array.from(
-            new Set(
-              response.data
-                .map((listing) => listing.title.trim())
-                .filter((title): title is string => title.length > 0),
-            ),
-          ).slice(0, 8);
+          const seenTitles = new Set<string>();
+          const suggestions: SearchSuggestion[] = [];
 
-          setSearchSuggestions(uniqueTitles);
+          for (const listing of response.data) {
+            const title = listing.title.trim();
+            if (!title || seenTitles.has(title.toLowerCase())) continue;
+            seenTitles.add(title.toLowerCase());
+            suggestions.push({ id: listing.id, title });
+            if (suggestions.length >= 8) break;
+          }
+
+          setSearchSuggestions(suggestions);
         })
         .catch((error: unknown) => {
           if (
@@ -213,6 +224,17 @@ export function Header() {
     }, 300);
   };
 
+  const applyHomeFeedSearch = (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    requestHomeTitleSearch(trimmed);
+    if (pathname !== "/") {
+      router.push("/");
+    }
+    closeSearchWithAnimation();
+  };
+
   const handleSearchToggle = () => {
     if (!isSearchExpanded) {
       if (searchCloseTimerRef.current !== null) {
@@ -229,7 +251,7 @@ export function Header() {
     }
 
     if (searchQuery.trim()) {
-      router.push(`/listings?search=${encodeURIComponent(searchQuery.trim())}`);
+      applyHomeFeedSearch(searchQuery);
       return;
     }
 
@@ -310,15 +332,14 @@ export function Header() {
                         activeSearchSuggestionIndex >= 0 &&
                         activeSearchSuggestionIndex < searchSuggestions.length
                       ) {
-                        const pickedTitle = searchSuggestions[activeSearchSuggestionIndex];
-                        setSearchQuery(pickedTitle);
-                        router.push(`/listings?search=${encodeURIComponent(pickedTitle)}`);
-                        closeSearchWithAnimation();
+                        const picked = searchSuggestions[activeSearchSuggestionIndex];
+                        setSearchQuery(picked.title);
+                        applyHomeFeedSearch(picked.title);
                         return;
                       }
 
                       if (searchQuery.trim()) {
-                        router.push(`/listings?search=${encodeURIComponent(searchQuery.trim())}`);
+                        applyHomeFeedSearch(searchQuery);
                       }
                     }
                   }}
@@ -370,22 +391,21 @@ export function Header() {
                   <p className="px-[12px] py-[10px] text-[14px] text-[#3D3D3D]">Ищем...</p>
                 ) : searchSuggestions.length > 0 ? (
                   <ul className="max-h-[260px] overflow-y-auto">
-                    {searchSuggestions.map((title, index) => (
-                      <li key={title}>
+                    {searchSuggestions.map((suggestion, index) => (
+                      <li key={suggestion.id}>
                         <button
                           type="button"
                           onMouseDown={(event) => event.preventDefault()}
                           onMouseEnter={() => setActiveSearchSuggestionIndex(index)}
                           onClick={() => {
-                            setSearchQuery(title);
-                            router.push(`/listings?search=${encodeURIComponent(title)}`);
-                            closeSearchWithAnimation();
+                            setSearchQuery(suggestion.title);
+                            applyHomeFeedSearch(suggestion.title);
                           }}
                           className={`block w-full px-[12px] py-[10px] text-left text-[14px] text-[#3D3D3D] outline-none transition hover:bg-[#1A1A1A]/6 focus:outline-none focus-visible:outline-none ${
                             index === activeSearchSuggestionIndex ? "bg-[#1A1A1A]/6" : ""
                           }`}
                         >
-                          {title}
+                          {suggestion.title}
                         </button>
                       </li>
                     ))}

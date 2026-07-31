@@ -26,6 +26,10 @@ import {
   type HomeHeroState,
   type HomeSearchMode,
 } from "./types";
+import {
+  consumeHomeTitleSearch,
+  onHomeTitleSearch,
+} from "@/shared/lib/home-title-search";
 
 const FILTERS_AUTO_APPLY_DEBOUNCE_MS = 200;
 
@@ -44,6 +48,7 @@ type HomeSearchContextValue = {
   resetFilters: () => void;
   applyFilters: () => void;
   applyHeroToFilters: () => void;
+  applyTitleSearch: (title: string) => void;
   openFiltersAndScroll: () => void;
   isFiltersOpen: boolean;
   setIsFiltersOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -165,6 +170,33 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     setAppliedFilters(nextFilters);
   }, [categoryUiKeyToBackendId, hero]);
 
+  const applyTitleSearch = useCallback((title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+
+    setFilters((current) => ({ ...current, titleQuery: trimmed }));
+    setAppliedFilters((current) => ({ ...current, titleQuery: trimmed }));
+    setIsFiltersOpen(true);
+
+    window.requestAnimationFrame(() => {
+      document.getElementById("home-recommendations")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    const pending = consumeHomeTitleSearch();
+    if (pending) {
+      applyTitleSearch(pending);
+    }
+    return onHomeTitleSearch((title) => {
+      consumeHomeTitleSearch();
+      applyTitleSearch(title);
+    });
+  }, [applyTitleSearch]);
+
   const openFiltersAndScroll = useCallback(() => {
     const nextFilters = heroToFilters(hero, categoryUiKeyToBackendId);
     setFilters(nextFilters);
@@ -209,6 +241,7 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       resetFilters,
       applyFilters,
       applyHeroToFilters,
+      applyTitleSearch,
       openFiltersAndScroll,
       isFiltersOpen,
       setIsFiltersOpen,
@@ -230,6 +263,7 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     [
       applyFilters,
       applyHeroToFilters,
+      applyTitleSearch,
       appliedFilters,
       categories,
       categoryTree,
