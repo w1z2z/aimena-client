@@ -64,6 +64,14 @@ function updateFavoriteInQueryData(
     };
   }
 
+  // Detail response: { listing: { id, isFavorite, ... } }
+  if (record.listing && typeof record.listing === "object") {
+    return {
+      ...record,
+      listing: updateFavoriteItem(record.listing, listingId, isFavorite),
+    };
+  }
+
   return data;
 }
 

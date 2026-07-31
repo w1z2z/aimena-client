@@ -31,6 +31,54 @@ export type ApiListingCard = {
   isFavorite: boolean;
 };
 
+export type ApiListingImage = {
+  id: string;
+  kind: "item" | "document";
+  url: string;
+  sortOrder: number;
+  isCover: boolean;
+};
+
+export type ApiListingOwner = {
+  id: string;
+  displayName: string;
+  slug: string;
+  avatarUrl: string | null;
+  verified: boolean;
+  swapsCount: number;
+  ratingAvg: number;
+  ratingCount: number;
+};
+
+export type ApiListingDetail = {
+  id: string;
+  status: "draft" | "active" | "archived";
+  type: "item" | "service";
+  serviceFormats: Array<"online" | "onsite" | "client">;
+  title: string;
+  description: string;
+  condition: ApiListingCondition;
+  estimatedPrice: number | null;
+  extraPay: "none" | "i_pay" | "they_pay";
+  isFree: boolean;
+  hasDocuments: boolean;
+  wantsText: string;
+  wantsTags: string[];
+  category: { id: string; name: string; slug: string };
+  wantsCategory: { id: string; name: string; slug: string } | null;
+  city: { id: string; name: string; regionName: string | null; slug: string };
+  owner: ApiListingOwner | null;
+  images: ApiListingImage[];
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+  isFavorite: boolean;
+};
+
+export type ApiListingDetailResponse = {
+  listing: ApiListingDetail;
+};
+
 export type ApiListResponse<T> = {
   data: T[];
   meta: {
@@ -156,5 +204,34 @@ export function getMyListings(
 export function publishListing(listingId: string) {
   return httpRequest<CreateListingResponse>(`/listings/${listingId}/publish`, {
     method: "POST",
+  });
+}
+
+export function getListing(listingId: string, signal?: AbortSignal) {
+  return httpRequest<ApiListingDetailResponse>(`/listings/${listingId}`, {
+    signal,
+  });
+}
+
+export function getSimilarListings(
+  listingId: string,
+  params: { limit?: number } = {},
+  signal?: AbortSignal,
+) {
+  return httpRequest<ApiListResponse<ApiListingCard>>(`/listings/${listingId}/similar`, {
+    query: params,
+    signal,
+  });
+}
+
+export function pauseListing(listingId: string) {
+  return httpRequest<ApiListingDetailResponse>(`/listings/${listingId}/pause`, {
+    method: "POST",
+  });
+}
+
+export function deleteListing(listingId: string) {
+  return httpRequest<ApiListingDetailResponse>(`/listings/${listingId}`, {
+    method: "DELETE",
   });
 }

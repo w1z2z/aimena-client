@@ -1,9 +1,11 @@
-import type { ApiListingCard } from "@/shared/api/listings";
+import type { ApiListingCard, ApiListingDetail } from "@/shared/api/listings";
 
 import { mapApiConditionToLabel } from "./conditions";
 import type { ListingCardData } from "./types";
 
-function buildWantsPreview(listing: ApiListingCard): string[] {
+type WantsSource = Pick<ApiListingCard, "wantsText" | "wantsTags" | "wantsCategory">;
+
+export function buildWantsPreview(listing: WantsSource): string[] {
   const normalizedTextParts = listing.wantsText
     .split(/[,\n;]+/)
     .map((part) =>
@@ -27,6 +29,12 @@ function buildWantsPreview(listing: ApiListingCard): string[] {
 
   return [...new Map(candidates.map((value) => [value.toLowerCase(), value])).values()];
 }
+
+export const EXTRA_PAY_LABELS: Record<ApiListingDetail["extraPay"], string> = {
+  none: "Без доплаты",
+  i_pay: "Готов доплатить",
+  they_pay: "Хочу доплату",
+};
 
 export function mapApiListingToCard(listing: ApiListingCard): ListingCardData {
   return {

@@ -7,6 +7,7 @@
 @import "../styles/switch.css";
 @import "../styles/auth.css";
 @import "../styles/profile.css";
+@import "../styles/listing-detail.css";
 
 @theme {
   --color-brand: #1a1a1a;

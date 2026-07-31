@@ -1,10 +1,7 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+"use client";
+
+import { ListingDetailView } from "@/widgets/listing-detail/ListingDetailView";
 
 export default function ListingDetailsPage() {
-  return (
-    <PageStub
-      title="Listing Details"
-      description="Детальная страница объявления, похожие карточки и действия обмена."
-    />
-  );
+  return <ListingDetailView />;
 }

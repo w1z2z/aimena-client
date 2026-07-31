@@ -18,6 +18,8 @@ export { FilterIcon } from "./FilterIcon";
 export { HeartIcon } from "./HeartIcon";
 export { LogoutIcon } from "./LogoutIcon";
 export { LogoIcon } from "./LogoIcon";
+export { ListingActionStarIcon } from "./ListingActionStarIcon";
+export { MenuSquareIcon } from "./MenuSquareIcon";
 export { SearchIcon } from "./SearchIcon";
 export { StarMiniIcon } from "./StarMiniIcon";
 export { TagsIcon } from "./TagsIcon";
