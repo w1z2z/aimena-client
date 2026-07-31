@@ -8,6 +8,7 @@ import { useAuth } from "@/features/auth";
 import { getMyListings, type ApiListingCard } from "@/shared/api/listings";
 
 import { pluralRu } from "./constants";
+import { ProfileListingCardActions } from "./ProfileListingCardActions";
 import { ProfileSortControl } from "./ProfileSortControl";
 import {
   ProfileStatusFilter,
@@ -82,6 +83,7 @@ export function ProfileListingsPanel() {
               status={STATUS_LABEL[listing.status] ?? null}
               hideAction
             />
+            <ProfileListingCardActions listingId={listing.id} status={listing.status} />
           </div>
         ))}
       </div>

@@ -120,7 +120,11 @@ export function ListingDetailView() {
               <div className="listing-detail-heading">
                 <div className="listing-detail-heading__top">
                   <h1 className="listing-detail-heading__title">{listing.title}</h1>
-                  <ListingActionsMenu listingId={listing.id} isOwner={isOwner} />
+                  <ListingActionsMenu
+                    listingId={listing.id}
+                    isOwner={isOwner}
+                    status={listing.status}
+                  />
                 </div>
                 <div className="listing-detail-heading__tags">
                   {metaTags.map((tag) => (

@@ -6,7 +6,12 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { listingQueryKeys } from "@/entities/listing";
 import { useAuthGate } from "@/features/auth";
-import { deleteListing, pauseListing } from "@/shared/api/listings";
+import {
+  deleteListing,
+  pauseListing,
+  publishListing,
+  type ApiListingDetail,
+} from "@/shared/api/listings";
 import { ApiError } from "@/shared/api/http";
 import { MenuSquareIcon } from "@/shared/ui/icons";
 
@@ -16,14 +21,32 @@ import { ListingReportModal } from "./ListingReportModal";
 type ListingActionsMenuProps = {
   listingId: string;
   isOwner: boolean;
+  status?: ApiListingDetail["status"];
 };
 
 type ConfirmKind = "pause" | "delete";
 type ModalKind = ConfirmKind | "report" | null;
+type PendingKind = ConfirmKind | "publish" | null;
 
 const PANEL_CLOSE_MS = 220;
+const PROFILE_LISTINGS_QUERY_KEY = ["profile-listings-me"] as const;
 
-export function ListingActionsMenu({ listingId, isOwner }: ListingActionsMenuProps) {
+async function invalidateListingCaches(
+  queryClient: ReturnType<typeof useQueryClient>,
+  listingId: string,
+) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: listingQueryKeys.detail(listingId) }),
+    queryClient.invalidateQueries({ queryKey: listingQueryKeys.all }),
+    queryClient.invalidateQueries({ queryKey: PROFILE_LISTINGS_QUERY_KEY }),
+  ]);
+}
+
+export function ListingActionsMenu({
+  listingId,
+  isOwner,
+  status = "active",
+}: ListingActionsMenuProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { guardAuth } = useAuthGate();
@@ -33,7 +56,7 @@ export function ListingActionsMenu({ listingId, isOwner }: ListingActionsMenuPro
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
-  const [pendingAction, setPendingAction] = useState<ConfirmKind | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingKind>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -108,12 +131,29 @@ export function ListingActionsMenu({ listingId, isOwner }: ListingActionsMenuPro
     setPendingAction("pause");
     try {
       await pauseListing(listingId);
-      await queryClient.invalidateQueries({ queryKey: listingQueryKeys.detail(listingId) });
-      await queryClient.invalidateQueries({ queryKey: listingQueryKeys.all });
+      await invalidateListingCaches(queryClient, listingId);
       setModal(null);
+      closeMenu();
     } catch (error) {
       setActionError(
         error instanceof ApiError ? error.message : "Не удалось снять с публикации",
+      );
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (pendingAction) return;
+    setActionError(null);
+    setPendingAction("publish");
+    try {
+      await publishListing(listingId);
+      await invalidateListingCaches(queryClient, listingId);
+      closeMenu();
+    } catch (error) {
+      setActionError(
+        error instanceof ApiError ? error.message : "Не удалось опубликовать объявление",
       );
     } finally {
       setPendingAction(null);
@@ -126,7 +166,7 @@ export function ListingActionsMenu({ listingId, isOwner }: ListingActionsMenuPro
     setPendingAction("delete");
     try {
       await deleteListing(listingId);
-      await queryClient.invalidateQueries({ queryKey: listingQueryKeys.all });
+      await invalidateListingCaches(queryClient, listingId);
       setModal(null);
       router.push("/profile");
     } catch (error) {
@@ -168,20 +208,35 @@ export function ListingActionsMenu({ listingId, isOwner }: ListingActionsMenuPro
         >
           {isOwner ? (
             <>
+              {status === "active" ? (
+                <button
+                  type="button"
+                  className="listing-detail-actions__item"
+                  disabled={pendingAction !== null}
+                  onClick={() => {
+                    closeMenu();
+                    setActionError(null);
+                    setModal("pause");
+                  }}
+                >
+                  Снять с публикации
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="listing-detail-actions__item"
+                  disabled={pendingAction !== null}
+                  onClick={() => {
+                    void handlePublish();
+                  }}
+                >
+                  {status === "draft" ? "Опубликовать" : "Опубликовать снова"}
+                </button>
+              )}
               <button
                 type="button"
                 className="listing-detail-actions__item"
-                onClick={() => {
-                  closeMenu();
-                  setActionError(null);
-                  setModal("pause");
-                }}
-              >
-                Снять с публикации
-              </button>
-              <button
-                type="button"
-                className="listing-detail-actions__item"
+                disabled={pendingAction !== null}
                 onClick={() => {
                   closeMenu();
                   router.push(`/listings/${listingId}/edit`);
@@ -192,6 +247,7 @@ export function ListingActionsMenu({ listingId, isOwner }: ListingActionsMenuPro
               <button
                 type="button"
                 className="listing-detail-actions__item listing-detail-actions__item--danger"
+                disabled={pendingAction !== null}
                 onClick={() => {
                   closeMenu();
                   setActionError(null);
