@@ -129,6 +129,11 @@
   scroll-padding-bottom: 16px;
 }
 
+/* While settling after mount/navigation, snap must not lock a restored offset. */
+.home-recommendations-scroll.is-scroll-settling {
+  scroll-snap-type: none;
+}
+
 .home-recommendations-scroll::-webkit-scrollbar {
   width: 6px;
   height: 6px;

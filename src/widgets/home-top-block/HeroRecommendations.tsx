@@ -105,10 +105,44 @@ export function HeroRecommendationsPanel({
       ? displayed.listings.map((item) => item.id).join("-")
       : "empty";
 
+  const [scrollSettling, setScrollSettling] = useState(true);
+
+  // Mandatory snap + Next/browser scroll restoration leave the strip slightly
+  // scrolled after client navigations. Suppress snap, pin to top, then re-enable.
   useLayoutEffect(() => {
     const node = scrollRef.current;
-    if (!node) return;
-    node.scrollTop = 0;
+    if (!node || !visible) return;
+
+    setScrollSettling(true);
+
+    const pinTop = () => {
+      if (node.scrollTop !== 0) node.scrollTop = 0;
+    };
+
+    pinTop();
+
+    const intervalId = window.setInterval(pinTop, 50);
+    const rafId = window.requestAnimationFrame(() => {
+      pinTop();
+      window.requestAnimationFrame(pinTop);
+    });
+
+    const settleTimer = window.setTimeout(() => {
+      window.clearInterval(intervalId);
+      pinTop();
+      setScrollSettling(false);
+      // Snap can nudge once re-enabled — pin again on the next frames.
+      window.requestAnimationFrame(() => {
+        pinTop();
+        window.requestAnimationFrame(pinTop);
+      });
+    }, 400);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearInterval(intervalId);
+      window.clearTimeout(settleTimer);
+    };
   }, [scrollKey, visible]);
 
   return (
@@ -120,7 +154,9 @@ export function HeroRecommendationsPanel({
       <div
         key={scrollKey}
         ref={scrollRef}
-        className="home-recommendations-scroll h-[461px] w-[366px] overflow-x-hidden overflow-y-auto overscroll-contain px-[12px] pb-[16px] pt-[2px] [overflow-anchor:none]"
+        className={`home-recommendations-scroll h-[461px] w-[366px] overflow-x-hidden overflow-y-auto overscroll-contain px-[12px] pb-[16px] pt-[2px] [overflow-anchor:none]${
+          scrollSettling ? " is-scroll-settling" : ""
+        }`}
       >
         <div
           className={`hero-recommendations-fade flex flex-col items-center gap-[16px] ${
