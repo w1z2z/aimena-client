@@ -19,6 +19,10 @@ import { uploadListingFileViaBackend } from "@/shared/api/media";
 import { createListingDraft, getListingTagSuggestions, publishListing } from "@/shared/api/listings";
 import { buildCitySelectOptions } from "@/shared/lib/city-select-options";
 import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
+import {
+  clearHeroListingDraft,
+  readHeroListingDraft,
+} from "@/shared/lib/hero-listing-draft";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
 import { DeleteIcon } from "@/shared/ui/icons";
@@ -300,6 +304,8 @@ export default function CreateListingPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPublishedModalOpen, setIsPublishedModalOpen] = useState(false);
+  const [draftCityLabel, setDraftCityLabel] = useState<string | null>(null);
+  const heroDraftAppliedRef = useRef(false);
   const itemPhotoGrid = getItemPhotoGridLayout(itemPhotos.length);
   const docPhotoGrid = getDocPhotoGridLayout(docPhotos.length);
   const parentCategoryOptions = useMemo<SelectOption[]>(
@@ -384,15 +390,41 @@ export default function CreateListingPage() {
       }),
     });
 
+    const pinned: SelectOption[] = [];
+
     if (user?.cityId && user.city) {
       const hasProfileCity = options.some((option) => option.value === user.cityId);
       if (!hasProfileCity) {
-        return [{ value: user.cityId, label: user.city }, ...options];
+        pinned.push({ value: user.cityId, label: user.city });
       }
     }
 
-    return options;
-  }, [featuredCities, regularCities, user?.city, user?.cityId]);
+    if (cityId && draftCityLabel) {
+      const hasDraftCity =
+        options.some((option) => option.value === cityId) ||
+        pinned.some((option) => option.value === cityId);
+      if (!hasDraftCity) {
+        pinned.push({ value: cityId, label: draftCityLabel });
+      }
+    }
+
+    return pinned.length > 0 ? [...pinned, ...options] : options;
+  }, [cityId, draftCityLabel, featuredCities, regularCities, user?.city, user?.cityId]);
+
+  useEffect(() => {
+    if (heroDraftAppliedRef.current) return;
+    heroDraftAppliedRef.current = true;
+
+    const draft = readHeroListingDraft();
+    if (!draft) return;
+
+    if (draft.title) setTitle(draft.title);
+    if (draft.price) setPriceDigits(draft.price);
+    if (draft.cityId) {
+      setCityId(draft.cityId);
+      if (draft.cityLabel) setDraftCityLabel(draft.cityLabel);
+    }
+  }, []);
 
   const itemPhotosRef = useRef(itemPhotos);
   const docPhotosRef = useRef(docPhotos);
@@ -777,6 +809,7 @@ export default function CreateListingPage() {
       });
 
       await publishListing(created.listing.id);
+      clearHeroListingDraft();
       setIsPublishedModalOpen(true);
     } catch (error: unknown) {
       if (error instanceof ApiError) {

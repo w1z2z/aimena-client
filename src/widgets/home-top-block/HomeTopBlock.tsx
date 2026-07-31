@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { useAuthGate } from "@/features/auth";
 import { useHomeSearch } from "@/features/home-search";
+import { writeHeroListingDraft } from "@/shared/lib/hero-listing-draft";
 import { Header } from "@/widgets/header/Header";
 
 import { CategoriesArc } from "./CategoriesArc";
@@ -44,8 +45,15 @@ export function HomeTopBlock() {
   );
 
   const handleCreateListing = useCallback(() => {
+    const cityLabel = cityOptions.find((item) => item.value === city && !item.disabled)?.label ?? "";
+    writeHeroListingDraft({
+      title,
+      price,
+      cityId: city,
+      cityLabel,
+    });
     guardAuth("create-listing", () => router.push("/create-listing"));
-  }, [guardAuth, router]);
+  }, [city, cityOptions, guardAuth, price, router, title]);
 
   const handleCategoryChange = useCallback(
     (nextCategoryId: string) => {

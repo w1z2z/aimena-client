@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import type { ListingCardData } from "@/entities/listing";
+import { writeHeroListingDraft } from "@/shared/lib/hero-listing-draft";
 import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
 import type { SelectOption } from "@/shared/ui/select-field";
 
@@ -122,6 +123,17 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     },
     [cityOptions],
   );
+
+  useEffect(() => {
+    if (mode !== "exchange") return;
+
+    writeHeroListingDraft({
+      title,
+      price,
+      cityId: city,
+      cityLabel: pinnedCityOption?.value === city ? pinnedCityOption.label : "",
+    });
+  }, [city, mode, pinnedCityOption, price, title]);
 
   const resetFilters = useCallback(() => {
     const defaults = createDefaultFilters();

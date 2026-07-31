@@ -552,7 +552,7 @@ export function ModeFormColumn({
             }`}
             aria-hidden={!isExchange}
           >
-            <HeroExchangeFilters condition={condition} setCondition={setCondition} />
+            <HeroAddPanel onAddListingClick={onAddListingClick} />
           </div>
           <div
             className={`col-start-1 row-start-1 ${HERO_SWAP_TRANSITION} ${
@@ -562,7 +562,7 @@ export function ModeFormColumn({
             }`}
             aria-hidden={isExchange}
           >
-            <HeroAddPanel onAddListingClick={onAddListingClick} />
+            <HeroExchangeFilters condition={condition} setCondition={setCondition} />
           </div>
         </div>
 
