@@ -279,7 +279,7 @@ export function ListingCard({
                       className="home-listing-card__want-pill"
                       title={item.full !== item.label ? item.full : undefined}
                     >
-                      {item.label}
+                      <span className="home-listing-card__want-pill-text">{item.label}</span>
                     </span>
                   ))}
                 </div>
@@ -297,14 +297,16 @@ export function ListingCard({
                       data-want-measure-pill
                       className="home-listing-card__want-pill"
                     >
-                      {item.label}
+                      <span className="home-listing-card__want-pill-text">{item.label}</span>
                     </span>
                   ))}
                 </div>
               </>
             ) : (
               <div className="home-listing-card__wants-pills">
-                <span className="home-listing-card__want-pill">Любые варианты</span>
+                <span className="home-listing-card__want-pill">
+                  <span className="home-listing-card__want-pill-text">Любые варианты</span>
+                </span>
               </div>
             )}
           </div>

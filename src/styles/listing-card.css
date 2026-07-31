@@ -397,9 +397,10 @@
 
 .home-listing-card__want-pill {
   box-sizing: border-box;
-  /* block (not flex): ellipsis clips in the content box so side padding stays */
-  display: block;
+  display: flex;
   flex: none;
+  align-items: center;
+  justify-content: center;
   max-width: 120px;
   height: 24px;
   overflow: hidden;
@@ -411,9 +412,14 @@
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
   font-weight: 600;
-  line-height: 23px;
+  line-height: 1;
   letter-spacing: 0.002em;
   text-align: center;
+}
+
+.home-listing-card__want-pill-text {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
