@@ -33,6 +33,7 @@ export type ApiListingCard = {
 
 export type ApiListingImage = {
   id: string;
+  mediaId: string;
   kind: "item" | "document";
   url: string;
   sortOrder: number;
@@ -54,7 +55,7 @@ export type ApiListingDetail = {
   id: string;
   status: "draft" | "active" | "archived";
   type: "item" | "service";
-  serviceFormats: Array<"online" | "onsite" | "client">;
+  serviceFormats: Array<"online" | "onsite" | "client" | "offline">;
   title: string;
   description: string;
   condition: ApiListingCondition;
@@ -137,10 +138,10 @@ export type CreateListingPayload = {
   title: string;
   description: string;
   categoryId: string;
-  wantsCategoryId?: string;
+  wantsCategoryId?: string | null;
   cityId: string;
   condition?: ApiListingCondition;
-  estimatedPrice?: number;
+  estimatedPrice?: number | null;
   extraPay?: "none" | "i_pay" | "they_pay";
   isFree?: boolean;
   wantsTags?: string[];
@@ -204,6 +205,13 @@ export function getMyListings(
 export function publishListing(listingId: string) {
   return httpRequest<CreateListingResponse>(`/listings/${listingId}/publish`, {
     method: "POST",
+  });
+}
+
+export function updateListing(listingId: string, payload: CreateListingPayload) {
+  return httpRequest<ApiListingDetailResponse>(`/listings/${listingId}`, {
+    method: "PATCH",
+    body: payload,
   });
 }
 

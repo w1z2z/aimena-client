@@ -32,6 +32,8 @@ export type ListingCardProps = {
   condition: string;
   coverImageUrl?: string | null;
   wants?: string[];
+  /** Free listing — footer shows a single «даром» tag instead of wants. */
+  isFree?: boolean;
   isFavorite?: boolean;
   /** Own-profile status label (e.g. «Активно»). */
   status?: string | null;
@@ -48,6 +50,7 @@ export function ListingCard({
   condition,
   coverImageUrl,
   wants = [],
+  isFree = false,
   isFavorite = false,
   status,
   hideAction = false,
@@ -59,16 +62,18 @@ export function ListingCard({
   const pillsRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const favorite = favoriteOverride ?? isFavorite;
+  const freeListing = isFree || variant === "free";
   const showWants = variant === "exchange" || variant === "mine";
   const listingHref = `/listings/${listingId}`;
-  const truncatedWants = useMemo(
-    () =>
-      wants.map((item) => ({
-        full: item,
-        label: truncateWantLabel(item),
-      })),
-    [wants],
-  );
+  const truncatedWants = useMemo(() => {
+    if (freeListing) {
+      return [{ full: "Даром", label: "Даром" }];
+    }
+    return wants.map((item) => ({
+      full: item,
+      label: truncateWantLabel(item),
+    }));
+  }, [freeListing, wants]);
   const [visibleCount, setVisibleCount] = useState(() =>
     Math.min(WANTS_MAX_VISIBLE, truncatedWants.length),
   );
@@ -90,8 +95,8 @@ export function ListingCard({
   }, [favoriteOverride, isFavorite]);
 
   useLayoutEffect(() => {
-    if (!showWants || truncatedWants.length === 0) {
-      setVisibleCount(0);
+    if (!showWants || freeListing || truncatedWants.length === 0) {
+      setVisibleCount(freeListing ? 1 : 0);
       return;
     }
 
@@ -125,7 +130,7 @@ export function ListingCard({
     syncVisibleCount();
     const frameId = window.requestAnimationFrame(syncVisibleCount);
     return () => window.cancelAnimationFrame(frameId);
-  }, [showWants, truncatedWants]);
+  }, [showWants, freeListing, truncatedWants]);
 
   const handleFavoriteClick = () => {
     if (favoriteMutation.isPending || favoriteOverride !== null) return;
@@ -147,11 +152,11 @@ export function ListingCard({
   };
 
   const actionLabel = variant === "free" ? "Отдаю даром" : "Быстрый обмен";
-  const actionHandler = variant === "free" || variant === "mine" ? undefined : handleExchangeClick;
-  const hideFooterAction = hideAction || variant === "mine";
+  const actionHandler = variant === "free" ? undefined : handleExchangeClick;
+  const hideFooterAction = hideAction;
   const hasWants = truncatedWants.length > 0;
   const visibleWants = truncatedWants.slice(0, visibleCount);
-  const wantsMore = Math.max(wants.length - visibleCount, 0);
+  const wantsMore = freeListing ? 0 : Math.max(wants.length - visibleCount, 0);
 
   return (
     <article className={rootClassName}>

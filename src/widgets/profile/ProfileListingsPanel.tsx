@@ -77,6 +77,7 @@ export function ProfileListingsPanel() {
               condition={mapApiConditionToLabel(listing.condition)}
               coverImageUrl={listing.coverImageUrl}
               wants={listing.wantsTags}
+              isFree={listing.isFree}
               isFavorite={listing.isFavorite}
               status={STATUS_LABEL[listing.status] ?? null}
               hideAction

@@ -182,7 +182,10 @@ export function ListingActionsMenu({ listingId, isOwner }: ListingActionsMenuPro
               <button
                 type="button"
                 className="listing-detail-actions__item"
-                onClick={closeMenu}
+                onClick={() => {
+                  closeMenu();
+                  router.push(`/listings/${listingId}/edit`);
+                }}
               >
                 Редактировать объявление
               </button>

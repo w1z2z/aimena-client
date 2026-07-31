@@ -43,9 +43,9 @@
   border-radius: 21px;
 }
 
-/* Profile «Ваши объявления» — card-profile-mine */
+/* Profile listings — card-profile-mine (own: wants only; public: CTA + wants) */
 .home-listing-card--mine {
-  height: 452px;
+  height: auto;
   border: none;
   background: #ffffff;
   box-shadow: none;
@@ -86,7 +86,8 @@
 }
 
 .home-listing-card--mine .home-listing-card__footer {
-  height: 44px;
+  height: auto;
+  min-height: 44px;
   padding: 0 10px;
 }
 

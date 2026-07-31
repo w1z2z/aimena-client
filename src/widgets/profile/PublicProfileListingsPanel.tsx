@@ -80,12 +80,13 @@ export function PublicProfileListingsPanel() {
           <div key={listing.id} className="profile-listing-card-slot">
             <ListingCard
               listingId={listing.id}
-              variant={listing.isFree ? "free" : "exchange"}
+              variant="mine"
               title={listing.title}
               city={listing.city.name}
               condition={mapApiConditionToLabel(listing.condition)}
               coverImageUrl={listing.coverImageUrl}
               wants={listing.wantsTags}
+              isFree={listing.isFree}
               isFavorite={listing.isFavorite}
               status={showCompleted ? (STATUS_LABEL[listing.status] ?? null) : null}
             />
