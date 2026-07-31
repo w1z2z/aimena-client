@@ -12,7 +12,7 @@
     linear-gradient(#ffffff, #ffffff) padding-box,
     linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
   padding: 12px 0;
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   transition: box-shadow 200ms ease;
 }
 
@@ -401,10 +401,9 @@
 
 .home-listing-card__want-pill {
   box-sizing: border-box;
-  display: flex;
+  /* block (not flex): ellipsis clips in the content box so side padding stays */
+  display: block;
   flex: none;
-  align-items: center;
-  justify-content: center;
   max-width: 120px;
   height: 24px;
   overflow: hidden;
@@ -416,7 +415,7 @@
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 23px;
   letter-spacing: 0.002em;
   text-align: center;
   text-overflow: ellipsis;
