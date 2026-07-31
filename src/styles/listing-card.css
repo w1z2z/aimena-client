@@ -40,6 +40,7 @@
 
 .home-listing-card--free .home-listing-card__action {
   background: #8e8bed;
+  border-radius: 21px;
 }
 
 /* Profile «Ваши объявления» — card-profile-mine */
