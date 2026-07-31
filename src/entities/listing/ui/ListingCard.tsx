@@ -37,6 +37,8 @@ export type ListingCardProps = {
   isFavorite?: boolean;
   /** Own-profile status label (e.g. «Активно»). */
   status?: string | null;
+  /** Greyscale cover (e.g. unpublished / archived). */
+  imageMuted?: boolean;
   /** Hide CTA like «Быстрый обмен» (e.g. own profile listings). */
   hideAction?: boolean;
   className?: string;
@@ -53,6 +55,7 @@ export function ListingCard({
   isFree = false,
   isFavorite = false,
   status,
+  imageMuted = false,
   hideAction = false,
   className,
 }: ListingCardProps) {
@@ -82,6 +85,7 @@ export function ListingCard({
     variant === "hero" ? "home-listing-card--hero" : "",
     variant === "free" ? "home-listing-card--free" : "",
     variant === "mine" ? "home-listing-card--mine" : "",
+    imageMuted ? "home-listing-card--muted" : "",
     className,
   ]
     .filter(Boolean)

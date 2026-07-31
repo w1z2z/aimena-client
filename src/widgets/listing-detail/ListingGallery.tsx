@@ -18,6 +18,7 @@ type ListingGalleryProps = {
   title: string;
   images: GalleryImage[];
   isFavorite: boolean;
+  imageMuted?: boolean;
 };
 
 export function ListingGallery({
@@ -25,6 +26,7 @@ export function ListingGallery({
   title,
   images,
   isFavorite,
+  imageMuted = false,
 }: ListingGalleryProps) {
   const { guardAuth } = useAuthGate();
   const favoriteMutation = useFavoriteToggle();
@@ -70,7 +72,14 @@ export function ListingGallery({
   };
 
   return (
-    <div className="listing-detail-gallery">
+    <div
+      className={[
+        "listing-detail-gallery",
+        imageMuted ? "listing-detail-gallery--muted" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="listing-detail-gallery__main">
         <img src={active.url} alt={title} className="listing-detail-gallery__image" />
 

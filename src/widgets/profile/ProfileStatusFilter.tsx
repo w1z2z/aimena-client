@@ -10,7 +10,7 @@ export type ProfileListingStatusFilter = "all" | "active" | "archived";
 const STATUS_OPTIONS: Array<{ value: ProfileListingStatusFilter; label: string }> = [
   { value: "all", label: "Все" },
   { value: "active", label: "Активные" },
-  { value: "archived", label: "Завершённые" },
+  { value: "archived", label: "Снятые с публикации" },
 ];
 
 type ProfileStatusFilterProps = {

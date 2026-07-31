@@ -17,13 +17,13 @@ import {
 
 const STATUS_LABEL: Partial<Record<ApiListingCard["status"], string>> = {
   active: "Активно",
-  archived: "Завершено",
+  archived: "Снято",
 };
 
 const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
   all: "Пока нет объявлений. Разместите первое предложение.",
   active: "Нет активных объявлений.",
-  archived: "Нет завершённых объявлений.",
+  archived: "Нет снятых с публикации объявлений.",
 };
 
 type SortOrder = "newest" | "oldest";
@@ -82,6 +82,7 @@ export function ProfileListingsPanel() {
               isFavorite={listing.isFavorite}
               status={STATUS_LABEL[listing.status] ?? null}
               hideAction
+              imageMuted={listing.status === "archived"}
             />
             <ProfileListingCardActions listingId={listing.id} status={listing.status} />
           </div>
