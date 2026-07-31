@@ -41,8 +41,10 @@
 /* Profile listings — card-profile-mine (own: wants only; public: CTA + wants) */
 .home-listing-card--mine {
   height: auto;
-  border: none;
-  background: #ffffff;
+  border: 0.3px solid transparent;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
   box-shadow: none;
 }
 
@@ -52,14 +54,10 @@
 
 .home-listing-card--mine .home-listing-card__title {
   position: relative;
-  height: 28px;
-  min-height: 28px;
+  height: 29px;
+  min-height: 29px;
   border-radius: 10px 10px 0 0;
-  padding: 0 52px 0 12px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 120%;
-  letter-spacing: 0.001em;
+  padding: 0 12px;
   overflow: visible;
   z-index: 4;
 }
@@ -70,10 +68,11 @@
 }
 
 .home-listing-card--mine .home-listing-card__title span {
-  width: 100%;
-  max-width: 252px;
+  width: 252px;
+  max-width: 100%;
   margin-inline: auto;
   text-align: center;
+  vertical-align: middle;
 }
 
 .home-listing-card__title-accessory {
@@ -122,12 +121,9 @@
 }
 
 .home-listing-card--hero .home-listing-card__title {
-  height: 17px;
-  min-height: 17px;
-  padding: 1px 12px;
-  font-size: 14px;
-  line-height: 120%;
-  letter-spacing: 0.001em;
+  height: 29px;
+  min-height: 29px;
+  padding: 0 12px;
 }
 
 .home-listing-card__title-link {
