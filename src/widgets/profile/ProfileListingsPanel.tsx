@@ -80,8 +80,10 @@ export function ProfileListingsPanel() {
               wants={listing.wantsTags}
               isFree={listing.isFree}
               isFavorite={listing.isFavorite}
+              ownerId={listing.ownerId}
               status={STATUS_LABEL[listing.status] ?? null}
               hideAction
+              hideFavorite
               imageMuted={listing.status === "archived"}
               titleAccessory={
                 <ProfileListingCardActions listingId={listing.id} status={listing.status} />

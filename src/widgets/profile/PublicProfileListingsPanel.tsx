@@ -88,6 +88,7 @@ export function PublicProfileListingsPanel() {
               wants={listing.wantsTags}
               isFree={listing.isFree}
               isFavorite={listing.isFavorite}
+              ownerId={listing.ownerId}
               status={showCompleted ? (STATUS_LABEL[listing.status] ?? null) : null}
               imageMuted={listing.status === "archived"}
             />

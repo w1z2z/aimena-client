@@ -40,6 +40,7 @@ export const EXTRA_PAY_LABELS: Record<ApiListingDetail["extraPay"], string> = {
 export function mapApiListingToCard(listing: ApiListingCard): ListingCardData {
   return {
     id: listing.id,
+    ownerId: listing.ownerId,
     title: listing.title,
     city: listing.city.name,
     condition: mapApiConditionToLabel(listing.condition),

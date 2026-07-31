@@ -2,6 +2,7 @@ export type ListingCardVariant = "exchange" | "free" | "hero" | "mine";
 
 export type ListingCardData = {
   id: string;
+  ownerId: string;
   title: string;
   city: string;
   condition: string;
@@ -15,5 +16,5 @@ export type ListingCardData = {
 
 export type ListingCardPreview = Pick<
   ListingCardData,
-  "id" | "title" | "city" | "condition" | "coverImageUrl" | "isFavorite"
+  "id" | "ownerId" | "title" | "city" | "condition" | "coverImageUrl" | "isFavorite"
 >;

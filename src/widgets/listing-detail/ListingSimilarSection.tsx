@@ -37,6 +37,7 @@ export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps)
               coverImageUrl={listing.coverImageUrl}
               wants={listing.wants}
               isFavorite={listing.isFavorite}
+              ownerId={listing.ownerId}
             />
           ))}
         </div>

@@ -18,6 +18,7 @@ type ListingGalleryProps = {
   title: string;
   images: GalleryImage[];
   isFavorite: boolean;
+  hideFavorite?: boolean;
   imageMuted?: boolean;
 };
 
@@ -26,6 +27,7 @@ export function ListingGallery({
   title,
   images,
   isFavorite,
+  hideFavorite = false,
   imageMuted = false,
 }: ListingGalleryProps) {
   const { guardAuth } = useAuthGate();
@@ -57,7 +59,7 @@ export function ListingGallery({
   };
 
   const handleFavoriteClick = () => {
-    if (favoriteMutation.isPending || favoriteOverride !== null) return;
+    if (hideFavorite || favoriteMutation.isPending || favoriteOverride !== null) return;
 
     guardAuth("favorites", () => {
       const previous = favorite;
@@ -83,19 +85,21 @@ export function ListingGallery({
       <div className="listing-detail-gallery__main">
         <img src={active.url} alt={title} className="listing-detail-gallery__image" />
 
-        <button
-          type="button"
-          aria-label={favorite ? "Удалить из избранного" : "Добавить в избранное"}
-          aria-pressed={favorite}
-          className="listing-detail-gallery__favorite"
-          onClick={handleFavoriteClick}
-          disabled={favoriteMutation.isPending}
-        >
-          <HeartIcon
-            className={`h-[20px] w-[22px] ${favorite ? "text-[#FF2056]" : "text-[#626262]"}`}
-            fill={favorite ? "currentColor" : "none"}
-          />
-        </button>
+        {hideFavorite ? null : (
+          <button
+            type="button"
+            aria-label={favorite ? "Удалить из избранного" : "Добавить в избранное"}
+            aria-pressed={favorite}
+            className="listing-detail-gallery__favorite"
+            onClick={handleFavoriteClick}
+            disabled={favoriteMutation.isPending}
+          >
+            <HeartIcon
+              className={`h-[20px] w-[22px] ${favorite ? "text-[#FF2056]" : "text-[#626262]"}`}
+              fill={favorite ? "currentColor" : "none"}
+            />
+          </button>
+        )}
 
         {slides.length > 1 ? (
           <>

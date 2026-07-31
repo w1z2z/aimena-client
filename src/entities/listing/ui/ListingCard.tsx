@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
-import { useAuthGate } from "@/features/auth";
+import { useAuth, useAuthGate } from "@/features/auth";
 import { useFavoriteToggle } from "@/features/favorites";
 import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
 import { HeartIcon, TagsIcon } from "@/shared/ui/icons";
@@ -35,6 +35,8 @@ export type ListingCardProps = {
   /** Free listing — footer shows a single «даром» tag instead of wants. */
   isFree?: boolean;
   isFavorite?: boolean;
+  /** Listing owner — used to hide favorite on own cards. */
+  ownerId?: string | null;
   /** Own-profile status label (e.g. «Активно»). */
   status?: string | null;
   /** Greyscale cover (e.g. unpublished / archived). */
@@ -43,6 +45,8 @@ export type ListingCardProps = {
   titleAccessory?: ReactNode;
   /** Hide CTA like «Быстрый обмен» (e.g. own profile listings). */
   hideAction?: boolean;
+  /** Force-hide favorite (e.g. own profile without waiting for ownerId). */
+  hideFavorite?: boolean;
   className?: string;
 };
 
@@ -56,18 +60,23 @@ export function ListingCard({
   wants = [],
   isFree = false,
   isFavorite = false,
+  ownerId,
   status,
   imageMuted = false,
   titleAccessory,
   hideAction = false,
+  hideFavorite = false,
   className,
 }: ListingCardProps) {
+  const { user } = useAuth();
   const { guardAuth } = useAuthGate();
   const favoriteMutation = useFavoriteToggle();
   const [favoriteOverride, setFavoriteOverride] = useState<boolean | null>(null);
   const pillsRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const favorite = favoriteOverride ?? isFavorite;
+  const isOwnListing =
+    hideFavorite || Boolean(user?.id && ownerId && user.id === ownerId);
   const freeListing = isFree || variant === "free";
   const showWants = variant === "exchange" || variant === "mine";
   const listingHref = `/listings/${listingId}`;
@@ -141,7 +150,7 @@ export function ListingCard({
   }, [showWants, freeListing, truncatedWants]);
 
   const handleFavoriteClick = () => {
-    if (favoriteMutation.isPending || favoriteOverride !== null) return;
+    if (isOwnListing || favoriteMutation.isPending || favoriteOverride !== null) return;
 
     guardAuth("favorites", () => {
       const previous = favorite;
@@ -185,19 +194,21 @@ export function ListingCard({
             className="home-listing-card__image"
           />
         </Link>
-        <button
-          type="button"
-          aria-label={favorite ? "Удалить из избранного" : "Добавить в избранное"}
-          aria-pressed={favorite}
-          className="home-listing-card__favorite"
-          onClick={handleFavoriteClick}
-          disabled={favoriteMutation.isPending}
-        >
-          <HeartIcon
-            className={`h-[14px] w-[16px] ${favorite ? "text-[#FF2056]" : "text-[#626262]"}`}
-            fill={favorite ? "currentColor" : "none"}
-          />
-        </button>
+        {isOwnListing ? null : (
+          <button
+            type="button"
+            aria-label={favorite ? "Удалить из избранного" : "Добавить в избранное"}
+            aria-pressed={favorite}
+            className="home-listing-card__favorite"
+            onClick={handleFavoriteClick}
+            disabled={favoriteMutation.isPending}
+          >
+            <HeartIcon
+              className={`h-[14px] w-[16px] ${favorite ? "text-[#FF2056]" : "text-[#626262]"}`}
+              fill={favorite ? "currentColor" : "none"}
+            />
+          </button>
+        )}
         <div className="home-listing-card__tags">
           {status ? <span className="home-listing-card__tag home-listing-card__tag--status">{status}</span> : null}
           <span className="home-listing-card__tag">{city}</span>

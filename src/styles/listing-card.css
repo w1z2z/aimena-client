@@ -91,17 +91,12 @@
   align-items: center;
 }
 
-.home-listing-card--mine .home-listing-card__favorite {
-  top: 12px;
-  right: 12px;
-}
-
 .home-listing-card--mine .home-listing-card__tags {
   left: 8px;
   bottom: 9px;
   gap: 10px;
   flex-wrap: wrap;
-  max-width: calc(100% - 56px);
+  max-width: calc(100% - 16px);
 }
 
 .home-listing-card--mine .home-listing-card__footer {

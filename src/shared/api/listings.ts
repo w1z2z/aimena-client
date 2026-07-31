@@ -12,6 +12,7 @@ export type ApiListingCondition =
 
 export type ApiListingCard = {
   id: string;
+  ownerId: string;
   status: "draft" | "active" | "archived";
   type: "item" | "service";
   title: string;

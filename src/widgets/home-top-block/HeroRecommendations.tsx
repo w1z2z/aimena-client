@@ -145,6 +145,7 @@ export function HeroRecommendationsPanel({
                   coverImageUrl={listing.coverImageUrl}
                   wants={listing.wants}
                   isFavorite={listing.isFavorite}
+                  ownerId={listing.ownerId}
                 />
               </div>
             ))
