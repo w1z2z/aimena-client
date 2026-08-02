@@ -19,7 +19,7 @@ import {
   updateOnboarding,
 } from "@/shared/api/auth";
 import { mapBackendUserToAuthUser } from "@/shared/api/mappers";
-import { ApiError } from "@/shared/api/http";
+import { ACCESS_TOKEN_CHANGED_EVENT, ApiError } from "@/shared/api/http";
 
 import {
   AUTH_ACCESS_TOKEN_STORAGE_KEY,
@@ -135,10 +135,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    const handleAccessTokenChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ accessToken: string | null }>).detail;
+      const nextToken = detail?.accessToken ?? null;
+      setAccessToken(nextToken);
+
+      // Silent refresh failed — drop the local session so UI matches reality.
+      if (!nextToken) {
+        window.localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+        setUser(null);
+      }
+    };
+
     window.addEventListener("storage", handleStorage);
+    window.addEventListener(ACCESS_TOKEN_CHANGED_EVENT, handleAccessTokenChanged);
     return () => {
       window.cancelAnimationFrame(frameId);
       window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(ACCESS_TOKEN_CHANGED_EVENT, handleAccessTokenChanged);
     };
   }, [syncUserFromStorage]);
 

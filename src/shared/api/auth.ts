@@ -1,6 +1,6 @@
 "use client";
 
-import { httpRequest } from "./http";
+import { httpRequest, refreshAccessToken } from "./http";
 import type { ApiListingCard, ApiListResponse } from "./listings";
 
 type BackendProfile = {
@@ -74,11 +74,7 @@ export function loginUser(email: string, password: string) {
 }
 
 export function refreshSession(refreshToken?: string) {
-  return httpRequest<BackendAuthPayload>("/auth/refresh", {
-    method: "POST",
-    body: refreshToken ? { refreshToken } : {},
-    withCredentials: true,
-  });
+  return refreshAccessToken(refreshToken);
 }
 
 export function logoutUser(accessToken: string | null, refreshToken?: string) {
