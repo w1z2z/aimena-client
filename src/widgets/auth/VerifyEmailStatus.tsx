@@ -1,28 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { verifyEmail } from "@/shared/api/auth";
-import { ApiError } from "@/shared/api/http";
+import {
+  readPendingVerifyEmail,
+  rememberPendingVerifyEmail,
+  verifyEmail,
+} from "@/shared/api/auth";
+
+import { ResendVerificationBlock } from "./ResendVerificationBlock";
 
 type VerifyEmailStatusProps = {
   token: string | null;
+  email?: string | null;
 };
 
-export function VerifyEmailStatus({ token }: VerifyEmailStatusProps) {
+export function VerifyEmailStatus({ token, email = null }: VerifyEmailStatusProps) {
   const router = useRouter();
+  const verifyStartedRef = useRef(false);
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     token ? "loading" : "error",
   );
   const [message, setMessage] = useState(
     token ? "Подтверждаем вашу почту..." : "Ссылка подтверждения некорректна или устарела.",
   );
+  const [resendEmail, setResendEmail] = useState(
+    () => email?.trim() || readPendingVerifyEmail(),
+  );
 
   useEffect(() => {
-    if (!token) {
+    const fromLink = email?.trim() ?? "";
+    if (fromLink) {
+      rememberPendingVerifyEmail(fromLink);
+      setResendEmail(fromLink);
       return;
     }
+    setResendEmail(readPendingVerifyEmail());
+  }, [email]);
+
+  useEffect(() => {
+    if (!token || verifyStartedRef.current) {
+      return;
+    }
+    verifyStartedRef.current = true;
 
     let isActive = true;
     void verifyEmail(token)
@@ -35,14 +56,10 @@ export function VerifyEmailStatus({ token }: VerifyEmailStatusProps) {
           router.replace("/login");
         }, 400);
       })
-      .catch((requestError) => {
+      .catch(() => {
         if (!isActive) return;
         setStatus("error");
-        setMessage(
-          requestError instanceof ApiError
-            ? requestError.message
-            : "Не удалось подтвердить почту. Попробуйте снова.",
-        );
+        setMessage("Ссылка недействительна или устарела.");
       });
 
     return () => {
@@ -53,13 +70,23 @@ export function VerifyEmailStatus({ token }: VerifyEmailStatusProps) {
   return (
     <>
       <p className="mb-0">{message}</p>
-      <p className="mb-[24px]">
+      <p className={status === "error" ? "mb-[8px]" : "mb-[24px]"}>
         {status === "loading"
           ? "Подождите немного, мы проверяем токен подтверждения."
           : status === "success"
             ? "Почта подтверждена. Перенаправляем на вход..."
-            : "Проверьте ссылку в письме или запросите новую."}
+            : "Если вы уже подтверждали почту по этой ссылке — просто войдите. Иначе запросите новое письмо ниже."}
       </p>
+      {status === "error" ? (
+        resendEmail ? (
+          <ResendVerificationBlock initialEmail={resendEmail} />
+        ) : (
+          <p className="mb-0 text-[14px] text-[#1A1A1A]">
+            Перейдите ко входу — если почта уже подтверждена, вход сработает. Если нет,
+            запросите новое письмо там.
+          </p>
+        )
+      ) : null}
     </>
   );
 }

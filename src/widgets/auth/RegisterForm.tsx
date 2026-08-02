@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useAuth } from "@/features/auth";
-import { ApiError } from "@/shared/api/http";
+import { getAuthErrorMessage, useAuth } from "@/features/auth";
+import { rememberPendingVerifyEmail } from "@/shared/api/auth";
 
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
@@ -34,11 +34,10 @@ export function RegisterForm() {
     setIsSubmitting(true);
     try {
       await register(email.trim(), password);
+      rememberPendingVerifyEmail(email.trim());
       router.push("/register/confirm");
     } catch (requestError) {
-      setError(
-        requestError instanceof ApiError ? requestError.message : "Не удалось завершить регистрацию",
-      );
+      setError(getAuthErrorMessage(requestError, "Не удалось завершить регистрацию"));
     } finally {
       setIsSubmitting(false);
     }

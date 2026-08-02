@@ -114,6 +114,48 @@ export function verifyEmail(token: string) {
   });
 }
 
+export function resendVerification(email: string) {
+  return httpRequest<{ message: string }>("/auth/resend-verification", {
+    method: "POST",
+    body: { email },
+    withCredentials: true,
+  });
+}
+
+export function getVerificationStatus(email: string) {
+  return httpRequest<{ verified: boolean }>("/auth/verification-status", {
+    method: "POST",
+    body: { email },
+    withCredentials: true,
+  });
+}
+
+export const PENDING_VERIFY_EMAIL_KEY = "swaply-pending-verify-email";
+
+export function rememberPendingVerifyEmail(email: string) {
+  try {
+    sessionStorage.setItem(PENDING_VERIFY_EMAIL_KEY, email.trim().toLowerCase());
+  } catch {
+    // Ignore storage failures (private mode / disabled storage).
+  }
+}
+
+export function readPendingVerifyEmail(): string {
+  try {
+    return sessionStorage.getItem(PENDING_VERIFY_EMAIL_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function clearPendingVerifyEmail() {
+  try {
+    sessionStorage.removeItem(PENDING_VERIFY_EMAIL_KEY);
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
 export function getCurrentUser(accessToken: string) {
   return httpRequest<BackendUserMeResponse>("/users/me", {
     method: "GET",

@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useAuth } from "@/features/auth";
+import { getAuthErrorMessage, useAuth } from "@/features/auth";
+import { rememberPendingVerifyEmail } from "@/shared/api/auth";
 import { ApiError } from "@/shared/api/http";
 
 import { AuthButton } from "./AuthButton";
@@ -31,9 +32,12 @@ export function LoginForm() {
       const { needsOnboarding } = await login(email.trim(), password);
       router.push(needsOnboarding ? "/onboarding" : "/");
     } catch (requestError) {
-      setError(
-        requestError instanceof ApiError ? requestError.message : "Не удалось выполнить вход",
-      );
+      if (requestError instanceof ApiError && requestError.status === 403) {
+        rememberPendingVerifyEmail(email.trim());
+        router.replace("/register/confirm");
+        return;
+      }
+      setError(getAuthErrorMessage(requestError, "Не удалось выполнить вход"));
     } finally {
       setIsSubmitting(false);
     }
