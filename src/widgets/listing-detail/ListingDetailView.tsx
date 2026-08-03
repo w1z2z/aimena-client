@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import {
-  buildWantsPreview,
   EXTRA_PAY_LABELS,
   mapApiConditionToLabel,
   useListing,
@@ -48,18 +47,50 @@ export function ListingDetailView() {
       .map((image) => ({ id: image.id, url: image.url }));
   }, [listing]);
 
+  const categoryBreadcrumb = useMemo(() => {
+    if (!listing) return "";
+    const { category } = listing;
+    if (category.parent?.name) {
+      return `${category.parent.name} > ${category.name}`;
+    }
+    return category.name;
+  }, [listing]);
+
   const metaTags = useMemo(() => {
     if (!listing) return [];
-    const tags = [listing.city.name, listing.category.name];
+    const tags = [listing.city.name];
     if (listing.hasDocuments) tags.push("С документами");
     if (listing.isFree) tags.push("Даром");
     return tags;
   }, [listing]);
 
-  const wantsTags = useMemo(() => {
-    if (!listing) return [];
-    return buildWantsPreview(listing);
+  const wantsCategories = useMemo(() => {
+    if (!listing?.wantsCategory?.name?.trim()) return [];
+    const { wantsCategory } = listing;
+    if (wantsCategory.parent?.name) {
+      return [`${wantsCategory.parent.name} > ${wantsCategory.name}`];
+    }
+    return [wantsCategory.name.trim()];
   }, [listing]);
+
+  const wantsThings = useMemo(() => {
+    if (!listing) return [];
+
+    const fromText = listing.wantsText
+      .split(/[,\n;]+/)
+      .map((part) =>
+        part
+          .replace(/^хочу(?:\s+получить)?(?:\s+взамен)?\s*[:\-]?\s*/i, "")
+          .replace(/^ищу\s*/i, "")
+          .trim(),
+      )
+      .filter(Boolean);
+
+    const fromTags = listing.wantsTags.map((tag) => tag.trim()).filter(Boolean);
+    return [...new Map([...fromText, ...fromTags].map((value) => [value.toLowerCase(), value])).values()];
+  }, [listing]);
+
+  const hasWantsContent = wantsCategories.length > 0 || wantsThings.length > 0;
 
   const description = listing?.description?.trim() ?? "";
   const canCollapseDescription = description.length > DESCRIPTION_COLLAPSE_CHARS;
@@ -121,35 +152,63 @@ export function ListingDetailView() {
             <div className="listing-detail-layout__right">
               <div className="listing-detail-heading">
                 <div className="listing-detail-heading__top">
-                  <h1 className="listing-detail-heading__title">{listing.title}</h1>
+                  <div className="listing-detail-heading__text">
+                    {categoryBreadcrumb ? (
+                      <p className="listing-detail-heading__category">{categoryBreadcrumb}</p>
+                    ) : null}
+                    <h1 className="listing-detail-heading__title">{listing.title}</h1>
+                  </div>
                   <ListingActionsMenu
                     listingId={listing.id}
                     isOwner={isOwner}
                     status={listing.status}
                   />
                 </div>
-                <div className="listing-detail-heading__tags">
-                  {metaTags.map((tag) => (
-                    <span key={tag} className="listing-detail-pill">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                {metaTags.length > 0 ? (
+                  <div className="listing-detail-heading__tags">
+                    {metaTags.map((tag) => (
+                      <span key={tag} className="listing-detail-pill">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               <section className="listing-detail-wants" aria-label="Желаемый обмен">
                 <h2 className="listing-detail-wants__title">Желаемый обмен</h2>
-                <div className="listing-detail-wants__tags">
-                  {wantsTags.length > 0 ? (
-                    wantsTags.map((tag) => (
-                      <span key={tag} className="listing-detail-wants__tag">
-                        {tag}
-                      </span>
-                    ))
-                  ) : (
+                {hasWantsContent ? (
+                  <div className="listing-detail-wants__groups">
+                    {wantsCategories.length > 0 ? (
+                      <div className="listing-detail-wants__group">
+                        <h3 className="listing-detail-wants__subtitle">Категории</h3>
+                        <div className="listing-detail-wants__tags">
+                          {wantsCategories.map((tag) => (
+                            <span key={tag} className="listing-detail-wants__tag">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {wantsThings.length > 0 ? (
+                      <div className="listing-detail-wants__group">
+                        <h3 className="listing-detail-wants__subtitle">Вещи</h3>
+                        <div className="listing-detail-wants__tags">
+                          {wantsThings.map((tag) => (
+                            <span key={tag} className="listing-detail-wants__tag">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="listing-detail-wants__tags">
                     <span className="listing-detail-wants__tag">Любые варианты</span>
-                  )}
-                </div>
+                  </div>
+                )}
               </section>
 
               <div className="listing-detail-stats">

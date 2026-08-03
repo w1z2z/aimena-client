@@ -10,6 +10,13 @@ export type ApiListingCondition =
   | "needs_repair"
   | "service";
 
+export type ApiListingCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  parent?: { id: string; name: string; slug: string } | null;
+};
+
 export type ApiListingCard = {
   id: string;
   ownerId: string;
@@ -25,8 +32,8 @@ export type ApiListingCard = {
   estimatedPrice: number | null;
   publishedAt: string | null;
   createdAt: string;
-  category: { id: string; name: string; slug: string };
-  wantsCategory: { id: string; name: string; slug: string } | null;
+  category: ApiListingCategory;
+  wantsCategory: ApiListingCategory | null;
   city: { id: string; name: string; regionName: string | null; slug: string };
   coverImageUrl: string | null;
   isFavorite: boolean;
@@ -67,8 +74,8 @@ export type ApiListingDetail = {
   hasDocuments: boolean;
   wantsText: string;
   wantsTags: string[];
-  category: { id: string; name: string; slug: string };
-  wantsCategory: { id: string; name: string; slug: string } | null;
+  category: ApiListingCategory;
+  wantsCategory: ApiListingCategory | null;
   city: { id: string; name: string; regionName: string | null; slug: string };
   owner: ApiListingOwner | null;
   images: ApiListingImage[];
