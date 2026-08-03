@@ -2,16 +2,25 @@
 
 import { httpRequest } from "./http";
 
+export type ApiCategoryForType = "item" | "service";
+
 export type ApiCategoryNode = {
   id: string;
   name: string;
   shortName?: string | null;
   slug: string;
+  forType?: ApiCategoryForType;
   uiKey?: string;
   iconUrl?: string | null;
   homeArcOrder?: number;
   isVirtual?: boolean;
-  children?: Array<{ id: string; name: string; shortName?: string | null; slug: string }>;
+  children?: Array<{
+    id: string;
+    name: string;
+    shortName?: string | null;
+    slug: string;
+    forType?: ApiCategoryForType;
+  }>;
 };
 
 export type ApiCategoriesResponse = {
@@ -44,9 +53,17 @@ export type ApiCitiesResponse = {
   };
 };
 
-export function getCategories(params?: { parentsOnly?: boolean; homeArc?: boolean }) {
+export function getCategories(params?: {
+  parentsOnly?: boolean;
+  homeArc?: boolean;
+  forType?: ApiCategoryForType;
+}) {
   return httpRequest<ApiCategoriesResponse>("/categories", {
-    query: { parentsOnly: params?.parentsOnly, homeArc: params?.homeArc },
+    query: {
+      parentsOnly: params?.parentsOnly,
+      homeArc: params?.homeArc,
+      forType: params?.forType,
+    },
   });
 }
 

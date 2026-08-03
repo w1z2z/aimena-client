@@ -333,7 +333,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const [description, setDescription] = useState("");
   const [priceDigits, setPriceDigits] = useState("");
   const [priceTextWidth, setPriceTextWidth] = useState(0);
-  const [categoryTree, setCategoryTree] = useState<CategoryTreeNode[]>([]);
+  const [itemCategoryTree, setItemCategoryTree] = useState<CategoryTreeNode[]>([]);
+  const [serviceCategoryTree, setServiceCategoryTree] = useState<CategoryTreeNode[]>([]);
   const [categoriesReady, setCategoriesReady] = useState(false);
   const [parentCategoryId, setParentCategoryId] = useState<string | null>(null);
   const [childCategoryId, setChildCategoryId] = useState<string | null>(null);
@@ -374,6 +375,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const listingHydratedRef = useRef(false);
   const itemPhotoGrid = getItemPhotoGridLayout(itemPhotos.length);
   const docPhotoGrid = getDocPhotoGridLayout(docPhotos.length);
+  const categoryTree = listingKind === "service" ? serviceCategoryTree : itemCategoryTree;
+  const wantsCategoryTree = itemCategoryTree;
   const parentCategoryOptions = useMemo<SelectOption[]>(
     () =>
       categoryTree.map((item) => ({
@@ -382,31 +385,39 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       })),
     [categoryTree],
   );
+  const wantsParentCategoryOptions = useMemo<SelectOption[]>(
+    () =>
+      wantsCategoryTree.map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    [wantsCategoryTree],
+  );
   const selectedParentCategory = useMemo(
     () => categoryTree.find((item) => item.id === parentCategoryId) ?? null,
     [categoryTree, parentCategoryId],
   );
-  const childCategoryOptions = useMemo<SelectOption[]>(
-    () =>
-      (selectedParentCategory?.children ?? []).map((item) => ({
-        value: item.id,
-        label: item.name,
-      })),
-    [selectedParentCategory],
-  );
+  const childCategoryOptions = useMemo<SelectOption[]>(() => {
+    const children = (selectedParentCategory?.children ?? []).map((item) => ({
+      value: item.id,
+      label: item.name,
+    }));
+    if (children.length === 0) return [];
+    return [{ value: "", label: "Все" }, ...children];
+  }, [selectedParentCategory]);
   const finalCategoryId = childCategoryId ?? parentCategoryId;
   const selectedWantsParentCategory = useMemo(
-    () => categoryTree.find((item) => item.id === wantsParentCategoryId) ?? null,
-    [categoryTree, wantsParentCategoryId],
+    () => wantsCategoryTree.find((item) => item.id === wantsParentCategoryId) ?? null,
+    [wantsCategoryTree, wantsParentCategoryId],
   );
-  const wantsChildCategoryOptions = useMemo<SelectOption[]>(
-    () =>
-      (selectedWantsParentCategory?.children ?? []).map((item) => ({
-        value: item.id,
-        label: item.name,
-      })),
-    [selectedWantsParentCategory],
-  );
+  const wantsChildCategoryOptions = useMemo<SelectOption[]>(() => {
+    const children = (selectedWantsParentCategory?.children ?? []).map((item) => ({
+      value: item.id,
+      label: item.name,
+    }));
+    if (children.length === 0) return [];
+    return [{ value: "", label: "Все" }, ...children];
+  }, [selectedWantsParentCategory]);
   const finalWantsCategoryId = wantsChildCategoryId ?? wantsParentCategoryId;
   const tagSuggestions = useMemo<TagSuggestionItem[]>(() => {
     const normalizedInput = wantsTagInput.trim().toLowerCase();
@@ -508,14 +519,19 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
   useEffect(() => {
     let cancelled = false;
-    void getCategories({ parentsOnly: false, homeArc: false })
-      .then((response) => {
+    void Promise.all([
+      getCategories({ parentsOnly: false, homeArc: false, forType: "item" }),
+      getCategories({ parentsOnly: false, homeArc: false, forType: "service" }),
+    ])
+      .then(([itemCategories, serviceCategories]) => {
         if (cancelled) return;
-        setCategoryTree(response.data as CategoryTreeNode[]);
+        setItemCategoryTree(itemCategories.data as CategoryTreeNode[]);
+        setServiceCategoryTree(serviceCategories.data as CategoryTreeNode[]);
       })
       .catch(() => {
         if (cancelled) return;
-        setCategoryTree([]);
+        setItemCategoryTree([]);
+        setServiceCategoryTree([]);
       })
       .finally(() => {
         if (cancelled) return;
@@ -550,9 +566,14 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           return;
         }
 
-        const categorySelection = resolveCategorySelection(categoryTree, listing.category.id);
+        const listingCategories =
+          listing.type === "service" ? serviceCategoryTree : itemCategoryTree;
+        const categorySelection = resolveCategorySelection(
+          listingCategories,
+          listing.category.id,
+        );
         const wantsSelection = listing.wantsCategory
-          ? resolveCategorySelection(categoryTree, listing.wantsCategory.id)
+          ? resolveCategorySelection(itemCategoryTree, listing.wantsCategory.id)
           : null;
         const nextFormats = listing.serviceFormats.filter(isServiceFormatId);
         const cityLabel = listing.city.regionName
@@ -609,7 +630,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     return () => {
       cancelled = true;
     };
-  }, [isEditMode, listingId, categoriesReady, categoryTree, user?.id, isAuthLoading]);
+  }, [isEditMode, listingId, categoriesReady, itemCategoryTree, serviceCategoryTree, user?.id, isAuthLoading]);
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -713,6 +734,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const handleListingKindChange = (nextKind: ListingKind) => {
     if (nextKind === listingKind) return;
     setListingKind(nextKind);
+    setParentCategoryId(null);
+    setChildCategoryId(null);
     setItemPhotos((current) => {
       revokePhotoUrls(current);
       return [];
@@ -1154,6 +1177,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     value={cityId ?? ""}
                     onChange={(value) => {
                       setCityId(value || null);
+                      if (!value) setDraftCityLabel(null);
                       clearError("city");
                     }}
                     onInputChange={(value) => {
@@ -1169,6 +1193,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     variant="field"
                     className="create-listing-city-select"
                     allowCustomValue={false}
+                    clearable
                     aria-label={`Город ${listingTypeLabel}`}
                   />
                 </div>
@@ -1504,7 +1529,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                       setWantsParentCategoryId(value || null);
                       setWantsChildCategoryId(null);
                     }}
-                    options={parentCategoryOptions}
+                    options={wantsParentCategoryOptions}
                     placeholder="Выберите нужную категорию"
                     variant="field"
                     className="create-listing-exchange-select"

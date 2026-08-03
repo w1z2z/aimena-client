@@ -152,6 +152,7 @@
   box-shadow: none;
 }
 
-.auth-city-select.site-select--field .site-select__chevron {
+.auth-city-select.site-select--field .site-select__chevron,
+.auth-city-select.site-select--field .site-select__clear {
   color: #3d3d3d;
 }

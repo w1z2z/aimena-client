@@ -230,14 +230,14 @@ export function HomeRecommendationsFiltersPanelContent() {
     [categoryParentId, categoryTree],
   );
 
-  const childCategoryOptions = useMemo(
-    () =>
-      (selectedParentCategory?.children ?? []).map((item) => ({
-        value: item.id,
-        label: item.name,
-      })),
-    [selectedParentCategory],
-  );
+  const childCategoryOptions = useMemo(() => {
+    const children = (selectedParentCategory?.children ?? []).map((item) => ({
+      value: item.id,
+      label: item.name,
+    }));
+    if (children.length === 0) return [];
+    return [{ value: "", label: "Все" }, ...children];
+  }, [selectedParentCategory]);
 
   const hasSubcategories = childCategoryOptions.length > 0;
 
@@ -347,6 +347,7 @@ export function HomeRecommendationsFiltersPanelContent() {
               placeholder="Выберите город"
               variant="filter"
               allowCustomValue={false}
+              clearable
               className="home-filters-panel__select-wrap"
               aria-label="Выберите город"
             />

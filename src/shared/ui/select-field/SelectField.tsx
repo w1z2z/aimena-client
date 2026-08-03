@@ -33,6 +33,8 @@ type SelectFieldProps = {
   className?: string;
   searchable?: boolean;
   allowCustomValue?: boolean;
+  /** When value is set, chevron becomes a clear (×) control. */
+  clearable?: boolean;
   disabled?: boolean;
   "aria-label"?: string;
 };
@@ -53,6 +55,25 @@ function filterOptions(options: readonly SelectOption[], query: string) {
   const normalized = (query ?? "").trim().toLowerCase();
   if (!normalized) return options;
   return options.filter((option) => option.label.toLowerCase().includes(normalized));
+}
+
+function ClearIcon() {
+  return (
+    <svg
+      viewBox="0 0 12 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="site-select__clear-icon"
+      aria-hidden="true"
+    >
+      <path
+        d="M2.5 2.5L9.5 9.5M9.5 2.5L2.5 9.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 function ChevronIcon({ open }: { open: boolean }) {
@@ -80,6 +101,7 @@ export function SelectField({
   className,
   searchable = true,
   allowCustomValue = false,
+  clearable = false,
   disabled = false,
   "aria-label": ariaLabel,
 }: SelectFieldProps) {
@@ -92,6 +114,7 @@ export function SelectField({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listId = useId();
+  const showClear = clearable && Boolean(safeValue) && !disabled;
 
   const visibleOptions = useMemo(
     () => (searchable ? filterOptions(options, inputValue ?? "") : options),
@@ -298,9 +321,20 @@ export function SelectField({
   const handleControlMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (disabled) return;
     const target = event.target as HTMLElement;
-    if (target.closest(".site-select__chevron")) {
+    if (target.closest(".site-select__chevron") || target.closest(".site-select__clear")) {
       return;
     }
+    setIsOpen(true);
+    window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  };
+
+  const handleClear = () => {
+    if (disabled) return;
+    setInputValue("");
+    onInputChange?.("");
+    onChange("");
     setIsOpen(true);
     window.requestAnimationFrame(() => {
       inputRef.current?.focus();
@@ -388,17 +422,31 @@ export function SelectField({
           }}
           className={`site-select__input${showPlaceholderState ? " is-placeholder" : ""}${!searchable ? " is-readonly-select" : ""}`}
         />
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label={isOpen ? "Скрыть варианты" : "Показать варианты"}
-          className="site-select__chevron"
-          disabled={disabled}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => !disabled && setIsOpen((current) => !current)}
-        >
-          <ChevronIcon open={isOpen} />
-        </button>
+        {showClear ? (
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Очистить"
+            className="site-select__clear"
+            disabled={disabled}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={handleClear}
+          >
+            <ClearIcon />
+          </button>
+        ) : (
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label={isOpen ? "Скрыть варианты" : "Показать варианты"}
+            className="site-select__chevron"
+            disabled={disabled}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => !disabled && setIsOpen((current) => !current)}
+          >
+            <ChevronIcon open={isOpen} />
+          </button>
+        )}
       </div>
 
       {typeof document !== "undefined" && list ? createPortal(list, document.body) : null}

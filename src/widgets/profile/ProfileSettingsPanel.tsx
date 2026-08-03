@@ -295,6 +295,7 @@ export function ProfileSettingsPanel() {
               variant="field"
               searchable
               allowCustomValue={false}
+              clearable
               aria-label="Город"
               className="profile-settings-city"
             />

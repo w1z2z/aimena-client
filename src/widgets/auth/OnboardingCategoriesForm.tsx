@@ -19,7 +19,7 @@ export function OnboardingCategoriesForm() {
   useEffect(() => {
     let isActive = true;
 
-    void getCategories({ parentsOnly: true })
+    void getCategories({ parentsOnly: true, forType: "item" })
       .then((response) => {
         if (!isActive) return;
         setLoadError(null);

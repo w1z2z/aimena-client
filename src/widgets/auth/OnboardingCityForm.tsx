@@ -88,6 +88,7 @@ export function OnboardingCityForm() {
           variant="field"
           searchable
           allowCustomValue={false}
+          clearable
           className="auth-city-select"
           aria-label="Выберите город"
         />

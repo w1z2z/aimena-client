@@ -18,8 +18,8 @@ export function useCatalogData() {
   });
 
   const categoryTreeQuery = useQuery({
-    queryKey: ["catalog", "categories", "tree"],
-    queryFn: () => getCategories({ parentsOnly: false, homeArc: false }),
+    queryKey: ["catalog", "categories", "tree", "item"],
+    queryFn: () => getCategories({ parentsOnly: false, homeArc: false, forType: "item" }),
     staleTime: 5 * 60_000,
   });
 

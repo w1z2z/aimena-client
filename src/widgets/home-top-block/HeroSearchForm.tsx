@@ -286,6 +286,7 @@ function TopFields({
           placeholder={cityPlaceholder}
           variant="hero"
           allowCustomValue={false}
+          clearable
           aria-label="Город"
         />
       </div>
