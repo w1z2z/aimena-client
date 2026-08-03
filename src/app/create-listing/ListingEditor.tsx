@@ -223,6 +223,7 @@ function PhotoCard({
   onDrop,
   onDragEnd,
   isDragging = false,
+  dropIndicator = null,
   showPrimaryBadge = false,
 }: {
   previewUrl?: string;
@@ -233,6 +234,7 @@ function PhotoCard({
   onDrop?: (event: DragEvent<HTMLDivElement>) => void;
   onDragEnd?: (event: DragEvent<HTMLDivElement>) => void;
   isDragging?: boolean;
+  dropIndicator?: "before" | "after" | null;
   showPrimaryBadge?: boolean;
 }) {
   return (
@@ -242,57 +244,66 @@ function PhotoCard({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
-      className={`relative aspect-square w-full select-none overflow-hidden rounded-[21px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] transition ${
+      className={`relative aspect-square w-full select-none ${
         isDragging ? "cursor-grabbing opacity-60" : draggable ? "cursor-grab" : ""
       }`}
     >
-      {showPrimaryBadge ? (
-        <span className="absolute left-[10px] top-[10px] z-[2] rounded-[999px] bg-[#8E8BED] px-2.5 py-1 text-[12px] font-semibold leading-none text-white">
-          Основное
-        </span>
+      {dropIndicator === "before" ? (
+        <span
+          className="pointer-events-none absolute inset-y-2 left-0 z-[3] w-1 -translate-x-[calc(50%+6px)] rounded-full bg-[#8E8BED]"
+          aria-hidden
+        />
       ) : null}
-      <button
-        type="button"
-        onClick={onDelete}
-        aria-label="Удалить фото"
-        className="absolute right-[10px] top-[10px] z-[1] flex items-center justify-center"
-      >
-        <DeleteIcon className="h-[26px] w-[24px] text-white" />
-      </button>
-      {previewUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={previewUrl} alt="" draggable={false} className="h-full w-full cursor-grab object-cover" />
-      ) : (
-        <div className="flex h-full items-center justify-center">
-          <PlaceholderImage />
-        </div>
-      )}
+      {dropIndicator === "after" ? (
+        <span
+          className="pointer-events-none absolute inset-y-2 right-0 z-[3] w-1 translate-x-[calc(50%+6px)] rounded-full bg-[#8E8BED]"
+          aria-hidden
+        />
+      ) : null}
+      <div className="relative h-full w-full overflow-hidden rounded-[21px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7]">
+        {showPrimaryBadge ? (
+          <span className="absolute left-[10px] top-[10px] z-[2] rounded-[999px] bg-[#8E8BED] px-2.5 py-1 text-[12px] font-semibold leading-none text-white">
+            Основное
+          </span>
+        ) : null}
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label="Удалить фото"
+          className="absolute right-[10px] top-[10px] z-[1] flex items-center justify-center"
+        >
+          <DeleteIcon className="h-[26px] w-[24px] text-white" />
+        </button>
+        {previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewUrl} alt="" draggable={false} className="h-full w-full cursor-grab object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <PlaceholderImage />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function PhotoDropGap({
+function AddPhotoCard({
+  label,
+  onClick,
   onDragOver,
   onDrop,
 }: {
-  onDragOver?: (event: DragEvent<HTMLDivElement>) => void;
-  onDrop?: (event: DragEvent<HTMLDivElement>) => void;
+  label: string;
+  onClick?: () => void;
+  onDragOver?: (event: DragEvent<HTMLButtonElement>) => void;
+  onDrop?: (event: DragEvent<HTMLButtonElement>) => void;
 }) {
-  return (
-    <div
-      onDragOver={onDragOver}
-      onDrop={onDrop}
-      className="aspect-square w-full rounded-[21px] border-[1.5px] border-dashed border-[#8E8BED] bg-[#8E8BED]/12"
-      aria-hidden="true"
-    />
-  );
-}
-
-function AddPhotoCard({ label, onClick }: { label: string; onClick?: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
       className="aspect-square w-full rounded-[12px] border border-dashed border-[#D1D8E7] bg-[#FAFBFE] text-[13px] font-semibold text-[#636B7D]"
     >
       {label}
@@ -363,6 +374,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const [dragInsertIndex, setDragInsertIndex] = useState<{ kind: PhotoKind; index: number } | null>(
     null,
   );
+  const dragSourceRef = useRef<{ kind: PhotoKind; id: string } | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -829,20 +841,25 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     photoId: string,
     photoIndex: number,
   ) => {
+    const nextSource = { kind, id: photoId };
+    dragSourceRef.current = nextSource;
     const rect = event.currentTarget.getBoundingClientRect();
     event.dataTransfer.setDragImage(event.currentTarget, rect.width / 2, rect.height / 2);
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", photoId);
-    setDragSource({ kind, id: photoId });
+    setDragSource(nextSource);
     setDragInsertIndex({ kind, index: photoIndex });
   };
 
-  const handlePhotoDragOver = (event: DragEvent<HTMLDivElement>, kind: PhotoKind, dropIndex: number) => {
-    if (!dragSource || dragSource.kind !== kind) return;
+  const handlePhotoDragOver = (event: DragEvent<HTMLDivElement | HTMLButtonElement>, kind: PhotoKind, dropIndex: number) => {
+    const source = dragSourceRef.current;
+    if (!source || source.kind !== kind) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-    if (dragInsertIndex?.kind === kind && dragInsertIndex.index === dropIndex) return;
-    setDragInsertIndex({ kind, index: dropIndex });
+    setDragInsertIndex((current) => {
+      if (current?.kind === kind && current.index === dropIndex) return current;
+      return { kind, index: dropIndex };
+    });
   };
 
   const getDropIndexFromCard = (event: DragEvent<HTMLDivElement>, photoIndex: number) => {
@@ -851,10 +868,30 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     return pointerX < targetRect.width / 2 ? photoIndex : photoIndex + 1;
   };
 
-  const handlePhotoDrop = (event: DragEvent<HTMLDivElement>, kind: PhotoKind, dropIndex: number) => {
+  const getPhotoDropIndicator = (
+    kind: PhotoKind,
+    photoId: string,
+    photoIndex: number,
+    photoCount: number,
+  ): "before" | "after" | null => {
+    if (!dragSource || dragSource.kind !== kind || !dragInsertIndex || dragInsertIndex.kind !== kind) {
+      return null;
+    }
+    if (dragSource.id === photoId) return null;
+    if (dragInsertIndex.index === photoIndex) return "before";
+    if (dragInsertIndex.index === photoCount && photoIndex === photoCount - 1) return "after";
+    return null;
+  };
+
+  const handlePhotoDrop = (
+    event: DragEvent<HTMLDivElement | HTMLButtonElement>,
+    kind: PhotoKind,
+    dropIndex: number,
+  ) => {
     event.preventDefault();
-    if (!dragSource || dragSource.kind !== kind) return;
-    const sourceId = dragSource.id;
+    const source = dragSourceRef.current;
+    if (!source || source.kind !== kind) return;
+    const sourceId = source.id;
 
     if (kind === "item") {
       setItemPhotos((current) => reorderPhotos(current, sourceId, dropIndex));
@@ -867,6 +904,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   };
 
   const resetPhotoDragState = () => {
+    dragSourceRef.current = null;
     setDragSource(null);
     setDragInsertIndex(null);
   };
@@ -1224,82 +1262,48 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           />
           <div className="relative mt-4 box-border w-full rounded-[6.82px] border-[0.5px] border-dashed border-[#CACACA] p-6">
             <div className="relative grid grid-cols-5 gap-3">
-              {(() => {
-                const showGap = dragSource?.kind === "item" && dragInsertIndex?.kind === "item";
-                const dropIndex = showGap ? dragInsertIndex.index : -1;
-                const cells: Array<
-                  | { type: "photo"; photo: PhotoItem; photoIndex: number }
-                  | { type: "add" }
-                  | { type: "gap"; dropIndex: number }
-                  | { type: "empty"; id: string }
-                > = [];
-
-                for (let index = 0; index <= itemPhotos.length; index += 1) {
-                  if (showGap && dropIndex === index) {
-                    cells.push({ type: "gap", dropIndex: index });
-                  }
-                  if (index < itemPhotos.length) {
-                    cells.push({ type: "photo", photo: itemPhotos[index], photoIndex: index });
-                  }
+              {Array.from({ length: itemPhotoGrid.visibleSlots }).map((_, index) => {
+                if (index < itemPhotos.length) {
+                  const photo = itemPhotos[index];
+                  return (
+                    <PhotoCard
+                      key={photo.id}
+                      previewUrl={photo.previewUrl}
+                      onDelete={() => removeItemPhoto(photo.id)}
+                      draggable
+                      onDragStart={(event) =>
+                        handlePhotoDragStart(event, "item", photo.id, index)
+                      }
+                      onDragOver={(event) =>
+                        handlePhotoDragOver(event, "item", getDropIndexFromCard(event, index))
+                      }
+                      onDrop={(event) =>
+                        handlePhotoDrop(event, "item", getDropIndexFromCard(event, index))
+                      }
+                      onDragEnd={resetPhotoDragState}
+                      isDragging={dragSource?.kind === "item" && dragSource.id === photo.id}
+                      dropIndicator={getPhotoDropIndicator("item", photo.id, index, itemPhotos.length)}
+                      showPrimaryBadge={index === 0}
+                    />
+                  );
                 }
 
-                if (itemPhotoGrid.hasAddSlot) {
-                  cells.push({ type: "add" });
+                if (itemPhotoGrid.hasAddSlot && index === itemPhotos.length) {
+                  return (
+                    <AddPhotoCard
+                      key="item-photo-add"
+                      label="+ Добавить"
+                      onClick={() => itemPhotosInputRef.current?.click()}
+                      onDragOver={(event) =>
+                        handlePhotoDragOver(event, "item", itemPhotos.length)
+                      }
+                      onDrop={(event) => handlePhotoDrop(event, "item", itemPhotos.length)}
+                    />
+                  );
                 }
 
-                const minSlots = itemPhotoGrid.visibleSlots + (showGap ? 1 : 0);
-                while (cells.length < minSlots) {
-                  cells.push({ type: "empty", id: `item-empty-${cells.length}` });
-                }
-
-                return cells.map((cell, index) => {
-                  if (cell.type === "photo") {
-                    const photo = cell.photo;
-                    return (
-                      <PhotoCard
-                        key={photo.id}
-                        previewUrl={photo.previewUrl}
-                        onDelete={() => removeItemPhoto(photo.id)}
-                        draggable
-                        onDragStart={(event) =>
-                          handlePhotoDragStart(event, "item", photo.id, cell.photoIndex)
-                        }
-                        onDragOver={(event) =>
-                          handlePhotoDragOver(event, "item", getDropIndexFromCard(event, cell.photoIndex))
-                        }
-                        onDrop={(event) =>
-                          handlePhotoDrop(event, "item", getDropIndexFromCard(event, cell.photoIndex))
-                        }
-                        onDragEnd={resetPhotoDragState}
-                        isDragging={dragSource?.kind === "item" && dragSource.id === photo.id}
-                        showPrimaryBadge={cell.photoIndex === 0}
-                      />
-                    );
-                  }
-
-                  if (cell.type === "add") {
-                    return (
-                      <AddPhotoCard
-                        key={`item-photo-add-${index}`}
-                        label="+ Добавить"
-                        onClick={() => itemPhotosInputRef.current?.click()}
-                      />
-                    );
-                  }
-
-                  if (cell.type === "gap") {
-                    return (
-                      <PhotoDropGap
-                        key={`item-photo-gap-${index}`}
-                        onDragOver={(event) => handlePhotoDragOver(event, "item", cell.dropIndex)}
-                        onDrop={(event) => handlePhotoDrop(event, "item", cell.dropIndex)}
-                      />
-                    );
-                  }
-
-                  return <div key={cell.id} className="aspect-square w-full" aria-hidden="true" />;
-                });
-              })()}
+                return <div key={`item-empty-${index}`} className="aspect-square w-full" aria-hidden="true" />;
+              })}
             </div>
           </div>
           <FieldError message={errors.photos} />
@@ -1655,81 +1659,47 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           />
           <div className="relative mt-4 box-border w-full rounded-[6.82px] border-[0.5px] border-dashed border-[#CACACA] p-6">
             <div className="relative grid grid-cols-5 gap-3">
-              {(() => {
-                const showGap = dragSource?.kind === "doc" && dragInsertIndex?.kind === "doc";
-                const dropIndex = showGap ? dragInsertIndex.index : -1;
-                const cells: Array<
-                  | { type: "photo"; photo: PhotoItem; photoIndex: number }
-                  | { type: "add" }
-                  | { type: "gap"; dropIndex: number }
-                  | { type: "empty"; id: string }
-                > = [];
-
-                for (let index = 0; index <= docPhotos.length; index += 1) {
-                  if (showGap && dropIndex === index) {
-                    cells.push({ type: "gap", dropIndex: index });
-                  }
-                  if (index < docPhotos.length) {
-                    cells.push({ type: "photo", photo: docPhotos[index], photoIndex: index });
-                  }
+              {Array.from({ length: docPhotoGrid.visibleSlots }).map((_, index) => {
+                if (index < docPhotos.length) {
+                  const photo = docPhotos[index];
+                  return (
+                    <PhotoCard
+                      key={photo.id}
+                      previewUrl={photo.previewUrl}
+                      onDelete={() => removeDocPhoto(photo.id)}
+                      draggable
+                      onDragStart={(event) =>
+                        handlePhotoDragStart(event, "doc", photo.id, index)
+                      }
+                      onDragOver={(event) =>
+                        handlePhotoDragOver(event, "doc", getDropIndexFromCard(event, index))
+                      }
+                      onDrop={(event) =>
+                        handlePhotoDrop(event, "doc", getDropIndexFromCard(event, index))
+                      }
+                      onDragEnd={resetPhotoDragState}
+                      isDragging={dragSource?.kind === "doc" && dragSource.id === photo.id}
+                      dropIndicator={getPhotoDropIndicator("doc", photo.id, index, docPhotos.length)}
+                    />
+                  );
                 }
 
-                if (docPhotoGrid.hasAddSlot) {
-                  cells.push({ type: "add" });
+                if (docPhotoGrid.hasAddSlot && index === docPhotos.length) {
+                  return (
+                    <AddPhotoCard
+                      key="doc-photo-add"
+                      label="+ Добавить"
+                      onClick={() => docPhotosInputRef.current?.click()}
+                      onDragOver={(event) =>
+                        handlePhotoDragOver(event, "doc", docPhotos.length)
+                      }
+                      onDrop={(event) => handlePhotoDrop(event, "doc", docPhotos.length)}
+                    />
+                  );
                 }
 
-                const minSlots = docPhotoGrid.visibleSlots + (showGap ? 1 : 0);
-                while (cells.length < minSlots) {
-                  cells.push({ type: "empty", id: `doc-empty-${cells.length}` });
-                }
-
-                return cells.map((cell, index) => {
-                  if (cell.type === "photo") {
-                    const photo = cell.photo;
-                    return (
-                      <PhotoCard
-                        key={photo.id}
-                        previewUrl={photo.previewUrl}
-                        onDelete={() => removeDocPhoto(photo.id)}
-                        draggable
-                        onDragStart={(event) =>
-                          handlePhotoDragStart(event, "doc", photo.id, cell.photoIndex)
-                        }
-                        onDragOver={(event) =>
-                          handlePhotoDragOver(event, "doc", getDropIndexFromCard(event, cell.photoIndex))
-                        }
-                        onDrop={(event) =>
-                          handlePhotoDrop(event, "doc", getDropIndexFromCard(event, cell.photoIndex))
-                        }
-                        onDragEnd={resetPhotoDragState}
-                        isDragging={dragSource?.kind === "doc" && dragSource.id === photo.id}
-                      />
-                    );
-                  }
-
-                  if (cell.type === "add") {
-                    return (
-                      <AddPhotoCard
-                        key={`doc-photo-add-${index}`}
-                        label="+ Добавить"
-                        onClick={() => docPhotosInputRef.current?.click()}
-                      />
-                    );
-                  }
-
-                  if (cell.type === "gap") {
-                    return (
-                      <PhotoDropGap
-                        key={`doc-photo-gap-${index}`}
-                        onDragOver={(event) => handlePhotoDragOver(event, "doc", cell.dropIndex)}
-                        onDrop={(event) => handlePhotoDrop(event, "doc", cell.dropIndex)}
-                      />
-                    );
-                  }
-
-                  return <div key={cell.id} className="aspect-square w-full" aria-hidden="true" />;
-                });
-              })()}
+                return <div key={`doc-empty-${index}`} className="aspect-square w-full" aria-hidden="true" />;
+              })}
             </div>
           </div>
         </section>
