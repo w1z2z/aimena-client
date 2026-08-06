@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { useAuthGate } from "@/features/auth";
 import { useFavoriteToggle } from "@/features/favorites";
@@ -34,14 +35,17 @@ export function ListingGallery({
   const favoriteMutation = useFavoriteToggle();
   const [favoriteOverride, setFavoriteOverride] = useState<boolean | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const favorite = favoriteOverride ?? isFavorite;
   const slides = images.length > 0 ? images : [{ id: "placeholder", url: LISTING_PLACEHOLDER_IMAGE }];
   const safeIndex = Math.min(activeIndex, slides.length - 1);
   const active = slides[safeIndex] ?? slides[0];
+  const canNavigate = slides.length > 1;
 
   useEffect(() => {
     setActiveIndex(0);
+    setLightboxOpen(false);
   }, [listingId]);
 
   useEffect(() => {
@@ -58,6 +62,37 @@ export function ListingGallery({
     setActiveIndex((current) => (current + 1) % slides.length);
   };
 
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setLightboxOpen(false);
+        return;
+      }
+      if (!canNavigate) return;
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goPrev();
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goNext();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+    // Navigation helpers only depend on slides.length via setActiveIndex functional updates.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lightboxOpen, canNavigate, slides.length]);
+
   const handleFavoriteClick = () => {
     if (hideFavorite || favoriteMutation.isPending || favoriteOverride !== null) return;
 
@@ -73,6 +108,77 @@ export function ListingGallery({
     });
   };
 
+  const lightbox =
+    lightboxOpen && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            className="listing-detail-lightbox"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${title}: фото ${safeIndex + 1} из ${slides.length}`}
+            onClick={() => setLightboxOpen(false)}
+          >
+            <button
+              type="button"
+              aria-label="Закрыть"
+              className="listing-detail-lightbox__close"
+              onClick={() => setLightboxOpen(false)}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                <path
+                  d="M2 2L16 16M16 2L2 16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+
+            {canNavigate ? (
+              <>
+                <button
+                  type="button"
+                  aria-label="Предыдущее фото"
+                  className="listing-detail-lightbox__nav listing-detail-lightbox__nav--prev"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    goPrev();
+                  }}
+                >
+                  <ChevronIcon direction="left" className="h-[25px] w-[15px] text-brand" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Следующее фото"
+                  className="listing-detail-lightbox__nav listing-detail-lightbox__nav--next"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    goNext();
+                  }}
+                >
+                  <ChevronIcon direction="right" className="h-[25px] w-[15px] text-brand" />
+                </button>
+                <span className="listing-detail-lightbox__counter">
+                  {safeIndex + 1}/{slides.length}
+                </span>
+              </>
+            ) : null}
+
+            <div
+              className="listing-detail-lightbox__stage"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <img
+                src={active.url}
+                alt={title}
+                className="listing-detail-lightbox__image"
+              />
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <div
       className={[
@@ -83,7 +189,14 @@ export function ListingGallery({
         .join(" ")}
     >
       <div className="listing-detail-gallery__main">
-        <img src={active.url} alt={title} className="listing-detail-gallery__image" />
+        <button
+          type="button"
+          className="listing-detail-gallery__open"
+          aria-label="Открыть фото на весь экран"
+          onClick={() => setLightboxOpen(true)}
+        >
+          <img src={active.url} alt={title} className="listing-detail-gallery__image" />
+        </button>
 
         {hideFavorite ? null : (
           <button
@@ -101,7 +214,7 @@ export function ListingGallery({
           </button>
         )}
 
-        {slides.length > 1 ? (
+        {canNavigate ? (
           <>
             <button
               type="button"
@@ -126,7 +239,7 @@ export function ListingGallery({
         ) : null}
       </div>
 
-      {slides.length > 1 ? (
+      {canNavigate ? (
         <div className="listing-detail-gallery__thumbs" role="list">
           {slides.map((slide, index) => (
             <button
@@ -148,6 +261,8 @@ export function ListingGallery({
           ))}
         </div>
       ) : null}
+
+      {lightbox}
     </div>
   );
 }

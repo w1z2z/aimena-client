@@ -193,6 +193,16 @@
   background: #d8d8d8;
 }
 
+.listing-detail-gallery__open {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
 .listing-detail-gallery__image {
   display: block;
   width: 100%;
@@ -322,6 +332,104 @@
 .listing-detail-gallery__thumb--active {
   border-color: #8e8bed;
   box-shadow: 0 0 0 1px #8e8bed;
+}
+
+.listing-detail-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 72px;
+  background: rgba(26, 26, 26, 0.92);
+}
+
+.listing-detail-lightbox__stage {
+  box-sizing: border-box;
+  display: flex;
+  max-width: min(1200px, 100%);
+  max-height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.listing-detail-lightbox__image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 96px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.listing-detail-lightbox__close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 0.5px solid #cacaca;
+  border-radius: 16px;
+  background: #fff;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+
+.listing-detail-lightbox__close:hover {
+  border-color: #8e8bed;
+  color: #8e8bed;
+}
+
+.listing-detail-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border: 0.5px solid #cacaca;
+  border-radius: 10px;
+  background: #fff;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.listing-detail-lightbox__nav--prev {
+  left: 24px;
+}
+
+.listing-detail-lightbox__nav--next {
+  right: 24px;
+}
+
+.listing-detail-lightbox__counter {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 24px;
+  padding: 0 12px;
+  border-radius: 33px;
+  background: #8e8bed;
+  color: #fff;
+  font-family: var(--font-manrope), Manrope, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.002em;
+  white-space: nowrap;
 }
 
 .listing-detail-owner {
@@ -726,6 +834,21 @@
 @media (max-width: 640px) {
   .listing-detail-gallery__nav {
     display: none;
+  }
+
+  .listing-detail-lightbox {
+    padding: 64px 16px 48px;
+  }
+
+  .listing-detail-lightbox__nav {
+    display: none;
+  }
+
+  .listing-detail-lightbox__close {
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
   }
 
   .listing-detail-gallery__thumb {
