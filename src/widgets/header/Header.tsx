@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useAuth, useAuthGate } from "@/features/auth";
@@ -24,6 +24,12 @@ type SearchSuggestion = {
   id: string;
   title: string;
 };
+
+const HEADER_CATEGORIES_LEFT = 166;
+const HEADER_ACTIONS_LEFT = 1049;
+/** Same gap as between expanded search and «Разместить предложение». */
+const HEADER_SEARCH_SIDE_GAP = 8;
+const HEADER_CATEGORIES_WIDTH_FALLBACK = 178;
 
 function getPageScrollTop() {
   return Math.max(
@@ -52,6 +58,20 @@ export function Header() {
   const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [activeSearchSuggestionIndex, setActiveSearchSuggestionIndex] = useState<number>(-1);
+  const [categoriesWidth, setCategoriesWidth] = useState(HEADER_CATEGORIES_WIDTH_FALLBACK);
+
+  const handleCategoriesWidthChange = useCallback((width: number) => {
+    setCategoriesWidth(width > 0 ? width : HEADER_CATEGORIES_WIDTH_FALLBACK);
+  }, []);
+
+  const expandedSearchBox = useMemo(() => {
+    const left = HEADER_CATEGORIES_LEFT + categoriesWidth + HEADER_SEARCH_SIDE_GAP;
+    const width = Math.max(
+      200,
+      HEADER_ACTIONS_LEFT - HEADER_SEARCH_SIDE_GAP - left,
+    );
+    return { left, width };
+  }, [categoriesWidth]);
 
   /** Expanded search: on scroll always, or after clicking the search icon at top. */
   const showExpandedSearch = isScrolled || isSearchExpanded || isSearchClosing;
@@ -314,20 +334,23 @@ export function Header() {
             <Logo tone={logoTone} />
           </div>
 
-          <HeaderCategoriesDropdown />
+          <HeaderCategoriesDropdown onTriggerWidthChange={handleCategoriesWidthChange} />
 
           <div
             ref={searchRef}
-            className={`absolute top-[10px] h-[32px] transition-[left,width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              showExpandedSearch && !isSearchClosing
-                ? "left-[326px] w-[715px]"
-                : "left-[1007px] w-[32px]"
+            className={`absolute top-[11px] z-[50] h-[32px] transition-[left,width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              showExpandedSearch && !isSearchClosing ? "" : "left-[1007px] w-[32px]"
             }`}
+            style={
+              showExpandedSearch && !isSearchClosing
+                ? { left: expandedSearchBox.left, width: expandedSearchBox.width }
+                : undefined
+            }
           >
             <div className="h-full w-full overflow-hidden">
               {showExpandedSearch ? (
                 <div
-                  className={`site-header-search flex h-full w-full items-center gap-[9px] rounded-[13px] border-[0.5px] border-solid px-[8px] transition-[border-color,background-color,color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+                  className={`site-header-search flex h-full w-full items-center gap-[9px] rounded-[36px] border-[0.5px] border-solid px-[8px] transition-[border-color,background-color,color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
                     isSearchClosing
                       ? "border-[#8E8BED] bg-white text-[#1A1A1A]"
                       : "site-header-search-field border-[#CACACA]"
@@ -339,7 +362,7 @@ export function Header() {
                     onClick={handleSearchToggle}
                     className="flex h-[16px] w-[16px] shrink-0 items-center justify-center outline-none focus:outline-none focus-visible:outline-none"
                   >
-                    <SearchIcon className="h-[13px] w-[13px]" />
+                    <SearchIcon className="h-[16px] w-[16px]" />
                   </button>
                   <input
                     ref={searchInputRef}
@@ -392,7 +415,7 @@ export function Header() {
                     className={
                       isSearchClosing
                         ? "pointer-events-none absolute h-0 w-0 opacity-0"
-                        : "h-[24px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
+                        : "h-[16px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-none text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
                     }
                   />
                   <button
@@ -430,7 +453,7 @@ export function Header() {
                   onClick={handleSearchToggle}
                   className="flex h-[32px] w-[32px] items-center justify-center rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#fafaff]"
                 >
-                  <SearchIcon className="h-[13px] w-[13px]" />
+                  <SearchIcon className="h-[16px] w-[16px]" />
                 </button>
               )}
             </div>

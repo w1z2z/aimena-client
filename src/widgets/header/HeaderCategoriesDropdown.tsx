@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { getCategories, type ApiCategoryNode } from "@/shared/api/catalog";
@@ -9,11 +9,18 @@ import { requestOpenHomeFilters } from "@/shared/lib/home-open-filters";
 
 const PANEL_CLOSE_MS = 220;
 
-export function HeaderCategoriesDropdown() {
+type HeaderCategoriesDropdownProps = {
+  onTriggerWidthChange?: (width: number) => void;
+};
+
+export function HeaderCategoriesDropdown({
+  onTriggerWidthChange,
+}: HeaderCategoriesDropdownProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -30,6 +37,20 @@ export function HeaderCategoriesDropdown() {
   const parents = (categoriesQuery.data?.data ?? []) as ApiCategoryNode[];
   const hoveredParent = parents.find((item) => item.id === hoveredParentId) ?? null;
   const children = hoveredParent?.children ?? [];
+
+  useLayoutEffect(() => {
+    const trigger = triggerRef.current;
+    if (!trigger || !onTriggerWidthChange) return;
+
+    const notify = () => {
+      onTriggerWidthChange(trigger.getBoundingClientRect().width);
+    };
+
+    notify();
+    const observer = new ResizeObserver(notify);
+    observer.observe(trigger);
+    return () => observer.disconnect();
+  }, [onTriggerWidthChange]);
 
   useEffect(() => {
     if (open) {
@@ -79,6 +100,7 @@ export function HeaderCategoriesDropdown() {
   return (
     <div ref={containerRef} className="absolute left-[166px] top-[11px] z-[60]">
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-haspopup="dialog"
