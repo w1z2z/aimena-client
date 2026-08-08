@@ -105,15 +105,22 @@ export function HeroRecommendationsPanel({
       ? displayed.listings.map((item) => item.id).join("-")
       : "empty";
 
-  const [scrollSettling, setScrollSettling] = useState(false);
+  const [scrollSettling, setScrollSettling] = useState(true);
 
-  // One-shot pin after list identity changes (no interval fighting user scroll).
+  // After list swap: disable snap, pin top once, re-enable (no scroll-fighting interval).
   useLayoutEffect(() => {
     const node = scrollRef.current;
     if (!node || !visible) return;
 
+    setScrollSettling(true);
     node.scrollTop = 0;
-    setScrollSettling(false);
+
+    const settleTimer = window.setTimeout(() => {
+      node.scrollTop = 0;
+      setScrollSettling(false);
+    }, 80);
+
+    return () => window.clearTimeout(settleTimer);
   }, [scrollKey, visible]);
 
   return (

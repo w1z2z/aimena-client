@@ -233,10 +233,10 @@
 }
 
 
-/* Recommendations list scrollbar tuning */
+/* Recommendations list — snap one card per scroll gesture */
 .home-recommendations-scroll {
   scrollbar-width: thin;
-  scroll-snap-type: none;
+  scroll-snap-type: y mandatory;
   scroll-padding-top: 0;
   scroll-padding-bottom: 0;
 }
@@ -260,5 +260,10 @@
 .home-recommendations-scroll::-webkit-scrollbar-thumb:hover {
   background: rgb(142 139 237 / 70%);
   background-clip: content-box;
+}
+
+.home-recommendations-scroll [data-recommendation-card] {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
