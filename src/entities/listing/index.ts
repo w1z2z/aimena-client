@@ -3,6 +3,7 @@ export type {
   ListingCardLifecycle,
   ListingCardPreview,
   ListingCardVariant,
+  ListingWantCategory,
 } from "./model/types";
 export { LISTING_LIFECYCLE_MESSAGE } from "./model/types";
 export type { ConditionOptionId } from "./model/conditions";

@@ -1,25 +1,27 @@
 import type { ApiListingCard, ApiListingDetail } from "@/shared/api/listings";
 
 import { mapApiConditionToLabel } from "./conditions";
-import type { ListingCardData } from "./types";
+import type { ListingCardData, ListingWantCategory } from "./types";
 
 type WantsSource = Pick<ApiListingCard, "wantsText" | "wantsTags" | "wantsCategory">;
 
 /**
- * «Обмен на:» — категория желаемого обмена и подкатегория (если есть).
- * Не путать с тегами: те идут в пилюли внизу карточки.
+ * «Обмен на:» — категория желаемого обмена из `wantsCategory`.
+ * Если выбрана подкатегория — только она (без родителя).
+ * Теги вещей — в пилюлях внизу (`buildWantsPreview`), не здесь.
  */
-export function buildWantCategories(listing: WantsSource): string[] {
-  const categories: string[] = [];
-  const parentName = listing.wantsCategory?.parent?.name?.trim();
-  const name = listing.wantsCategory?.name?.trim();
+export function buildWantCategories(listing: WantsSource): ListingWantCategory[] {
+  const wants = listing.wantsCategory;
+  const name = wants?.name?.trim();
+  if (!wants?.id || !name) return [];
 
-  if (parentName) categories.push(parentName);
-  if (name && name.toLowerCase() !== parentName?.toLowerCase()) {
-    categories.push(name);
-  }
-
-  return categories.slice(0, 3);
+  return [
+    {
+      id: wants.id,
+      name,
+      parentId: wants.parent?.id ?? null,
+    },
+  ];
 }
 
 /**
@@ -27,7 +29,7 @@ export function buildWantCategories(listing: WantsSource): string[] {
  */
 export function buildWantsPreview(listing: WantsSource): string[] {
   const categoryNames = new Set(
-    buildWantCategories(listing).map((value) => value.toLowerCase()),
+    buildWantCategories(listing).map((value) => value.name.toLowerCase()),
   );
 
   const tags = listing.wantsTags

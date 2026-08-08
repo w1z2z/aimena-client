@@ -3,6 +3,14 @@ export type ListingCardVariant = "exchange" | "free" | "hero" | "mine";
 /** Inactive own/public listing footer states from Figma. */
 export type ListingCardLifecycle = "archived" | "completed" | "deleted";
 
+/** Desired-exchange category chip for «Обмен на:» (leaf name; ids for filter prefill). */
+export type ListingWantCategory = {
+  id: string;
+  name: string;
+  /** Parent category id when this is a subcategory; null for top-level. */
+  parentId: string | null;
+};
+
 export type ListingCardData = {
   id: string;
   ownerId: string;
@@ -11,8 +19,8 @@ export type ListingCardData = {
   condition: string;
   /** Specific want tags (pills under the divider). */
   wants: string[];
-  /** Want category + subcategory labels after «Обмен на:». */
-  wantCategories: string[];
+  /** Desired-exchange category after «Обмен на:» (leaf category / subcategory). */
+  wantCategories: ListingWantCategory[];
   hasDocuments: boolean;
   isFree: boolean;
   price: number;

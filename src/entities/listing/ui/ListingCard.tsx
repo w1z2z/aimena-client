@@ -2,17 +2,20 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { useAuth, useAuthGate } from "@/features/auth";
 import { useFavoriteToggle } from "@/features/favorites";
 import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
+import { requestOpenHomeFilters } from "@/shared/lib/home-open-filters";
 import { HeartIcon, LocationPinIcon, SwapIcon } from "@/shared/ui/icons";
 
 import {
   LISTING_LIFECYCLE_MESSAGE,
   type ListingCardLifecycle,
   type ListingCardVariant,
+  type ListingWantCategory,
 } from "../model/types";
 
 const WANTS_MIN_VISIBLE = 2;
@@ -36,7 +39,7 @@ export type ListingCardProps = {
   condition: string;
   coverImageUrl?: string | null;
   wants?: string[];
-  wantCategories?: string[];
+  wantCategories?: ListingWantCategory[];
   isFree?: boolean;
   isFavorite?: boolean;
   ownerId?: string | null;
@@ -70,6 +73,8 @@ export function ListingCard({
   unavailable = false,
   className,
 }: ListingCardProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuth();
   const { guardAuth } = useAuthGate();
   const favoriteMutation = useFavoriteToggle();
@@ -90,7 +95,7 @@ export function ListingCard({
   const canOpenListing = !isDeleted;
 
   const categories = useMemo(() => {
-    if (freeListing) return ["Даром"];
+    if (freeListing) return [];
     return wantCategories.slice(0, WANT_CATEGORIES_MAX);
   }, [freeListing, wantCategories]);
 
@@ -188,6 +193,18 @@ export function ListingCard({
     guardAuth("propose-exchange");
   };
 
+  const handleWantCategoryClick = (category: ListingWantCategory) => {
+    const categoryParentId = category.parentId ?? category.id;
+    const categoryChildId = category.parentId ? category.id : undefined;
+    requestOpenHomeFilters({
+      categoryParentId,
+      categoryChildId,
+    });
+    if (pathname !== "/") {
+      router.push("/");
+    }
+  };
+
   const visibleWants = truncatedWants.slice(0, visibleCount);
   const wantsMore = freeListing ? 0 : Math.max(wants.length - visibleCount, 0);
   const lifecycleMessage = inactiveLifecycle
@@ -263,12 +280,26 @@ export function ListingCard({
               <>
                 <div className="home-listing-card__exchange-row">
                   <span className="home-listing-card__exchange-label">Обмен на:</span>
-                  {categories.length > 0 ? (
+                  {freeListing ? (
+                    <Link
+                      href="/free"
+                      className="home-listing-card__category home-listing-card__category--button"
+                      title="Даром"
+                    >
+                      <span className="home-listing-card__category-text">Даром</span>
+                    </Link>
+                  ) : categories.length > 0 ? (
                     <div className="home-listing-card__categories">
                       {categories.map((category) => (
-                        <span key={category} className="home-listing-card__category" title={category}>
-                          <span className="home-listing-card__category-text">{category}</span>
-                        </span>
+                        <button
+                          key={category.id}
+                          type="button"
+                          className="home-listing-card__category home-listing-card__category--button"
+                          title={category.name}
+                          onClick={() => handleWantCategoryClick(category)}
+                        >
+                          <span className="home-listing-card__category-text">{category.name}</span>
+                        </button>
                       ))}
                     </div>
                   ) : (
