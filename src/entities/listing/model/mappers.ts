@@ -5,23 +5,41 @@ import type { ListingCardData } from "./types";
 
 type WantsSource = Pick<ApiListingCard, "wantsText" | "wantsTags" | "wantsCategory">;
 
+/**
+ * «Обмен на:» — категория желаемого обмена и подкатегория (если есть).
+ * Не путать с тегами: те идут в пилюли внизу карточки.
+ */
 export function buildWantCategories(listing: WantsSource): string[] {
   const categories: string[] = [];
   const parentName = listing.wantsCategory?.parent?.name?.trim();
   const name = listing.wantsCategory?.name?.trim();
+
   if (parentName) categories.push(parentName);
   if (name && name.toLowerCase() !== parentName?.toLowerCase()) {
     categories.push(name);
   }
+
   return categories.slice(0, 3);
 }
 
+/**
+ * Пилюли внизу карточки — конкретные теги (вещи), не категории.
+ */
 export function buildWantsPreview(listing: WantsSource): string[] {
-  const tags = listing.wantsTags.map((tag) => tag.trim()).filter(Boolean);
+  const categoryNames = new Set(
+    buildWantCategories(listing).map((value) => value.toLowerCase()),
+  );
+
+  const tags = listing.wantsTags
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .filter((tag) => !categoryNames.has(tag.toLowerCase()));
+
   if (tags.length > 0) {
     return [...new Map(tags.map((value) => [value.toLowerCase(), value])).values()];
   }
 
+  // Fallback only when tags are empty — parse free-text wants.
   const normalizedTextParts = listing.wantsText
     .split(/[,\n;]+/)
     .map((part) =>
@@ -30,10 +48,12 @@ export function buildWantsPreview(listing: WantsSource): string[] {
         .replace(/^ищу\s*/i, "")
         .trim(),
     )
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((part) => !categoryNames.has(part.toLowerCase()));
 
   return [...new Map(normalizedTextParts.map((value) => [value.toLowerCase(), value])).values()];
 }
+
 
 export const EXTRA_PAY_LABELS: Record<ApiListingDetail["extraPay"], string> = {
   none: "Без доплаты",

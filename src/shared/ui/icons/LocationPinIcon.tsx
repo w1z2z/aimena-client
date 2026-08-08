@@ -7,8 +7,9 @@ export function LocationPinIcon({ className, ...props }: IconProps) {
       height="8"
       viewBox="0 0 6 8"
       fill="none"
+      overflow="visible"
       aria-hidden
-      className={`block shrink-0 ${className ?? ""}`}
+      className={`block shrink-0 overflow-visible ${className ?? ""}`}
       {...props}
     >
       <path

@@ -27,8 +27,9 @@ type SearchSuggestion = {
 
 const HEADER_CATEGORIES_LEFT = 166;
 const HEADER_ACTIONS_LEFT = 1049;
-/** Same gap as between expanded search and «Разместить предложение». */
-const HEADER_SEARCH_SIDE_GAP = 8;
+/** Gap between categories ↔ search and search ↔ «Разместить предложение». */
+const HEADER_SEARCH_SIDE_GAP = 16;
+const HEADER_SEARCH_ICON_SIZE = 32;
 const HEADER_CATEGORIES_WIDTH_FALLBACK = 178;
 
 function getPageScrollTop() {
@@ -72,6 +73,9 @@ export function Header() {
     );
     return { left, width };
   }, [categoriesWidth]);
+
+  const collapsedSearchLeft =
+    HEADER_ACTIONS_LEFT - HEADER_SEARCH_SIDE_GAP - HEADER_SEARCH_ICON_SIZE;
 
   /** Expanded search: on scroll always, or after clicking the search icon at top. */
   const showExpandedSearch = isScrolled || isSearchExpanded || isSearchClosing;
@@ -339,12 +343,12 @@ export function Header() {
           <div
             ref={searchRef}
             className={`absolute top-[11px] z-[50] h-[32px] transition-[left,width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              showExpandedSearch && !isSearchClosing ? "" : "left-[1007px] w-[32px]"
+              showExpandedSearch && !isSearchClosing ? "" : "w-[32px]"
             }`}
             style={
               showExpandedSearch && !isSearchClosing
                 ? { left: expandedSearchBox.left, width: expandedSearchBox.width }
-                : undefined
+                : { left: collapsedSearchLeft }
             }
           >
             <div className="h-full w-full overflow-hidden">

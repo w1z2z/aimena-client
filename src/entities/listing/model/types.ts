@@ -9,9 +9,9 @@ export type ListingCardData = {
   title: string;
   city: string;
   condition: string;
-  /** Specific want tags (pills). */
+  /** Specific want tags (pills under the divider). */
   wants: string[];
-  /** Want category labels shown after «Обмен на:». */
+  /** Want category + subcategory labels after «Обмен на:». */
   wantCategories: string[];
   hasDocuments: boolean;
   isFree: boolean;
