@@ -6,23 +6,39 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  isolation: isolate;
-  overflow: hidden;
   width: 342px;
   height: 458px;
   padding: 12px;
   gap: 12px;
-  border: 3px solid transparent;
+  border: 0;
   border-radius: 31px;
-  /* Inward stroke — survives parent overflow:hidden/clip (hero, free carousel, grids). */
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+  background: #ffffff;
   box-shadow: none;
   transition: box-shadow 200ms ease;
 }
 
-.home-listing-card:not(.home-listing-card--hero):not(.home-listing-card--mine):hover {
+/*
+ * Gradient stroke as an overlay — NOT border+padding-box background.
+ * The old 3px transparent-border trick re-rasters on scroll and makes
+ * text/SVG vibrate (pre-redesign used only 0.3px and did not jitter).
+ */
+.home-listing-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%);
+  padding: 3px;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.home-listing-card:not(.home-listing-card--hero):not(.home-listing-card--mine):not(.home-listing-card--free):hover {
   box-shadow:
     -4px 0 14px rgba(142, 139, 237, 0.4),
     4px 0 14px rgba(200, 255, 0, 0.35),
@@ -34,10 +50,6 @@
   box-shadow: none;
 }
 
-.home-listing-card--has-title-accessory {
-  overflow: visible;
-}
-
 /* ——— Title ——— */
 .home-listing-card__title {
   box-sizing: border-box;
@@ -47,17 +59,15 @@
   align-items: flex-start;
   justify-content: center;
   width: 294px;
-  height: 12px;
-  padding: 1px 12px;
+  height: 17px;
+  padding: 0 12px;
   color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
   font-size: 14px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 17px;
   letter-spacing: 0.001em;
   text-align: center;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__title-link {
@@ -99,7 +109,6 @@
   width: 342px;
   height: 342px;
   overflow: hidden;
-  isolation: isolate;
   background: #f4e2ff;
 }
 
@@ -298,7 +307,6 @@
   flex: 0 1 auto;
   align-items: center;
   justify-content: center;
-  gap: 4px;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
@@ -308,15 +316,6 @@
   font-weight: 600;
   line-height: 14px;
   letter-spacing: 0.002em;
-}
-
-.home-listing-card__category-dot {
-  display: block;
-  flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: 1px;
-  background: #1a1a1a;
 }
 
 .home-listing-card__category-text {
@@ -356,8 +355,6 @@
   letter-spacing: 0.001em;
   text-align: center;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__wants-row {
@@ -439,8 +436,6 @@
   line-height: 1;
   letter-spacing: 0.002em;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__free-pill {

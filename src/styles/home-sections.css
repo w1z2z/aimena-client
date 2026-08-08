@@ -1,11 +1,10 @@
 .home-free-carousel {
-  scroll-behavior: auto;
-  scroll-snap-type: x mandatory;
-  scroll-snap-stop: always;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  scroll-behavior: auto;
+  scroll-snap-type: none;
 }
 
 .home-free-carousel::-webkit-scrollbar {
@@ -13,12 +12,11 @@
 }
 
 .home-free-carousel-viewport {
-  overflow: visible;
+  overflow: hidden;
 }
 
 .home-free-carousel__item {
-  overflow: visible;
-  scroll-snap-align: start;
+  flex: none;
 }
 
 /* Hero mode heading + recommendations fades */
@@ -53,20 +51,15 @@
 }
 
 .hero-recommendations-fade {
-  transition:
-    opacity 480ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+  transition: opacity 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero-recommendations-fade.is-visible {
   opacity: 1;
-  transform: translateY(0);
 }
 
 .hero-recommendations-fade.is-hidden {
   opacity: 0;
-  transform: translateY(12px);
 }
 
 @media (prefers-reduced-motion: reduce) {

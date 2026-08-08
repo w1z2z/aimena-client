@@ -72,11 +72,10 @@ export function FreeGiveawayCarousel({ listings }: { listings: ListingCardPrevie
     >
       <div
         ref={carouselRef}
-        className="home-free-carousel flex snap-x snap-mandatory overscroll-x-contain"
+        className="home-free-carousel flex overscroll-x-contain"
         style={{
           width: `${CAROUSEL_OUTER_WIDTH}px`,
           padding: `${CAROUSEL_SHADOW_Y_PADDING}px ${CAROUSEL_EDGE_PADDING}px`,
-          scrollPadding: `0 ${CAROUSEL_EDGE_PADDING}px`,
           gap: `${CARD_GAP}px`,
           boxSizing: "border-box",
         }}
@@ -84,7 +83,7 @@ export function FreeGiveawayCarousel({ listings }: { listings: ListingCardPrevie
         {loopListings.map((listing, index) => (
           <div
             key={`${listing.id}-${index}`}
-            className="home-free-carousel__item shrink-0 snap-start snap-always"
+            className="home-free-carousel__item shrink-0"
             style={{ width: `${CARD_WIDTH}px` }}
           >
             <ListingCard

@@ -236,12 +236,11 @@
 /* Recommendations list scrollbar tuning */
 .home-recommendations-scroll {
   scrollbar-width: thin;
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: none;
   scroll-padding-top: 0;
   scroll-padding-bottom: 0;
 }
 
-/* While settling after mount/navigation, snap must not lock a restored offset. */
 .home-recommendations-scroll.is-scroll-settling {
   scroll-snap-type: none;
 }
@@ -261,10 +260,5 @@
 .home-recommendations-scroll::-webkit-scrollbar-thumb:hover {
   background: rgb(142 139 237 / 70%);
   background-clip: content-box;
-}
-
-.home-recommendations-scroll [data-recommendation-card] {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
 }
 

@@ -105,44 +105,15 @@ export function HeroRecommendationsPanel({
       ? displayed.listings.map((item) => item.id).join("-")
       : "empty";
 
-  const [scrollSettling, setScrollSettling] = useState(true);
+  const [scrollSettling, setScrollSettling] = useState(false);
 
-  // Mandatory snap + Next/browser scroll restoration leave the strip slightly
-  // scrolled after client navigations. Suppress snap, pin to top, then re-enable.
+  // One-shot pin after list identity changes (no interval fighting user scroll).
   useLayoutEffect(() => {
     const node = scrollRef.current;
     if (!node || !visible) return;
 
-    setScrollSettling(true);
-
-    const pinTop = () => {
-      if (node.scrollTop !== 0) node.scrollTop = 0;
-    };
-
-    pinTop();
-
-    const intervalId = window.setInterval(pinTop, 50);
-    const rafId = window.requestAnimationFrame(() => {
-      pinTop();
-      window.requestAnimationFrame(pinTop);
-    });
-
-    const settleTimer = window.setTimeout(() => {
-      window.clearInterval(intervalId);
-      pinTop();
-      setScrollSettling(false);
-      // Snap can nudge once re-enabled — pin again on the next frames.
-      window.requestAnimationFrame(() => {
-        pinTop();
-        window.requestAnimationFrame(pinTop);
-      });
-    }, 400);
-
-    return () => {
-      window.cancelAnimationFrame(rafId);
-      window.clearInterval(intervalId);
-      window.clearTimeout(settleTimer);
-    };
+    node.scrollTop = 0;
+    setScrollSettling(false);
   }, [scrollKey, visible]);
 
   return (

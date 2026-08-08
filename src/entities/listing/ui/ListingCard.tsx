@@ -267,7 +267,6 @@ export function ListingCard({
                     <div className="home-listing-card__categories">
                       {categories.map((category) => (
                         <span key={category} className="home-listing-card__category" title={category}>
-                          <span className="home-listing-card__category-dot" aria-hidden="true" />
                           <span className="home-listing-card__category-text">{category}</span>
                         </span>
                       ))}
