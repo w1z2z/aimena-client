@@ -1,4 +1,10 @@
-export type { ListingCardData, ListingCardPreview, ListingCardVariant } from "./model/types";
+export type {
+  ListingCardData,
+  ListingCardLifecycle,
+  ListingCardPreview,
+  ListingCardVariant,
+} from "./model/types";
+export { LISTING_LIFECYCLE_MESSAGE } from "./model/types";
 export type { ConditionOptionId } from "./model/conditions";
 export {
   CONDITION_ID_TO_LABEL,
@@ -10,7 +16,12 @@ export {
   mapConditionIdToBackend,
   mapConditionLabelToId,
 } from "./model/conditions";
-export { buildWantsPreview, EXTRA_PAY_LABELS, mapApiListingToCard } from "./model/mappers";
+export {
+  buildWantCategories,
+  buildWantsPreview,
+  EXTRA_PAY_LABELS,
+  mapApiListingToCard,
+} from "./model/mappers";
 export { ListingCard, type ListingCardProps } from "./ui/ListingCard";
 export { useFreeListings, useListings } from "./hooks/useListings";
 export { useListing, useSimilarListings } from "./hooks/useListing";

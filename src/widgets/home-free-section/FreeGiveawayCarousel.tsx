@@ -94,6 +94,7 @@ export function FreeGiveawayCarousel({ listings }: { listings: ListingCardPrevie
               city={listing.city}
               condition={listing.condition}
               coverImageUrl={listing.coverImageUrl}
+              isFree
               isFavorite={listing.isFavorite}
               ownerId={listing.ownerId}
             />

@@ -9,7 +9,7 @@ export const layout = {
 } as const;
 
 export const placeholders = {
-  listingTitle: 'MacBook Pro 14" M3 Pro',
+  listingTitle: 'iPhone 17 Pro',
   listingPrice: "~ 100 000р",
   city: "Краснодар",
 } as const;

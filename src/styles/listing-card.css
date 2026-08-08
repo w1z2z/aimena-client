@@ -1,134 +1,68 @@
+/* Listing card — Figma Property 1=новая (2328:21973 / 2514:65704) */
+
 .home-listing-card {
   box-sizing: border-box;
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
   isolation: isolate;
   width: 342px;
-  border: 0.3px solid transparent;
+  height: 458px;
+  padding: 12px;
+  gap: 12px;
+  border: 3px solid transparent;
   border-radius: 31px;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
     linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
-  padding: 12px 0;
   box-shadow: none;
   transition: box-shadow 200ms ease;
 }
 
-.home-listing-card:not(.home-listing-card--hero):hover {
+.home-listing-card:not(.home-listing-card--hero):not(.home-listing-card--mine):hover {
   box-shadow:
     -4px 0 14px rgba(142, 139, 237, 0.4),
     4px 0 14px rgba(200, 255, 0, 0.35),
     0 6px 16px rgba(142, 139, 237, 0.18);
 }
 
-.home-listing-card--hero {
-  height: 443px;
-  box-shadow: none;
-}
-
-.home-listing-card--free {
-  height: 443px;
-}
-
-.home-listing-card--free .home-listing-card__media {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: auto;
-}
-
-/* Profile listings — card-profile-mine (own: wants only; public: CTA + wants) */
-.home-listing-card--mine {
-  height: auto;
-  border: 0.3px solid transparent;
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
-  box-shadow: none;
-}
-
+.home-listing-card--hero,
 .home-listing-card--mine:hover {
   box-shadow: none;
 }
 
-.home-listing-card--mine .home-listing-card__title {
-  position: relative;
-  height: 29px;
-  min-height: 29px;
-  border-radius: 10px 10px 0 0;
-  padding: 0 12px;
+.home-listing-card--has-title-accessory {
   overflow: visible;
-  z-index: 4;
 }
 
-.home-listing-card--mine.home-listing-card--has-title-accessory {
-  overflow: visible;
-  isolation: auto;
-}
-
-.home-listing-card--mine .home-listing-card__title span {
-  width: 252px;
-  max-width: 100%;
-  margin-inline: auto;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.home-listing-card__title-accessory {
-  position: absolute;
-  top: 0;
-  right: 12px;
-  bottom: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-}
-
-.home-listing-card--mine .home-listing-card__tags {
-  left: 8px;
-  bottom: 9px;
-  gap: 10px;
-  flex-wrap: wrap;
-  max-width: calc(100% - 16px);
-}
-
-.home-listing-card--mine .home-listing-card__footer {
-  height: auto;
-  min-height: 44px;
-  padding: 0 10px;
-}
-
-.home-listing-card--hero .home-listing-card__wants {
-  display: none;
-}
-
+/* ——— Title ——— */
 .home-listing-card__title {
+  box-sizing: border-box;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: stretch;
   z-index: 0;
-  min-height: 29px;
-  border-radius: 31px 31px 0 0;
-  padding: 0 12px;
+  flex: none;
+  align-items: flex-start;
+  justify-content: center;
+  width: 294px;
+  height: 12px;
+  padding: 1px 12px;
   color: #1a1a1a;
-  font-size: 18px;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: -0.036px;
+  letter-spacing: 0.001em;
   text-align: center;
-}
-
-.home-listing-card--hero .home-listing-card__title {
-  height: 29px;
-  min-height: 29px;
-  padding: 0 12px;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__title-link {
   display: block;
-  width: 100%;
+  margin: 0 auto;
+  width: 271px;
+  max-width: 100%;
   color: inherit;
   text-decoration: none;
 }
@@ -141,19 +75,30 @@
   white-space: nowrap;
 }
 
-.home-listing-card--hero .home-listing-card__title span {
-  width: 252px;
-  margin-inline: auto;
-  text-align: center;
+/* ——— Body: image + panel ——— */
+.home-listing-card__body {
+  position: relative;
+  display: flex;
+  z-index: 1;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 342px;
+  height: 410px;
+  margin-inline: -12px;
+  padding: 0;
 }
 
 .home-listing-card__media {
   position: relative;
-  z-index: 1;
-  width: 100%;
+  z-index: 0;
+  flex: none;
+  width: 342px;
   height: 342px;
   overflow: hidden;
   isolation: isolate;
+  background: #f4e2ff;
 }
 
 .home-listing-card__media-link {
@@ -172,8 +117,7 @@
 }
 
 .home-listing-card--muted .home-listing-card__image {
-  filter: grayscale(1);
-  opacity: 0.55;
+  filter: grayscale(0.35);
 }
 
 .home-listing-card--muted .home-listing-card__media::after {
@@ -181,42 +125,20 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: rgba(120, 120, 120, 0.28);
+  background: rgba(137, 137, 137, 0.5);
   pointer-events: none;
 }
 
-.home-listing-card--unavailable .home-listing-card__media::after {
-  display: none;
-}
-
-.home-listing-card__unavailable {
+/* Favorites — Figma card top 48 / right 12 → media top 12 */
+.home-listing-card__favorite,
+.home-listing-card__media-accessory {
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(26, 26, 26, 0.55);
-  pointer-events: none;
-}
-
-.home-listing-card__unavailable span {
-  max-width: 220px;
-  color: #ffffff;
-  font-family: var(--font-manrope), sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  text-align: center;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
 }
 
 .home-listing-card__favorite {
-  position: absolute;
-  top: 10px;
-  right: 11px;
-  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,162 +147,239 @@
   border: 0;
   border-radius: 50%;
   background: #f2f4f7;
+  color: #626262;
   cursor: pointer;
   transition: background-color 150ms ease;
-}
-
-.home-listing-card--hero .home-listing-card__favorite {
-  top: 12px;
-  right: 12px;
 }
 
 .home-listing-card__favorite:hover {
   background: #ffffff;
 }
 
-.home-listing-card__tags {
+.home-listing-card__media-accessory {
+  display: flex;
+  align-items: flex-start;
+}
+
+.home-listing-card__location {
+  box-sizing: border-box;
   position: absolute;
-  bottom: 12px;
+  top: 306px;
   left: 12px;
   z-index: 2;
   display: flex;
-  gap: 10px;
-}
-
-.home-listing-card__tag {
-  box-sizing: border-box;
-  display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   height: 24px;
-  border: 0.3px solid #c8ff00;
+  border: 0.3px solid #cacaca;
   border-radius: 16.327px;
-  background: rgba(255, 255, 255, 0.73);
-  padding: 8px 12px;
+  background: #ffffff;
+  padding: 0 8px;
   color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
   font-weight: 600;
-  line-height: 16px;
+  line-height: 1;
   letter-spacing: 0.002em;
-  text-align: center;
+  white-space: nowrap;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
-.home-listing-card__tag--status {
-  border-color: #8e8bed;
-  background: rgba(243, 237, 255, 0.92);
-  color: #8e8bed;
+.home-listing-card__location-icon {
+  width: 6px;
+  height: 8px;
+  color: #1a1a1a;
 }
 
-.home-listing-card__footer {
+/* Swap badge — overlaps image + footer panel (Figma left 241 / top 304 on card) */
+.home-listing-card__swap {
+  box-sizing: border-box;
+  position: absolute;
+  top: 268px; /* 304 - 36 (body offset from card content start after title+gap) */
+  left: 241px;
+  z-index: 5;
   display: flex;
-  z-index: 2;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  width: 342px;
-  padding: 0 10px;
-}
-
-.home-listing-card--hero .home-listing-card__footer {
-  height: 36px;
-}
-
-.home-listing-card__action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 322px;
-  height: 36px;
-  border: 0;
-  border-radius: 10px;
-  background: #1a1a1a;
-  padding: 10px 74px;
+  width: 89px;
+  height: 89px;
+  border: 3px solid #ffffff;
+  border-radius: 29.203px;
+  background: #8e8bed;
   color: #ffffff;
-  font-family: var(--font-manrope), sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 120%;
-  letter-spacing: 0.001em;
-  text-align: center;
   cursor: pointer;
   transition: filter 150ms ease;
 }
 
-.home-listing-card--hero .home-listing-card__action {
-  border-radius: 21px;
+.home-listing-card__swap:hover {
+  filter: brightness(1.05);
 }
 
-/* Free listing CTA — lilac */
-.home-listing-card__action--free {
-  background: #8e8bed;
-  border-radius: 10px;
+.home-listing-card__swap-icon {
+  width: 33px;
+  height: 33px;
+  color: #ffffff;
 }
 
-/* Home «Отдаю даром» carousel — rounded */
-.home-listing-card--free .home-listing-card__action {
-  background: #8e8bed;
-  border-radius: 21px;
-}
-
-.home-listing-card__action:hover {
-  filter: brightness(1.25);
-}
-
-.home-listing-card__action:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-  filter: none;
-}
-
-.home-listing-card__action:disabled:hover {
-  filter: none;
-}
-
-.home-listing-card--free .home-listing-card__action:hover,
-.home-listing-card__action--free:hover {
-  filter: brightness(0.98);
-}
-
-.home-listing-card--free .home-listing-card__action:disabled:hover,
-.home-listing-card__action--free:disabled:hover {
-  filter: none;
-}
-
-.home-listing-card__wants {
+/* ——— Footer panel 294×52 ——— */
+.home-listing-card__footer {
   box-sizing: border-box;
+  display: flex;
+  z-index: 2;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 294px;
+  height: 52px;
+  border-radius: 19px;
+  overflow: visible;
+}
+
+.home-listing-card__footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  width: 294px;
+}
+
+.home-listing-card__exchange-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 294px;
+  min-width: 0;
+  min-height: 11px;
+  overflow: hidden;
+}
+
+.home-listing-card--free .home-listing-card__exchange-row {
+  gap: 10px;
+}
+
+.home-listing-card__exchange-label {
+  flex: none;
+  color: #0d7200;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.002em;
+  white-space: nowrap;
+}
+
+.home-listing-card__categories {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.home-listing-card--free .home-listing-card__categories {
+  gap: 4px;
+}
+
+.home-listing-card__category {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: #8e8bed;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.002em;
+}
+
+.home-listing-card__category-dot {
+  display: block;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: #1a1a1a;
+}
+
+.home-listing-card__category-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-listing-card__divider {
+  flex: none;
+  align-self: stretch;
+  width: 294px;
+  height: 0;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #e7e6ff;
+}
+
+.home-listing-card--archived .home-listing-card__footer-inner,
+.home-listing-card--completed .home-listing-card__footer-inner,
+.home-listing-card--deleted .home-listing-card__footer-inner {
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: auto;
+}
+
+.home-listing-card__lifecycle {
+  margin: 0;
+  color: #ff2056;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  text-align: center;
+  white-space: nowrap;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+
+.home-listing-card__wants-row {
   position: relative;
   display: flex;
   flex: none;
-  flex-wrap: nowrap;
-  align-content: center;
   align-items: center;
-  overflow: hidden;
-  width: 321px;
-  height: 44px;
-  border: 0.5px solid #8e8bed;
-  border-radius: 0 0 19px 19px;
-  background: #f9f7ff;
-  padding: 8px 29px 8px 12px;
-  gap: 6px 8px;
+  justify-content: center;
+  align-self: stretch;
+  gap: 8px;
+  width: 294px;
+  height: 24px;
+  overflow: visible;
 }
 
-.home-listing-card__wants-icon {
-  z-index: 0;
-  flex: none;
-  width: 20px;
-  height: 20px;
-  transform: rotate(180deg);
-  color: #8e8bed;
+.home-listing-card__wants-row--free {
+  justify-content: center;
 }
 
 .home-listing-card__wants-pills {
   display: flex;
-  flex: 1;
+  flex: none;
   align-items: center;
-  min-width: 0;
+  justify-content: center;
   gap: 8px;
+  max-width: 100%;
+  height: 24px;
   overflow: hidden;
 }
 
@@ -401,39 +400,13 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  max-width: 120px;
   height: 24px;
+  max-width: 120px;
   overflow: hidden;
   border: 0.5px solid #8e8bed;
   border-radius: 39px;
-  background: #f2f4f7;
+  background: #ffffff;
   padding: 0 8px;
-  color: #1a1a1a;
-  font-family: var(--font-manrope), sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.002em;
-  text-align: center;
-}
-
-.home-listing-card__want-pill-text {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.home-listing-card__wants-more {
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  z-index: 3;
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(-50%);
   color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
@@ -441,4 +414,45 @@
   line-height: 16px;
   letter-spacing: 0.002em;
   text-align: center;
+}
+
+.home-listing-card__want-pill-text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-listing-card__wants-more {
+  flex: none;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.002em;
+  white-space: nowrap;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+
+.home-listing-card__free-pill {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  border: 0.5px solid #8e8bed;
+  border-radius: 39px;
+  background: #8e8bed;
+  padding: 0 8px;
+  color: #ffffff;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.002em;
+  white-space: nowrap;
 }

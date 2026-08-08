@@ -13,7 +13,7 @@ function HeroRecommendationsEmpty({
 }) {
   return (
     <div
-      className="box-border flex h-[443px] w-[342px] flex-col items-center justify-center rounded-[31px] border-[0.3px] border-solid border-transparent px-[24px] py-[32px] text-center"
+      className="box-border flex h-[458px] w-[342px] flex-col items-center justify-center rounded-[31px] border-[3px] border-solid border-transparent px-[24px] py-[32px] text-center"
       style={{
         background:
           "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
@@ -34,7 +34,7 @@ function HeroRecommendationsEmpty({
 function HeroRecommendationsLoading() {
   return (
     <div
-      className="box-border flex h-[443px] w-[342px] items-center justify-center rounded-[31px] border-[0.3px] border-solid border-transparent px-[24px] text-center text-[14px] font-medium text-[#626262]"
+      className="box-border flex h-[458px] w-[342px] items-center justify-center rounded-[31px] border-[3px] border-solid border-transparent px-[24px] text-center text-[14px] font-medium text-[#626262]"
       style={{
         background:
           "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
@@ -146,15 +146,17 @@ export function HeroRecommendationsPanel({
   }, [scrollKey, visible]);
 
   return (
-    <div className="relative flex h-[535px] w-[464px] flex-col items-center gap-[12px] rounded-[31px] bg-[#C8FF00] p-[24px]">
-      <div className="w-[342px] shrink-0 text-left text-[#1A1A1A]">
-        <p className="text-[24px] font-extrabold leading-[110%] tracking-[-0.003em]">{heading}</p>
+    <div className="relative flex h-[552px] w-[464px] flex-col items-center gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+      <div className="flex h-[17px] w-[330px] shrink-0 items-center justify-center text-center text-[#1A1A1A]">
+        <p className="text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+          {heading}
+        </p>
       </div>
 
       <div
         key={scrollKey}
         ref={scrollRef}
-        className={`home-recommendations-scroll h-[461px] w-[366px] overflow-x-hidden overflow-y-auto overscroll-contain px-[12px] pb-[16px] pt-[2px] [overflow-anchor:none]${
+        className={`home-recommendations-scroll min-h-0 w-[366px] flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-[12px] [overflow-anchor:none]${
           scrollSettling ? " is-scroll-settling" : ""
         }`}
       >
@@ -170,7 +172,7 @@ export function HeroRecommendationsPanel({
               <div
                 key={listing.id}
                 data-recommendation-card
-                className="flex h-[443px] w-[342px] shrink-0 justify-center"
+                className="flex h-[458px] w-[342px] shrink-0 justify-center"
               >
                 <ListingCard
                   listingId={listing.id}
@@ -180,6 +182,8 @@ export function HeroRecommendationsPanel({
                   condition={listing.condition}
                   coverImageUrl={listing.coverImageUrl}
                   wants={listing.wants}
+                  wantCategories={listing.wantCategories}
+                  isFree={listing.isFree}
                   isFavorite={listing.isFavorite}
                   ownerId={listing.ownerId}
                 />

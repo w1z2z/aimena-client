@@ -7,8 +7,8 @@ export const VISIBLE_CARD_COUNT = 2;
 export const SECTION_WIDTH = layout.containerHome;
 /** Figma free section panel with muted background. */
 export const PANEL_WIDTH = 1440;
-export const PANEL_HEIGHT = 491;
-/** (491 − 443) / 2 — content band matches free cards / promo. */
+export const PANEL_HEIGHT = 506;
+/** (506 − 458) / 2 — content band matches free cards / promo. */
 export const PANEL_PADDING = 24;
 /**
  * Must equal CARD_GAP. At snap stops the side gutters then show only the
@@ -27,7 +27,7 @@ export const CAROUSEL_EDGE_MASK = 5;
 export const CAROUSEL_SHADOW_Y_PADDING = 16;
 
 /** Free listing cards + promo share this height (panel content band). */
-export const FREE_CARD_HEIGHT = 443;
+export const FREE_CARD_HEIGHT = 458;
 
 /** Exactly two cards + one gap. */
 export const CAROUSEL_VISIBLE_WIDTH = CARD_WIDTH * VISIBLE_CARD_COUNT + CARD_GAP;

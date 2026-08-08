@@ -103,6 +103,7 @@ export default function FreeGiveawaysPage() {
               city={listing.city}
               condition={listing.condition}
               coverImageUrl={listing.coverImageUrl}
+              wantCategories={listing.wantCategories}
               isFree
               isFavorite={listing.isFavorite}
               ownerId={listing.ownerId}

@@ -3,7 +3,13 @@
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { ListingCard, mapApiConditionToLabel } from "@/entities/listing";
+import {
+  ListingCard,
+  buildWantCategories,
+  buildWantsPreview,
+  mapApiConditionToLabel,
+  type ListingCardLifecycle,
+} from "@/entities/listing";
 import { useAuth } from "@/features/auth";
 import { getMyListings, type ApiListingCard } from "@/shared/api/listings";
 
@@ -15,11 +21,6 @@ import {
   type ProfileListingStatusFilter,
 } from "./ProfileStatusFilter";
 
-const STATUS_LABEL: Partial<Record<ApiListingCard["status"], string>> = {
-  active: "Активно",
-  archived: "Снято",
-};
-
 const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
   all: "Пока нет объявлений. Разместите первое предложение.",
   active: "Нет активных объявлений.",
@@ -27,6 +28,12 @@ const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
 };
 
 type SortOrder = "newest" | "oldest";
+
+function resolveOwnLifecycle(listing: ApiListingCard): ListingCardLifecycle | null {
+  if (listing.isAvailable === false) return "deleted";
+  if (listing.status === "archived") return "archived";
+  return null;
+}
 
 export function ProfileListingsPanel() {
   const { user, accessToken } = useAuth();
@@ -68,29 +75,33 @@ export function ProfileListingsPanel() {
   } else {
     body = (
       <div className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12">
-        {listings.map((listing) => (
-          <div key={listing.id} className="profile-listing-card-slot">
-            <ListingCard
-              listingId={listing.id}
-              variant="mine"
-              title={listing.title}
-              city={listing.city.name}
-              condition={mapApiConditionToLabel(listing.condition)}
-              coverImageUrl={listing.coverImageUrl}
-              wants={listing.wantsTags}
-              isFree={listing.isFree}
-              isFavorite={listing.isFavorite}
-              ownerId={listing.ownerId}
-              status={STATUS_LABEL[listing.status] ?? null}
-              hideAction
-              hideFavorite
-              imageMuted={listing.status === "archived"}
-              titleAccessory={
-                <ProfileListingCardActions listingId={listing.id} status={listing.status} />
-              }
-            />
-          </div>
-        ))}
+        {listings.map((listing) => {
+          const lifecycle = resolveOwnLifecycle(listing);
+          return (
+            <div key={listing.id} className="profile-listing-card-slot">
+              <ListingCard
+                listingId={listing.id}
+                variant="mine"
+                title={listing.title}
+                city={listing.city.name}
+                condition={mapApiConditionToLabel(listing.condition)}
+                coverImageUrl={listing.coverImageUrl}
+                wants={buildWantsPreview(listing)}
+                wantCategories={buildWantCategories(listing)}
+                isFree={listing.isFree}
+                isFavorite={listing.isFavorite}
+                ownerId={listing.ownerId}
+                lifecycle={lifecycle}
+                hideAction
+                hideFavorite
+                imageMuted={Boolean(lifecycle)}
+                titleAccessory={
+                  <ProfileListingCardActions listingId={listing.id} status={listing.status} />
+                }
+              />
+            </div>
+          );
+        })}
       </div>
     );
   }

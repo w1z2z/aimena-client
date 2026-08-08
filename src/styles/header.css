@@ -229,7 +229,7 @@
 }
 
 .home-ticker-pin {
-  box-shadow: 0 2px 12px rgb(0 0 0 / 22%);
+  box-shadow: none;
 }
 
 
@@ -237,8 +237,8 @@
 .home-recommendations-scroll {
   scrollbar-width: thin;
   scroll-snap-type: y mandatory;
-  scroll-padding-top: 2px;
-  scroll-padding-bottom: 16px;
+  scroll-padding-top: 0;
+  scroll-padding-bottom: 0;
 }
 
 /* While settling after mount/navigation, snap must not lock a restored offset. */

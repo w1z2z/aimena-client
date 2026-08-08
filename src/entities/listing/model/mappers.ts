@@ -5,7 +5,23 @@ import type { ListingCardData } from "./types";
 
 type WantsSource = Pick<ApiListingCard, "wantsText" | "wantsTags" | "wantsCategory">;
 
+export function buildWantCategories(listing: WantsSource): string[] {
+  const categories: string[] = [];
+  const parentName = listing.wantsCategory?.parent?.name?.trim();
+  const name = listing.wantsCategory?.name?.trim();
+  if (parentName) categories.push(parentName);
+  if (name && name.toLowerCase() !== parentName?.toLowerCase()) {
+    categories.push(name);
+  }
+  return categories.slice(0, 3);
+}
+
 export function buildWantsPreview(listing: WantsSource): string[] {
+  const tags = listing.wantsTags.map((tag) => tag.trim()).filter(Boolean);
+  if (tags.length > 0) {
+    return [...new Map(tags.map((value) => [value.toLowerCase(), value])).values()];
+  }
+
   const normalizedTextParts = listing.wantsText
     .split(/[,\n;]+/)
     .map((part) =>
@@ -16,18 +32,7 @@ export function buildWantsPreview(listing: WantsSource): string[] {
     )
     .filter(Boolean);
 
-  const candidates: string[] = [];
-
-  if (normalizedTextParts.length > 0) {
-    candidates.push(...normalizedTextParts);
-  } else if (listing.wantsCategory?.name?.trim()) {
-    candidates.push(listing.wantsCategory.name.trim());
-  }
-
-  const tags = listing.wantsTags.map((tag) => tag.trim()).filter(Boolean);
-  candidates.push(...tags);
-
-  return [...new Map(candidates.map((value) => [value.toLowerCase(), value])).values()];
+  return [...new Map(normalizedTextParts.map((value) => [value.toLowerCase(), value])).values()];
 }
 
 export const EXTRA_PAY_LABELS: Record<ApiListingDetail["extraPay"], string> = {
@@ -45,6 +50,7 @@ export function mapApiListingToCard(listing: ApiListingCard): ListingCardData {
     city: listing.city.name,
     condition: mapApiConditionToLabel(listing.condition),
     wants: buildWantsPreview(listing),
+    wantCategories: buildWantCategories(listing),
     hasDocuments: listing.hasDocuments,
     isFree: listing.isFree,
     price: listing.estimatedPrice ?? 0,

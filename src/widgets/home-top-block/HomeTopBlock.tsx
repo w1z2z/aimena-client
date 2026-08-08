@@ -95,7 +95,7 @@ export function HomeTopBlock() {
                 </h1>
 
                 <div
-                  className="absolute left-[241px] top-[386px] z-10 flex h-[535px] w-[1440px] gap-[24px]"
+                  className="absolute left-[241px] top-[386px] z-10 flex h-[552px] w-[1440px] gap-[24px]"
                 >
                   <ModeFormColumn
                     mode={mode}
@@ -128,7 +128,7 @@ export function HomeTopBlock() {
                   className="pointer-events-none absolute left-1/2 z-20 w-max -translate-x-1/2 text-center text-[24px] font-extrabold leading-[32px] tracking-[-0.072px] text-white"
                   style={{ top: "981px" }}
                 >
-                  Почему <span className="text-[#8E8BED]">Aimena</span>?
+                  Почему <span className="text-[#C8FF00]">Aimena</span>?
                 </p>
 
                 <TickerCarousel />

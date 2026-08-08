@@ -30,12 +30,14 @@ export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps)
             <ListingCard
               key={listing.id}
               listingId={listing.id}
-              variant="exchange"
+              variant={listing.isFree ? "free" : "exchange"}
               title={listing.title}
               city={listing.city}
               condition={listing.condition}
               coverImageUrl={listing.coverImageUrl}
               wants={listing.wants}
+              wantCategories={listing.wantCategories}
+              isFree={listing.isFree}
               isFavorite={listing.isFavorite}
               ownerId={listing.ownerId}
             />

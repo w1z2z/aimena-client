@@ -4,7 +4,13 @@ import { useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
-import { ListingCard, mapApiConditionToLabel } from "@/entities/listing";
+import {
+  ListingCard,
+  buildWantCategories,
+  buildWantsPreview,
+  mapApiConditionToLabel,
+  type ListingCardLifecycle,
+} from "@/entities/listing";
 import { getPublicProfile, getUserListingsBySlug } from "@/shared/api/auth";
 import type { ApiListingCard } from "@/shared/api/listings";
 
@@ -15,11 +21,6 @@ import {
   type ProfileListingStatusFilter,
 } from "./ProfileStatusFilter";
 
-const STATUS_LABEL: Partial<Record<ApiListingCard["status"], string>> = {
-  active: "Активно",
-  archived: "Снято",
-};
-
 const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
   all: "Пока нет объявлений.",
   active: "Нет активных объявлений.",
@@ -27,6 +28,17 @@ const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
 };
 
 type SortOrder = "newest" | "oldest";
+
+function resolvePublicLifecycle(
+  listing: ApiListingCard,
+  showCompleted: boolean,
+): ListingCardLifecycle | null {
+  if (listing.isAvailable === false) return "deleted";
+  if (listing.status === "archived") {
+    return showCompleted ? "completed" : "archived";
+  }
+  return null;
+}
 
 export function PublicProfileListingsPanel() {
   const params = useParams<{ slug: string }>();
@@ -76,24 +88,28 @@ export function PublicProfileListingsPanel() {
   } else {
     body = (
       <div className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12">
-        {listings.map((listing) => (
-          <div key={listing.id} className="profile-listing-card-slot">
-            <ListingCard
-              listingId={listing.id}
-              variant="mine"
-              title={listing.title}
-              city={listing.city.name}
-              condition={mapApiConditionToLabel(listing.condition)}
-              coverImageUrl={listing.coverImageUrl}
-              wants={listing.wantsTags}
-              isFree={listing.isFree}
-              isFavorite={listing.isFavorite}
-              ownerId={listing.ownerId}
-              status={showCompleted ? (STATUS_LABEL[listing.status] ?? null) : null}
-              imageMuted={listing.status === "archived"}
-            />
-          </div>
-        ))}
+        {listings.map((listing) => {
+          const lifecycle = resolvePublicLifecycle(listing, showCompleted);
+          return (
+            <div key={listing.id} className="profile-listing-card-slot">
+              <ListingCard
+                listingId={listing.id}
+                variant="mine"
+                title={listing.title}
+                city={listing.city.name}
+                condition={mapApiConditionToLabel(listing.condition)}
+                coverImageUrl={listing.coverImageUrl}
+                wants={buildWantsPreview(listing)}
+                wantCategories={buildWantCategories(listing)}
+                isFree={listing.isFree}
+                isFavorite={listing.isFavorite}
+                ownerId={listing.ownerId}
+                lifecycle={lifecycle}
+                imageMuted={Boolean(lifecycle)}
+              />
+            </div>
+          );
+        })}
       </div>
     );
   }

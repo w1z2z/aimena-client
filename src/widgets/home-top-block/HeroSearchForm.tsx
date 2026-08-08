@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { HERO_CONDITION_OPTIONS } from "@/entities/listing";
 import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
@@ -338,7 +338,7 @@ function HeroExchangeFilters({
   };
 
   return (
-    <div className="relative flex h-[255.5px] w-[464px] flex-col items-start gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+    <div className="relative flex h-[264px] w-[464px] flex-col items-start gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
       <HeroBackgroundStar
         className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
         gradientId="hero-left-filters-star"
@@ -384,18 +384,27 @@ function HeroExchangeFilters({
           aria-hidden={listingType !== "item"}
         >
           <p className="flex h-[10px] items-center text-[14px] font-normal leading-none text-[#1A1A1A]">Выберите состояние</p>
-          <div className="flex w-full flex-wrap content-start gap-[8px]">
-            {HERO_CONDITION_OPTIONS.map((item) => (
-              <Fragment key={item}>
-                {item === "Требует ремонта" ? <span className="h-0 w-full basis-full" aria-hidden="true" /> : null}
+          <div className="flex w-full flex-wrap content-start gap-x-[8px] gap-y-[8px]">
+            {HERO_CONDITION_OPTIONS.map((item) =>
+              item === "Требует ремонта" ? (
+                <span key={item} className="w-max basis-full">
+                  <FilterChip
+                    label={item}
+                    active={condition === item}
+                    onClick={() => setCondition(item)}
+                    tabIndex={listingType === "item" ? 0 : -1}
+                  />
+                </span>
+              ) : (
                 <FilterChip
+                  key={item}
                   label={item}
                   active={condition === item}
                   onClick={() => setCondition(item)}
                   tabIndex={listingType === "item" ? 0 : -1}
                 />
-              </Fragment>
-            ))}
+              ),
+            )}
           </div>
         </div>
 
@@ -444,7 +453,7 @@ function HeroExchangeFilters({
 
 function HeroAddPanel({ onAddListingClick }: { onAddListingClick: () => void }) {
   return (
-    <div className="relative h-[255px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+    <div className="relative h-[264px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
       <HeroBackgroundStar
         className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
         gradientId="hero-left-add-star"
@@ -470,7 +479,7 @@ function HeroAddPanel({ onAddListingClick }: { onAddListingClick: () => void }) 
 
 function HeroAllVariantsPanel({ onViewAllClick }: { onViewAllClick: () => void }) {
   return (
-    <div className="relative h-[255px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+    <div className="relative h-[264px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
       <HeroBackgroundStar
         className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_RIGHT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
         gradientId="hero-all-variants-star"
@@ -520,8 +529,8 @@ export function ModeFormColumn({
   const isExchange = mode === "exchange";
 
   return (
-    <div className="flex h-[535px] w-[952px] flex-col gap-[24px]">
-      <div className="h-[255px] w-full rounded-[31px] bg-[#C8FF00] p-[24px]">
+    <div className="flex h-[552px] w-[952px] flex-col gap-[24px]">
+      <div className="h-[264px] w-full rounded-[31px] bg-[#C8FF00] p-[24px]">
         <div className="mb-[48px] flex items-center justify-between">
           <div>
             <ModeHeading isExchange={isExchange} />
@@ -543,8 +552,8 @@ export function ModeFormColumn({
         />
       </div>
 
-      <div className="relative flex h-[255px] gap-[24px]">
-        <div className="relative grid h-[255px] w-[464px] shrink-0 overflow-hidden rounded-[31px]">
+      <div className="relative flex h-[264px] gap-[24px]">
+        <div className="relative grid h-[264px] w-[464px] shrink-0 overflow-hidden rounded-[31px]">
           <div
             className={`col-start-1 row-start-1 ${HERO_SWAP_TRANSITION} ${
               isExchange
