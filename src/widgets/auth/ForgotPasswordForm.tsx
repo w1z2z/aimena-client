@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { forgotPassword } from "@/shared/api/auth";
 import { ApiError } from "@/shared/api/http";
+import { AUTH_UNION_ICON_SIZE, AuthUnionIcon } from "@/shared/ui/icons";
 
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
@@ -68,7 +69,15 @@ export function ForgotPasswordForm({
   };
 
   return (
-    <AuthCard className="gap-[48px]">
+    <AuthCard>
+      <AuthUnionIcon
+        style={{
+          width: AUTH_UNION_ICON_SIZE.width,
+          height: AUTH_UNION_ICON_SIZE.height,
+        }}
+        aria-hidden="true"
+      />
+
       <AuthTitle>{copy.title}</AuthTitle>
 
       <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-[48px]">
@@ -81,7 +90,7 @@ export function ForgotPasswordForm({
             onChange={(event) => setEmail(event.target.value)}
             required
           />
-          {error ? <p className="text-[14px] text-[#FF2056]">{error}</p> : null}
+          {error ? <p className="w-full text-center text-[14px] text-[#FF2056]">{error}</p> : null}
         </AuthFormFields>
 
         <AuthButton type="submit" disabled={isSubmitting}>

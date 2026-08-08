@@ -252,9 +252,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!cityId) {
         throw new Error("Выберите город");
       }
-      if (categories.length === 0) {
-        throw new Error("Выберите минимум одну категорию");
-      }
 
       const updated = await updateOnboarding(accessToken, {
         cityId,

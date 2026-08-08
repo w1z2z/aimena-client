@@ -6,9 +6,5 @@ type AuthCardProps = {
 };
 
 export function AuthCard({ children, className }: AuthCardProps) {
-  return (
-    <section className="auth-card">
-      <div className={`auth-card__inner${className ? ` ${className}` : ""}`}>{children}</div>
-    </section>
-  );
+  return <section className={`auth-card${className ? ` ${className}` : ""}`}>{children}</section>;
 }

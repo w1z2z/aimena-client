@@ -1,5 +1,5 @@
-import { AuthMessage } from "@/widgets/auth/AuthMessage";
 import { AuthPageLayout } from "@/widgets/auth/AuthPageLayout";
+import { ForgotPasswordSentPanel } from "@/widgets/auth/ForgotPasswordSentPanel";
 
 type ChangePasswordSentPageProps = {
   searchParams?: Promise<{ email?: string }>;
@@ -13,22 +13,7 @@ export default async function ChangePasswordSentPage({
 
   return (
     <AuthPageLayout>
-      <AuthMessage title="Письмо для смены пароля отправлено">
-        <div className="flex w-full flex-col gap-[8px]">
-          <p className="mb-0">Необходимо зайти в почту для смены пароля.</p>
-          <p className="mb-0">
-            Отправили письмо со ссылкой для смены пароля
-            {email ? (
-              <>
-                {" "}
-                на <span className="font-semibold text-[#1A1A1A]">{email}</span>
-              </>
-            ) : (
-              " на указанную почту"
-            )}
-          </p>
-        </div>
-      </AuthMessage>
+      <ForgotPasswordSentPanel email={email} variant="change" />
     </AuthPageLayout>
   );
 }

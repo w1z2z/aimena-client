@@ -23,7 +23,7 @@ type AuthSubtitleProps = {
 export function AuthSubtitle({ children, className }: AuthSubtitleProps) {
   return (
     <p
-      className={`text-center font-[family-name:var(--font-manrope)] text-[14px] font-normal leading-[170%] text-black/50 ${className ?? ""}`}
+      className={`text-center font-[family-name:var(--font-manrope)] text-[14px] font-normal leading-[170%] text-[#1A1A1A] ${className ?? ""}`}
     >
       {children}
     </p>

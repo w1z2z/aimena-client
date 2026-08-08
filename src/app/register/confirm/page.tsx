@@ -87,16 +87,27 @@ export default function RegisterConfirmPage() {
           </>
         ) : (
           <>
-            <p className="mb-0">
-              Необходимо подтвердить вашу почту для дальнейшей авторизации.
-            </p>
-            <p>
-              {email
-                ? `Отправили письмо с ссылкой на подтверждение на ${email}`
-                : "Отправили письмо с ссылкой на подтверждение на указанную почту"}
-            </p>
-            {ready ? <ResendVerificationBlock initialEmail={email} /> : null}
-            <AuthLink href="/login">Перейти ко входу</AuthLink>
+            <div className="flex w-full flex-col items-center gap-[8px]">
+              <p className="mb-0">
+                Необходимо подтвердить вашу почту для дальнейшей авторизации.
+              </p>
+              <p className="mb-0">
+                Отправили письмо с ссылкой на подтверждение
+                {email ? (
+                  <>
+                    {" "}
+                    на <span className="font-semibold text-[#1A1A1A]">{email}</span>
+                  </>
+                ) : (
+                  " на указанную почту"
+                )}
+              </p>
+            </div>
+
+            <div className="flex w-full flex-col items-center gap-[24px]">
+              {ready ? <ResendVerificationBlock initialEmail={email} /> : null}
+              <AuthLink href="/login">Перейти ко входу</AuthLink>
+            </div>
           </>
         )}
       </AuthMessage>

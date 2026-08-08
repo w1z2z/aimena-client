@@ -1,13 +1,14 @@
 import type { IconProps } from "./types";
 
-export const AUTH_STAR_ICON_SIZE = { width: 108, height: 95 } as const;
+/** Figma 4-point star — login / register (112×112). */
+export const AUTH_STAR_ICON_SIZE = { width: 112, height: 112 } as const;
 
 export function AuthStarIcon({ className, ...props }: IconProps) {
   return (
     <svg
       width={AUTH_STAR_ICON_SIZE.width}
       height={AUTH_STAR_ICON_SIZE.height}
-      viewBox="0 0 108 95"
+      viewBox="0 0 112 112"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
@@ -15,16 +16,16 @@ export function AuthStarIcon({ className, ...props }: IconProps) {
       {...props}
     >
       <path
-        d="M48.9675 3.06524C50.6824 -1.02215 56.4738 -1.02216 58.1888 3.06523L76.6372 47.0355C76.8003 47.4244 77.012 47.7911 77.2672 48.1268L106.122 86.0887C108.805 89.6176 105.909 94.6331 101.512 94.0746L54.2082 88.0662C53.7898 88.0131 53.3664 88.0131 52.9481 88.0662L5.6445 94.0746C1.24725 94.6331 -1.64846 89.6176 1.03386 86.0887L29.8891 48.1268C30.1443 47.7911 30.3559 47.4244 30.5191 47.0355L48.9675 3.06524Z"
+        d="M46.8173 5.31563C50.5751 -1.77212 60.7296 -1.77213 64.4874 5.31563L77.4285 29.7244C78.3657 31.4921 79.8116 32.938 81.5793 33.8753L105.988 46.8163C113.076 50.5741 113.076 60.7286 105.988 64.4864L81.5793 77.4275C79.8116 78.3647 78.3657 79.8106 77.4285 81.5784L64.4874 105.987C60.7296 113.075 50.5751 113.075 46.8173 105.987L33.8762 81.5784C32.939 79.8106 31.4931 78.3647 29.7253 77.4275L5.31661 64.4864C-1.77115 60.7286 -1.77115 50.5741 5.31661 46.8163L29.7253 33.8753C31.4931 32.938 32.939 31.4921 33.8762 29.7244L46.8173 5.31563Z"
         fill="url(#auth_star_gradient)"
       />
       <defs>
         <linearGradient
           id="auth_star_gradient"
-          x1="36.3281"
-          y1="33.4762"
-          x2="160.528"
-          y2="164.576"
+          x1="38.9023"
+          y1="28.8514"
+          x2="159.502"
+          y2="156.151"
           gradientUnits="userSpaceOnUse"
         >
           <stop stopColor="#8E8BED" />

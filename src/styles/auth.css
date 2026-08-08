@@ -1,25 +1,23 @@
 /* Auth pages card — login / register / forgot / reset / onboarding
-   Same full-perimeter gradient ring technique as listing cards (outer gradient + inner fill). */
+   Figma: Вход 2491:37004 / Регистрация 2495:37044
+   Gradient ring: same 0.3px technique as listing cards */
 .auth-card {
-  box-sizing: border-box;
-  width: 100%;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%);
-  padding: 1px;
-}
-
-.auth-card__inner {
   box-sizing: border-box;
   display: flex;
   width: 100%;
+  max-width: 588px;
   flex-direction: column;
   align-items: center;
-  border-radius: 9px;
-  background: #ffffff;
-  padding: 48px;
+  gap: 48px;
+  padding: 48px 24px;
+  border: 0.3px solid transparent;
+  border-radius: 31px;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
 }
 
-/* Auth form inputs — Figma node 1493:24879 */
+/* Auth form inputs — Figma input 0.5px #CACACA / radius 18 */
 .auth-input-field {
   box-sizing: border-box;
   width: 100%;
@@ -33,27 +31,25 @@
   max-width: 508px;
   height: 48px;
   margin: 0;
-  border: 0.5px solid #3d3d3d;
-  border-radius: 10px;
+  border: 0.5px solid #cacaca;
+  border-radius: 18px;
   background: #ffffff;
   padding: 8px 12px;
   color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 20px;
-  letter-spacing: 0.016px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
   outline: none;
   transition: border-color 150ms ease;
 }
 
 .auth-input::placeholder {
-  color: #3d3d3d;
+  color: #626262;
   font-family: var(--font-manrope), sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 20px;
-  letter-spacing: 0.016px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
   opacity: 1;
 }
 
@@ -69,14 +65,74 @@
   opacity: 0.6;
 }
 
-/* Onboarding category chips — Figma node 1493:24784 */
+/* Primary auth CTA — Figma btn height 42 / radius 21 / Label ML */
+.auth-button {
+  box-sizing: border-box;
+  display: flex;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 21px;
+  padding: 0 74px;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 120%;
+  letter-spacing: 0.001em;
+  transition:
+    filter 150ms ease,
+    transform 100ms ease,
+    opacity 150ms ease;
+}
+
+.auth-button:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.auth-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auth-button--primary {
+  border: 1px solid transparent;
+  background: #8e8bed;
+  color: #ffffff;
+}
+
+.auth-button--primary:hover:not(:disabled) {
+  filter: brightness(0.98);
+}
+
+.auth-button--secondary {
+  border: 1px solid #cacaca;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+.auth-button--secondary:hover:not(:disabled) {
+  border-color: #8e8bed;
+  color: #8e8bed;
+}
+
+.auth-button--full {
+  width: 100%;
+}
+
+.auth-button--grow {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Onboarding category chips — Figma 2495:37048 */
 .auth-category-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: center;
   gap: 12px;
-  width: 492px;
+  width: 540px;
   max-width: 100%;
 }
 
@@ -90,15 +146,14 @@
   max-width: calc(50% - 6px);
   height: 48px;
   padding: 8px 12px;
-  border: 1px solid #3d3d3d;
-  border-radius: 10px;
+  border: 0.5px solid #cacaca;
+  border-radius: 18px;
   background: #ffffff;
-  color: #3d3d3d;
+  color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 20px;
-  letter-spacing: 0.001em;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
   text-align: center;
   cursor: pointer;
   transition:
@@ -118,7 +173,7 @@
   color: #8e8bed;
 }
 
-/* Onboarding city select — same interaction as filters/create-listing, auth input look */
+/* Onboarding city select — align with auth inputs */
 .auth-city-select.site-select--field {
   width: 100%;
   max-width: 508px;
@@ -126,33 +181,31 @@
 
 .auth-city-select.site-select--field .site-select__input {
   height: 48px;
-  border: 0.5px solid #3d3d3d;
-  border-radius: 10px;
+  border: 0.5px solid #cacaca;
+  border-radius: 18px;
   padding: 8px 40px 8px 12px;
   background: #ffffff;
-  color: #3d3d3d;
+  color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 20px;
-  letter-spacing: 0.001em;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
   box-shadow: none;
 }
 
 .auth-city-select.site-select--field .site-select__input::placeholder,
 .auth-city-select.site-select--field .site-select__input.is-placeholder {
-  color: #3d3d3d;
-  font-weight: 700;
-  letter-spacing: 0.001em;
+  color: #626262;
+  font-weight: 400;
 }
 
 .auth-city-select.site-select--field .site-select__input:focus,
 .auth-city-select.site-select--field.is-open .site-select__input {
-  border-color: #3d3d3d;
+  border-color: #8e8bed;
   box-shadow: none;
 }
 
 .auth-city-select.site-select--field .site-select__chevron,
 .auth-city-select.site-select--field .site-select__clear {
-  color: #3d3d3d;
+  color: #626262;
 }

@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { getAuthErrorMessage, useAuth } from "@/features/auth";
 import { rememberPendingVerifyEmail } from "@/shared/api/auth";
+import { AUTH_STAR_ICON_SIZE, AuthStarIcon } from "@/shared/ui/icons";
 
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
@@ -44,10 +45,18 @@ export function RegisterForm() {
   };
 
   return (
-    <AuthCard className="gap-[48px]">
+    <AuthCard>
+      <AuthStarIcon
+        style={{
+          width: AUTH_STAR_ICON_SIZE.width,
+          height: AUTH_STAR_ICON_SIZE.height,
+        }}
+        aria-hidden="true"
+      />
+
       <AuthTitle>Регистрация</AuthTitle>
 
-      <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-[24px]">
+      <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-[48px]">
         <AuthFormFields subtitle="Введите данные для регистрации">
           <AuthInput
             label="Email"
@@ -75,10 +84,10 @@ export function RegisterForm() {
             onChange={(event) => setConfirmPassword(event.target.value)}
             required
           />
-          {error ? <p className="text-[14px] text-[#FF2056]">{error}</p> : null}
+          {error ? <p className="w-full text-center text-[14px] text-[#FF2056]">{error}</p> : null}
         </AuthFormFields>
 
-        <div className="flex w-full flex-col items-center gap-[12px]">
+        <div className="flex w-full flex-col items-center gap-[24px]">
           <AuthButton type="submit" disabled={isSubmitting}>
             Зарегистрироваться
           </AuthButton>

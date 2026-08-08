@@ -33,10 +33,10 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
           type="button"
           tabIndex={-1}
           aria-label={visible ? "Скрыть пароль" : "Показать пароль"}
-          className="absolute right-[12px] top-1/2 flex h-[19px] w-[19px] -translate-y-1/2 items-center justify-center text-[#3D3D3D]"
+          className="absolute right-[12px] top-1/2 flex h-[16px] w-[19px] -translate-y-1/2 items-center justify-center text-[#626262]"
           onClick={() => setVisible((current) => !current)}
         >
-          {visible ? <EyeIcon className="h-[19px] w-[19px]" /> : <EyeOffIcon className="h-[19px] w-[19px]" />}
+          {visible ? <EyeIcon className="h-[16px] w-[19px]" /> : <EyeOffIcon className="h-[16px] w-[19px]" />}
         </button>
       ) : null}
     </label>
