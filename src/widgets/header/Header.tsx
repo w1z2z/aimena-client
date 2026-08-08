@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -10,6 +9,7 @@ import { requestHomeTitleSearch } from "@/shared/lib/home-title-search";
 
 import { Avatar } from "./Avatar";
 import { ButtonPrimary } from "./ButtonPrimary";
+import { HeaderCategoriesDropdown } from "./HeaderCategoriesDropdown";
 import { HeaderDropdown } from "./HeaderDropdown";
 import { IconButton } from "./IconButton";
 import { Logo } from "./Logo";
@@ -37,6 +37,7 @@ function getPageScrollTop() {
 export function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const isHomePage = pathname === "/";
   const { isAuthenticated, user } = useAuth();
   const { guardAuth } = useAuthGate();
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -51,6 +52,10 @@ export function Header() {
   const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [activeSearchSuggestionIndex, setActiveSearchSuggestionIndex] = useState<number>(-1);
+
+  /** Expanded search: on scroll always, or after clicking the search icon at top. */
+  const showExpandedSearch = isScrolled || isSearchExpanded || isSearchClosing;
+  const logoTone = !isHomePage && !isScrolled ? "dark" : "brand";
 
   const handleCreateListing = useCallback(() => {
     guardAuth("create-listing", () => router.push("/create-listing"));
@@ -67,7 +72,7 @@ export function Header() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!isSearchExpanded) return;
+    if (!isSearchExpanded || isScrolled) return;
 
     const handlePointerDown = (event: MouseEvent) => {
       if (!searchRef.current?.contains(event.target as Node)) {
@@ -87,20 +92,19 @@ export function Header() {
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isSearchExpanded]);
+  }, [isSearchExpanded, isScrolled]);
 
   useEffect(() => {
-    if (!isSearchExpanded || searchSuggestions.length === 0) {
+    if (!showExpandedSearch || searchSuggestions.length === 0) {
       setActiveSearchSuggestionIndex(-1);
       return;
     }
 
-    // Keep highlight only if user already navigated/hovered; never auto-pick first item.
     setActiveSearchSuggestionIndex((current) => {
       if (current >= 0 && current < searchSuggestions.length) return current;
       return -1;
     });
-  }, [isSearchExpanded, searchSuggestions]);
+  }, [showExpandedSearch, searchSuggestions]);
 
   useEffect(() => {
     return () => {
@@ -111,7 +115,7 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    if (!isSearchExpanded) {
+    if (!showExpandedSearch || isSearchClosing) {
       setSearchSuggestions([]);
       setIsSearchLoading(false);
       return;
@@ -162,7 +166,7 @@ export function Header() {
       window.clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [isSearchExpanded, searchQuery]);
+  }, [showExpandedSearch, isSearchClosing, searchQuery]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -204,6 +208,25 @@ export function Header() {
     };
   }, []);
 
+  // On scroll: open search immediately. Back at top: collapse unless manually kept open.
+  useEffect(() => {
+    if (isScrolled) {
+      if (searchCloseTimerRef.current !== null) {
+        window.clearTimeout(searchCloseTimerRef.current);
+        searchCloseTimerRef.current = null;
+      }
+      setIsSearchClosing(false);
+      setIsSearchExpanded(true);
+      return;
+    }
+
+    // Returned to top — collapse to icon state.
+    if (isSearchExpanded) {
+      closeSearchWithAnimation();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScrolled]);
+
   const closeSearchWithAnimation = (options?: { clear?: boolean }) => {
     if (searchCloseTimerRef.current !== null) {
       window.clearTimeout(searchCloseTimerRef.current);
@@ -232,11 +255,18 @@ export function Header() {
     if (pathname !== "/") {
       router.push("/");
     }
-    closeSearchWithAnimation();
+    if (!isScrolled) {
+      closeSearchWithAnimation();
+    } else {
+      setSearchQuery("");
+      setSearchSuggestions([]);
+      setActiveSearchSuggestionIndex(-1);
+      searchInputRef.current?.blur();
+    }
   };
 
   const handleSearchToggle = () => {
-    if (!isSearchExpanded) {
+    if (!showExpandedSearch || isSearchClosing) {
       if (searchCloseTimerRef.current !== null) {
         window.clearTimeout(searchCloseTimerRef.current);
         searchCloseTimerRef.current = null;
@@ -255,7 +285,19 @@ export function Header() {
       return;
     }
 
-    closeSearchWithAnimation();
+    if (!isScrolled) {
+      closeSearchWithAnimation();
+    }
+  };
+
+  const handleSearchClose = () => {
+    if (isScrolled) {
+      setSearchQuery("");
+      setSearchSuggestions([]);
+      setActiveSearchSuggestionIndex(-1);
+      return;
+    }
+    closeSearchWithAnimation({ clear: true });
   };
 
   return (
@@ -264,128 +306,138 @@ export function Header() {
       <header
         className="site-header fixed inset-x-0 top-0 z-50 h-[54px]"
         data-scrolled={isScrolled ? "true" : undefined}
+        data-home={isHomePage ? "true" : undefined}
       >
         <div className="site-header__backdrop" aria-hidden="true" />
         <div className="site-header__inner relative mx-auto h-full w-full max-w-[1440px]">
           <div className="absolute left-[3px] top-[5px] flex h-[41px] w-[101px] items-start">
-            <Logo />
+            <Logo tone={logoTone} />
           </div>
+
+          <HeaderCategoriesDropdown />
 
           <div
             ref={searchRef}
-            className={`absolute top-[10px] h-[32px] transition-[width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-              isSearchExpanded && !isSearchClosing
-                ? isAuthenticated
-                  ? "right-[calc(100%-1039px)] w-[903px]"
-                  : "right-[311px] w-[903px]"
-                : isAuthenticated
-                  ? "right-[calc(100%-1039px)] w-[32px]"
-                  : "pointer-events-none right-[311px] w-[32px] opacity-0"
+            className={`absolute top-[10px] h-[32px] transition-[left,width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+              showExpandedSearch && !isSearchClosing
+                ? "left-[326px] w-[715px]"
+                : "left-[1007px] w-[32px]"
             }`}
           >
             <div className="h-full w-full overflow-hidden">
-            {isSearchExpanded || isSearchClosing ? (
-              <div
-                className={`site-header-search flex h-full w-full items-center gap-[9px] rounded-[13px] border-[0.5px] border-solid px-[8px] transition-[border-color,background-color,color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-                  isSearchClosing
-                    ? "border-[#8E8BED] bg-transparent text-[#8E8BED]"
-                    : "site-header-search-field border-[#1A1A1A]"
-                }`}
-              >
+              {showExpandedSearch ? (
+                <div
+                  className={`site-header-search flex h-full w-full items-center gap-[9px] rounded-[13px] border-[0.5px] border-solid px-[8px] transition-[border-color,background-color,color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+                    isSearchClosing
+                      ? "border-[#8E8BED] bg-white text-[#1A1A1A]"
+                      : "site-header-search-field border-[#CACACA]"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    aria-label="Поиск"
+                    onClick={handleSearchToggle}
+                    className="flex h-[16px] w-[16px] shrink-0 items-center justify-center outline-none focus:outline-none focus-visible:outline-none"
+                  >
+                    <SearchIcon className="h-[13px] w-[13px]" />
+                  </button>
+                  <input
+                    ref={searchInputRef}
+                    value={searchQuery}
+                    onChange={(event) => {
+                      setSearchQuery(event.target.value);
+                      setActiveSearchSuggestionIndex(-1);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "ArrowDown") {
+                        if (searchSuggestions.length === 0) return;
+                        event.preventDefault();
+                        setActiveSearchSuggestionIndex((current) =>
+                          current < 0 ? 0 : (current + 1) % searchSuggestions.length,
+                        );
+                        return;
+                      }
+
+                      if (event.key === "ArrowUp") {
+                        if (searchSuggestions.length === 0) return;
+                        event.preventDefault();
+                        setActiveSearchSuggestionIndex((current) =>
+                          current < 0
+                            ? searchSuggestions.length - 1
+                            : (current - 1 + searchSuggestions.length) % searchSuggestions.length,
+                        );
+                        return;
+                      }
+
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        if (
+                          activeSearchSuggestionIndex >= 0 &&
+                          activeSearchSuggestionIndex < searchSuggestions.length
+                        ) {
+                          const picked = searchSuggestions[activeSearchSuggestionIndex];
+                          setSearchQuery(picked.title);
+                          applyHomeFeedSearch(picked.title);
+                          return;
+                        }
+
+                        if (searchQuery.trim()) {
+                          applyHomeFeedSearch(searchQuery);
+                        }
+                      }
+                    }}
+                    placeholder=""
+                    aria-label="Поиск по объявлениям"
+                    tabIndex={isSearchClosing ? -1 : 0}
+                    className={
+                      isSearchClosing
+                        ? "pointer-events-none absolute h-0 w-0 opacity-0"
+                        : "h-[24px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
+                    }
+                  />
+                  <button
+                    type="button"
+                    aria-label="Закрыть поиск"
+                    onClick={handleSearchClose}
+                    tabIndex={isSearchClosing ? -1 : 0}
+                    className={
+                      isSearchClosing
+                        ? "pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
+                        : "ml-auto flex h-[16px] w-[16px] shrink-0 items-center justify-center text-[#1A1A1A] outline-none transition hover:opacity-70 focus:outline-none focus-visible:outline-none"
+                    }
+                  >
+                    <svg
+                      viewBox="0 0 12 12"
+                      width="12"
+                      height="12"
+                      fill="none"
+                      aria-hidden
+                      className="block h-[12px] w-[12px]"
+                    >
+                      <path
+                        d="M1 1L11 11M11 1L1 11"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
                   aria-label="Поиск"
                   onClick={handleSearchToggle}
-                  className="flex h-[16px] w-[16px] shrink-0 items-center justify-center outline-none focus:outline-none focus-visible:outline-none"
+                  className="flex h-[32px] w-[32px] items-center justify-center rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#fafaff]"
                 >
                   <SearchIcon className="h-[13px] w-[13px]" />
                 </button>
-                <input
-                  ref={searchInputRef}
-                  value={searchQuery}
-                  onChange={(event) => {
-                    setSearchQuery(event.target.value);
-                    setActiveSearchSuggestionIndex(-1);
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "ArrowDown") {
-                      if (searchSuggestions.length === 0) return;
-                      event.preventDefault();
-                      setActiveSearchSuggestionIndex((current) =>
-                        current < 0 ? 0 : (current + 1) % searchSuggestions.length,
-                      );
-                      return;
-                    }
-
-                    if (event.key === "ArrowUp") {
-                      if (searchSuggestions.length === 0) return;
-                      event.preventDefault();
-                      setActiveSearchSuggestionIndex((current) =>
-                        current < 0 ? searchSuggestions.length - 1 : (current - 1 + searchSuggestions.length) % searchSuggestions.length,
-                      );
-                      return;
-                    }
-
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      if (
-                        activeSearchSuggestionIndex >= 0 &&
-                        activeSearchSuggestionIndex < searchSuggestions.length
-                      ) {
-                        const picked = searchSuggestions[activeSearchSuggestionIndex];
-                        setSearchQuery(picked.title);
-                        applyHomeFeedSearch(picked.title);
-                        return;
-                      }
-
-                      if (searchQuery.trim()) {
-                        applyHomeFeedSearch(searchQuery);
-                      }
-                    }
-                  }}
-                  placeholder=""
-                  aria-label="Поиск по объявлениям"
-                  tabIndex={isSearchClosing ? -1 : 0}
-                  className={
-                    isSearchClosing
-                      ? "pointer-events-none absolute h-0 w-0 opacity-0"
-                      : "h-[24px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
-                  }
-                />
-                <button
-                  type="button"
-                  aria-label="Закрыть поиск"
-                  onClick={() => closeSearchWithAnimation({ clear: true })}
-                  tabIndex={isSearchClosing ? -1 : 0}
-                  className={
-                    isSearchClosing
-                      ? "pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
-                      : "ml-auto flex h-[16px] w-[16px] shrink-0 items-center justify-center text-[#1A1A1A] outline-none transition hover:opacity-70 focus:outline-none focus-visible:outline-none"
-                  }
-                >
-                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" aria-hidden className="block h-[12px] w-[12px]">
-                    <path
-                      d="M1 1L11 11M11 1L1 11"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </button>
-              </div>
-            ) : isAuthenticated ? (
-              <button
-                type="button"
-                aria-label="Поиск"
-                onClick={handleSearchToggle}
-                className="flex h-[32px] w-[32px] items-center justify-center rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-transparent text-[#8E8BED] transition-colors hover:bg-[#8E8BED]/5"
-              >
-                <SearchIcon className="h-[13px] w-[13px]" />
-              </button>
-            ) : null}
+              )}
             </div>
 
-            {isSearchExpanded && (isSearchLoading || searchQuery.trim().length >= 2) ? (
+            {showExpandedSearch &&
+            !isSearchClosing &&
+            (isSearchLoading || searchQuery.trim().length >= 2) ? (
               <div className="site-header-search site-header-search-dropdown absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
                 {isSearchLoading ? (
                   <p className="px-[12px] py-[10px] text-[14px] text-[#3D3D3D]">Ищем...</p>
@@ -417,24 +469,7 @@ export function Header() {
             ) : null}
           </div>
 
-          <div
-            className={`absolute top-[11px] flex h-[32px] items-center gap-[16px] ${
-              isAuthenticated
-                ? "left-[1049px] w-[387px] justify-end"
-                : "right-[4px] justify-end"
-            }`}
-          >
-            {!isAuthenticated && !isSearchExpanded && !isSearchClosing ? (
-              <button
-                type="button"
-                aria-label="Поиск"
-                onClick={handleSearchToggle}
-                className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-transparent text-[#8E8BED] transition-colors hover:bg-[#8E8BED]/5"
-              >
-                <SearchIcon className="h-[13px] w-[13px]" />
-              </button>
-            ) : null}
-
+          <div className="absolute left-[1049px] top-[11px] flex h-[32px] items-center justify-end gap-[16px]">
             <ButtonPrimary className="w-[243px]" onClick={handleCreateListing}>
               Разместить предложение
             </ButtonPrimary>

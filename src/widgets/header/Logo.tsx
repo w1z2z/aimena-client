@@ -17,7 +17,12 @@ function forcePageScrollTop() {
   if (main instanceof HTMLElement) main.scrollTop = 0;
 }
 
-export function Logo() {
+type LogoProps = {
+  /** Dark logo for light page backgrounds (non-home at top). */
+  tone?: "brand" | "dark";
+};
+
+export function Logo({ tone = "brand" }: LogoProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -42,7 +47,7 @@ export function Logo() {
       aria-label="На главную"
     >
       <LogoIcon
-        className="block h-full w-full object-fill"
+        className={`block h-full w-full object-fill ${tone === "dark" ? "brightness-0" : ""}`}
         style={{ transform: "translateX(-9px) scale(1.22)", transformOrigin: "left center" }}
       />
     </Link>

@@ -30,6 +30,10 @@ import {
   consumeHomeTitleSearch,
   onHomeTitleSearch,
 } from "@/shared/lib/home-title-search";
+import {
+  consumeOpenHomeFilters,
+  onOpenHomeFilters,
+} from "@/shared/lib/home-open-filters";
 
 const FILTERS_AUTO_APPLY_DEBOUNCE_MS = 200;
 
@@ -49,7 +53,10 @@ type HomeSearchContextValue = {
   applyFilters: () => void;
   applyHeroToFilters: () => void;
   applyTitleSearch: (title: string) => void;
-  openFiltersAndScroll: () => void;
+  openFiltersAndScroll: (payload?: {
+    categoryParentId?: string;
+    categoryChildId?: string;
+  }) => void;
   isFiltersOpen: boolean;
   setIsFiltersOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
   heroRecommendations: ListingCardData[];
@@ -186,6 +193,33 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const openFiltersAndScroll = useCallback(
+    (payload?: { categoryParentId?: string; categoryChildId?: string }) => {
+      const base = heroToFilters(hero, categoryUiKeyToBackendId);
+      const nextFilters = {
+        ...base,
+        ...(payload?.categoryParentId
+          ? {
+              listingMode: "item" as const,
+              categoryParentId: payload.categoryParentId,
+              categoryChildId: payload.categoryChildId ?? "",
+            }
+          : {}),
+      };
+      setFilters(nextFilters);
+      setAppliedFilters(nextFilters);
+      setIsFiltersOpen(true);
+
+      window.requestAnimationFrame(() => {
+        document.getElementById("home-recommendations")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    },
+    [categoryUiKeyToBackendId, hero],
+  );
+
   useEffect(() => {
     const pending = consumeHomeTitleSearch();
     if (pending) {
@@ -197,19 +231,16 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     });
   }, [applyTitleSearch]);
 
-  const openFiltersAndScroll = useCallback(() => {
-    const nextFilters = heroToFilters(hero, categoryUiKeyToBackendId);
-    setFilters(nextFilters);
-    setAppliedFilters(nextFilters);
-    setIsFiltersOpen(true);
-
-    window.requestAnimationFrame(() => {
-      document.getElementById("home-recommendations")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+  useEffect(() => {
+    const pending = consumeOpenHomeFilters();
+    if (pending) {
+      openFiltersAndScroll(pending);
+    }
+    return onOpenHomeFilters((payload) => {
+      consumeOpenHomeFilters();
+      openFiltersAndScroll(payload);
     });
-  }, [categoryUiKeyToBackendId, hero]);
+  }, [openFiltersAndScroll]);
 
   const filteredListings = useMemo(
     () => filteredListingsQuery.data?.pages.flatMap((page) => page.items) ?? [],
