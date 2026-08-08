@@ -18,7 +18,6 @@ type ChatPreview = {
 
 const CHAT_AVATAR_SRC = "/images/chat/panel-avatar.png";
 const LINK_CHEVRON_SRC = "/images/chat/link-chevron.svg";
-const PANEL_DIVIDER_SRC = "/images/chat/panel-divider.svg";
 
 const chatPreviews: ChatPreview[] = [
   {
@@ -102,7 +101,7 @@ function TextLink({
       href={href}
       tabIndex={tabIndex}
       onClick={(event) => onNavigate(href, event)}
-      className="inline-flex items-center gap-[6px] text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition hover:opacity-70"
+      className="inline-flex items-center gap-[6px] text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A] transition hover:opacity-70"
     >
       <span className="[text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">{label}</span>
       <img src={LINK_CHEVRON_SRC} alt="" aria-hidden className="h-[6px] w-[4px] shrink-0" />
@@ -126,15 +125,15 @@ function ChatPanelRow({
       href={href}
       tabIndex={tabIndex}
       onClick={(event) => onNavigate(href, event)}
-      className="flex w-full items-end justify-between gap-2 transition hover:opacity-80"
+      className="flex h-[49px] w-[255px] shrink-0 items-end justify-between transition hover:opacity-80"
     >
-      <span className="flex min-w-0 flex-1 items-start gap-[9px]">
+      <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
         <span className="relative size-[49px] shrink-0">
           <span className="relative block size-[49px] overflow-hidden rounded-[15px] bg-[#D9D9D9]">
             <img
               src={chat.avatarUrl}
               alt=""
-              className="absolute left-[-31%] top-0 h-full w-[178%] max-w-none object-cover"
+              className="absolute left-[-31.06%] top-0 h-full w-[177.78%] max-w-none"
             />
           </span>
           {chat.hasUnread ? (
@@ -146,19 +145,32 @@ function ChatPanelRow({
         </span>
 
         <span className="flex h-[49px] w-[164px] min-w-0 flex-col items-start gap-[12px] text-[#1A1A1A]">
-          <span className="w-full truncate text-[14px] font-semibold leading-[1.2] tracking-[0.014px] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+          <span className="h-[15px] w-[153px] truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
             {chat.name}
           </span>
-          <span className="w-full truncate text-[14px] font-normal leading-[1.7] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+          <span className="w-[153px] truncate text-[14px] font-normal leading-[1.7] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
             {chat.preview}
           </span>
         </span>
       </span>
 
-      <span className="shrink-0 text-right text-[11px] font-semibold leading-4 tracking-[0.022px] text-[#1A1A1A] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+      <span className="flex h-[13px] w-[33px] shrink-0 items-center justify-end text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#1A1A1A] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
         {chat.time}
       </span>
     </Link>
+  );
+}
+
+function PanelDivider({ top }: { top: number }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute left-0 z-[2] h-px w-[303px]"
+      style={{
+        top,
+        background: "linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%)",
+      }}
+    />
   );
 }
 
@@ -207,7 +219,7 @@ export function FloatingChat() {
       className="pointer-events-none fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3"
     >
       <div
-        className="pointer-events-auto origin-bottom-right will-change-[opacity,transform]"
+        className="origin-bottom-right will-change-[opacity,transform]"
         style={{
           opacity: isOpen ? 1 : 0,
           transform: isOpen ? "translateY(0) scale(1)" : "translateY(12px) scale(0.96)",
@@ -216,51 +228,57 @@ export function FloatingChat() {
         }}
         aria-hidden={!isOpen}
       >
-        <div className="relative box-border flex h-[513px] w-[303px] flex-col items-end justify-center gap-[48px] rounded-[31px] bg-white p-[24px]">
-          <div className="flex w-[255px] flex-col items-start gap-[48px]">
-            <div className="flex w-full items-center justify-between">
-              <h2 className="m-0 text-[24px] font-extrabold leading-[1.1] tracking-[-0.072px] text-[#1A1A1A] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
-                Чаты
-              </h2>
+        {/* dropdawn-chat — Figma 1096:12322 */}
+        <div className="relative h-[517px] w-[303px]">
+          {/* плашка чата — Figma 1096:12255 */}
+          <div
+            className="absolute left-0 top-[4px] box-border h-[513px] w-[303px] rounded-[31px] border-2 border-solid border-transparent px-[24px] pt-[24px]"
+            style={{
+              background:
+                "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
+            }}
+          >
+            {/* Frame 32751 — Figma 1096:12256 */}
+            <div className="flex h-[406px] w-[255px] flex-col items-start gap-[48px]">
+              <div className="flex h-[17px] w-[255px] shrink-0 items-center justify-between">
+                <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+                  Чаты
+                </h2>
+                <TextLink
+                  href="/chats"
+                  label="Все чаты"
+                  tabIndex={isOpen ? 0 : -1}
+                  onNavigate={handleChatNavigate}
+                />
+              </div>
+
+              {/* chat-list — Figma 1096:12262 */}
+              <div className="flex h-[341px] w-[255px] shrink-0 flex-col items-start gap-[24px] overflow-hidden">
+                {chatPreviews.map((chat) => (
+                  <ChatPanelRow
+                    key={chat.id}
+                    chat={chat}
+                    href="/chats"
+                    tabIndex={isOpen ? 0 : -1}
+                    onNavigate={handleChatNavigate}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Поддержка — вертикально по центру под разделителем */}
+            <div className="absolute inset-x-0 bottom-0 top-[454px] flex items-center justify-end px-[24px]">
               <TextLink
                 href="/chats"
-                label="Все чаты"
+                label="Поддержка"
                 tabIndex={isOpen ? 0 : -1}
                 onNavigate={handleChatNavigate}
               />
             </div>
 
-            <div className="flex w-full flex-col items-start gap-[24px]">
-              {chatPreviews.map((chat) => (
-                <ChatPanelRow
-                  key={chat.id}
-                  chat={chat}
-                  href="/chats"
-                  tabIndex={isOpen ? 0 : -1}
-                  onNavigate={handleChatNavigate}
-                />
-              ))}
-            </div>
-          </div>
-
-          <TextLink
-            href="/chats"
-            label="Поддержка"
-            tabIndex={isOpen ? 0 : -1}
-            onNavigate={handleChatNavigate}
-          />
-
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-0 top-[62px] h-px w-full"
-          >
-            <img src={PANEL_DIVIDER_SRC} alt="" className="block h-px w-full" />
-          </div>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-0 top-[454px] h-px w-full"
-          >
-            <img src={PANEL_DIVIDER_SRC} alt="" className="block h-px w-full" />
+            {/* Vector 38 / Vector 39 */}
+            <PanelDivider top={62} />
+            <PanelDivider top={454} />
           </div>
         </div>
       </div>
