@@ -199,6 +199,7 @@ export function ListingCard({
     requestOpenHomeFilters({
       categoryParentId,
       categoryChildId,
+      searchMode: "have",
     });
     if (pathname !== "/") {
       router.push("/");

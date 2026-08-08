@@ -56,6 +56,7 @@ type HomeSearchContextValue = {
   openFiltersAndScroll: (payload?: {
     categoryParentId?: string;
     categoryChildId?: string;
+    searchMode?: "have" | "want";
   }) => void;
   isFiltersOpen: boolean;
   setIsFiltersOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -194,10 +195,15 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openFiltersAndScroll = useCallback(
-    (payload?: { categoryParentId?: string; categoryChildId?: string }) => {
+    (payload?: {
+      categoryParentId?: string;
+      categoryChildId?: string;
+      searchMode?: "have" | "want";
+    }) => {
       const base = heroToFilters(hero, categoryUiKeyToBackendId);
       const nextFilters = {
         ...base,
+        ...(payload?.searchMode ? { searchMode: payload.searchMode } : {}),
         ...(payload?.categoryParentId
           ? {
               listingMode: "item" as const,

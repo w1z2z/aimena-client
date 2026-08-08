@@ -4,6 +4,7 @@ const EVENT_NAME = "aimena:home-open-filters";
 export type OpenHomeFiltersPayload = {
   categoryParentId?: string;
   categoryChildId?: string;
+  searchMode?: "have" | "want";
 };
 
 function writePayload(payload?: OpenHomeFiltersPayload) {

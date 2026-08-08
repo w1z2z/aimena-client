@@ -91,6 +91,7 @@ export function HeaderCategoriesDropdown({
     requestOpenHomeFilters({
       categoryParentId: parentId,
       categoryChildId: childId,
+      searchMode: "want",
     });
     if (!isHomePage) {
       router.push("/");
