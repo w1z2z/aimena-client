@@ -1,4 +1,7 @@
-/* Listing card — Figma Property 1=новая (2328:21973 / 2514:65704) */
+/* Listing card — Figma 2514:65704 Property 1=новая
+ * Card 342×458, padding 12, gap 12, radius 31, border 3 (gradient overlay).
+ * img-panel 342×342 full-bleed. Title 294×12 + leading-trim.
+ */
 
 .home-listing-card {
   box-sizing: border-box;
@@ -6,6 +9,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  isolation: isolate;
+  overflow: hidden;
   width: 342px;
   height: 458px;
   padding: 12px;
@@ -17,11 +22,7 @@
   transition: box-shadow 200ms ease;
 }
 
-/*
- * Gradient stroke as an overlay — NOT border+padding-box background.
- * The old 3px transparent-border trick re-rasters on scroll and makes
- * text/SVG vibrate (pre-redesign used only 0.3px and did not jitter).
- */
+/* 3px gradient border on top of edges (Figma border-width: 3) */
 .home-listing-card::after {
   content: "";
   position: absolute;
@@ -50,33 +51,45 @@
   box-shadow: none;
 }
 
-/* ——— Title ——— */
+.home-listing-card--has-title-accessory {
+  overflow: visible;
+}
+
+/* card-title — Figma 294×12, padding 1px 12px, Label ML + leading-trim */
 .home-listing-card__title {
   box-sizing: border-box;
   display: flex;
-  z-index: 0;
+  z-index: 2;
   flex: none;
   align-items: flex-start;
   justify-content: center;
   width: 294px;
-  height: 17px;
-  padding: 0 12px;
+  height: 12px;
+  padding: 1px 12px;
+  overflow: visible;
   color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
   font-size: 14px;
   font-weight: 600;
-  line-height: 17px;
+  line-height: 1.2;
   letter-spacing: 0.001em;
   text-align: center;
 }
 
 .home-listing-card__title-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto;
   width: 271px;
   max-width: 100%;
+  height: 10px;
+  overflow: visible;
   color: inherit;
   text-decoration: none;
+  line-height: 1.2;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__title span {
@@ -85,9 +98,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.2;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
-/* ——— Body: image + panel ——— */
+/* Frame 32887 — 342×410, gap 16 */
 .home-listing-card__body {
   position: relative;
   display: flex;
@@ -102,6 +118,7 @@
   padding: 0;
 }
 
+/* img-panel — 342×342 */
 .home-listing-card__media {
   position: relative;
   z-index: 0;
@@ -109,6 +126,7 @@
   width: 342px;
   height: 342px;
   overflow: hidden;
+  isolation: isolate;
   background: #f4e2ff;
 }
 
@@ -140,7 +158,7 @@
   pointer-events: none;
 }
 
-/* Favorites — Figma card top 48 / right 12 → media top 12 */
+/* btn-favorites — right 12, top 48 → media top 12 */
 .home-listing-card__favorite,
 .home-listing-card__media-accessory {
   position: absolute;
@@ -172,6 +190,7 @@
   align-items: flex-start;
 }
 
+/* card-location — left 12, top 306 */
 .home-listing-card__location {
   box-sizing: border-box;
   position: absolute;
@@ -195,6 +214,8 @@
   line-height: 16px;
   letter-spacing: 0.002em;
   white-space: nowrap;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__location-icon {
@@ -269,7 +290,7 @@
   width: 100%;
   max-width: 294px;
   min-width: 0;
-  min-height: 14px;
+  min-height: 11px;
   overflow: hidden;
 }
 
@@ -283,9 +304,11 @@
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
   font-weight: 600;
-  line-height: 14px;
+  line-height: 16px;
   letter-spacing: 0.002em;
   white-space: nowrap;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__categories {
@@ -314,8 +337,10 @@
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
   font-weight: 600;
-  line-height: 14px;
+  line-height: 16px;
   letter-spacing: 0.002em;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__category-text {
@@ -323,7 +348,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 14px;
+  line-height: 16px;
 }
 
 .home-listing-card__divider {
@@ -425,6 +450,8 @@
   line-height: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__wants-more {
@@ -433,9 +460,11 @@
   font-family: var(--font-manrope), sans-serif;
   font-size: 11px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 16px;
   letter-spacing: 0.002em;
   white-space: nowrap;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__free-pill {
