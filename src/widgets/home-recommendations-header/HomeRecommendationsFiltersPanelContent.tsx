@@ -378,17 +378,30 @@ export function HomeRecommendationsFiltersPanelContent() {
               >
                 <div className="home-filters-panel__subcategory-inner">
                   <div className="home-filters-panel__subcategory-content">
-                    <SelectField
-                      value={categoryChildId}
-                      onChange={(next) => updateFilters({ categoryChildId: next })}
-                      options={childCategoryOptions}
-                      variant="filter"
-                      searchable={false}
-                      placeholder="Подкатегория"
-                      className="home-filters-panel__select-wrap"
-                      disabled={!hasSubcategories}
-                      aria-label="Подкатегория"
-                    />
+                    {hasSubcategories ? (
+                      <SelectField
+                        value={categoryChildId}
+                        onChange={(next) => updateFilters({ categoryChildId: next })}
+                        options={childCategoryOptions}
+                        variant="filter"
+                        searchable={false}
+                        placeholder="Подкатегория"
+                        className="home-filters-panel__select-wrap"
+                        aria-label="Подкатегория"
+                      />
+                    ) : (
+                      <div
+                        className="site-select site-select--filter home-filters-panel__select-wrap is-disabled"
+                        aria-hidden="true"
+                      >
+                        <div className="site-select__control">
+                          <span className="site-select__input is-placeholder is-readonly-select">
+                            Подкатегория
+                          </span>
+                          <span className="site-select__chevron" aria-hidden="true" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

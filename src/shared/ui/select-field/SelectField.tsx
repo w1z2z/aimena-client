@@ -106,7 +106,9 @@ export function SelectField({
   "aria-label": ariaLabel,
 }: SelectFieldProps) {
   const safeValue = value ?? "";
+  const isDisabled = Boolean(disabled);
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [inputValue, setInputValue] = useState(() => getLabelForValue(options, safeValue));
   const [activeOptionValue, setActiveOptionValue] = useState<string | null>(null);
   const [listStyle, setListStyle] = useState<CSSProperties>({ visibility: "hidden" });
@@ -114,7 +116,7 @@ export function SelectField({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listId = useId();
-  const showClear = clearable && Boolean(safeValue) && !disabled;
+  const showClear = clearable && Boolean(safeValue) && !isDisabled;
 
   const visibleOptions = useMemo(
     () => (searchable ? filterOptions(options, inputValue ?? "") : options),
@@ -124,6 +126,10 @@ export function SelectField({
     () => visibleOptions.filter((option) => !option.disabled),
     [visibleOptions],
   );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setInputValue(getLabelForValue(options, safeValue));
@@ -284,7 +290,7 @@ export function SelectField({
   };
 
   const handleInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
-    if (disabled) return;
+    if (isDisabled) return;
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
@@ -319,7 +325,7 @@ export function SelectField({
 
   const showPlaceholderState = !safeValue && !(inputValue ?? "").trim();
   const handleControlMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
-    if (disabled) return;
+    if (isDisabled) return;
     const target = event.target as HTMLElement;
     if (target.closest(".site-select__chevron") || target.closest(".site-select__clear")) {
       return;
@@ -331,7 +337,7 @@ export function SelectField({
   };
 
   const handleClear = () => {
-    if (disabled) return;
+    if (isDisabled) return;
     setInputValue("");
     onInputChange?.("");
     onChange("");
@@ -396,7 +402,7 @@ export function SelectField({
   return (
     <div
       ref={rootRef}
-      className={`site-select site-select--${variant}${className ? ` ${className}` : ""}${isOpen ? " is-open" : ""}${disabled ? " is-disabled" : ""}`}
+      className={`site-select site-select--${variant}${className ? ` ${className}` : ""}${isOpen ? " is-open" : ""}${isDisabled ? " is-disabled" : ""}`}
     >
       <div className="site-select__control" onMouseDown={handleControlMouseDown}>
         <input
@@ -410,10 +416,10 @@ export function SelectField({
           value={inputValue ?? ""}
           placeholder={placeholder}
           readOnly={!searchable}
-          disabled={disabled}
+          disabled={isDisabled || undefined}
           onChange={(event) => handleInputChange(event.target.value)}
           onKeyDown={handleInputKeyDown}
-          onFocus={() => !disabled && setIsOpen(true)}
+          onFocus={() => !isDisabled && setIsOpen(true)}
           onBlur={handleBlur}
           onMouseDown={(event) => {
             if (!searchable) {
@@ -428,7 +434,7 @@ export function SelectField({
             tabIndex={-1}
             aria-label="Очистить"
             className="site-select__clear"
-            disabled={disabled}
+            disabled={isDisabled || undefined}
             onMouseDown={(event) => event.preventDefault()}
             onClick={handleClear}
           >
@@ -440,16 +446,16 @@ export function SelectField({
             tabIndex={-1}
             aria-label={isOpen ? "Скрыть варианты" : "Показать варианты"}
             className="site-select__chevron"
-            disabled={disabled}
+            disabled={isDisabled || undefined}
             onMouseDown={(event) => event.preventDefault()}
-            onClick={() => !disabled && setIsOpen((current) => !current)}
+            onClick={() => !isDisabled && setIsOpen((current) => !current)}
           >
             <ChevronIcon open={isOpen} />
           </button>
         )}
       </div>
 
-      {typeof document !== "undefined" && list ? createPortal(list, document.body) : null}
+      {mounted && list ? createPortal(list, document.body) : null}
     </div>
   );
 }
