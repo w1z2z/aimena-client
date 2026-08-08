@@ -386,9 +386,9 @@
 }
 
 .registration-prompt-modal__logo {
-  width: 110px;
-  height: 81px;
   display: block;
+  width: 100px;
+  height: 110px;
   flex-shrink: 0;
 }
 
@@ -404,31 +404,58 @@
   text-align: center;
 }
 
+.registration-prompt-modal__actions {
+  display: flex;
+  width: 100%;
+  max-width: 540px;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
 .registration-prompt-modal__subtitle {
   margin: 0;
   max-width: 476px;
-  color: rgb(0 0 0 / 50%);
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
   font-size: 14px;
-  line-height: 1.36;
+  font-weight: 400;
+  line-height: 170%;
   text-align: center;
 }
 
-.registration-prompt-modal__button {
+.registration-prompt-modal__buttons {
   display: flex;
   width: 100%;
-  max-width: 508px;
-  height: 62px;
+  align-items: center;
+  gap: 12px;
+}
+
+.registration-prompt-modal__button {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 42px;
   align-items: center;
   justify-content: center;
-  border-radius: 9.33px;
+  border: 1px solid transparent;
+  border-radius: 21px;
   background: #8e8bed;
+  padding: 0 74px;
   color: #ffffff;
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 32px;
-  letter-spacing: -0.072px;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 120%;
+  letter-spacing: 0.001em;
   text-align: center;
-  transition: filter 150ms ease, transform 150ms ease;
+  text-decoration: none;
+  transition:
+    filter 150ms ease,
+    transform 100ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
 }
 
 .registration-prompt-modal__button:hover {
@@ -437,6 +464,19 @@
 
 .registration-prompt-modal__button:active {
   transform: translateY(0.5px);
+}
+
+.registration-prompt-modal__button--cancel {
+  border-color: #cacaca;
+  background: #ffffff;
+  color: #1a1a1a;
+  filter: none;
+}
+
+.registration-prompt-modal__button--cancel:hover {
+  border-color: #8e8bed;
+  color: #8e8bed;
+  filter: none;
 }
 
 .listing-published-modal {

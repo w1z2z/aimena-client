@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 
 import type { RegistrationPromptReason } from "../registration-prompt";
 import { registrationPromptCopy } from "../registration-prompt";
-import { AuthPromptIcon } from "@/shared/ui/icons";
+import { AUTH_UNION_ICON_SIZE, AuthUnionIcon } from "@/shared/ui/icons";
 
 const TRANSITION_MS = 320;
 
@@ -99,19 +99,37 @@ export function RegistrationPromptModal({ open, reason, onClose }: RegistrationP
             <CloseIcon />
           </button>
 
-          <AuthPromptIcon className="registration-prompt-modal__logo" aria-hidden="true" />
+          <AuthUnionIcon
+            className="registration-prompt-modal__logo"
+            style={{
+              width: AUTH_UNION_ICON_SIZE.width,
+              height: AUTH_UNION_ICON_SIZE.height,
+            }}
+            aria-hidden="true"
+          />
 
           <h2 id="registration-prompt-title" className="registration-prompt-modal__title">
             Для продолжения необходимо авторизоваться
           </h2>
 
-          <p id="registration-prompt-subtitle" className="registration-prompt-modal__subtitle">
-            {subtitle}
-          </p>
+          <div className="registration-prompt-modal__actions">
+            <p id="registration-prompt-subtitle" className="registration-prompt-modal__subtitle">
+              {subtitle}
+            </p>
 
-          <Link href="/login" className="registration-prompt-modal__button" onClick={onClose}>
-            Авторизация
-          </Link>
+            <div className="registration-prompt-modal__buttons">
+              <Link href="/login" className="registration-prompt-modal__button" onClick={onClose}>
+                Авторизоваться
+              </Link>
+              <button
+                type="button"
+                className="registration-prompt-modal__button registration-prompt-modal__button--cancel"
+                onClick={onClose}
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>,
