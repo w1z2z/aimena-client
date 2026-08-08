@@ -7,32 +7,19 @@
   flex-direction: column;
   align-items: center;
   isolation: isolate;
+  overflow: hidden;
   width: 342px;
   height: 458px;
   padding: 12px;
   gap: 12px;
-  border: 0;
+  border: 3px solid transparent;
   border-radius: 31px;
-  background: #ffffff;
+  /* Inward stroke — survives parent overflow:hidden/clip (hero, free carousel, grids). */
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
   box-shadow: none;
   transition: box-shadow 200ms ease;
-}
-
-/* Figma stroke is outside the 342×458 card (export is 348×464). */
-.home-listing-card::before {
-  content: "";
-  position: absolute;
-  inset: -3px;
-  z-index: 6;
-  border-radius: 34px;
-  pointer-events: none;
-  background: linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%);
-  padding: 3px;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
 }
 
 .home-listing-card:not(.home-listing-card--hero):not(.home-listing-card--mine):hover {
