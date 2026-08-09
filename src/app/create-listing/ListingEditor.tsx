@@ -766,12 +766,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         setWantsParentCategoryId(null);
         setWantsChildCategoryId(null);
         setWantsCategoryPins(
-          (listing.wantsCategories?.length
-            ? listing.wantsCategories
-            : listing.wantsCategory
-              ? [listing.wantsCategory]
-              : []
-          ).map((category) => ({
+          (listing.wantsCategories ?? []).map((category) => ({
             id: category.id,
             label: category.name,
           })),
@@ -779,7 +774,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         setWantsTags(listing.wantsTags);
         setExchangeEnabled(
           listing.wantsTags.length > 0 ||
-            Boolean(listing.wantsCategory) ||
             Boolean(listing.wantsCategories?.length) ||
             Boolean(listing.wantsText),
         );
@@ -1289,7 +1283,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         description: description.trim(),
         categoryId,
         wantsCategoryIds,
-        wantsCategoryId: wantsCategoryIds[0] ?? null,
         cityId: selectedCityId,
         condition: listingKind === "item" ? condition ?? undefined : undefined,
         estimatedPrice: estimatedPrice ?? undefined,
@@ -1587,7 +1580,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                 clearError("description");
               }}
               placeholder="Введите описание...."
-              className="mt-2 h-[150px] w-full resize-none rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 py-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
+              className="mt-2 min-h-[150px] w-full resize-y overflow-auto rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 py-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
             />
             <FieldError message={errors.description} />
           </div>

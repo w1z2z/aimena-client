@@ -5,6 +5,7 @@ export type OpenHomeFiltersPayload = {
   categoryParentId?: string;
   categoryChildId?: string;
   searchMode?: "have" | "want";
+  listingMode?: "item" | "service";
 };
 
 function writePayload(payload?: OpenHomeFiltersPayload) {

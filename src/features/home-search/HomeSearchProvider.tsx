@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -33,6 +34,7 @@ import {
 import {
   consumeOpenHomeFilters,
   onOpenHomeFilters,
+  type OpenHomeFiltersPayload,
 } from "@/shared/lib/home-open-filters";
 
 const FILTERS_AUTO_APPLY_DEBOUNCE_MS = 200;
@@ -53,11 +55,7 @@ type HomeSearchContextValue = {
   applyFilters: () => void;
   applyHeroToFilters: () => void;
   applyTitleSearch: (title: string) => void;
-  openFiltersAndScroll: (payload?: {
-    categoryParentId?: string;
-    categoryChildId?: string;
-    searchMode?: "have" | "want";
-  }) => void;
+  openFiltersAndScroll: (payload?: OpenHomeFiltersPayload) => void;
   isFiltersOpen: boolean;
   setIsFiltersOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
   heroRecommendations: ListingCardData[];
@@ -195,18 +193,14 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openFiltersAndScroll = useCallback(
-    (payload?: {
-      categoryParentId?: string;
-      categoryChildId?: string;
-      searchMode?: "have" | "want";
-    }) => {
+    (payload?: OpenHomeFiltersPayload) => {
       const base = heroToFilters(hero, categoryUiKeyToBackendId);
       const nextFilters = {
         ...base,
         ...(payload?.searchMode ? { searchMode: payload.searchMode } : {}),
         ...(payload?.categoryParentId
           ? {
-              listingMode: "item" as const,
+              listingMode: payload.listingMode ?? ("item" as const),
               categoryParentId: payload.categoryParentId,
               categoryChildId: payload.categoryChildId ?? "",
             }
@@ -216,11 +210,9 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       setAppliedFilters(nextFilters);
       setIsFiltersOpen(true);
 
-      window.requestAnimationFrame(() => {
-        document.getElementById("home-recommendations")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
+      document.getElementById("home-recommendations")?.scrollIntoView({
+        behavior: "auto",
+        block: "start",
       });
     },
     [categoryUiKeyToBackendId, hero],
@@ -237,7 +229,7 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     });
   }, [applyTitleSearch]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const pending = consumeOpenHomeFilters();
     if (pending) {
       openFiltersAndScroll(pending);

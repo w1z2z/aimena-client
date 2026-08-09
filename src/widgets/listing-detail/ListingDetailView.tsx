@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -11,6 +11,8 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useAuthGate } from "@/features/auth";
 import { ApiError } from "@/shared/api/http";
+import { requestOpenHomeFilters } from "@/shared/lib/home-open-filters";
+import { LocationPinIcon } from "@/shared/ui/icons/LocationPinIcon";
 import { Header } from "@/widgets/header/Header";
 
 import { ListingActionsMenu } from "./ListingActionsMenu";
@@ -19,11 +21,20 @@ import { ListingOwnerCard } from "./ListingOwnerCard";
 import { ListingSimilarSection, formatEstimatedPrice } from "./ListingSimilarSection";
 
 const DESCRIPTION_COLLAPSE_CHARS = 420;
-/** ~5 lines at 14px / 1.7 */
-const DESCRIPTION_COLLAPSED_HEIGHT = 119;
+/** ~7 lines at 14px / 1.7 */
+const DESCRIPTION_COLLAPSED_HEIGHT = 166;
+
+function getCategoryIcon(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    const match = value?.trim().match(/^\p{Extended_Pictographic}\uFE0F?/u);
+    if (match) return match[0];
+  }
+  return "";
+}
 
 export function ListingDetailView() {
   const params = useParams<{ listingId: string }>();
+  const router = useRouter();
   const listingId = typeof params.listingId === "string" ? params.listingId : "";
   const { user } = useAuth();
   const { guardAuth } = useAuthGate();
@@ -52,41 +63,46 @@ export function ListingDetailView() {
   }, [listing]);
 
   const categoryBreadcrumb = useMemo(() => {
-    if (!listing) return "";
+    if (!listing) return [];
     const { category } = listing;
     if (category.parent?.name) {
-      return `${category.parent.name} > ${category.name}`;
+      return [
+        {
+          id: category.parent.id,
+          parentId: null,
+          name: category.parent.shortName?.trim() || category.parent.name,
+        },
+        {
+          id: category.id,
+          parentId: category.parent.id,
+          name: category.shortName?.trim() || category.name,
+        },
+      ];
     }
-    return category.name;
-  }, [listing]);
-
-  const metaTags = useMemo(() => {
-    if (!listing) return [];
-    const tags = [listing.city.name];
-    if (listing.hasDocuments) tags.push("С документами");
-    if (listing.isFree) tags.push("Даром");
-    return tags;
+    return [
+      {
+        id: category.id,
+        parentId: null,
+        name: category.shortName?.trim() || category.name,
+      },
+    ];
   }, [listing]);
 
   const wantsCategories = useMemo(() => {
     if (!listing) return [];
-    const categories =
-      listing.wantsCategories?.length
-        ? listing.wantsCategories
-        : listing.wantsCategory
-          ? [listing.wantsCategory]
-          : [];
 
-    return categories
+    return (listing.wantsCategories ?? [])
       .map((wantsCategory) => {
-        const name = wantsCategory.name?.trim();
+        const name = wantsCategory.shortName?.trim() || wantsCategory.name?.trim();
         if (!name) return null;
-        if (wantsCategory.parent?.name) {
-          return `${wantsCategory.parent.name} > ${name}`;
-        }
-        return name;
+        return {
+          id: wantsCategory.id,
+          parentId: wantsCategory.parent?.id ?? null,
+          name,
+          icon: getCategoryIcon(wantsCategory.parent?.name, wantsCategory.name),
+        };
       })
-      .filter((value): value is string => Boolean(value));
+      .filter((value): value is NonNullable<typeof value> => Boolean(value));
   }, [listing]);
 
   const wantsThings = useMemo(() => {
@@ -130,6 +146,21 @@ export function ListingDetailView() {
     guardAuth("propose-exchange");
   };
 
+  const handleCategoryClick = (
+    categoryId: string,
+    parentId: string | null,
+    searchMode: "want" | "have",
+    listingMode: "item" | "service",
+  ) => {
+    requestOpenHomeFilters({
+      categoryParentId: parentId ?? categoryId,
+      categoryChildId: parentId ? categoryId : undefined,
+      searchMode,
+      listingMode,
+    });
+    router.push("/#home-recommendations", { scroll: false });
+  };
+
   const notFound = isError && error instanceof ApiError && error.status === 404;
 
   return (
@@ -169,8 +200,33 @@ export function ListingDetailView() {
               <div className="listing-detail-heading">
                 <div className="listing-detail-heading__top">
                   <div className="listing-detail-heading__text">
-                    {categoryBreadcrumb ? (
-                      <p className="listing-detail-heading__category">{categoryBreadcrumb}</p>
+                    {categoryBreadcrumb.length > 0 ? (
+                      <p className="listing-detail-heading__category">
+                        {categoryBreadcrumb.map((category, index) => (
+                          <button
+                            key={category.id}
+                            type="button"
+                            className="listing-detail-heading__category-part"
+                            onClick={() =>
+                              handleCategoryClick(
+                                category.id,
+                                category.parentId,
+                                "want",
+                                listing.type,
+                              )
+                            }
+                          >
+                            {index > 0 ? (
+                              <img
+                                src="/images/listing-detail/category-chevron.svg"
+                                alt=""
+                                className="listing-detail-heading__category-chevron"
+                              />
+                            ) : null}
+                            <span>{category.name}</span>
+                          </button>
+                        ))}
+                      </p>
                     ) : null}
                     <h1 className="listing-detail-heading__title">{listing.title}</h1>
                   </div>
@@ -180,52 +236,23 @@ export function ListingDetailView() {
                     status={listing.status}
                   />
                 </div>
-                {metaTags.length > 0 ? (
-                  <div className="listing-detail-heading__tags">
-                    {metaTags.map((tag) => (
-                      <span key={tag} className="listing-detail-pill">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
+                <div className="listing-detail-heading__tags">
+                  <span className="listing-detail-pill">
+                    <LocationPinIcon className="listing-detail-pill__location-icon" />
+                    <span>{listing.city.name}</span>
+                  </span>
+                  {listing.hasDocuments ? (
+                    <span className="listing-detail-pill">
+                      <img
+                        src="/images/listing-detail/document.svg"
+                        alt=""
+                        className="listing-detail-pill__document-icon"
+                      />
+                      <span>Документы</span>
+                    </span>
+                  ) : null}
+                </div>
               </div>
-
-              <section className="listing-detail-wants" aria-label="Желаемый обмен">
-                <h2 className="listing-detail-wants__title">Желаемый обмен</h2>
-                {hasWantsContent ? (
-                  <div className="listing-detail-wants__groups">
-                    {wantsCategories.length > 0 ? (
-                      <div className="listing-detail-wants__group">
-                        <h3 className="listing-detail-wants__subtitle">Категории</h3>
-                        <div className="listing-detail-wants__tags">
-                          {wantsCategories.map((tag) => (
-                            <span key={tag} className="listing-detail-wants__tag">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    {wantsThings.length > 0 ? (
-                      <div className="listing-detail-wants__group">
-                        <h3 className="listing-detail-wants__subtitle">Вещи</h3>
-                        <div className="listing-detail-wants__tags">
-                          {wantsThings.map((tag) => (
-                            <span key={tag} className="listing-detail-wants__tag">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : (
-                  <div className="listing-detail-wants__tags">
-                    <span className="listing-detail-wants__tag">Любые варианты</span>
-                  </div>
-                )}
-              </section>
 
               <div className="listing-detail-stats">
                 <article className="listing-detail-stat listing-detail-stat--price">
@@ -248,18 +275,79 @@ export function ListingDetailView() {
                 </article>
               </div>
 
+              <section className="listing-detail-wants" aria-label="Желаемый обмен">
+                <h2 className="listing-detail-wants__title">Желаемый обмен</h2>
+                <div className="listing-detail-wants__card">
+                  {hasWantsContent ? (
+                    <div className="listing-detail-wants__groups">
+                      {wantsCategories.length > 0 ? (
+                        <div className="listing-detail-wants__group">
+                          <h3 className="listing-detail-wants__subtitle">Категории</h3>
+                          <div className="listing-detail-wants__tags">
+                            {wantsCategories.map((category) => (
+                              <button
+                                key={category.id}
+                                type="button"
+                                className="listing-detail-wants__category"
+                                onClick={() =>
+                                  handleCategoryClick(
+                                    category.id,
+                                    category.parentId,
+                                    "have",
+                                    "item",
+                                  )
+                                }
+                              >
+                                {category.icon ? (
+                                  <span
+                                    className="listing-detail-wants__category-icon"
+                                    aria-hidden
+                                  >
+                                    {category.icon}
+                                  </span>
+                                ) : null}
+                                <span>{category.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {wantsThings.length > 0 ? (
+                        <div className="listing-detail-wants__group">
+                          <h3 className="listing-detail-wants__subtitle">Вещи и Услуги</h3>
+                          <div className="listing-detail-wants__tags">
+                            {wantsThings.map((tag) => (
+                              <span key={tag} className="listing-detail-wants__tag">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="listing-detail-wants__tags">
+                      <span className="listing-detail-wants__tag">Любые варианты</span>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {!isOwner ? (
+                <button
+                  type="button"
+                  className="listing-detail-cta"
+                  onClick={handleProposeExchange}
+                >
+                  Предложить обмен
+                </button>
+              ) : null}
+
               <section className="listing-detail-description" aria-label="Описание">
                 <h2 className="listing-detail-description__title">Описание</h2>
                 <div className="listing-detail-description__card">
                   <div
-                    className={[
-                      "listing-detail-description__clip",
-                      canCollapseDescription && !descriptionExpanded
-                        ? "listing-detail-description__clip--collapsed"
-                        : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
+                    className="listing-detail-description__clip"
                     style={{ maxHeight: descriptionClipHeight || undefined }}
                   >
                     <p
@@ -276,44 +364,11 @@ export function ListingDetailView() {
                       onClick={() => setDescriptionExpanded((value) => !value)}
                       aria-expanded={descriptionExpanded}
                     >
-                      <span>{descriptionExpanded ? "Свернуть" : "Дальше"}</span>
-                      <svg
-                        className={[
-                          "listing-detail-description__chevron",
-                          descriptionExpanded
-                            ? "listing-detail-description__chevron--up"
-                            : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                        width="12"
-                        height="6"
-                        viewBox="0 0 12 6"
-                        fill="none"
-                        aria-hidden
-                      >
-                        <path
-                          d="M1 1L6 5L11 1"
-                          stroke="#000000"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                      {descriptionExpanded ? "Свернуть" : "Дальше"}
                     </button>
                   ) : null}
                 </div>
               </section>
-
-              {!isOwner ? (
-                <button
-                  type="button"
-                  className="listing-detail-cta"
-                  onClick={handleProposeExchange}
-                >
-                  Предложить обмен
-                </button>
-              ) : null}
             </div>
           </div>
         ) : null}

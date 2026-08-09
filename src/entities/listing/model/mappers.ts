@@ -5,7 +5,7 @@ import type { ListingCardData, ListingWantCategory } from "./types";
 
 type WantsSource = Pick<
   ApiListingCard,
-  "wantsText" | "wantsTags" | "wantsCategory" | "wantsCategories"
+  "wantsText" | "wantsTags" | "wantsCategories"
 >;
 
 /**
@@ -14,11 +14,7 @@ type WantsSource = Pick<
  * Теги вещей — в пилюлях внизу (`buildWantsPreview`), не здесь.
  */
 export function buildWantCategories(listing: WantsSource): ListingWantCategory[] {
-  const fromList = listing.wantsCategories?.length
-    ? listing.wantsCategories
-    : listing.wantsCategory
-      ? [listing.wantsCategory]
-      : [];
+  const fromList = listing.wantsCategories ?? [];
 
   const result: ListingWantCategory[] = [];
   const seen = new Set<string>();

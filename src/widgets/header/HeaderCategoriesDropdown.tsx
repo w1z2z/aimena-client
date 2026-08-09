@@ -94,7 +94,7 @@ export function HeaderCategoriesDropdown({
       searchMode: "want",
     });
     if (!isHomePage) {
-      router.push("/");
+      router.push("/#home-recommendations", { scroll: false });
     }
   };
 

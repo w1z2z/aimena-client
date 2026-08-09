@@ -202,7 +202,7 @@ export function ListingCard({
       searchMode: "have",
     });
     if (pathname !== "/") {
-      router.push("/");
+      router.push("/#home-recommendations", { scroll: false });
     }
   };
 

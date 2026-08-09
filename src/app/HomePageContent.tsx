@@ -26,8 +26,13 @@ export function HomePageContent() {
 
   useLayoutEffect(() => {
     if (pathname !== "/") return;
-    // Header search scrolls to the feed — don't fight it with a top lock.
-    if (peekHomeTitleSearch()) return;
+    // Search and category links scroll to the feed — don't fight them with a top lock.
+    if (
+      peekHomeTitleSearch() ||
+      window.location.hash === "#home-recommendations"
+    ) {
+      return;
+    }
 
     const previous = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";

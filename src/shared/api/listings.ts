@@ -13,8 +13,9 @@ export type ApiListingCondition =
 export type ApiListingCategory = {
   id: string;
   name: string;
+  shortName?: string | null;
   slug: string;
-  parent?: { id: string; name: string; slug: string } | null;
+  parent?: { id: string; name: string; shortName?: string | null; slug: string } | null;
 };
 
 export type ApiListingCard = {
@@ -33,8 +34,7 @@ export type ApiListingCard = {
   publishedAt: string | null;
   createdAt: string;
   category: ApiListingCategory;
-  wantsCategory: ApiListingCategory | null;
-  wantsCategories?: ApiListingCategory[];
+  wantsCategories: ApiListingCategory[];
   city: { id: string; name: string; regionName: string | null; slug: string };
   coverImageUrl: string | null;
   isFavorite: boolean;
@@ -79,8 +79,7 @@ export type ApiListingDetail = {
   wantsText: string;
   wantsTags: string[];
   category: ApiListingCategory;
-  wantsCategory: ApiListingCategory | null;
-  wantsCategories?: ApiListingCategory[];
+  wantsCategories: ApiListingCategory[];
   city: { id: string; name: string; regionName: string | null; slug: string };
   owner: ApiListingOwner | null;
   images: ApiListingImage[];
@@ -152,7 +151,6 @@ export type CreateListingPayload = {
   title: string;
   description: string;
   categoryId: string;
-  wantsCategoryId?: string | null;
   wantsCategoryIds?: string[];
   cityId: string;
   condition?: ApiListingCondition;

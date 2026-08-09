@@ -141,6 +141,12 @@ export function SelectField({
   }, [safeValue]);
 
   useEffect(() => {
+    if (!searchable) {
+      setInputValue(getLabelForValue(options, safeValue));
+    }
+  }, [options, safeValue, searchable]);
+
+  useEffect(() => {
     if (!isOpen) {
       setActiveOptionValue(null);
       return;
