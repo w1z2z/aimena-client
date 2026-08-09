@@ -69,12 +69,24 @@ export function ListingDetailView() {
   }, [listing]);
 
   const wantsCategories = useMemo(() => {
-    if (!listing?.wantsCategory?.name?.trim()) return [];
-    const { wantsCategory } = listing;
-    if (wantsCategory.parent?.name) {
-      return [`${wantsCategory.parent.name} > ${wantsCategory.name}`];
-    }
-    return [wantsCategory.name.trim()];
+    if (!listing) return [];
+    const categories =
+      listing.wantsCategories?.length
+        ? listing.wantsCategories
+        : listing.wantsCategory
+          ? [listing.wantsCategory]
+          : [];
+
+    return categories
+      .map((wantsCategory) => {
+        const name = wantsCategory.name?.trim();
+        if (!name) return null;
+        if (wantsCategory.parent?.name) {
+          return `${wantsCategory.parent.name} > ${name}`;
+        }
+        return name;
+      })
+      .filter((value): value is string => Boolean(value));
   }, [listing]);
 
   const wantsThings = useMemo(() => {

@@ -39,6 +39,7 @@ import { DeleteIcon } from "@/shared/ui/icons";
 import { Switch } from "@/shared/ui/switch/Switch";
 
 import { ListingPublishedModal } from "./ListingPublishedModal";
+import { ListingPublishingOverlay } from "./ListingPublishingOverlay";
 
 import {
   ACCEPTED_DOCUMENT_TYPES,
@@ -59,6 +60,7 @@ import {
   SERVICE_WORK_LEVEL_OPTIONS,
   TAGS_FETCH_DEBOUNCE_MS,
   WANTS_TAGS_LIMIT,
+  WANTS_CATEGORIES_LIMIT,
   type ConditionId,
   type ExtraPayId,
   type FieldErrors,
@@ -85,6 +87,11 @@ type TagSuggestionItem = {
   value: string;
   label: string;
   isCreateAction?: boolean;
+};
+
+type WantsCategoryPin = {
+  id: string;
+  label: string;
 };
 
 type PhotoKind = "item" | "doc";
@@ -499,6 +506,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const [childCategoryId, setChildCategoryId] = useState<string | null>(null);
   const [wantsParentCategoryId, setWantsParentCategoryId] = useState<string | null>(null);
   const [wantsChildCategoryId, setWantsChildCategoryId] = useState<string | null>(null);
+  const [wantsCategoryPins, setWantsCategoryPins] = useState<WantsCategoryPin[]>([]);
+  const [wantsCategorySelectKey, setWantsCategorySelectKey] = useState(0);
   const [wantsTagInput, setWantsTagInput] = useState("");
   const [wantsTags, setWantsTags] = useState<string[]>([]);
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
@@ -547,11 +556,13 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   );
   const wantsParentCategoryOptions = useMemo<SelectOption[]>(
     () =>
-      wantsCategoryTree.map((item) => ({
-        value: item.id,
-        label: item.name,
-      })),
-    [wantsCategoryTree],
+      wantsCategoryTree
+        .filter((item) => !wantsCategoryPins.some((pin) => pin.id === item.id))
+        .map((item) => ({
+          value: item.id,
+          label: item.name,
+        })),
+    [wantsCategoryTree, wantsCategoryPins],
   );
   const selectedParentCategory = useMemo(
     () => categoryTree.find((item) => item.id === parentCategoryId) ?? null,
@@ -571,14 +582,21 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     [wantsCategoryTree, wantsParentCategoryId],
   );
   const wantsChildCategoryOptions = useMemo<SelectOption[]>(() => {
-    const children = (selectedWantsParentCategory?.children ?? []).map((item) => ({
-      value: item.id,
-      label: item.name,
-    }));
+    const children = (selectedWantsParentCategory?.children ?? [])
+      .filter((item) => !wantsCategoryPins.some((pin) => pin.id === item.id))
+      .map((item) => ({
+        value: item.id,
+        label: item.name,
+      }));
     if (children.length === 0) return [];
-    return [{ value: "", label: "Все" }, ...children];
-  }, [selectedWantsParentCategory]);
-  const finalWantsCategoryId = wantsChildCategoryId ?? wantsParentCategoryId;
+    const parentAlreadyPinned = wantsCategoryPins.some(
+      (pin) => pin.id === selectedWantsParentCategory?.id,
+    );
+    return parentAlreadyPinned
+      ? children
+      : [{ value: "__all__", label: "Вся категория" }, ...children];
+  }, [selectedWantsParentCategory, wantsCategoryPins]);
+  const wantsCategoriesAtLimit = wantsCategoryPins.length >= WANTS_CATEGORIES_LIMIT;
   const tagSuggestions = useMemo<TagSuggestionItem[]>(() => {
     const normalizedInput = wantsTagInput.trim().toLowerCase();
     const existingMatches = suggestedTags
@@ -732,9 +750,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           listingCategories,
           listing.category.id,
         );
-        const wantsSelection = listing.wantsCategory
-          ? resolveCategorySelection(itemCategoryTree, listing.wantsCategory.id)
-          : null;
         const nextFormats = listing.serviceFormats.filter(isServiceFormatId);
         const cityLabel = listing.city.regionName
           ? `${listing.city.name}, ${listing.city.regionName}`
@@ -748,11 +763,25 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         );
         setParentCategoryId(categorySelection?.parentId ?? listing.category.id);
         setChildCategoryId(categorySelection?.childId ?? null);
-        setWantsParentCategoryId(wantsSelection?.parentId ?? null);
-        setWantsChildCategoryId(wantsSelection?.childId ?? null);
+        setWantsParentCategoryId(null);
+        setWantsChildCategoryId(null);
+        setWantsCategoryPins(
+          (listing.wantsCategories?.length
+            ? listing.wantsCategories
+            : listing.wantsCategory
+              ? [listing.wantsCategory]
+              : []
+          ).map((category) => ({
+            id: category.id,
+            label: category.name,
+          })),
+        );
         setWantsTags(listing.wantsTags);
         setExchangeEnabled(
-          listing.wantsTags.length > 0 || Boolean(listing.wantsCategory) || Boolean(listing.wantsText),
+          listing.wantsTags.length > 0 ||
+            Boolean(listing.wantsCategory) ||
+            Boolean(listing.wantsCategories?.length) ||
+            Boolean(listing.wantsText),
         );
         setCityId(listing.city.id);
         setDraftCityLabel(cityLabel);
@@ -1098,6 +1127,60 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     setWantsTagInput("");
   };
 
+  const addWantsCategoryPin = (id: string, label: string) => {
+    setWantsCategoryPins((current) => {
+      if (current.length >= WANTS_CATEGORIES_LIMIT) return current;
+      if (current.some((pin) => pin.id === id)) return current;
+      return [...current, { id, label }];
+    });
+    setWantsParentCategoryId(null);
+    setWantsChildCategoryId(null);
+    setWantsCategorySelectKey((current) => current + 1);
+  };
+
+  const removeWantsCategoryPin = (id: string) => {
+    setWantsCategoryPins((current) => current.filter((pin) => pin.id !== id));
+  };
+
+  const handleWantsParentCategoryChange = (value: string) => {
+    if (!value) {
+      setWantsParentCategoryId(null);
+      setWantsChildCategoryId(null);
+      return;
+    }
+
+    const parent = wantsCategoryTree.find((item) => item.id === value);
+    if (!parent) return;
+
+    const children = parent.children ?? [];
+    if (children.length === 0) {
+      addWantsCategoryPin(parent.id, parent.name);
+      return;
+    }
+
+    setWantsParentCategoryId(value);
+    setWantsChildCategoryId(null);
+  };
+
+  const handleWantsChildCategoryChange = (value: string) => {
+    if (!selectedWantsParentCategory) return;
+
+    if (value === "__all__") {
+      addWantsCategoryPin(selectedWantsParentCategory.id, selectedWantsParentCategory.name);
+      return;
+    }
+
+    if (!value) {
+      setWantsChildCategoryId(null);
+      return;
+    }
+
+    const child = selectedWantsParentCategory.children?.find((item) => item.id === value);
+    if (child) {
+      addWantsCategoryPin(child.id, child.name);
+    }
+  };
+
   const handleWantsTagKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" || event.key === ",") {
       event.preventDefault();
@@ -1194,8 +1277,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         uploadPhotos(docPhotos, "document"),
       ]);
 
-      const wantsCategoryId =
-        exchangeEnabled && !isFree ? (finalWantsCategoryId ?? null) : null;
+      const wantsCategoryIds =
+        exchangeEnabled && !isFree ? wantsCategoryPins.map((pin) => pin.id) : [];
       const wantsPayloadTags = exchangeEnabled && !isFree ? wantsTags : [];
       const estimatedPrice = priceDigits ? Number(priceDigits) : null;
 
@@ -1205,7 +1288,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         title: title.trim(),
         description: description.trim(),
         categoryId,
-        wantsCategoryId: wantsCategoryId ?? undefined,
+        wantsCategoryIds,
+        wantsCategoryId: wantsCategoryIds[0] ?? null,
         cityId: selectedCityId,
         condition: listingKind === "item" ? condition ?? undefined : undefined,
         estimatedPrice: estimatedPrice ?? undefined,
@@ -1223,7 +1307,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
         await updateListing(listingId, {
           ...payload,
-          wantsCategoryId,
           estimatedPrice,
         });
 
@@ -1692,7 +1775,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             <div className="min-w-0">
               <h3 className={SECTION_TITLE_CLASS}>Желаемый обмен</h3>
               <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
-                Включите, чтобы выбрать желаемое предложение
+                Включите, чтобы указать, что хотите получить взамен
               </p>
             </div>
             <div className="create-listing-switch-slot">
@@ -1705,41 +1788,69 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
               <div className="create-listing-exchange-panel__content mt-6 grid gap-4">
                 <div className="grid gap-2">
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
-                    Выберите категорию, которую хотите получить
+                    Выберите категории вещей или услуг, которые хотите получить взамен (до{" "}
+                    {WANTS_CATEGORIES_LIMIT}). Можно указать категорию целиком или уточнить
+                    подкатегорию
                   </p>
+                  {wantsCategoryPins.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {wantsCategoryPins.map((pin) => (
+                        <span
+                          key={pin.id}
+                          className="inline-flex items-center gap-1.5 rounded-[999px] border border-[#CACACA] bg-white px-3.5 py-1.5 text-[14px] leading-[120%] text-[#1A1A1A]"
+                        >
+                          {pin.label}
+                          <button
+                            type="button"
+                            onClick={() => removeWantsCategoryPin(pin.id)}
+                            className="text-[17px] leading-none text-[#626262] hover:text-[#1A1A1A]"
+                            aria-label={`Удалить категорию ${pin.label}`}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                   <SelectField
+                    key={`wants-parent-${wantsCategorySelectKey}`}
                     value={wantsParentCategoryId ?? ""}
-                    onChange={(value) => {
-                      setWantsParentCategoryId(value || null);
-                      setWantsChildCategoryId(null);
-                    }}
+                    onChange={handleWantsParentCategoryChange}
                     options={wantsParentCategoryOptions}
-                    placeholder="Выберите нужную категорию"
+                    placeholder={
+                      wantsCategoriesAtLimit
+                        ? `Достигнут лимит ${WANTS_CATEGORIES_LIMIT}`
+                        : "Например: Электроника, Одежда, Услуги"
+                    }
                     variant="field"
                     className="create-listing-exchange-select"
                     searchable={false}
                     allowCustomValue={false}
+                    disabled={wantsCategoriesAtLimit}
                     aria-label="Желаемая категория"
                   />
                   <div
                     className={`create-listing-subcategory-panel${
-                      wantsChildCategoryOptions.length > 0 ? " is-open" : ""
+                      !wantsCategoriesAtLimit && wantsChildCategoryOptions.length > 0
+                        ? " is-open"
+                        : ""
                     }`}
                   >
                     <div className="create-listing-subcategory-panel__inner">
                       <div className="create-listing-subcategory-panel__content mt-2">
                         <SelectField
+                          key={`wants-child-${wantsCategorySelectKey}-${wantsParentCategoryId ?? "none"}`}
                           value={wantsChildCategoryId ?? ""}
-                          onChange={(value) => {
-                            setWantsChildCategoryId(value || null);
-                          }}
+                          onChange={handleWantsChildCategoryChange}
                           options={wantsChildCategoryOptions}
-                          placeholder="Уточните подкатегорию (необязательно)"
+                          placeholder="Уточните подкатегорию или оставьте всю категорию"
                           variant="field"
                           className="create-listing-exchange-select"
                           searchable={false}
                           allowCustomValue={false}
-                          disabled={wantsChildCategoryOptions.length === 0}
+                          disabled={
+                            wantsCategoriesAtLimit || wantsChildCategoryOptions.length === 0
+                          }
                           aria-label="Желаемая подкатегория"
                         />
                       </div>
@@ -1748,7 +1859,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                 </div>
                 <div className="grid gap-2">
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
-                    Создайте тег, либо выберите существующий, просто начните писать (до 10 тегов)
+                    Укажите вещи или услуги, которые хотите получить взамен (до {WANTS_TAGS_LIMIT}).
+                    Начните вводить название — можно выбрать из подсказок или добавить своё
                   </p>
                   <div className="grid gap-2">
                     {wantsTags.length > 0 ? (
@@ -1788,8 +1900,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                         }}
                         placeholder={
                           wantsTags.length >= WANTS_TAGS_LIMIT
-                            ? "Достигнут лимит 10 тегов"
-                            : "Например: iPhone, MacBook, велосипед"
+                            ? `Достигнут лимит ${WANTS_TAGS_LIMIT}`
+                            : "Например: iPhone, MacBook, ремонт ноутбука"
                         }
                         disabled={wantsTags.length >= WANTS_TAGS_LIMIT}
                         className={`${EXCHANGE_FIELD_INPUT_CLASS} mb-2`}
@@ -1903,26 +2015,35 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             type="button"
             onClick={validateAndPublish}
             disabled={isSubmitting}
-            className="flex h-[63px] flex-1 items-center justify-center rounded-[21px] bg-[#8E8BED] px-[74px] py-4 text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-white"
+            className="flex h-[63px] flex-1 items-center justify-center rounded-[21px] bg-[#8E8BED] px-[74px] py-4 text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-white disabled:opacity-70"
           >
-            {isSubmitting
-              ? "Загрузка фото..."
-              : isEditMode
-                ? listingStatus === "active"
-                  ? "Сохранить изменения"
-                  : "Сохранить и опубликовать"
-                : "Опубликовать объявление"}
+            {isEditMode
+              ? listingStatus === "active"
+                ? "Сохранить изменения"
+                : "Сохранить и опубликовать"
+              : "Опубликовать объявление"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
-            className="box-border flex h-[63px] w-[323px] shrink-0 items-center justify-center rounded-[21px] border border-[#CACACA] bg-white px-[74px] py-4 text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A]"
+            disabled={isSubmitting}
+            className="box-border flex h-[63px] w-[323px] shrink-0 items-center justify-center rounded-[21px] border border-[#CACACA] bg-white px-[74px] py-4 text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A] disabled:opacity-50"
           >
             Отмена
           </button>
         </div>
       </div>
 
+      <ListingPublishingOverlay
+        open={isSubmitting}
+        title={
+          isEditMode
+            ? listingStatus === "active"
+              ? "Сохраняем изменения…"
+              : "Публикуем объявление…"
+            : "Публикуем объявление…"
+        }
+      />
       <ListingPublishedModal open={isPublishedModalOpen} />
     </main>
   );

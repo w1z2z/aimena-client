@@ -3,25 +3,38 @@ import type { ApiListingCard, ApiListingDetail } from "@/shared/api/listings";
 import { mapApiConditionToLabel } from "./conditions";
 import type { ListingCardData, ListingWantCategory } from "./types";
 
-type WantsSource = Pick<ApiListingCard, "wantsText" | "wantsTags" | "wantsCategory">;
+type WantsSource = Pick<
+  ApiListingCard,
+  "wantsText" | "wantsTags" | "wantsCategory" | "wantsCategories"
+>;
 
 /**
- * «Обмен на:» — категория желаемого обмена из `wantsCategory`.
+ * «Обмен на:» — категории желаемого обмена.
  * Если выбрана подкатегория — только она (без родителя).
  * Теги вещей — в пилюлях внизу (`buildWantsPreview`), не здесь.
  */
 export function buildWantCategories(listing: WantsSource): ListingWantCategory[] {
-  const wants = listing.wantsCategory;
-  const name = wants?.name?.trim();
-  if (!wants?.id || !name) return [];
+  const fromList = listing.wantsCategories?.length
+    ? listing.wantsCategories
+    : listing.wantsCategory
+      ? [listing.wantsCategory]
+      : [];
 
-  return [
-    {
+  const result: ListingWantCategory[] = [];
+  const seen = new Set<string>();
+
+  for (const wants of fromList) {
+    const name = wants?.name?.trim();
+    if (!wants?.id || !name || seen.has(wants.id)) continue;
+    seen.add(wants.id);
+    result.push({
       id: wants.id,
       name,
       parentId: wants.parent?.id ?? null,
-    },
-  ];
+    });
+  }
+
+  return result;
 }
 
 /**

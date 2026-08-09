@@ -69,7 +69,8 @@ export const MAX_DOCUMENT_PDF_BYTES = 10 * 1024 * 1024;
 export const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/jpg,image/webp";
 export const ACCEPTED_DOCUMENT_TYPES =
   "image/png,image/jpeg,image/jpg,image/webp,application/pdf";
-export const WANTS_TAGS_LIMIT = 10;
+export const WANTS_TAGS_LIMIT = 5;
+export const WANTS_CATEGORIES_LIMIT = 3;
 
 export const FIELD_ERROR_CLASS = "m-0 mt-1 text-[14px] font-normal leading-[170%] text-[#FF2056]";
 export const CITY_FETCH_DEBOUNCE_MS = 250;
