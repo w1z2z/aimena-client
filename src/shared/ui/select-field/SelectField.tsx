@@ -114,6 +114,7 @@ export function SelectField({
   const [listStyle, setListStyle] = useState<CSSProperties>({ visibility: "hidden" });
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listId = useId();
   const showClear = clearable && Boolean(safeValue) && !isDisabled;
@@ -205,7 +206,13 @@ export function SelectField({
 
     const handlePointerDown = (event: globalThis.MouseEvent) => {
       const target = event.target as Node;
-      if (rootRef.current?.contains(target) || listRef.current?.contains(target)) return;
+      if (
+        rootRef.current?.contains(target) ||
+        listRootRef.current?.contains(target) ||
+        listRef.current?.contains(target)
+      ) {
+        return;
+      }
       close();
     };
 
@@ -357,46 +364,51 @@ export function SelectField({
   };
 
   const list = isOpen ? (
-    <ul
-      ref={listRef}
-      id={listId}
-      role="listbox"
-      className="site-select__list"
+    <div
+      ref={listRootRef}
+      className={`site-select__list${className ? ` ${className}` : ""}`}
       style={listStyle}
       onWheel={(event) => event.stopPropagation()}
-      onScroll={handleListScroll}
     >
-      {visibleOptions.length > 0 ? (
-        visibleOptions.map((option, index) => (
-          <li key={option.value} role="presentation">
-            {option.disabled ? (
-              <span
-                className={`site-select__group-label${index > 0 ? " site-select__group-label--with-divider" : ""}`}
-              >
-                {option.label}
-              </span>
-            ) : (
-              <button
-                type="button"
-                role="option"
-                aria-selected={option.value === safeValue}
-                className={`site-select__option${option.value === safeValue ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
-                data-option-value={option.value}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => handleOptionPick(option)}
-                onMouseEnter={() => setActiveOptionValue(option.value)}
-              >
-                {option.label}
-              </button>
-            )}
+      <ul
+        ref={listRef}
+        id={listId}
+        role="listbox"
+        className="site-select__list-inner"
+        onScroll={handleListScroll}
+      >
+        {visibleOptions.length > 0 ? (
+          visibleOptions.map((option, index) => (
+            <li key={option.value} role="presentation">
+              {option.disabled ? (
+                <span
+                  className={`site-select__group-label${index > 0 ? " site-select__group-label--with-divider" : ""}`}
+                >
+                  {option.label}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={option.value === safeValue}
+                  className={`site-select__option${option.value === safeValue ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
+                  data-option-value={option.value}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleOptionPick(option)}
+                  onMouseEnter={() => setActiveOptionValue(option.value)}
+                >
+                  {option.label}
+                </button>
+              )}
+            </li>
+          ))
+        ) : (
+          <li className="site-select__empty" role="presentation">
+            Ничего не найдено
           </li>
-        ))
-      ) : (
-        <li className="site-select__empty" role="presentation">
-          Ничего не найдено
-        </li>
-      )}
-    </ul>
+        )}
+      </ul>
+    </div>
   ) : null;
 
   return (

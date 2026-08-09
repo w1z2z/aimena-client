@@ -75,8 +75,8 @@
 }
 
 .create-listing-city-select.site-select--field .site-select__input {
-  height: 44px;
-  border: 0.5px solid #c4d86f;
+  height: 48px;
+  border: 0.5px solid #cacaca;
   border-radius: 18px;
   padding: 0 40px 0 12px;
   font-size: 14px;
@@ -84,6 +84,7 @@
   line-height: 170%;
   letter-spacing: normal;
   color: #1a1a1a;
+  background: #ffffff;
 }
 
 .create-listing-city-select.site-select--field .site-select__input::placeholder {
@@ -95,7 +96,7 @@
 
 .create-listing-city-select.site-select--field .site-select__input:focus,
 .create-listing-city-select.site-select--field.is-open .site-select__input {
-  border-color: #c4d86f;
+  border-color: #8e8bed;
   box-shadow: none;
 }
 
@@ -123,7 +124,7 @@
   border: 0.5px solid #cacaca;
   border-radius: 18px;
   padding: 8px 40px 8px 12px;
-  background: #f2f4f7;
+  background: #ffffff;
   font-size: 14px;
   font-weight: 400;
   line-height: 170%;
@@ -140,8 +141,93 @@
 
 .create-listing-exchange-select.site-select--field .site-select__input:focus,
 .create-listing-exchange-select.site-select--field.is-open .site-select__input {
-  border-color: #cacaca;
+  border-color: #8e8bed;
   box-shadow: none;
+}
+
+/* Create/edit listing dropdown list — Figma dropdown-list-category */
+.create-listing-city-select.site-select__list,
+.create-listing-exchange-select.site-select__list {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 0.5px solid #cacaca;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.create-listing-city-select.site-select__list .site-select__list-inner,
+.create-listing-exchange-select.site-select__list .site-select__list-inner {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  box-sizing: border-box;
+  padding: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #8e8bed #f2f4f7;
+}
+
+.create-listing-city-select.site-select__list .site-select__list-inner::-webkit-scrollbar,
+.create-listing-exchange-select.site-select__list .site-select__list-inner::-webkit-scrollbar {
+  width: 5px;
+}
+
+.create-listing-city-select.site-select__list .site-select__list-inner::-webkit-scrollbar-track,
+.create-listing-exchange-select.site-select__list .site-select__list-inner::-webkit-scrollbar-track {
+  margin: 4px 0;
+  background: #f2f4f7;
+  border-radius: 31px;
+}
+
+.create-listing-city-select.site-select__list .site-select__list-inner::-webkit-scrollbar-thumb,
+.create-listing-exchange-select.site-select__list .site-select__list-inner::-webkit-scrollbar-thumb {
+  background: #8e8bed;
+  border-radius: 31px;
+}
+
+.create-listing-city-select.site-select__list .site-select__list-inner::-webkit-scrollbar-button,
+.create-listing-exchange-select.site-select__list .site-select__list-inner::-webkit-scrollbar-button {
+  display: none;
+}
+
+.create-listing-city-select.site-select__list .site-select__option,
+.create-listing-exchange-select.site-select__list .site-select__option {
+  box-sizing: border-box;
+  min-height: 34px;
+  margin: 0;
+  padding: 0 12px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: normal;
+}
+
+.create-listing-city-select.site-select__list .site-select__option:hover,
+.create-listing-city-select.site-select__list .site-select__option.is-active,
+.create-listing-city-select.site-select__list .site-select__option.is-selected,
+.create-listing-exchange-select.site-select__list .site-select__option:hover,
+.create-listing-exchange-select.site-select__list .site-select__option.is-active,
+.create-listing-exchange-select.site-select__list .site-select__option.is-selected {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+  color: #1a1a1a;
+  font-weight: 400;
+}
+
+.create-listing-city-select.site-select__list .site-select__empty,
+.create-listing-exchange-select.site-select__list .site-select__empty {
+  padding: 10px 12px;
+  color: #626262;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 .site-select--hero .site-select__input {
@@ -237,12 +323,21 @@
 
 .site-select__list {
   z-index: 3000;
+  box-sizing: border-box;
   margin: 0;
   padding: 4px 0;
   border: 1px solid #1a1a1a;
   border-radius: 10px;
   background: #ffffff;
   box-shadow: 0 8px 24px rgb(15 23 42 / 14%);
+  overflow: hidden;
+}
+
+.site-select__list-inner {
+  box-sizing: border-box;
+  max-height: inherit;
+  margin: 0;
+  padding: 0;
   list-style: none;
   overflow-x: hidden;
   overflow-y: auto;

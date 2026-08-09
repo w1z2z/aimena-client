@@ -45,6 +45,9 @@ export type ApiListingImage = {
   mediaId: string;
   kind: "item" | "document";
   url: string;
+  thumbUrl?: string;
+  fullUrl?: string;
+  mime?: string;
   sortOrder: number;
   isCover: boolean;
 };

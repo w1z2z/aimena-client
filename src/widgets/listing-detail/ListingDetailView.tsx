@@ -44,7 +44,11 @@ export function ListingDetailView() {
         if (a.isCover !== b.isCover) return a.isCover ? -1 : 1;
         return a.sortOrder - b.sortOrder;
       })
-      .map((image) => ({ id: image.id, url: image.url }));
+      .map((image) => ({
+        id: image.id,
+        url: image.thumbUrl ?? image.url,
+        fullUrl: image.fullUrl ?? image.url,
+      }));
   }, [listing]);
 
   const categoryBreadcrumb = useMemo(() => {

@@ -6,8 +6,9 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type Mou
 
 import { useAuth } from "@/features/auth";
 import { deleteAvatar, updateMe, uploadAvatar } from "@/shared/api/auth";
-import { ApiError } from "@/shared/api/http";
+import { ApiError, ensureFreshAccessToken } from "@/shared/api/http";
 import { mapBackendUserToAuthUser } from "@/shared/api/mappers";
+import { compressAvatarForUpload } from "@/shared/lib/compress-image";
 import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
 import { DeleteIcon, LogoutIcon } from "@/shared/ui/icons";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
@@ -162,7 +163,9 @@ export function ProfileSettingsPanel() {
     try {
       if (pendingAvatar) {
         setIsUploadingAvatar(true);
-        const avatarResponse = await uploadAvatar(accessToken, pendingAvatar);
+        const freshToken = await ensureFreshAccessToken();
+        const compressed = await compressAvatarForUpload(pendingAvatar);
+        const avatarResponse = await uploadAvatar(freshToken, compressed);
         applyUser(mapBackendUserToAuthUser(avatarResponse.user));
         if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
         setPendingAvatar(null);

@@ -12,6 +12,7 @@ import { ChevronIcon, HeartIcon } from "@/shared/ui/icons";
 type GalleryImage = {
   id: string;
   url: string;
+  fullUrl?: string;
 };
 
 type ListingGalleryProps = {
@@ -169,7 +170,7 @@ export function ListingGallery({
               onClick={(event) => event.stopPropagation()}
             >
               <img
-                src={active.url}
+                src={active.fullUrl ?? active.url}
                 alt={title}
                 className="listing-detail-lightbox__image"
               />

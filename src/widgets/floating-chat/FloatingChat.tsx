@@ -12,7 +12,6 @@ type ChatPreview = {
   name: string;
   preview: string;
   time: string;
-  hasUnread?: boolean;
   avatarUrl: string;
 };
 
@@ -25,7 +24,6 @@ const chatPreviews: ChatPreview[] = [
     name: "Иван Петросенков",
     preview: "Спасибо все удачно...",
     time: "Вчера",
-    hasUnread: true,
     avatarUrl: CHAT_AVATAR_SRC,
   },
   {
@@ -33,7 +31,6 @@ const chatPreviews: ChatPreview[] = [
     name: "Иван Петросенков",
     preview: "Спасибо все удачно...",
     time: "Вчера",
-    hasUnread: true,
     avatarUrl: CHAT_AVATAR_SRC,
   },
   {
@@ -41,7 +38,6 @@ const chatPreviews: ChatPreview[] = [
     name: "Иван Петросенков",
     preview: "Спасибо все удачно...",
     time: "Вчера",
-    hasUnread: true,
     avatarUrl: CHAT_AVATAR_SRC,
   },
   {
@@ -49,7 +45,6 @@ const chatPreviews: ChatPreview[] = [
     name: "Иван Петросенков",
     preview: "Спасибо все удачно...",
     time: "Вчера",
-    hasUnread: true,
     avatarUrl: CHAT_AVATAR_SRC,
   },
   {
@@ -57,7 +52,6 @@ const chatPreviews: ChatPreview[] = [
     name: "Иван Петросенков",
     preview: "Спасибо все удачно...",
     time: "Вчера",
-    hasUnread: true,
     avatarUrl: CHAT_AVATAR_SRC,
   },
 ];
@@ -128,33 +122,25 @@ function ChatPanelRow({
       className="flex h-[49px] w-[255px] shrink-0 items-end justify-between transition hover:opacity-80"
     >
       <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
-        <span className="relative size-[49px] shrink-0">
-          <span className="relative block size-[49px] overflow-hidden rounded-[15px] bg-[#D9D9D9]">
-            <img
-              src={chat.avatarUrl}
-              alt=""
-              className="absolute left-[-31.06%] top-0 h-full w-[177.78%] max-w-none"
-            />
-          </span>
-          {chat.hasUnread ? (
-            <span
-              aria-hidden
-              className="absolute right-0 top-0 size-[4px] rounded-full bg-[#FF2056]"
-            />
-          ) : null}
+        <span className="relative size-[49px] shrink-0 overflow-hidden rounded-[15px] bg-[#D9D9D9]">
+          <img
+            src={chat.avatarUrl}
+            alt=""
+            className="absolute left-[-31.06%] top-0 h-full w-[177.78%] max-w-none"
+          />
         </span>
 
-        <span className="flex h-[49px] w-[164px] min-w-0 flex-col items-start gap-[12px] text-[#1A1A1A]">
-          <span className="h-[15px] w-[153px] truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+        <span className="flex w-[164px] min-w-0 flex-col items-start gap-[12px] text-[#1A1A1A]">
+          <span className="w-[153px] truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em]">
             {chat.name}
           </span>
-          <span className="w-[153px] truncate text-[14px] font-normal leading-[1.7] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+          <span className="w-[153px] truncate text-[14px] font-normal leading-[1.2]">
             {chat.preview}
           </span>
         </span>
       </span>
 
-      <span className="flex h-[13px] w-[33px] shrink-0 items-center justify-end text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#1A1A1A] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+      <span className="shrink-0 text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#1A1A1A]">
         {chat.time}
       </span>
     </Link>

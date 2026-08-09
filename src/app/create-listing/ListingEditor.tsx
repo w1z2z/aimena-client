@@ -15,8 +15,9 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useAuthGate } from "@/features/auth";
 import { getCategories, getCities, type ApiCategoryNode, type ApiCity } from "@/shared/api/catalog";
-import { ApiError } from "@/shared/api/http";
+import { ApiError, ensureFreshAccessToken } from "@/shared/api/http";
 import { uploadListingFileViaBackend } from "@/shared/api/media";
+import { compressListingImageForUpload } from "@/shared/lib/compress-image";
 import {
   createListingDraft,
   getListing,
@@ -40,6 +41,7 @@ import { Switch } from "@/shared/ui/switch/Switch";
 import { ListingPublishedModal } from "./ListingPublishedModal";
 
 import {
+  ACCEPTED_DOCUMENT_TYPES,
   ACCEPTED_IMAGE_TYPES,
   CITY_FETCH_DEBOUNCE_MS,
   CONDITION_OPTIONS,
@@ -51,6 +53,7 @@ import {
   ITEM_PHOTO_MAX_ROWS,
   ITEM_PHOTO_SLOTS,
   ITEM_PHOTOS_PER_ROW,
+  MAX_DOCUMENT_PDF_BYTES,
   MAX_PHOTO_BYTES,
   SERVICE_FORMAT_OPTIONS,
   SERVICE_WORK_LEVEL_OPTIONS,
@@ -74,6 +77,8 @@ type PhotoItem = {
   previewUrl: string;
   file: File | null;
   mediaId?: string;
+  mime?: string;
+  isPdf?: boolean;
 };
 
 type TagSuggestionItem = {
@@ -103,14 +108,130 @@ function mergeCitiesById(current: ApiCity[], incoming: ApiCity[]): ApiCity[] {
   return merged;
 }
 
-function createPhotoItems(files: FileList | File[]): PhotoItem[] {
-  return Array.from(files)
-    .filter((file) => file.type.startsWith("image/") && file.size <= MAX_PHOTO_BYTES)
-    .map((file) => ({
+const ACCEPTED_IMAGE_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+]);
+
+const PDF_MIME = "application/pdf";
+
+function isAcceptedImageFile(file: File) {
+  return ACCEPTED_IMAGE_MIME.has(file.type.toLowerCase());
+}
+
+function isPdfFile(file: File) {
+  return file.type.toLowerCase() === PDF_MIME || file.name.toLowerCase().endsWith(".pdf");
+}
+
+function createPhotoItems(files: File[]): PhotoItem[] {
+  return files.map((file) => {
+    const pdf = isPdfFile(file);
+    return {
       id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
-      previewUrl: URL.createObjectURL(file),
+      previewUrl: pdf ? "" : URL.createObjectURL(file),
       file,
-    }));
+      mime: file.type,
+      isPdf: pdf,
+    };
+  });
+}
+
+function partitionPickedImages(files: FileList | File[]) {
+  const accepted: File[] = [];
+  const tooLarge: string[] = [];
+  const badType: string[] = [];
+
+  for (const file of Array.from(files)) {
+    if (!isAcceptedImageFile(file)) {
+      badType.push(file.name);
+      continue;
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      tooLarge.push(file.name);
+      continue;
+    }
+    accepted.push(file);
+  }
+
+  return { accepted, tooLarge, badType };
+}
+
+function partitionPickedDocuments(files: FileList | File[]) {
+  const accepted: File[] = [];
+  const tooLarge: string[] = [];
+  const badType: string[] = [];
+
+  for (const file of Array.from(files)) {
+    const pdf = isPdfFile(file);
+    if (!pdf && !isAcceptedImageFile(file)) {
+      badType.push(file.name);
+      continue;
+    }
+    const maxBytes = pdf ? MAX_DOCUMENT_PDF_BYTES : MAX_PHOTO_BYTES;
+    if (file.size > maxBytes) {
+      tooLarge.push(file.name);
+      continue;
+    }
+    accepted.push(file);
+  }
+
+  return { accepted, tooLarge, badType };
+}
+
+function buildPhotoPickError(
+  tooLarge: string[],
+  badType: string[],
+  options?: { allowPdf?: boolean },
+): string | null {
+  const parts: string[] = [];
+  const formatHint = options?.allowPdf
+    ? "PNG, JPG, WebP или PDF"
+    : "PNG, JPG или WebP";
+  const sizeHint = options?.allowPdf ? "5 МБ (фото) / 10 МБ (PDF)" : "5 МБ";
+
+  if (tooLarge.length === 1) {
+    parts.push(
+      `«${tooLarge[0]}» слишком большой — лимит ${sizeHint}`,
+    );
+  } else if (tooLarge.length > 1) {
+    parts.push(`${tooLarge.length} файла превышают лимит ${sizeHint}`);
+  }
+
+  if (badType.length === 1) {
+    parts.push(`«${badType[0]}» — нужен ${formatHint}`);
+  } else if (badType.length > 1) {
+    parts.push(`${badType.length} файла неподходящего формата (${formatHint})`);
+  }
+
+  return parts.length > 0 ? `${parts.join(". ")}.` : null;
+}
+
+const UPLOAD_CONCURRENCY = 4;
+
+async function mapPool<T, R>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  if (items.length === 0) return [];
+
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+
+  const worker = async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await mapper(items[index], index);
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, () => worker()),
+  );
+  return results;
 }
 
 function photosFromListingImages(
@@ -121,12 +242,18 @@ function photosFromListingImages(
     .filter((image) => image.kind === kind)
     .slice()
     .sort((left, right) => left.sortOrder - right.sortOrder)
-    .map((image) => ({
-      id: image.id,
-      previewUrl: image.url,
-      file: null,
-      mediaId: image.mediaId,
-    }));
+    .map((image) => {
+      const mime = image.mime ?? "";
+      const isPdf = mime === PDF_MIME || image.url.toLowerCase().endsWith(".pdf");
+      return {
+        id: image.id,
+        previewUrl: isPdf ? "" : (image.thumbUrl ?? image.url),
+        file: null,
+        mediaId: image.mediaId,
+        mime,
+        isPdf,
+      };
+    });
 }
 
 function resolveCategorySelection(
@@ -214,6 +341,21 @@ function PlaceholderImage() {
   );
 }
 
+function PdfPlaceholder({ label }: { label?: string }) {
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#EEF0F4] px-2 text-center">
+      <span className="rounded-[8px] bg-white px-2 py-1 text-[11px] font-bold tracking-wide text-[#FF2056]">
+        PDF
+      </span>
+      {label ? (
+        <span className="line-clamp-2 text-[11px] font-medium leading-[130%] text-[#3D3D3D]">
+          {label}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 function PhotoCard({
   previewUrl,
   onDelete,
@@ -225,6 +367,8 @@ function PhotoCard({
   isDragging = false,
   dropIndicator = null,
   showPrimaryBadge = false,
+  isPdf = false,
+  fileName,
 }: {
   previewUrl?: string;
   onDelete: () => void;
@@ -236,6 +380,8 @@ function PhotoCard({
   isDragging?: boolean;
   dropIndicator?: "before" | "after" | null;
   showPrimaryBadge?: boolean;
+  isPdf?: boolean;
+  fileName?: string;
 }) {
   return (
     <div
@@ -269,12 +415,14 @@ function PhotoCard({
         <button
           type="button"
           onClick={onDelete}
-          aria-label="Удалить фото"
-          className="absolute right-[10px] top-[10px] z-[1] flex items-center justify-center"
+          aria-label={isPdf ? "Удалить документ" : "Удалить фото"}
+          className="absolute right-[10px] top-[10px] z-[1] flex size-[28px] items-center justify-center rounded-full bg-[#F2F4F7] text-[#626262] transition hover:brightness-95"
         >
-          <DeleteIcon className="h-[26px] w-[24px] text-white" />
+          <DeleteIcon />
         </button>
-        {previewUrl ? (
+        {isPdf ? (
+          <PdfPlaceholder label={fileName} />
+        ) : previewUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={previewUrl} alt="" draggable={false} className="h-full w-full cursor-grab object-cover" />
         ) : (
@@ -790,15 +938,28 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
     const remaining = ITEM_PHOTO_SLOTS - itemPhotos.length;
     if (remaining <= 0) {
+      setErrors((current) => ({
+        ...current,
+        photos: `Можно добавить не больше ${ITEM_PHOTO_SLOTS} фото`,
+      }));
       event.target.value = "";
       return;
     }
 
-    const nextPhotos = createPhotoItems(Array.from(files)).slice(0, remaining);
+    const { accepted, tooLarge, badType } = partitionPickedImages(files);
+    const nextPhotos = createPhotoItems(accepted.slice(0, remaining));
+    const pickError = buildPhotoPickError(tooLarge, badType);
+
     if (nextPhotos.length > 0) {
       setItemPhotos((current) => [...current, ...nextPhotos]);
+    }
+
+    if (pickError) {
+      setErrors((current) => ({ ...current, photos: pickError }));
+    } else if (nextPhotos.length > 0) {
       clearError("photos");
     }
+
     event.target.value = "";
   };
 
@@ -808,14 +969,28 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
     const remaining = DOCUMENT_PHOTO_SLOTS - docPhotos.length;
     if (remaining <= 0) {
+      setErrors((current) => ({
+        ...current,
+        documents: `Можно добавить не больше ${DOCUMENT_PHOTO_SLOTS} фото`,
+      }));
       event.target.value = "";
       return;
     }
 
-    const nextPhotos = createPhotoItems(Array.from(files)).slice(0, remaining);
+    const { accepted, tooLarge, badType } = partitionPickedDocuments(files);
+    const nextPhotos = createPhotoItems(accepted.slice(0, remaining));
+    const pickError = buildPhotoPickError(tooLarge, badType, { allowPdf: true });
+
     if (nextPhotos.length > 0) {
       setDocPhotos((current) => [...current, ...nextPhotos]);
     }
+
+    if (pickError) {
+      setErrors((current) => ({ ...current, documents: pickError }));
+    } else if (nextPhotos.length > 0) {
+      clearError("documents");
+    }
+
     event.target.value = "";
   };
 
@@ -953,20 +1128,23 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     clearError("city");
   };
 
-  const uploadPhotos = async (photos: PhotoItem[]) => {
-    const uploadIds: string[] = [];
-    for (const photo of photos) {
+  const uploadPhotos = async (
+    photos: PhotoItem[],
+    role: "item" | "document",
+  ) => {
+    return mapPool(photos, UPLOAD_CONCURRENCY, async (photo) => {
       if (photo.mediaId && !photo.file) {
-        uploadIds.push(photo.mediaId);
-        continue;
+        return photo.mediaId;
       }
       if (!photo.file) {
-        throw new Error("Не удалось подготовить фото для загрузки");
+        throw new Error("Не удалось подготовить файл для загрузки");
       }
-      const uploaded = await uploadListingFileViaBackend(photo.file);
-      uploadIds.push(uploaded.uploadId);
-    }
-    return uploadIds;
+      const prepared = photo.isPdf
+        ? photo.file
+        : await compressListingImageForUpload(photo.file);
+      const uploaded = await uploadListingFileViaBackend(prepared, role);
+      return uploaded.uploadId;
+    });
   };
 
   const validateAndPublish = async () => {
@@ -1009,9 +1187,11 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     setSubmitError(null);
     setIsSubmitting(true);
     try {
+      await ensureFreshAccessToken();
+
       const [itemUploadIds, documentUploadIds] = await Promise.all([
-        uploadPhotos(itemPhotos),
-        uploadPhotos(docPhotos),
+        uploadPhotos(itemPhotos, "item"),
+        uploadPhotos(docPhotos, "document"),
       ]);
 
       const wantsCategoryId =
@@ -1238,7 +1418,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                 <button
                   type="button"
                   onClick={handleInsertCityFromProfile}
-                  className="h-11 shrink-0 whitespace-nowrap rounded-[18px] border-[0.5px] border-[#8E8BED] bg-[#8E8BED] px-5 text-[14px] font-semibold text-white"
+                  className="h-12 shrink-0 whitespace-nowrap rounded-[18px] border-[0.5px] border-[#8E8BED] bg-[#8E8BED] px-5 text-[14px] font-semibold text-white"
                 >
                   Вставить из профиля
                 </button>
@@ -1251,7 +1431,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         <section id={fieldAnchorId("photos")} className="rounded-[16px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
           <h3 className={SECTION_TITLE_CLASS}>Добавить фото (до 10 фото)*</h3>
           <p className={`mt-4 ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить фото</p>
-          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>PNG, JPG до 5 МБ</p>
+          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>PNG, JPG, WebP до 5 МБ каждое</p>
           <input
             ref={itemPhotosInputRef}
             type="file"
@@ -1643,16 +1823,21 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </div>
         </section>
 
-        <section className="rounded-[16px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+        <section
+          id={fieldAnchorId("documents")}
+          className="rounded-[16px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+        >
           <h3 className={SECTION_TITLE_CLASS}>
-            Добавить фото документов, сертификатов, дипломов (до 5 фото)
+            Добавить документы, сертификаты, дипломы (до 5 файлов)
           </h3>
-          <p className={`mt-4 ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить фото</p>
-          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>PNG, JPG до 5 МБ</p>
+          <p className={`mt-4 ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить файлы</p>
+          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
+            PNG, JPG, WebP до 5 МБ или PDF до 10 МБ
+          </p>
           <input
             ref={docPhotosInputRef}
             type="file"
-            accept={ACCEPTED_IMAGE_TYPES}
+            accept={ACCEPTED_DOCUMENT_TYPES}
             multiple
             className="hidden"
             onChange={handleDocPhotosSelected}
@@ -1666,6 +1851,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     <PhotoCard
                       key={photo.id}
                       previewUrl={photo.previewUrl}
+                      isPdf={Boolean(photo.isPdf)}
+                      fileName={photo.file?.name}
                       onDelete={() => removeDocPhoto(photo.id)}
                       draggable
                       onDragStart={(event) =>
@@ -1702,6 +1889,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
               })}
             </div>
           </div>
+          <FieldError message={errors.documents} />
         </section>
 
         {submitError ? (
@@ -1718,9 +1906,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             className="flex h-[63px] flex-1 items-center justify-center rounded-[21px] bg-[#8E8BED] px-[74px] py-4 text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-white"
           >
             {isSubmitting
-              ? isEditMode
-                ? "Сохранение..."
-                : "Публикация..."
+              ? "Загрузка фото..."
               : isEditMode
                 ? listingStatus === "active"
                   ? "Сохранить изменения"

@@ -13,6 +13,7 @@ export type FieldErrors = {
   serviceWorkLevel?: string;
   serviceFormat?: string;
   photos?: string;
+  documents?: string;
 };
 
 /** Order matches visual top→bottom on the page */
@@ -25,6 +26,7 @@ export const FIELD_SCROLL_ORDER: Array<keyof FieldErrors> = [
   "condition",
   "serviceWorkLevel",
   "serviceFormat",
+  "documents",
 ];
 
 export const HEADER_SCROLL_OFFSET_PX = 72;
@@ -63,7 +65,10 @@ export const ITEM_PHOTOS_PER_ROW = 5;
 export const ITEM_PHOTO_MAX_ROWS = 2;
 export const DOCUMENT_PHOTO_SLOTS = 5;
 export const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+export const MAX_DOCUMENT_PDF_BYTES = 10 * 1024 * 1024;
 export const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/jpg,image/webp";
+export const ACCEPTED_DOCUMENT_TYPES =
+  "image/png,image/jpeg,image/jpg,image/webp,application/pdf";
 export const WANTS_TAGS_LIMIT = 10;
 
 export const FIELD_ERROR_CLASS = "m-0 mt-1 text-[14px] font-normal leading-[170%] text-[#FF2056]";

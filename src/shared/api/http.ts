@@ -184,6 +184,41 @@ export async function refreshAccessToken(
   return refreshInFlight;
 }
 
+const ACCESS_TOKEN_REFRESH_SKEW_MS = 2 * 60 * 1000;
+
+function readJwtExpiryMs(token: string): number | null {
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) return null;
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+    const json = atob(padded);
+    const payload = JSON.parse(json) as { exp?: unknown };
+    if (typeof payload.exp !== "number") return null;
+    return payload.exp * 1000;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Ensures a usable access token before a burst of authenticated requests
+ * (e.g. parallel media uploads), so we don't stampede 401 → refresh.
+ * Refreshes when missing, unreadable, or within 2 minutes of expiry.
+ */
+export async function ensureFreshAccessToken(): Promise<string> {
+  const current = readStoredAccessToken();
+  if (current) {
+    const expiresAt = readJwtExpiryMs(current);
+    if (expiresAt !== null && expiresAt - Date.now() > ACCESS_TOKEN_REFRESH_SKEW_MS) {
+      return current;
+    }
+  }
+
+  const refreshed = await refreshAccessToken();
+  return refreshed.accessToken;
+}
+
 export async function httpRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const {
     method = "GET",
