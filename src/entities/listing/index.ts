@@ -23,6 +23,12 @@ export {
   EXTRA_PAY_LABELS,
   mapApiListingToCard,
 } from "./model/mappers";
+export {
+  mapServiceFormatToLabel,
+  mapServiceWorkLevelToLabel,
+  SERVICE_FORMAT_LABELS,
+  SERVICE_WORK_LEVEL_LABELS,
+} from "./model/service-meta";
 export { ListingCard, type ListingCardProps } from "./ui/ListingCard";
 export { useFreeListings, useListings } from "./hooks/useListings";
 export { useListing, useSimilarListings } from "./hooks/useListing";

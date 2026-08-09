@@ -287,6 +287,13 @@ function isServiceFormatId(value: string): value is ServiceFormatId {
   return SERVICE_FORMAT_OPTIONS.some((option) => option.id === value);
 }
 
+function isServiceWorkLevelId(value: unknown): value is ServiceWorkLevelId {
+  return (
+    typeof value === "string" &&
+    SERVICE_WORK_LEVEL_OPTIONS.some((option) => option.id === value)
+  );
+}
+
 function revokePhotoUrls(photos: PhotoItem[]) {
   for (const photo of photos) {
     if (photo.previewUrl.startsWith("blob:")) {
@@ -750,7 +757,12 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           listingCategories,
           listing.category.id,
         );
-        const nextFormats = listing.serviceFormats.filter(isServiceFormatId);
+        const nextFormats = listing.serviceFormats.filter(isServiceFormatId).slice(0, 1);
+        const nextWorkLevel = isServiceWorkLevelId(listing.serviceWorkLevel)
+          ? listing.serviceWorkLevel
+          : listing.type === "service"
+            ? "specialist"
+            : null;
         const cityLabel = listing.city.regionName
           ? `${listing.city.name}, ${listing.city.regionName}`
           : listing.city.name;
@@ -782,7 +794,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         setCondition(
           listing.type === "item" && isConditionId(listing.condition) ? listing.condition : null,
         );
-        setServiceWorkLevel(listing.type === "service" ? "specialist" : null);
+        setServiceWorkLevel(nextWorkLevel);
         setServiceFormats(nextFormats);
         setExtraPay(
           listing.extraPay === "i_pay" ||
@@ -816,9 +828,9 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   }, [isEditMode, listingId, categoriesReady, itemCategoryTree, serviceCategoryTree, user?.id, isAuthLoading]);
 
   useEffect(() => {
-    if (!isEditMode) return;
+    if (!isEditMode || isAuthLoading) return;
     guardAuth("create-listing");
-  }, [guardAuth, isEditMode]);
+  }, [guardAuth, isEditMode, isAuthLoading]);
 
   useEffect(() => {
     const query = wantsTagInput.trim();
@@ -1240,7 +1252,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       nextErrors.serviceWorkLevel = "Выберите уровень работы";
     }
     if (listingKind === "service" && serviceFormats.length === 0) {
-      nextErrors.serviceFormat = "Выберите хотя бы один формат оказания услуги";
+      nextErrors.serviceFormat = "Выберите формат оказания услуги";
     }
     if (itemPhotos.length < 1) {
       nextErrors.photos =
@@ -1279,6 +1291,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       const payload = {
         type: listingKind,
         serviceFormats: listingKind === "service" ? serviceFormats : undefined,
+        serviceWorkLevel: listingKind === "service" ? serviceWorkLevel ?? undefined : undefined,
         title: title.trim(),
         description: description.trim(),
         categoryId,
@@ -1651,11 +1664,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                         key={item.id}
                         type="button"
                         onClick={() => {
-                          setServiceFormats((current) =>
-                            current.includes(item.id)
-                              ? current.filter((currentItem) => currentItem !== item.id)
-                              : [...current, item.id],
-                          );
+                          setServiceFormats([item.id]);
                           clearError("serviceFormat");
                         }}
                         className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${

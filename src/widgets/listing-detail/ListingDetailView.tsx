@@ -6,6 +6,8 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   EXTRA_PAY_LABELS,
   mapApiConditionToLabel,
+  mapServiceFormatToLabel,
+  mapServiceWorkLevelToLabel,
   useListing,
 } from "@/entities/listing";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -251,6 +253,18 @@ export function ListingDetailView() {
                       <span>Документы</span>
                     </span>
                   ) : null}
+                  {listing.type === "service"
+                    ? listing.serviceFormats.map((format) => (
+                        <span key={format} className="listing-detail-pill">
+                          <img
+                            src="/images/listing-detail/service-format-dot.svg"
+                            alt=""
+                            className="listing-detail-pill__format-icon"
+                          />
+                          <span>{mapServiceFormatToLabel(format)}</span>
+                        </span>
+                      ))
+                    : null}
                 </div>
               </div>
 
@@ -262,9 +276,13 @@ export function ListingDetailView() {
                   </span>
                 </article>
                 <article className="listing-detail-stat listing-detail-stat--condition">
-                  <p className="listing-detail-stat__label">Состояние</p>
+                  <p className="listing-detail-stat__label">
+                    {listing.type === "service" ? "Уровень работы" : "Состояние"}
+                  </p>
                   <span className="listing-detail-stat__value">
-                    {mapApiConditionToLabel(listing.condition)}
+                    {listing.type === "service"
+                      ? mapServiceWorkLevelToLabel(listing.serviceWorkLevel)
+                      : mapApiConditionToLabel(listing.condition)}
                   </span>
                 </article>
                 <article className="listing-detail-stat listing-detail-stat--extra">

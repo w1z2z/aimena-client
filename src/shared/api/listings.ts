@@ -10,6 +10,13 @@ export type ApiListingCondition =
   | "needs_repair"
   | "service";
 
+export type ApiListingServiceFormat = "online" | "onsite" | "client" | "offline";
+export type ApiListingServiceWorkLevel =
+  | "master"
+  | "professional"
+  | "specialist"
+  | "junior";
+
 export type ApiListingCategory = {
   id: string;
   name: string;
@@ -23,6 +30,8 @@ export type ApiListingCard = {
   ownerId: string;
   status: "draft" | "active" | "archived";
   type: "item" | "service";
+  serviceFormats?: ApiListingServiceFormat[];
+  serviceWorkLevel?: ApiListingServiceWorkLevel | null;
   title: string;
   wantsText: string;
   wantsTags: string[];
@@ -68,7 +77,8 @@ export type ApiListingDetail = {
   id: string;
   status: "draft" | "active" | "archived";
   type: "item" | "service";
-  serviceFormats: Array<"online" | "onsite" | "client" | "offline">;
+  serviceFormats: ApiListingServiceFormat[];
+  serviceWorkLevel: ApiListingServiceWorkLevel | null;
   title: string;
   description: string;
   condition: ApiListingCondition;
@@ -148,6 +158,7 @@ export type TagSuggestionsResponse = {
 export type CreateListingPayload = {
   type: "item" | "service";
   serviceFormats?: Array<"online" | "offline" | "onsite">;
+  serviceWorkLevel?: ApiListingServiceWorkLevel;
   title: string;
   description: string;
   categoryId: string;
