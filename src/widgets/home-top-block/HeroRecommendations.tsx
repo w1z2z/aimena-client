@@ -2,7 +2,7 @@
 
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
-import { ListingCard, type ListingCardData } from "@/entities/listing";
+import { ListingCard, ListingCardSkeleton, type ListingCardData } from "@/entities/listing";
 
 function HeroRecommendationsEmpty({
   isExchange,
@@ -32,17 +32,7 @@ function HeroRecommendationsEmpty({
 }
 
 function HeroRecommendationsLoading() {
-  return (
-    <div
-      className="box-border flex h-[458px] w-[342px] items-center justify-center rounded-[31px] border-[3px] border-solid border-transparent px-[24px] text-center text-[14px] font-medium text-[#626262]"
-      style={{
-        background:
-          "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
-      }}
-    >
-      Подбираем объявления...
-    </div>
-  );
+  return <ListingCardSkeleton />;
 }
 
 type HeroRecommendationsPanelProps = {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { ListingCard } from "@/entities/listing";
+import { ListingCard, ListingCardSkeleton, ListingCardSkeletonGrid } from "@/entities/listing";
 import { useHomeSearch } from "@/features/home-search";
 
 export function HomeListingsGrid() {
@@ -57,9 +57,7 @@ export function HomeListingsGrid() {
 
   if (filteredListingsLoading && filteredListings.length === 0) {
     return (
-      <div className="home-listings-grid home-listings-grid--empty" aria-label="Лента объявлений">
-        <p className="home-listings-grid__loading">Загрузка…</p>
-      </div>
+      <ListingCardSkeletonGrid count={8} className="home-listings-grid" />
     );
   }
 
@@ -92,11 +90,13 @@ export function HomeListingsGrid() {
             ownerId={listing.ownerId}
           />
         ))}
+        {isFetchingNextFilteredPage
+          ? Array.from({ length: 4 }, (_, index) => (
+              <ListingCardSkeleton key={`more-${index}`} />
+            ))
+          : null}
       </div>
       <div ref={sentinelRef} className="home-listings-grid__sentinel" aria-hidden />
-      {isFetchingNextFilteredPage ? (
-        <p className="home-listings-grid__loading">Загрузка…</p>
-      ) : null}
     </div>
   );
 }

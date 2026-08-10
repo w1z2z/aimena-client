@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import {
   ListingCard,
+  ListingCardSkeletonGrid,
   buildWantCategories,
   buildWantsPreview,
   mapApiConditionToLabel,
@@ -76,7 +77,13 @@ export function PublicProfileListingsPanel() {
   let body: ReactNode;
 
   if (listingsQuery.isLoading && listings.length === 0) {
-    body = <p className="text-[16px] font-semibold text-[#626262]">Загрузка объявлений…</p>;
+    body = (
+      <ListingCardSkeletonGrid
+        count={6}
+        className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12"
+        itemClassName="profile-listing-card-slot"
+      />
+    );
   } else if (listingsQuery.isError && listings.length === 0) {
     body = (
       <p className="text-[16px] font-semibold text-[#FF2056]">Не удалось загрузить объявления.</p>

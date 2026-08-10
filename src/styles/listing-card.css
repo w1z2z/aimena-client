@@ -508,3 +508,64 @@
   letter-spacing: 0.002em;
   white-space: nowrap;
 }
+
+.home-listing-card--skeleton {
+  pointer-events: none;
+}
+
+.home-listing-card--skeleton::after {
+  opacity: 0.45;
+}
+
+.listing-skeleton-block {
+  display: block;
+  flex: none;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    #ececf2 0%,
+    #f6f6f9 45%,
+    #ececf2 100%
+  );
+  background-size: 200% 100%;
+  animation: listing-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.listing-skeleton-block--title {
+  width: 168px;
+  height: 12px;
+  margin: 0 auto;
+  border-radius: 999px;
+}
+
+.listing-skeleton-block--media {
+  width: 342px;
+  height: 342px;
+  border-radius: 0;
+}
+
+.listing-skeleton-block--pill {
+  width: 72px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.listing-skeleton-block--pill-wide {
+  width: 112px;
+}
+
+@keyframes listing-skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listing-skeleton-block {
+    animation: none;
+  }
+}

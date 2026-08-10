@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { ListingCard, listingQueryKeys, mapApiListingToCard } from "@/entities/listing";
+import { ListingCard, ListingCardSkeleton, ListingCardSkeletonGrid, listingQueryKeys, mapApiListingToCard } from "@/entities/listing";
 import { getListings } from "@/shared/api/listings";
 import { useInfiniteScrollSentinel } from "@/shared/lib/use-infinite-scroll-sentinel";
 import { Header } from "@/widgets/header/Header";
@@ -65,7 +65,9 @@ export default function FreeGiveawaysPage() {
     },
   });
 
-  let body = <p className="favorites-page__status">Загрузка…</p>;
+  let body = (
+    <ListingCardSkeletonGrid count={8} className="favorites-page__grid" />
+  );
 
   if (listingsQuery.isError) {
     body = (
@@ -109,11 +111,13 @@ export default function FreeGiveawaysPage() {
               ownerId={listing.ownerId}
             />
           ))}
+          {listingsQuery.isFetchingNextPage
+            ? Array.from({ length: 4 }, (_, index) => (
+                <ListingCardSkeleton key={`more-${index}`} />
+              ))
+            : null}
         </div>
         <div ref={sentinelRef} className="favorites-page__sentinel" aria-hidden />
-        {listingsQuery.isFetchingNextPage ? (
-          <p className="favorites-page__loading-more">Загрузка…</p>
-        ) : null}
       </div>
     );
   }

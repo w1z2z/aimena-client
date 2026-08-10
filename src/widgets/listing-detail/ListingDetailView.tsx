@@ -18,6 +18,7 @@ import { LocationPinIcon } from "@/shared/ui/icons/LocationPinIcon";
 import { Header } from "@/widgets/header/Header";
 
 import { ListingActionsMenu } from "./ListingActionsMenu";
+import { ListingDetailSkeleton } from "./ListingDetailSkeleton";
 import { ListingGallery } from "./ListingGallery";
 import { ListingOwnerCard } from "./ListingOwnerCard";
 import { ListingSimilarSection, formatEstimatedPrice } from "./ListingSimilarSection";
@@ -230,9 +231,7 @@ export function ListingDetailView() {
       <Header />
 
       <main className="listing-detail-page__main mx-auto w-full max-w-[1440px] px-6 pb-16 pt-[102px]">
-        {isLoading ? (
-          <p className="listing-detail-page__status">Загрузка объявления…</p>
-        ) : null}
+        {isLoading ? <ListingDetailSkeleton /> : null}
 
         {notFound ? (
           <p className="listing-detail-page__status">Объявление не найдено.</p>

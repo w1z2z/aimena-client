@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { ListingCard, mapApiListingToCard } from "@/entities/listing";
+import { ListingCard, ListingCardSkeleton, ListingCardSkeletonGrid, mapApiListingToCard } from "@/entities/listing";
 import { useAuth } from "@/features/auth";
 import { favoriteQueryKeys } from "@/features/favorites";
 import { getFavorites, removeInactiveFavorites } from "@/shared/api/favorites";
@@ -70,7 +70,9 @@ export default function FavoritesPage() {
     },
   });
 
-  let body = <p className="favorites-page__status">Загрузка…</p>;
+  let body = (
+    <ListingCardSkeletonGrid count={8} className="favorites-page__grid" />
+  );
 
   if (!authLoading && !isAuthenticated) {
     body = (
@@ -147,11 +149,13 @@ export default function FavoritesPage() {
               unavailable={!listing.isAvailable}
             />
           ))}
+          {favoritesQuery.isFetchingNextPage
+            ? Array.from({ length: 4 }, (_, index) => (
+                <ListingCardSkeleton key={`more-${index}`} />
+              ))
+            : null}
         </div>
         <div ref={sentinelRef} className="favorites-page__sentinel" aria-hidden />
-        {favoritesQuery.isFetchingNextPage ? (
-          <p className="favorites-page__loading-more">Загрузка…</p>
-        ) : null}
       </div>
     );
   }

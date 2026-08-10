@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ListingCard, mapApiListingToCard, useSimilarListings } from "@/entities/listing";
+import { ListingCard, ListingCardSkeleton, mapApiListingToCard, useSimilarListings } from "@/entities/listing";
 import { layout } from "@/shared/config/tokens";
 import { ChevronIcon } from "@/shared/ui/icons";
 
@@ -95,7 +95,19 @@ export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps)
       </div>
 
       {isLoading && cards.length === 0 ? (
-        <p className="listing-detail-similar__status">Загрузка…</p>
+        <div className="listing-detail-similar__viewport">
+          <div className="listing-detail-similar__track" style={{ gap: `${CARD_GAP}px` }}>
+            {Array.from({ length: VISIBLE_COUNT }, (_, index) => (
+              <div
+                key={index}
+                className="listing-detail-similar__item"
+                style={{ width: `${CARD_WIDTH}px` }}
+              >
+                <ListingCardSkeleton />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : null}
 
       {!isLoading && cards.length === 0 ? (

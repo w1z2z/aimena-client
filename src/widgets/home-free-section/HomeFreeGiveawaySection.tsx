@@ -1,8 +1,10 @@
 "use client";
 
-import { useFreeListings } from "@/entities/listing";
+import { ListingCardSkeleton, useFreeListings } from "@/entities/listing";
 
 import {
+  CARD_GAP,
+  CARD_WIDTH,
   CAROUSEL_OUTER_WIDTH,
   PANEL_HEIGHT,
   PANEL_PADDING,
@@ -13,7 +15,7 @@ import { FreeGiveawayCarousel } from "./FreeGiveawayCarousel";
 import { FreePromoBanner } from "./FreePromoBanner";
 
 export function HomeFreeGiveawaySection() {
-  const { items: freeListings } = useFreeListings(8);
+  const { items: freeListings, isLoading } = useFreeListings(8);
 
   return (
     <section className="bg-surface pb-[68px] pt-[68px] text-brand">
@@ -33,7 +35,24 @@ export function HomeFreeGiveawaySection() {
           >
             <div className="flex h-full items-center gap-[24px]">
               <FreePromoBanner />
-              {freeListings.length > 0 ? (
+              {isLoading ? (
+                <div
+                  className="flex shrink-0 items-center overflow-hidden"
+                  style={{
+                    width: `${CAROUSEL_OUTER_WIDTH}px`,
+                    height: `${PROMO_HEIGHT}px`,
+                    gap: `${CARD_GAP}px`,
+                  }}
+                  aria-busy="true"
+                  aria-label="Загрузка объявлений даром"
+                >
+                  {Array.from({ length: 3 }, (_, index) => (
+                    <div key={index} style={{ width: `${CARD_WIDTH}px` }} className="shrink-0">
+                      <ListingCardSkeleton />
+                    </div>
+                  ))}
+                </div>
+              ) : freeListings.length > 0 ? (
                 <FreeGiveawayCarousel listings={freeListings} />
               ) : (
                 <div
