@@ -73,7 +73,7 @@ const CATEGORY_PROFILE: readonly CategoryProfileStep[] = [
   { offsetX: 528, centerY: 150, iconWidth: 16, iconHeight: 16, labelSize: 3.6, labelLineHeight: 5, opacity: 0.6 },
 ] as const;
 
-const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(200, 255, 0, 0.35))";
+const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(217, 217, 217, 0.45))";
 const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
 const CATEGORY_ICON_PLACEHOLDER = categoryPlaceholderIconSrc;
 
@@ -111,8 +111,50 @@ const CATEGORY_ARC_PATH = (() => {
     .join(" ");
 })();
 
+/** Glow continues past the icons so the lit band reads longer and fuller. */
+const CATEGORY_GLOW_ARC_EXTEND = 1.2;
+const CATEGORY_GLOW_ARC_PATH = (() => {
+  const last = CATEGORY_PROFILE.length - 1;
+  const prev = Math.max(0, last - 1);
+  const offsetDelta =
+    CATEGORY_PROFILE[last].offsetX - CATEGORY_PROFILE[prev].offsetX;
+  const centerYDelta =
+    CATEGORY_PROFILE[last].centerY - CATEGORY_PROFILE[prev].centerY;
+
+  const sample = (distance: number) => {
+    const abs = Math.abs(distance);
+    const sign = distance < 0 ? -1 : 1;
+    if (abs <= last + 1e-9) {
+      return {
+        x: ARC_CENTER_X + (abs < 1e-9 ? 0 : sign * interpolateProfile("offsetX", abs)),
+        y: interpolateProfile("centerY", abs),
+      };
+    }
+    const overshoot = abs - last;
+    return {
+      x:
+        ARC_CENTER_X +
+        sign * (CATEGORY_PROFILE[last].offsetX + offsetDelta * overshoot),
+      y: CATEGORY_PROFILE[last].centerY + centerYDelta * overshoot,
+    };
+  };
+
+  const points: Array<{ x: number; y: number }> = [];
+  const from = -(last + CATEGORY_GLOW_ARC_EXTEND);
+  const to = last + CATEGORY_GLOW_ARC_EXTEND;
+  const step = 0.08;
+
+  for (let distance = from; distance <= to + 1e-9; distance += step) {
+    points.push(sample(distance));
+  }
+
+  return points
+    .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+    .join(" ");
+})();
+
 const CATEGORY_ARC_BACKDROP_MASK = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ARC_CONTAINER_WIDTH} 183" fill="none"><path d="${CATEGORY_ARC_PATH}" stroke="white" stroke-width="220" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ARC_CONTAINER_WIDTH} 183" fill="none"><path d="${CATEGORY_GLOW_ARC_PATH}" stroke="white" stroke-width="320" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
 )}")`;
 
 function CategoryArcGlass() {
@@ -148,51 +190,51 @@ function CategoryArcGlass() {
         <defs>
           <filter
             id="category-arc-wide-glow"
-            x="-60%"
-            y="-200%"
-            width="220%"
-            height="500%"
+            x="-80%"
+            y="-260%"
+            width="260%"
+            height="620%"
             colorInterpolationFilters="sRGB"
           >
-            <feGaussianBlur in="SourceGraphic" stdDeviation="72" result="blur" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="96" result="blur" />
             <feColorMatrix
               in="blur"
               type="matrix"
               values="1 0 0 0 0
                       0 1 0 0 0
                       0 0 1 0 0
-                      0 0 0 0.224 0"
+                      0 0 0 0.26 0"
             />
           </filter>
           <filter
             id="category-arc-rim-blur"
-            x="-40%"
-            y="-160%"
-            width="180%"
-            height="420%"
+            x="-55%"
+            y="-200%"
+            width="210%"
+            height="500%"
             colorInterpolationFilters="sRGB"
           >
-            <feGaussianBlur in="SourceGraphic" stdDeviation="18" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="28" />
           </filter>
         </defs>
 
         <path
-          d={CATEGORY_ARC_PATH}
-          stroke="#C8FF00"
-          strokeWidth={250}
+          d={CATEGORY_GLOW_ARC_PATH}
+          stroke="#D9D9D9"
+          strokeWidth={360}
           strokeLinecap="round"
           strokeLinejoin="round"
-          opacity={0.088}
+          opacity={0.11}
           filter="url(#category-arc-wide-glow)"
         />
 
         <path
-          d={CATEGORY_ARC_PATH}
-          stroke="#C8FF00"
-          strokeWidth={44}
+          d={CATEGORY_GLOW_ARC_PATH}
+          stroke="#D9D9D9"
+          strokeWidth={72}
           strokeLinecap="round"
           strokeLinejoin="round"
-          opacity={0.16}
+          opacity={0.2}
           filter="url(#category-arc-rim-blur)"
         />
       </svg>
@@ -562,7 +604,7 @@ export function CategoriesArc({
             height="340%"
             colorInterpolationFilters="sRGB"
           >
-            <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(200, 255, 0)" floodOpacity="0.35" />
+            <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(217, 217, 217)" floodOpacity="0.45" />
           </filter>
           <filter
             id="category-icon-shadow-inactive"

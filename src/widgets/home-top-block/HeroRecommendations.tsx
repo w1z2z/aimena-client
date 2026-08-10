@@ -19,13 +19,13 @@ function HeroRecommendationsEmpty({
           "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
       }}
     >
-      <p className="text-[18px] font-semibold text-[#1A1A1A]">Пока ничего не нашли</p>
+      <p className="text-[18px] font-semibold text-[#1A1A1A]">Нет подходящих вариантов</p>
       <p className="mt-[8px] text-[14px] leading-[1.35] text-[#626262]">
         {isAllCategory
-          ? "Сейчас нет активных объявлений. Загляните позже или откройте полный список."
+          ? "Сейчас активных объявлений нет — загляните позже или откройте полный список."
           : isExchange
-            ? "Попробуйте изменить название, город или категорию."
-            : "Попробуйте ослабить параметры или выбрать другую категорию."}
+            ? "Попробуйте другое название, город или категорию."
+            : "Измените фильтры или выберите другую категорию."}
       </p>
     </div>
   );

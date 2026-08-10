@@ -15,6 +15,9 @@ import { HeroRecommendationsPanel } from "./HeroRecommendations";
 import { ModeFormColumn } from "./HeroSearchForm";
 import { TickerCarousel } from "./TickerCarousel";
 
+const HERO_BACKGROUND =
+  "linear-gradient(180deg, #141131 29.69%, #322F60 47.6%, #545193 67.22%, #8E8BED 100%)";
+
 export function HomeTopBlock() {
   const router = useRouter();
   const { guardAuth } = useAuthGate();
@@ -65,7 +68,7 @@ export function HomeTopBlock() {
   );
 
   return (
-    <div className="bg-[#1A1A1A] text-white">
+    <div className="text-white" style={{ background: HERO_BACKGROUND }}>
       <Header />
 
       <div className="relative w-full overflow-hidden" style={{ height: `${BASE_SCENE_HEIGHT}px` }}>
@@ -81,7 +84,7 @@ export function HomeTopBlock() {
             <div className="h-[54px]" aria-hidden="true" />
 
             <section
-              className="relative -translate-x-[240px] bg-[#1A1A1A]"
+              className="relative -translate-x-[240px]"
               style={{ height: `${BASE_SCENE_HEIGHT}px`, width: `${BASE_SCENE_WIDTH}px` }}
             >
               <div

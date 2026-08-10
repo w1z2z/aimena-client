@@ -34,6 +34,46 @@ function getCategoryIcon(...values: Array<string | null | undefined>) {
   return "";
 }
 
+function truncateDescriptionAtWord(
+  node: HTMLElement,
+  fullText: string,
+  maxHeight: number,
+): string {
+  node.textContent = fullText;
+  if (node.scrollHeight <= maxHeight) {
+    return fullText;
+  }
+
+  let low = 0;
+  let high = fullText.length;
+  let best = "";
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    let slice = fullText.slice(0, mid);
+    const breakAt = Math.max(
+      slice.lastIndexOf(" "),
+      slice.lastIndexOf("\n"),
+      slice.lastIndexOf("\t"),
+    );
+    if (breakAt > 0) {
+      slice = slice.slice(0, breakAt);
+    }
+
+    const candidate = `${slice.trimEnd()}…`;
+    node.textContent = candidate;
+
+    if (node.scrollHeight <= maxHeight) {
+      best = candidate;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+
+  return best || "…";
+}
+
 export function ListingDetailView() {
   const params = useParams<{ listingId: string }>();
   const router = useRouter();
@@ -44,6 +84,7 @@ export function ListingDetailView() {
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const descriptionTextRef = useRef<HTMLParagraphElement>(null);
   const [descriptionFullHeight, setDescriptionFullHeight] = useState(0);
+  const [collapsedDescription, setCollapsedDescription] = useState<string | null>(null);
 
   const listing = data?.listing;
   const isOwner = Boolean(user?.id && listing?.owner?.id && user.id === listing.owner.id);
@@ -128,15 +169,34 @@ export function ListingDetailView() {
 
   const description = listing?.description?.trim() ?? "";
   const canCollapseDescription = description.length > DESCRIPTION_COLLAPSE_CHARS;
+  const visibleDescription =
+    !canCollapseDescription || descriptionExpanded || !collapsedDescription
+      ? description || "Описание не указано."
+      : collapsedDescription;
 
   useLayoutEffect(() => {
     setDescriptionExpanded(false);
     const node = descriptionTextRef.current;
     if (!node) {
       setDescriptionFullHeight(0);
+      setCollapsedDescription(null);
       return;
     }
-    setDescriptionFullHeight(node.scrollHeight);
+
+    const fullText = description || "Описание не указано.";
+    node.textContent = fullText;
+    const fullHeight = node.scrollHeight;
+    setDescriptionFullHeight(fullHeight);
+
+    if (fullText.length <= DESCRIPTION_COLLAPSE_CHARS) {
+      setCollapsedDescription(null);
+      return;
+    }
+
+    setCollapsedDescription(
+      truncateDescriptionAtWord(node, fullText, DESCRIPTION_COLLAPSED_HEIGHT),
+    );
+    node.textContent = fullText;
   }, [description, listing?.id]);
 
   const descriptionClipHeight =
@@ -372,7 +432,7 @@ export function ListingDetailView() {
                       ref={descriptionTextRef}
                       className="listing-detail-description__text whitespace-pre-wrap"
                     >
-                      {description || "Описание не указано."}
+                      {visibleDescription}
                     </p>
                   </div>
                   {canCollapseDescription ? (
