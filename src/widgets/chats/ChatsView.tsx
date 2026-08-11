@@ -1,0 +1,832 @@
+"use client";
+
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import { useSearchParams } from "next/navigation";
+
+import {
+  EXTRA_PAY_LABELS,
+  mapApiConditionToLabel,
+  mapServiceFormatToLabel,
+  mapServiceWorkLevelToLabel,
+} from "@/entities/listing";
+import { useAuth, useAuthGate } from "@/features/auth";
+import {
+  getChats,
+  getChatThread,
+  getIncomingOffer,
+  sendChatMessage,
+  type ChatListing,
+  type ChatSummary,
+  type ChatThread,
+  type IncomingOffer,
+} from "@/shared/api/chats";
+import { acceptExchangeOffer, rejectExchangeOffer } from "@/shared/api/deals";
+import { ApiError } from "@/shared/api/http";
+import { LocationPinIcon, MenuSquareIcon, StarMiniIcon } from "@/shared/ui/icons";
+import { Header } from "@/widgets/header/Header";
+
+type ChatFilter = "all" | "chats" | "unread" | "offers";
+
+const PANEL_CLOSE_MS = 220;
+
+function filterChatSummaries(items: ChatSummary[], filter: ChatFilter) {
+  if (filter === "chats") return items.filter((item) => item.kind === "chat");
+  if (filter === "offers") return items.filter((item) => item.kind === "offer");
+  if (filter === "unread") return items.filter((item) => item.unreadCount > 0);
+  return items;
+}
+
+function formatPrice(value: number | null) {
+  if (value === null) return "Цена не указана";
+  return `~${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function formatListTime(value: string) {
+  const date = new Date(value);
+  const today = new Date();
+  if (date.toDateString() === today.toDateString()) return formatTime(value);
+  return "Вчера";
+}
+
+function ListingImage({
+  listing,
+  className,
+}: {
+  listing: ChatListing;
+  className: string;
+}) {
+  if (listing.coverImageUrl) {
+    return (
+      // Storage URL is dynamic and configured by the API.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={listing.coverImageUrl} alt="" className={className} />
+    );
+  }
+  return (
+    <span className={`${className} chats-image-placeholder`} aria-hidden>
+      {listing.title.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
+function Avatar({
+  src,
+  name,
+  className,
+}: {
+  src: string | null;
+  name: string;
+  className: string;
+}) {
+  if (src) {
+    return (
+      // Storage URL is dynamic and configured by the API.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={src} alt="" className={className} />
+    );
+  }
+  return (
+    <span className={`${className} chats-avatar-placeholder`} aria-hidden>
+      {name.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
+function Pill({ children }: { children: ReactNode }) {
+  return <span className="chats-pill">{children}</span>;
+}
+
+function ProfileHeader({
+  profile,
+}: {
+  profile: {
+    displayName: string;
+    avatarUrl: string | null;
+    swapsCount: number;
+  };
+}) {
+  return (
+    <header className="chats-profile-header">
+      <Avatar
+        src={profile.avatarUrl}
+        name={profile.displayName}
+        className="chats-profile-header__avatar"
+      />
+      <div>
+        <strong>{profile.displayName}</strong>
+        <span>
+          <StarMiniIcon />
+          {new Intl.NumberFormat("ru-RU").format(profile.swapsCount)}
+        </span>
+      </div>
+    </header>
+  );
+}
+
+function ListingCard({
+  listing,
+  title,
+  showWants = false,
+  message,
+  secondaryImageUrl,
+  onNext,
+  hasNext = false,
+}: {
+  listing: ChatListing;
+  title: string;
+  showWants?: boolean;
+  message?: string;
+  secondaryImageUrl?: string | null;
+  onNext?: () => void;
+  hasNext?: boolean;
+}) {
+  const condition =
+    listing.type === "service"
+      ? mapServiceWorkLevelToLabel(listing.serviceWorkLevel)
+      : mapApiConditionToLabel(listing.condition);
+
+  return (
+    <section className="chats-offer-column">
+      <h2>{title}</h2>
+      <article className="chats-listing-detail">
+        <div className="chats-listing-detail__heading">
+          <div className="chats-listing-detail__media">
+            <ListingImage listing={listing} className="chats-listing-detail__image" />
+            {secondaryImageUrl ? (
+              // Storage URL is dynamic and configured by the API.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={secondaryImageUrl}
+                alt=""
+                className="chats-listing-detail__image-stack"
+              />
+            ) : null}
+          </div>
+          <div
+            className={[
+              "chats-listing-detail__meta",
+              hasNext ? "chats-listing-detail__meta--with-next" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            <span className="chats-category">{listing.category.name}</span>
+            <h3>{listing.title}</h3>
+            <div className="chats-listing-detail__pills">
+              <span className="chats-location-pill">
+                <LocationPinIcon />
+                {listing.city.name}
+              </span>
+              {listing.type === "service"
+                ? listing.serviceFormats.slice(0, 1).map((format) => (
+                    <span key={format} className="chats-location-pill">
+                      {mapServiceFormatToLabel(format)}
+                    </span>
+                  ))
+                : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="chats-listing-stats">
+          <div>
+            <span>Примерная стоимость</span>
+            <Pill>{formatPrice(listing.estimatedPrice)}</Pill>
+          </div>
+          <div>
+            <span>{listing.type === "service" ? "Уровень работы" : "Состояние"}</span>
+            <Pill>{condition || "Не указано"}</Pill>
+          </div>
+          <div>
+            <span>Доплата</span>
+            <Pill>{EXTRA_PAY_LABELS[listing.extraPay]}</Pill>
+          </div>
+          <div>
+            <span>Документы</span>
+            <Pill>{listing.hasDocuments ? "Есть" : "Нет"}</Pill>
+          </div>
+        </div>
+
+        {showWants ? (
+          <div className="chats-listing-wants">
+            <h3>Желаю взамен</h3>
+            {listing.wantsCategories?.length ? (
+              <div>
+                <span className="chats-listing-wants__label">Категории</span>
+                <div className="chats-listing-wants__row">
+                  {listing.wantsCategories.map((category) => (
+                    <span key={category.id} className="chats-category">
+                      {category.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <div>
+              <span className="chats-listing-wants__label">Вещи и Услуги</span>
+              <div className="chats-listing-wants__row">
+                {(listing.wantsTags.length > 0
+                  ? listing.wantsTags
+                  : ["Любые варианты"]
+                ).map((tag) => (
+                  <Pill key={tag}>{tag}</Pill>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {message ? <p className="chats-offer-message">{message}</p> : null}
+
+        {hasNext && onNext ? (
+          <button
+            type="button"
+            className="chats-offer-next"
+            aria-label="Следующее предложение"
+            onClick={onNext}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/chat/offer-chevron.svg" alt="" />
+          </button>
+        ) : null}
+      </article>
+    </section>
+  );
+}
+
+function Sidebar({
+  items,
+  selectedId,
+  filter,
+  onFilterChange,
+  onSelect,
+}: {
+  items: ChatSummary[];
+  selectedId: string | null;
+  filter: ChatFilter;
+  onFilterChange: (filter: ChatFilter) => void;
+  onSelect: (item: ChatSummary) => void;
+}) {
+  const tabs: Array<{ id: ChatFilter; label: string }> = [
+    { id: "all", label: "Все" },
+    { id: "chats", label: "Чаты" },
+    { id: "unread", label: "Непрочитанные" },
+    { id: "offers", label: "Предложения" },
+  ];
+
+  return (
+    <aside className="chats-sidebar">
+      <h1>Чаты</h1>
+      <div className="chats-tabs" aria-label="Фильтр чатов">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            data-active={filter === tab.id ? "true" : undefined}
+            onClick={() => onFilterChange(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="chats-list">
+        {items.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className="chats-list-item"
+            data-active={selectedId === item.id ? "true" : undefined}
+            onClick={() => onSelect(item)}
+          >
+            <Avatar
+              src={item.counterpart.avatarUrl}
+              name={item.counterpart.displayName}
+              className="chats-list-item__avatar"
+            />
+            <span className="chats-list-item__copy">
+              <strong>{item.counterpart.displayName}</strong>
+              <span>{item.kind === "offer" ? "Вам предложение!" : item.preview}</span>
+            </span>
+            <span className="chats-list-item__meta">
+              <time>{formatListTime(item.updatedAt)}</time>
+              {item.kind === "offer" ? (
+                <span className="chats-list-item__badge chats-list-item__badge--offer">!</span>
+              ) : item.unreadCount > 0 ? (
+                <span className="chats-list-item__badge chats-list-item__badge--count">
+                  {item.unreadCount}
+                </span>
+              ) : null}
+            </span>
+          </button>
+        ))}
+        {items.length === 0 ? (
+          <p className="chats-list__empty">В этой категории пока ничего нет.</p>
+        ) : null}
+      </div>
+    </aside>
+  );
+}
+
+function IncomingOfferPanel({
+  offer,
+  busy,
+  error,
+  onAccept,
+  onReject,
+}: {
+  offer: IncomingOffer;
+  busy: boolean;
+  error: string;
+  onAccept: () => void;
+  onReject: () => void;
+}) {
+  const [offerIndex, setOfferIndex] = useState(0);
+  const offeredListings = offer.offeredListings;
+  const offeredListing = offeredListings[offerIndex] ?? offeredListings[0];
+  const secondaryListing =
+    offeredListings.length > 1
+      ? offeredListings[(offerIndex + 1) % offeredListings.length]
+      : null;
+
+  return (
+    <section className="chats-panel chats-panel--offer">
+      <ProfileHeader profile={offer.sender} />
+      <div className="chats-offer-comparison">
+        <ListingCard listing={offer.targetListing} title="Мое" showWants />
+        <span className="chats-swap-badge" aria-hidden>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/chat/swap-arrows.svg" alt="" />
+        </span>
+        {offeredListing ? (
+          <ListingCard
+            listing={offeredListing}
+            title="Предложение"
+            message={offer.message || undefined}
+            secondaryImageUrl={secondaryListing?.coverImageUrl}
+            hasNext={offeredListings.length > 1}
+            onNext={() =>
+              setOfferIndex((current) => (current + 1) % offeredListings.length)
+            }
+          />
+        ) : null}
+      </div>
+      {error ? <p className="chats-action-error">{error}</p> : null}
+      <div className="chats-actions">
+        <button type="button" disabled={busy} onClick={onAccept}>
+          {busy ? "Обрабатываем…" : "Принять предложение"}
+        </button>
+        <button type="button" disabled={busy} onClick={onReject}>
+          Отказаться от предложения
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function ChatSupportMenu() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const panelId = useId();
+  const [open, setOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setIsMounted(true);
+      const frameId = window.requestAnimationFrame(() => setIsVisible(true));
+      return () => window.cancelAnimationFrame(frameId);
+    }
+
+    setIsVisible(false);
+    const timeoutId = window.setTimeout(() => setIsMounted(false), PANEL_CLOSE_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className="chats-swap-menu">
+      <button
+        type="button"
+        className="chats-swap-menu__trigger"
+        aria-label="Меню чата"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={isMounted ? panelId : undefined}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <MenuSquareIcon className="text-[#1A1A1A]" />
+      </button>
+
+      {isMounted ? (
+        <div
+          id={panelId}
+          role="dialog"
+          aria-label="Действия в чате"
+          aria-hidden={!isVisible}
+          className={[
+            "listing-detail-actions__panel",
+            isVisible ? "listing-detail-actions__panel--open" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <button
+            type="button"
+            className="listing-detail-actions__item"
+            onClick={() => setOpen(false)}
+          >
+            Позвать поддержку
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SwapHeader({
+  thread,
+  currentUserId,
+}: {
+  thread: ChatThread;
+  currentUserId: string;
+}) {
+  const target = thread.offer.targetListing;
+  const offered = thread.offer.offeredListings[0];
+  const mine = target.ownerId === currentUserId ? target : offered;
+  const theirs = target.ownerId === currentUserId ? offered : target;
+  if (!mine || !theirs) return null;
+
+  const preview = (
+    listing: ChatListing,
+    label: string,
+    options?: { menu?: boolean },
+  ) => (
+    <div
+      className={[
+        "chats-swap-preview",
+        options?.menu ? "chats-swap-preview--theirs" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <ListingImage listing={listing} className="chats-swap-preview__image" />
+      <div className="chats-swap-preview__body">
+        <div className="chats-swap-preview__copy">
+          <span className="chats-swap-preview__label">{label}</span>
+          <strong className="chats-swap-preview__title">{listing.title}</strong>
+        </div>
+        <span className="chats-swap-preview__status">Ждём готовности владельца</span>
+      </div>
+      {options?.menu ? <ChatSupportMenu /> : null}
+    </div>
+  );
+
+  return (
+    <div className="chats-swap-header">
+      {preview(mine, "Ваше")}
+      {preview(theirs, "Его", { menu: true })}
+    </div>
+  );
+}
+
+function ActiveChatPanel({
+  thread,
+  currentUserId,
+  onSend,
+}: {
+  thread: ChatThread;
+  currentUserId: string;
+  onSend: (body: string) => Promise<boolean>;
+}) {
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [attachmentsOpen, setAttachmentsOpen] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    const body = message.trim();
+    if (!body || sending) return;
+    setSending(true);
+    const sent = await onSend(body);
+    if (sent) setMessage("");
+    setSending(false);
+  };
+
+  return (
+    <section className="chats-panel chats-panel--active">
+      <SwapHeader thread={thread} currentUserId={currentUserId} />
+      <div className="chats-messages">
+        <div className="chats-date-divider">Сегодня</div>
+        {thread.messages.map((messageItem) =>
+          messageItem.type === "system" ? (
+            <p key={messageItem.id} className="chats-system-message">
+              {messageItem.body}
+            </p>
+          ) : (
+            <div
+              key={messageItem.id}
+              className="chats-message"
+              data-own={messageItem.senderId === currentUserId ? "true" : undefined}
+            >
+              <p>{messageItem.body}</p>
+              <time>{formatTime(messageItem.createdAt)}</time>
+            </div>
+          ),
+        )}
+      </div>
+
+      <div className="chats-composer-wrap">
+        {attachmentsOpen ? (
+          <div className="chats-attachments-menu">
+            <button type="button">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/chat/file-upload.svg" alt="" />
+              Загрузить файлы
+            </button>
+            <button type="button">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/chat/document-upload.svg" alt="" />
+              Прикрепить документы
+            </button>
+          </div>
+        ) : null}
+        <form className="chats-composer" onSubmit={submit}>
+          <button
+            type="button"
+            className="chats-composer__attach"
+            aria-label="Прикрепить файл"
+            onClick={() => setAttachmentsOpen((open) => !open)}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/chat/attachment.svg" alt="" />
+          </button>
+          <input
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            placeholder="Написать...."
+            maxLength={2000}
+          />
+          <button
+            type="submit"
+            className="chats-composer__send"
+            aria-label="Отправить"
+            disabled={!message.trim() || sending}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/chat/send-star.svg" alt="" />
+          </button>
+        </form>
+      </div>
+
+      {notice ? <p className="chats-action-notice">{notice}</p> : null}
+      <div className="chats-actions">
+        <button
+          type="button"
+          onClick={() =>
+            setNotice("Подтверждение готовности будет подключено к этапу сделки.")
+          }
+        >
+          Готов к обмену
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            setNotice("Отмена будет доступна только как обоюдный запрос сделки.")
+          }
+        >
+          Отказаться от обмена
+        </button>
+      </div>
+    </section>
+  );
+}
+
+export function ChatsView() {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { guardAuth } = useAuthGate();
+  const searchParams = useSearchParams();
+  const selectedFromQuery = searchParams.get("selected");
+  const [summaries, setSummaries] = useState<ChatSummary[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(selectedFromQuery);
+  const [filter, setFilter] = useState<ChatFilter>("all");
+  const [incomingOffer, setIncomingOffer] = useState<IncomingOffer | null>(null);
+  const [thread, setThread] = useState<ChatThread | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const loadSummaries = useCallback(async (signal?: AbortSignal) => {
+    const response = await getChats(signal);
+    setSummaries(response.data);
+    setSelectedId((current) => {
+      if (current && response.data.some((item) => item.id === current)) return current;
+      if (
+        selectedFromQuery &&
+        response.data.some((item) => item.id === selectedFromQuery)
+      ) {
+        return selectedFromQuery;
+      }
+      return response.data[0]?.id ?? null;
+    });
+    return response.data;
+  }, [selectedFromQuery]);
+
+  useEffect(() => {
+    if (!selectedFromQuery) return;
+    setSelectedId(selectedFromQuery);
+  }, [selectedFromQuery]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      guardAuth("chat");
+      return;
+    }
+    const controller = new AbortController();
+    void getChats(controller.signal)
+      .then((response) => {
+        setSummaries(response.data);
+        setSelectedId((current) => {
+          if (current && response.data.some((item) => item.id === current)) return current;
+          if (
+            selectedFromQuery &&
+            response.data.some((item) => item.id === selectedFromQuery)
+          ) {
+            return selectedFromQuery;
+          }
+          return response.data[0]?.id ?? null;
+        });
+      })
+      .catch((requestError: unknown) => {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") return;
+        setError("Не удалось загрузить чаты.");
+      })
+      .finally(() => setLoading(false));
+    return () => controller.abort();
+  }, [authLoading, guardAuth, isAuthenticated, selectedFromQuery]);
+
+  const selectedSummary = summaries.find((item) => item.id === selectedId) ?? null;
+
+  useEffect(() => {
+    if (!selectedSummary) return;
+    const controller = new AbortController();
+    const request =
+      selectedSummary.kind === "offer"
+        ? getIncomingOffer(selectedSummary.offerId, controller.signal).then((response) => {
+            setThread(null);
+            setIncomingOffer(response.offer);
+          })
+        : getChatThread(selectedSummary.threadId ?? selectedSummary.id, controller.signal).then(
+            (response) => {
+              setIncomingOffer(null);
+              setThread(response.thread);
+            },
+          );
+    void request.catch((requestError: unknown) => {
+      if (requestError instanceof DOMException && requestError.name === "AbortError") return;
+      setError("Не удалось открыть выбранный чат.");
+    });
+    return () => controller.abort();
+  }, [selectedSummary]);
+
+  const filteredSummaries = useMemo(() => {
+    return filterChatSummaries(summaries, filter);
+  }, [filter, summaries]);
+
+  const handleSelect = (item: ChatSummary) => {
+    setSelectedId(item.id);
+    setIncomingOffer(null);
+    setThread(null);
+    setError("");
+  };
+
+  const handleFilterChange = (nextFilter: ChatFilter) => {
+    const nextItems = filterChatSummaries(summaries, nextFilter);
+    setFilter(nextFilter);
+    if (!nextItems.some((item) => item.id === selectedId)) {
+      setSelectedId(nextItems[0]?.id ?? null);
+      setIncomingOffer(null);
+      setThread(null);
+      setError("");
+    }
+  };
+
+  const resolveOffer = async (action: "accept" | "reject") => {
+    if (!incomingOffer || actionBusy) return;
+    setActionBusy(true);
+    setError("");
+    try {
+      const response =
+        action === "accept"
+          ? await acceptExchangeOffer(incomingOffer.id)
+          : await rejectExchangeOffer(incomingOffer.id);
+      const items = await loadSummaries();
+      const nextId =
+        action === "accept" && response.threadId
+          ? response.threadId
+          : (items[0]?.id ?? null);
+      setSelectedId(nextId);
+      setIncomingOffer(null);
+    } catch (actionError) {
+      setError(
+        actionError instanceof ApiError
+          ? actionError.message
+          : "Не удалось обработать предложение.",
+      );
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const handleSend = async (body: string) => {
+    if (!thread) return false;
+    try {
+      const response = await sendChatMessage(thread.id, body);
+      setThread((current) =>
+        current
+          ? { ...current, messages: [...current.messages, response.message] }
+          : current,
+      );
+      void loadSummaries();
+      return true;
+    } catch {
+      setError("Не удалось отправить сообщение.");
+      return false;
+    }
+  };
+
+  return (
+    <div className="chats-page">
+      <Header />
+      <main className="chats-main">
+        <Sidebar
+          items={filteredSummaries}
+          selectedId={selectedId}
+          filter={filter}
+          onFilterChange={handleFilterChange}
+          onSelect={handleSelect}
+        />
+        {loading ? <div className="chats-empty-panel">Загружаем чаты…</div> : null}
+        {!loading && incomingOffer ? (
+          <IncomingOfferPanel
+            offer={incomingOffer}
+            busy={actionBusy}
+            error={error}
+            onAccept={() => void resolveOffer("accept")}
+            onReject={() => void resolveOffer("reject")}
+          />
+        ) : null}
+        {!loading && thread && user ? (
+          <ActiveChatPanel
+            key={thread.id}
+            thread={thread}
+            currentUserId={user.id}
+            onSend={handleSend}
+          />
+        ) : null}
+        {!loading && !incomingOffer && !thread ? (
+          <div className="chats-empty-panel">
+            {error || "Выберите чат или входящее предложение."}
+          </div>
+        ) : null}
+      </main>
+    </div>
+  );
+}

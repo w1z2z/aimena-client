@@ -381,9 +381,11 @@ export function ExchangeOfferView() {
             {error ? <p className="exchange-offer-submit-error">{error}</p> : null}
             {sent ? (
               <div className="exchange-offer-success" role="status">
-                Предложение отправлено владельцу.
-                <button type="button" onClick={() => router.push("/profile/deals")}>
-                  Перейти к обменам
+                <p>
+                  Ваше предложение отправлено, ожидайте ответа владельца
+                </p>
+                <button type="button" onClick={() => router.push("/chats")}>
+                  Перейти в чаты
                 </button>
               </div>
             ) : (

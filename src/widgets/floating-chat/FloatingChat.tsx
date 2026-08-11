@@ -1,63 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 import { useAuth, useAuthGate } from "@/features/auth";
+import { getChats, type ChatSummary } from "@/shared/api/chats";
 import { ChatBubbleIcon } from "@/shared/ui/icons";
 
-type ChatPreview = {
-  id: string;
-  name: string;
-  preview: string;
-  time: string;
-  avatarUrl: string;
-};
-
-const CHAT_AVATAR_SRC = "/images/chat/panel-avatar.png";
 const LINK_CHEVRON_SRC = "/images/chat/link-chevron.svg";
-
-const chatPreviews: ChatPreview[] = [
-  {
-    id: "1",
-    name: "Иван Петросенков",
-    preview: "Спасибо все удачно...",
-    time: "Вчера",
-    avatarUrl: CHAT_AVATAR_SRC,
-  },
-  {
-    id: "2",
-    name: "Иван Петросенков",
-    preview: "Спасибо все удачно...",
-    time: "Вчера",
-    avatarUrl: CHAT_AVATAR_SRC,
-  },
-  {
-    id: "3",
-    name: "Иван Петросенков",
-    preview: "Спасибо все удачно...",
-    time: "Вчера",
-    avatarUrl: CHAT_AVATAR_SRC,
-  },
-  {
-    id: "4",
-    name: "Иван Петросенков",
-    preview: "Спасибо все удачно...",
-    time: "Вчера",
-    avatarUrl: CHAT_AVATAR_SRC,
-  },
-  {
-    id: "5",
-    name: "Иван Петросенков",
-    preview: "Спасибо все удачно...",
-    time: "Вчера",
-    avatarUrl: CHAT_AVATAR_SRC,
-  },
-];
-
 const PANEL_EASE = "cubic-bezier(0.33, 1, 0.68, 1)";
 const PANEL_DURATION_MS = 300;
+
+function formatListTime(value: string) {
+  const date = new Date(value);
+  const today = new Date();
+  if (date.toDateString() === today.toDateString()) {
+    return new Intl.DateTimeFormat("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  }
+  return "Вчера";
+}
 
 function CloseIcon({ className }: { className?: string }) {
   return (
@@ -98,22 +63,25 @@ function TextLink({
       className="inline-flex items-center gap-[6px] text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A] transition hover:opacity-70"
     >
       <span className="[text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">{label}</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={LINK_CHEVRON_SRC} alt="" aria-hidden className="h-[6px] w-[4px] shrink-0" />
     </Link>
   );
 }
 
 function ChatPanelRow({
-  chat,
-  href,
+  item,
   tabIndex,
   onNavigate,
 }: {
-  chat: ChatPreview;
-  href: string;
+  item: ChatSummary;
   tabIndex: number;
   onNavigate: (href: string, event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
+  const href = `/chats?selected=${encodeURIComponent(item.id)}`;
+  const preview = item.kind === "offer" ? "Вам предложение!" : item.preview;
+  const avatarInitial = item.counterpart.displayName.slice(0, 1).toUpperCase();
+
   return (
     <Link
       href={href}
@@ -122,26 +90,43 @@ function ChatPanelRow({
       className="flex h-[49px] w-[255px] shrink-0 items-end justify-between transition hover:opacity-80"
     >
       <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
-        <span className="relative size-[49px] shrink-0 overflow-hidden rounded-[15px] bg-[#D9D9D9]">
-          <img
-            src={chat.avatarUrl}
-            alt=""
-            className="absolute left-[-31.06%] top-0 h-full w-[177.78%] max-w-none"
-          />
+        <span className="relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] bg-[#D9D9D9] text-[14px] font-extrabold text-[#1A1A1A]">
+          {item.counterpart.avatarUrl ? (
+            // Storage URL is dynamic and configured by the API.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.counterpart.avatarUrl}
+              alt=""
+              className="absolute inset-0 size-full object-cover"
+            />
+          ) : (
+            <span aria-hidden>{avatarInitial}</span>
+          )}
         </span>
 
         <span className="flex w-[164px] min-w-0 flex-col items-start gap-[12px] text-[#1A1A1A]">
           <span className="w-[153px] truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em]">
-            {chat.name}
+            {item.counterpart.displayName}
           </span>
           <span className="w-[153px] truncate text-[14px] font-normal leading-[1.2]">
-            {chat.preview}
+            {preview}
           </span>
         </span>
       </span>
 
-      <span className="shrink-0 text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#1A1A1A]">
-        {chat.time}
+      <span className="flex shrink-0 flex-col items-end gap-[8px]">
+        <span className="text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#797979]">
+          {formatListTime(item.updatedAt)}
+        </span>
+        {item.kind === "offer" ? (
+          <span className="inline-flex h-[17px] w-[17px] items-center justify-center rounded-[9.5px] bg-[#8E8BED] text-[11px] font-semibold leading-4 tracking-[0.002em] text-white">
+            !
+          </span>
+        ) : item.unreadCount > 0 ? (
+          <span className="inline-flex h-4 min-w-[32px] items-center justify-center rounded-[9.5px] bg-[#C8FF00] px-[6px] py-1 text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#1A1A1A]">
+            {item.unreadCount}
+          </span>
+        ) : null}
       </span>
     </Link>
   );
@@ -162,10 +147,14 @@ function PanelDivider({ top }: { top: number }) {
 
 export function FloatingChat() {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated } = useAuth();
   const { guardAuth } = useAuthGate();
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [items, setItems] = useState<ChatSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -182,8 +171,29 @@ export function FloatingChat() {
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen || !isAuthenticated) return;
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    void getChats(controller.signal)
+      .then((response) => setItems(response.data.slice(0, 5)))
+      .catch((requestError: unknown) => {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") return;
+        setError("Не удалось загрузить чаты.");
+        setItems([]);
+      })
+      .finally(() => setLoading(false));
+    return () => controller.abort();
+  }, [isAuthenticated, isOpen]);
+
+  if (pathname.startsWith("/chats")) {
+    return null;
+  }
+
   const handleChatNavigate = (href: string, event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
+    setIsOpen(false);
     guardAuth("chat", () => router.push(href));
   };
 
@@ -214,9 +224,7 @@ export function FloatingChat() {
         }}
         aria-hidden={!isOpen}
       >
-        {/* dropdawn-chat — Figma 1096:12322 */}
         <div className="relative h-[517px] w-[303px]">
-          {/* плашка чата — Figma 1096:12255 */}
           <div
             className="absolute left-0 top-[4px] box-border h-[513px] w-[303px] rounded-[31px] border-2 border-solid border-transparent px-[24px] pt-[24px]"
             style={{
@@ -224,7 +232,6 @@ export function FloatingChat() {
                 "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
             }}
           >
-            {/* Frame 32751 — Figma 1096:12256 */}
             <div className="flex h-[406px] w-[255px] flex-col items-start gap-[48px]">
               <div className="flex h-[17px] w-[255px] shrink-0 items-center justify-between">
                 <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
@@ -238,21 +245,29 @@ export function FloatingChat() {
                 />
               </div>
 
-              {/* chat-list — Figma 1096:12262 */}
-              <div className="flex h-[341px] w-[255px] shrink-0 flex-col items-start gap-[24px] overflow-hidden">
-                {chatPreviews.map((chat) => (
-                  <ChatPanelRow
-                    key={chat.id}
-                    chat={chat}
-                    href="/chats"
-                    tabIndex={isOpen ? 0 : -1}
-                    onNavigate={handleChatNavigate}
-                  />
-                ))}
+              <div className="flex h-[341px] w-[255px] shrink-0 flex-col items-start gap-[24px] overflow-y-auto overflow-x-hidden">
+                {loading ? (
+                  <p className="m-0 text-[14px] text-[#626262]">Загружаем…</p>
+                ) : null}
+                {!loading && error ? (
+                  <p className="m-0 text-[14px] text-[#FF2056]">{error}</p>
+                ) : null}
+                {!loading && !error && items.length === 0 ? (
+                  <p className="m-0 text-[14px] text-[#626262]">Пока нет чатов и предложений.</p>
+                ) : null}
+                {!loading && !error
+                  ? items.map((item) => (
+                      <ChatPanelRow
+                        key={item.id}
+                        item={item}
+                        tabIndex={isOpen ? 0 : -1}
+                        onNavigate={handleChatNavigate}
+                      />
+                    ))
+                  : null}
               </div>
             </div>
 
-            {/* Поддержка — вертикально по центру под разделителем */}
             <div className="absolute inset-x-0 bottom-0 top-[454px] flex items-center justify-end px-[24px]">
               <TextLink
                 href="/chats"
@@ -262,7 +277,6 @@ export function FloatingChat() {
               />
             </div>
 
-            {/* Vector 38 / Vector 39 */}
             <PanelDivider top={62} />
             <PanelDivider top={454} />
           </div>

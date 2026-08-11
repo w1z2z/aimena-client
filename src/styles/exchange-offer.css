@@ -448,6 +448,18 @@
   font-weight: 600;
 }
 
+.exchange-offer-success p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.exchange-offer-success button {
+  flex: none;
+  border-color: #1a1a1a;
+  background: #1a1a1a;
+  color: #fff;
+}
+
 @media (max-width: 1100px) {
   .exchange-offer-layout {
     grid-template-columns: minmax(0, 1fr);

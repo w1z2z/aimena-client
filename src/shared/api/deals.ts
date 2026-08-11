@@ -25,3 +25,23 @@ export function createExchangeOffer(payload: CreateExchangeOfferPayload) {
     body: payload,
   });
 }
+
+export type ResolveExchangeOfferResponse = {
+  offerId: string;
+  status: "accepted" | "rejected";
+  threadId?: string;
+};
+
+export function acceptExchangeOffer(offerId: string) {
+  return httpRequest<ResolveExchangeOfferResponse>(
+    `/deals/exchange-offers/${offerId}/accept`,
+    { method: "POST" },
+  );
+}
+
+export function rejectExchangeOffer(offerId: string) {
+  return httpRequest<ResolveExchangeOfferResponse>(
+    `/deals/exchange-offers/${offerId}/reject`,
+    { method: "POST" },
+  );
+}

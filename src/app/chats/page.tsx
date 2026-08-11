@@ -1,10 +1,12 @@
-import { PageStub } from "@/shared/ui/page-stub/PageStub";
+import { Suspense } from "react";
+
+import "@/styles/chats.css";
+import { ChatsView } from "@/widgets/chats/ChatsView";
 
 export default function ChatsPage() {
   return (
-    <PageStub
-      title="Chats"
-      description="Список диалогов и окно сообщений в реальном времени."
-    />
+    <Suspense fallback={<div className="chats-page" />}>
+      <ChatsView />
+    </Suspense>
   );
 }
