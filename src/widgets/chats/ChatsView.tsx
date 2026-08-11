@@ -164,6 +164,7 @@ function ListingCard({
   listingsCount,
   onNext,
   hasNext = false,
+  showMessage = false,
 }: {
   listing: ChatListing;
   title: string;
@@ -173,6 +174,7 @@ function ListingCard({
   listingsCount?: number;
   onNext?: () => void;
   hasNext?: boolean;
+  showMessage?: boolean;
 }) {
   const condition =
     listing.type === "service"
@@ -296,7 +298,11 @@ function ListingCard({
           </div>
         ) : null}
 
-        {message ? <p className="chats-offer-message">{message}</p> : null}
+        {showMessage ? (
+          <div className="chats-offer-message">
+            <p className="chats-offer-message__text">{message?.trim() || ""}</p>
+          </div>
+        ) : null}
 
         {hasNext && onNext ? (
           <button
@@ -421,7 +427,8 @@ function IncomingOfferPanel({
           <ListingCard
             listing={offeredListing}
             title="Предложение"
-            message={offer.message || undefined}
+            message={offer.message || ""}
+            showMessage
             secondaryListing={secondaryListing}
             listingsCount={offeredListings.length}
             hasNext={offeredListings.length > 1}
