@@ -16,36 +16,42 @@ import { getMyListings, type ApiListingCard } from "@/shared/api/listings";
 
 import { pluralRu } from "./constants";
 import { ProfileListingCardActions } from "./ProfileListingCardActions";
-import { ProfileSortControl } from "./ProfileSortControl";
 import {
-  ProfileStatusFilter,
-  type ProfileListingStatusFilter,
-} from "./ProfileStatusFilter";
+  ProfileSortControl,
+  type ProfileListingTypeFilter,
+  type ProfileSortOrder,
+} from "./ProfileSortControl";
 
-const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
+const EMPTY_BY_TYPE: Record<ProfileListingTypeFilter, string> = {
   all: "Пока нет объявлений. Разместите первое предложение.",
   active: "Нет активных объявлений.",
   archived: "Нет снятых с публикации объявлений.",
+  completed: "Нет завершенных объявлений.",
 };
-
-type SortOrder = "newest" | "oldest";
 
 function resolveOwnLifecycle(listing: ApiListingCard): ListingCardLifecycle | null {
   if (listing.isAvailable === false) return "deleted";
+  if (listing.status === "completed") return "completed";
   if (listing.status === "archived") return "archived";
   return null;
 }
 
+function statusesForTypeFilter(
+  typeFilter: ProfileListingTypeFilter,
+): ApiListingCard["status"][] {
+  if (typeFilter === "all") return ["active", "archived", "completed"];
+  return [typeFilter];
+}
+
 export function ProfileListingsPanel() {
   const { user, accessToken } = useAuth();
-  const [sort, setSort] = useState<SortOrder>("newest");
-  const [statusFilter, setStatusFilter] = useState<ProfileListingStatusFilter>("all");
+  const [sort, setSort] = useState<ProfileSortOrder>("newest");
+  const [typeFilter, setTypeFilter] = useState<ProfileListingTypeFilter>("all");
 
-  const statusQuery: ApiListingCard["status"][] =
-    statusFilter === "all" ? ["active", "archived"] : [statusFilter];
+  const statusQuery = statusesForTypeFilter(typeFilter);
 
   const listingsQuery = useQuery({
-    queryKey: ["profile-listings-me", user?.id, statusFilter, sort],
+    queryKey: ["profile-listings-me", user?.id, typeFilter, sort],
     queryFn: ({ signal }) =>
       getMyListings(
         { page: 1, pageSize: 50, status: statusQuery, sort },
@@ -77,7 +83,7 @@ export function ProfileListingsPanel() {
     );
   } else if (listings.length === 0) {
     body = (
-      <p className="text-[16px] font-semibold text-[#626262]">{EMPTY_BY_STATUS[statusFilter]}</p>
+      <p className="text-[16px] font-semibold text-[#626262]">{EMPTY_BY_TYPE[typeFilter]}</p>
     );
   } else {
     body = (
@@ -123,11 +129,15 @@ export function ProfileListingsPanel() {
         <p className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">{countLabel}</p>
       </div>
 
-      {/* 48px от счётчика до карточек; фильтр/сортировка — 8px над сеткой */}
+      {/* 48px от счётчика до карточек; сортировка — 8px над сеткой */}
       <div className="relative mt-12 w-full overflow-visible">
-        <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center gap-3 overflow-visible">
-          <ProfileStatusFilter value={statusFilter} onChange={setStatusFilter} />
-          <ProfileSortControl value={sort} onChange={setSort} />
+        <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center overflow-visible">
+          <ProfileSortControl
+            sort={sort}
+            onSortChange={setSort}
+            typeFilter={typeFilter}
+            onTypeChange={setTypeFilter}
+          />
         </div>
         {body}
       </div>

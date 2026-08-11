@@ -7,8 +7,7 @@ export type ApiListingCondition =
   | "new"
   | "good"
   | "used"
-  | "needs_repair"
-  | "service";
+  | "needs_repair";
 
 export type ApiListingServiceFormat = "online" | "onsite" | "client" | "offline";
 export type ApiListingServiceWorkLevel =
@@ -28,14 +27,14 @@ export type ApiListingCategory = {
 export type ApiListingCard = {
   id: string;
   ownerId: string;
-  status: "draft" | "active" | "archived";
+  status: "draft" | "active" | "archived" | "completed";
   type: "item" | "service";
   serviceFormats?: ApiListingServiceFormat[];
   serviceWorkLevel?: ApiListingServiceWorkLevel | null;
   title: string;
   wantsText: string;
   wantsTags: string[];
-  condition: ApiListingCondition;
+  condition: ApiListingCondition | null;
   extraPay: "none" | "i_pay" | "they_pay" | "both";
   hasDocuments: boolean;
   isFree: boolean;
@@ -75,13 +74,13 @@ export type ApiListingOwner = {
 
 export type ApiListingDetail = {
   id: string;
-  status: "draft" | "active" | "archived";
+  status: "draft" | "active" | "archived" | "completed";
   type: "item" | "service";
   serviceFormats: ApiListingServiceFormat[];
   serviceWorkLevel: ApiListingServiceWorkLevel | null;
   title: string;
   description: string;
-  condition: ApiListingCondition;
+  condition: ApiListingCondition | null;
   estimatedPrice: number | null;
   extraPay: "none" | "i_pay" | "they_pay" | "both";
   isFree: boolean;
@@ -176,7 +175,7 @@ export type CreateListingPayload = {
 export type CreateListingResponse = {
   listing: {
     id: string;
-    status: "draft" | "active" | "archived";
+    status: "draft" | "active" | "archived" | "completed";
   };
 };
 
@@ -258,6 +257,12 @@ export function getSimilarListings(
 
 export function pauseListing(listingId: string) {
   return httpRequest<ApiListingDetailResponse>(`/listings/${listingId}/pause`, {
+    method: "POST",
+  });
+}
+
+export function completeListing(listingId: string) {
+  return httpRequest<ApiListingDetailResponse>(`/listings/${listingId}/complete`, {
     method: "POST",
   });
 }

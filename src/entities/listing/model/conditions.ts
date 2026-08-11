@@ -8,7 +8,6 @@ export const CONDITION_LABELS: Record<ApiListingCondition, string> = {
   good: "Хорошее",
   used: "Б/у",
   needs_repair: "Требует ремонта",
-  service: "Услуга",
 };
 
 export const CONDITION_LABEL_TO_ID: Record<string, ConditionOptionId> = {
@@ -56,6 +55,7 @@ export function mapConditionIdToBackend(id: ConditionOptionId): ApiListingCondit
   return CONDITION_TO_BACKEND[id];
 }
 
-export function mapApiConditionToLabel(condition: ApiListingCondition): string {
+export function mapApiConditionToLabel(condition: ApiListingCondition | null | undefined): string {
+  if (!condition) return "";
   return CONDITION_LABELS[condition];
 }

@@ -16,7 +16,7 @@ import { getPublicProfile, getUserListingsBySlug } from "@/shared/api/auth";
 import type { ApiListingCard } from "@/shared/api/listings";
 
 import { pluralRu } from "./constants";
-import { ProfileSortControl } from "./ProfileSortControl";
+import { ProfileSortControl, type ProfileSortOrder } from "./ProfileSortControl";
 import {
   ProfileStatusFilter,
   type ProfileListingStatusFilter,
@@ -26,25 +26,20 @@ const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
   all: "Пока нет объявлений.",
   active: "Нет активных объявлений.",
   archived: "Нет снятых с публикации объявлений.",
+  completed: "Нет завершенных объявлений.",
 };
 
-type SortOrder = "newest" | "oldest";
-
-function resolvePublicLifecycle(
-  listing: ApiListingCard,
-  showCompleted: boolean,
-): ListingCardLifecycle | null {
+function resolvePublicLifecycle(listing: ApiListingCard): ListingCardLifecycle | null {
   if (listing.isAvailable === false) return "deleted";
-  if (listing.status === "archived") {
-    return showCompleted ? "completed" : "archived";
-  }
+  if (listing.status === "completed") return "completed";
+  if (listing.status === "archived") return "archived";
   return null;
 }
 
 export function PublicProfileListingsPanel() {
   const params = useParams<{ slug: string }>();
   const slug = typeof params.slug === "string" ? params.slug : "";
-  const [sort, setSort] = useState<SortOrder>("newest");
+  const [sort, setSort] = useState<ProfileSortOrder>("newest");
   const [statusFilter, setStatusFilter] = useState<ProfileListingStatusFilter>("all");
 
   const profileQuery = useQuery({
@@ -56,27 +51,34 @@ export function PublicProfileListingsPanel() {
   const showCompleted = profileQuery.data?.profile.showCompletedListings ?? false;
 
   const statusQuery: ApiListingCard["status"][] =
-    statusFilter === "all" ? ["active", "archived"] : [statusFilter];
+    statusFilter === "all"
+      ? showCompleted
+        ? ["active", "completed"]
+        : ["active"]
+      : statusFilter === "archived"
+        ? []
+        : [statusFilter];
 
   const listingsQuery = useQuery({
-    queryKey: ["public-profile-listings", slug, statusFilter, sort],
+    queryKey: ["public-profile-listings", slug, statusFilter, sort, showCompleted],
     queryFn: ({ signal }) =>
       getUserListingsBySlug(
         slug,
         { page: 1, pageSize: 50, status: statusQuery, sort },
         signal,
       ),
-    enabled: Boolean(slug),
+    enabled: Boolean(slug) && statusQuery.length > 0,
     placeholderData: (previous) => previous,
   });
 
-  const listings = listingsQuery.data?.data ?? [];
-  const total = listingsQuery.data?.meta.total ?? listings.length;
+  const listings = statusQuery.length === 0 ? [] : (listingsQuery.data?.data ?? []);
+  const total =
+    statusQuery.length === 0 ? 0 : (listingsQuery.data?.meta.total ?? listings.length);
   const countLabel = `${total} ${pluralRu(total, "объявление", "объявления", "объявлений")}`;
 
   let body: ReactNode;
 
-  if (listingsQuery.isLoading && listings.length === 0) {
+  if (listingsQuery.isLoading && listings.length === 0 && statusQuery.length > 0) {
     body = (
       <ListingCardSkeletonGrid
         count={6}
@@ -96,7 +98,7 @@ export function PublicProfileListingsPanel() {
     body = (
       <div className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12">
         {listings.map((listing) => {
-          const lifecycle = resolvePublicLifecycle(listing, showCompleted);
+          const lifecycle = resolvePublicLifecycle(listing);
           return (
             <div key={listing.id} className="profile-listing-card-slot">
               <ListingCard
@@ -133,9 +135,13 @@ export function PublicProfileListingsPanel() {
       <div className="relative mt-12 w-full overflow-visible">
         <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center gap-3 overflow-visible">
           {showCompleted ? (
-            <ProfileStatusFilter value={statusFilter} onChange={setStatusFilter} />
+            <ProfileStatusFilter
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options="public"
+            />
           ) : null}
-          <ProfileSortControl value={sort} onChange={setSort} />
+          <ProfileSortControl sort={sort} onSortChange={setSort} />
         </div>
         {body}
       </div>

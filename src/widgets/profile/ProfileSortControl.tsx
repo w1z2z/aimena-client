@@ -5,11 +5,17 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { PROFILE_ASSETS } from "./constants";
 
-type SortOrder = "newest" | "oldest";
+export type ProfileSortOrder = "newest" | "oldest";
+
+/** Own-profile type filter (no «Удаленные»). */
+export type ProfileListingTypeFilter = "all" | "active" | "completed" | "archived";
 
 type ProfileSortControlProps = {
-  value: SortOrder;
-  onChange: (next: SortOrder) => void;
+  sort: ProfileSortOrder;
+  onSortChange: (next: ProfileSortOrder) => void;
+  /** When set with onTypeChange, popup includes «По типу». */
+  typeFilter?: ProfileListingTypeFilter;
+  onTypeChange?: (next: ProfileListingTypeFilter) => void;
 };
 
 const SORT_OPTIONS = [
@@ -17,23 +23,43 @@ const SORT_OPTIONS = [
   { id: "oldest" as const, label: "Сначала старые" },
 ];
 
-export function ProfileSortControl({ value, onChange }: ProfileSortControlProps) {
+const TYPE_OPTIONS: Array<{ value: ProfileListingTypeFilter; label: string }> = [
+  { value: "all", label: "Все" },
+  { value: "active", label: "Активные" },
+  { value: "archived", label: "Снятые с публикации" },
+  { value: "completed", label: "Завершенные" },
+];
+
+export function ProfileSortControl({
+  sort,
+  onSortChange,
+  typeFilter,
+  onTypeChange,
+}: ProfileSortControlProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const activeIndex = value === "oldest" ? 1 : 0;
+  const activeSortIndex = sort === "oldest" ? 1 : 0;
+  const showTypeSection = typeFilter !== undefined && Boolean(onTypeChange);
 
   useEffect(() => {
     if (!open) return;
 
-    const onPointerDown = (event: MouseEvent) => {
+    const onOutsideClick = (event: MouseEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
       }
     };
 
-    // click (not mousedown): avoid racing with the opening button press
-    window.addEventListener("click", onPointerDown);
-    return () => window.removeEventListener("click", onPointerDown);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    window.addEventListener("click", onOutsideClick);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("click", onOutsideClick);
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [open]);
 
   return (
@@ -41,7 +67,6 @@ export function ProfileSortControl({ value, onChange }: ProfileSortControlProps)
       ref={rootRef}
       className="profile-sort-control relative overflow-visible"
       style={{ viewTransitionName: "none" } as CSSProperties}
-      onMouseLeave={() => setOpen(false)}
     >
       <button
         type="button"
@@ -71,21 +96,25 @@ export function ProfileSortControl({ value, onChange }: ProfileSortControlProps)
           onMouseDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="box-border flex h-[112px] w-[326px] flex-col items-start justify-center gap-3 rounded-[31px] border-[0.5px] border-solid border-[#CACACA] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+          <div
+            role="dialog"
+            aria-label="Сортировка объявлений"
+            className="profile-sort-popup box-border flex w-[326px] flex-col items-start justify-center gap-3 rounded-[31px] border-[0.5px] border-solid border-[#8E8BED] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+          >
             <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">По порядку:</p>
             <div
               className="profile-sort-switch"
               role="radiogroup"
               aria-label="Порядок объявлений"
-              data-active-index={activeIndex}
+              data-active-index={activeSortIndex}
             >
               <span
                 aria-hidden
                 className="profile-sort-switch__indicator"
-                style={{ transform: `translateX(calc(${activeIndex} * (100% + 4px)))` }}
+                style={{ transform: `translateX(calc(${activeSortIndex} * (100% + 4px)))` }}
               />
               {SORT_OPTIONS.map((option) => {
-                const active = value === option.id;
+                const active = sort === option.id;
                 return (
                   <button
                     key={option.id}
@@ -93,8 +122,8 @@ export function ProfileSortControl({ value, onChange }: ProfileSortControlProps)
                     role="radio"
                     aria-checked={active}
                     onClick={() => {
-                      if (option.id === value) return;
-                      onChange(option.id);
+                      if (option.id === sort) return;
+                      onSortChange(option.id);
                     }}
                     className={`profile-sort-switch__btn${active ? " is-active" : ""}`}
                   >
@@ -103,6 +132,40 @@ export function ProfileSortControl({ value, onChange }: ProfileSortControlProps)
                 );
               })}
             </div>
+
+            {showTypeSection ? (
+              <>
+                <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">По типу:</p>
+                <div
+                  role="listbox"
+                  aria-label="Тип объявлений"
+                  className="flex w-[278px] flex-col gap-3"
+                >
+                  {TYPE_OPTIONS.map((option) => {
+                    const isActive = typeFilter === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        role="option"
+                        aria-selected={isActive}
+                        onClick={() => {
+                          if (option.value === typeFilter) return;
+                          onTypeChange?.(option.value);
+                        }}
+                        className={`flex h-[34px] w-full shrink-0 items-center rounded-[13px] px-3 text-left text-[14px] font-semibold leading-[1.2] tracking-[0.001em] transition-colors duration-200 ${
+                          isActive
+                            ? "border-[0.5px] border-solid border-[#8E8BED] bg-[#8E8BED] text-white"
+                            : "border-[0.5px] border-solid border-transparent bg-white text-[#1A1A1A] hover:bg-[#F2F4F7]"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
       ) : null}

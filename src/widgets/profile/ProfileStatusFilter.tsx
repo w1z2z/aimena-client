@@ -5,24 +5,37 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { PROFILE_ASSETS } from "./constants";
 
-export type ProfileListingStatusFilter = "all" | "active" | "archived";
+export type ProfileListingStatusFilter = "all" | "active" | "archived" | "completed";
 
-const STATUS_OPTIONS: Array<{ value: ProfileListingStatusFilter; label: string }> = [
+const OWN_STATUS_OPTIONS: Array<{ value: ProfileListingStatusFilter; label: string }> = [
   { value: "all", label: "Все" },
   { value: "active", label: "Активные" },
   { value: "archived", label: "Снятые с публикации" },
+  { value: "completed", label: "Завершенные" },
+];
+
+const PUBLIC_STATUS_OPTIONS: Array<{ value: ProfileListingStatusFilter; label: string }> = [
+  { value: "all", label: "Все" },
+  { value: "active", label: "Активные" },
+  { value: "completed", label: "Завершенные" },
 ];
 
 type ProfileStatusFilterProps = {
   value: ProfileListingStatusFilter;
   onChange: (next: ProfileListingStatusFilter) => void;
+  options?: "own" | "public";
 };
 
-export function ProfileStatusFilter({ value, onChange }: ProfileStatusFilterProps) {
+export function ProfileStatusFilter({
+  value,
+  onChange,
+  options = "own",
+}: ProfileStatusFilterProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const statusOptions = options === "public" ? PUBLIC_STATUS_OPTIONS : OWN_STATUS_OPTIONS;
   const currentLabel =
-    STATUS_OPTIONS.find((option) => option.value === value)?.label ?? "Все";
+    statusOptions.find((option) => option.value === value)?.label ?? "Все";
 
   useEffect(() => {
     if (!open) return;
@@ -33,7 +46,6 @@ export function ProfileStatusFilter({ value, onChange }: ProfileStatusFilterProp
       }
     };
 
-    // click (not mousedown): avoid racing with the opening button press
     window.addEventListener("click", onOutsideClick);
     return () => window.removeEventListener("click", onOutsideClick);
   }, [open]);
@@ -78,7 +90,7 @@ export function ProfileStatusFilter({ value, onChange }: ProfileStatusFilterProp
             aria-label="Статус объявлений"
             className="box-border flex w-[220px] flex-col gap-1 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white p-2 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
           >
-            {STATUS_OPTIONS.map((option) => {
+            {statusOptions.map((option) => {
               const isActive = option.value === value;
               return (
                 <button

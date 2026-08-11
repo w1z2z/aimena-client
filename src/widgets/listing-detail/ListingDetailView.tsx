@@ -261,7 +261,7 @@ export function ListingDetailView() {
                 images={itemImages}
                 isFavorite={listing.isFavorite}
                 hideFavorite={isOwner}
-                imageMuted={listing.status === "archived"}
+                imageMuted={listing.status === "archived" || listing.status === "completed"}
               />
               {listing.owner ? <ListingOwnerCard owner={listing.owner} /> : null}
             </div>

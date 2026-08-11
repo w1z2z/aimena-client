@@ -35,7 +35,7 @@ export type ListingCardPreview = Pick<
 >;
 
 export const LISTING_LIFECYCLE_MESSAGE: Record<ListingCardLifecycle, string> = {
-  archived: "Объявление в архиве",
+  archived: "Объявление снято с публикации",
   completed: "Объявление завершено",
   deleted: "Объявление удалено",
 };
