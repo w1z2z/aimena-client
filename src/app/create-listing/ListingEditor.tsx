@@ -69,6 +69,13 @@ import {
   type ServiceWorkLevelId,
 } from "./constants";
 
+function normalizeListingDescription(value: string) {
+  return value
+    .replace(/\r\n/g, "\n")
+    .replace(/[^\S\n]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 
 type CategoryTreeNode = ApiCategoryNode & {
   children?: Array<{ id: string; name: string; slug: string }>;
@@ -1293,7 +1300,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         serviceFormats: listingKind === "service" ? serviceFormats : undefined,
         serviceWorkLevel: listingKind === "service" ? serviceWorkLevel ?? undefined : undefined,
         title: title.trim(),
-        description: description.trim(),
+        description: normalizeListingDescription(description),
         categoryId,
         wantsCategoryIds,
         cityId: selectedCityId,

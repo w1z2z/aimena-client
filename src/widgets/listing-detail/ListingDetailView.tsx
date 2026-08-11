@@ -23,9 +23,17 @@ import { ListingGallery } from "./ListingGallery";
 import { ListingOwnerCard } from "./ListingOwnerCard";
 import { ListingSimilarSection, formatEstimatedPrice } from "./ListingSimilarSection";
 
-const DESCRIPTION_COLLAPSE_CHARS = 420;
 /** ~7 lines at 14px / 1.7 */
 const DESCRIPTION_COLLAPSED_HEIGHT = 166;
+
+/** Collapse runs of blank lines so sparse Enter spam doesn't explode layout. */
+function normalizeDescriptionWhitespace(value: string) {
+  return value
+    .replace(/\r\n/g, "\n")
+    .replace(/[^\S\n]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 
 function getCategoryIcon(...values: Array<string | null | undefined>) {
   for (const value of values) {
@@ -168,8 +176,9 @@ export function ListingDetailView() {
 
   const hasWantsContent = wantsCategories.length > 0 || wantsThings.length > 0;
 
-  const description = listing?.description?.trim() ?? "";
-  const canCollapseDescription = description.length > DESCRIPTION_COLLAPSE_CHARS;
+  const description = normalizeDescriptionWhitespace(listing?.description ?? "");
+  const canCollapseDescription =
+    descriptionFullHeight > DESCRIPTION_COLLAPSED_HEIGHT + 4;
   const visibleDescription =
     !canCollapseDescription || descriptionExpanded || !collapsedDescription
       ? description || "Описание не указано."
@@ -189,7 +198,7 @@ export function ListingDetailView() {
     const fullHeight = node.scrollHeight;
     setDescriptionFullHeight(fullHeight);
 
-    if (fullText.length <= DESCRIPTION_COLLAPSE_CHARS) {
+    if (fullHeight <= DESCRIPTION_COLLAPSED_HEIGHT + 4) {
       setCollapsedDescription(null);
       return;
     }
