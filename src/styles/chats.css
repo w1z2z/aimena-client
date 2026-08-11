@@ -131,8 +131,6 @@
   font-size: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-list-item__copy strong {
@@ -164,11 +162,11 @@
   height: 17px;
   align-items: center;
   justify-content: center;
-  padding: 4px 6px;
+  padding: 0 6px;
   border-radius: 9.5px;
   font-size: 11px;
   font-weight: 600;
-  line-height: 16px;
+  line-height: 1;
   letter-spacing: 0.022px;
   text-align: center;
 }
@@ -184,7 +182,7 @@
   width: 17px;
   min-width: 17px;
   height: 17px;
-  padding: 4px 6px;
+  padding: 0;
   background: #8e8bed;
   color: #fff;
 }
@@ -221,6 +219,10 @@
   padding: 48px;
   color: #626262;
   text-align: center;
+}
+
+.chats-empty-panel__hint {
+  color: #8e8bed;
 }
 
 .chats-profile-header {
@@ -923,18 +925,21 @@
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 83px;
+  align-items: stretch;
+  gap: 12px;
 }
 
 .chats-swap-preview__copy {
   display: flex;
   min-width: 0;
   flex-direction: column;
+  align-items: flex-start;
   gap: 12px;
 }
 
 .chats-swap-preview__label {
+  display: block;
+  flex: none;
   color: #636363;
   font-size: 11px;
   font-weight: 600;
@@ -943,6 +948,8 @@
 }
 
 .chats-swap-preview__title {
+  display: block;
+  max-width: 100%;
   overflow: hidden;
   color: #1a1a1a;
   font-size: 14px;
@@ -955,11 +962,13 @@
 
 .chats-swap-preview__status {
   display: flex;
+  box-sizing: border-box;
   width: 100%;
   min-height: 42px;
+  flex: none;
   align-items: center;
   justify-content: center;
-  padding: 12px;
+  padding: 8px 12px;
   border: 0.5px solid #cacaca;
   border-radius: 21px;
   color: #626262;

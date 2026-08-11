@@ -1023,7 +1023,11 @@ export function ChatsView() {
         ) : null}
         {!loading && !incomingOffer && !thread ? (
           <div className="chats-empty-panel">
-            {error || "Выберите чат или входящее предложение."}
+            {error ? (
+              error
+            ) : (
+              <span className="chats-empty-panel__hint">Откройте любой чат...</span>
+            )}
           </div>
         ) : null}
       </main>
