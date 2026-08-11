@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "@/features/auth";
@@ -14,19 +14,32 @@ import { PublicProfileActionsMenu } from "./PublicProfileActionsMenu";
 import { PublicProfileSidebar } from "./PublicProfileSidebar";
 
 type PublicProfileLayoutProps = {
-  active: PublicProfileSection;
   children: ReactNode;
 };
 
-export function PublicProfileLayout({ active, children }: PublicProfileLayoutProps) {
+function resolveActiveSection(pathname: string): PublicProfileSection {
+  if (pathname.endsWith("/deals")) return "deals";
+  if (pathname.endsWith("/reviews")) return "reviews";
+  return "listings";
+}
+
+export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const params = useParams<{ slug: string }>();
   const slug = typeof params.slug === "string" ? params.slug : "";
   const { user } = useAuth();
+  const active = resolveActiveSection(pathname);
 
   useEffect(() => {
     if (user?.slug && slug && user.slug === slug) {
-      router.replace(active === "deals" ? "/profile/deals" : "/profile");
+      const ownPath =
+        active === "deals"
+          ? "/profile/deals"
+          : active === "reviews"
+            ? "/profile/reviews"
+            : "/profile";
+      router.replace(ownPath);
     }
   }, [active, router, slug, user?.slug]);
 

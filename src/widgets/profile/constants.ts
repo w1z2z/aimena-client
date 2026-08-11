@@ -16,7 +16,7 @@ export const PROFILE_ASSETS = {
 
 export type ProfileSection = "listings" | "deals" | "reviews" | "settings";
 
-export type PublicProfileSection = "listings" | "deals";
+export type PublicProfileSection = "listings" | "deals" | "reviews";
 
 export const PROFILE_NAV: Array<{
   id: ProfileSection;

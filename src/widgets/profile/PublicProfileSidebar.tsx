@@ -33,7 +33,8 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
   // Temporary mocks until deals/reviews API is ready.
   const reviewsCount = Math.max(profile.ratingCount, MOCK_REVIEWS.length);
   const swapsDisplay = Math.max(profile.swapsCount, MOCK_DEALS.length);
-  const sidebarReviews = MOCK_REVIEWS.slice(0, 4);
+  const sidebarReviews = MOCK_REVIEWS.slice(0, 3);
+  const showReviewsBlock = active !== "reviews";
 
   return (
     <aside className="flex w-full max-w-[342px] shrink-0 flex-col items-stretch gap-6">
@@ -156,6 +157,7 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
             <Link
               key={item.id}
               href={item.href}
+              scroll={false}
               className={isActive ? activeClass : idleClass}
             >
               <span className="relative size-6 shrink-0 overflow-hidden">
@@ -171,23 +173,32 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
         })}
       </nav>
 
-      <section className="flex w-full flex-col overflow-hidden rounded-[31px] bg-[#F8F8F5] px-[14px] py-[15px]">
-        <h2 className="w-full shrink-0 pb-3 text-center text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#1A1A1A]">
-          Отзывы ({formatProfileNumber(reviewsCount)})
-        </h2>
+      {showReviewsBlock ? (
+        <section className="flex w-full flex-col overflow-hidden rounded-[31px] bg-[#F8F8F5] px-[14px] py-[15px]">
+          <h2 className="w-full shrink-0 pb-3 text-center text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#1A1A1A]">
+            Отзывы ({formatProfileNumber(reviewsCount)})
+          </h2>
 
-        {sidebarReviews.length === 0 ? (
-          <p className="w-full py-6 text-center text-[14px] font-semibold leading-[1.4] text-[#626262]">
-            Пока нет отзывов.
-          </p>
-        ) : (
-          <div className="flex max-h-[520px] w-full flex-col gap-3 overflow-y-auto pr-1">
-            {sidebarReviews.map((review) => (
-              <ProfileReviewCard key={review.id} review={review} compact />
-            ))}
-          </div>
-        )}
-      </section>
+          {sidebarReviews.length === 0 ? (
+            <p className="w-full py-6 text-center text-[14px] font-semibold leading-[1.4] text-[#626262]">
+              Пока нет отзывов.
+            </p>
+          ) : (
+            <div className="flex w-full flex-col gap-3">
+              {sidebarReviews.map((review) => (
+                <ProfileReviewCard key={review.id} review={review} compact />
+              ))}
+              <Link
+                href={`/users/${profile.slug}/reviews`}
+                scroll={false}
+                className="flex h-3 w-full shrink-0 items-center justify-center self-stretch text-center text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A] hover:text-[#8E8BED]"
+              >
+                показать все отзывы
+              </Link>
+            </div>
+          )}
+        </section>
+      ) : null}
     </aside>
   );
 }
