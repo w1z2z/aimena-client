@@ -12,6 +12,8 @@ import {
   PROFILE_ASSETS,
   type PublicProfileSection,
 } from "./constants";
+import { ProfileReviewCard } from "./ProfileReviewCard";
+import { MOCK_DEALS, MOCK_REVIEWS } from "./mocks";
 
 type PublicProfileSidebarProps = {
   profile: BackendPublicProfile;
@@ -28,8 +30,10 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
         ? profile.ratingAvg.toFixed(1).replace(".", ",")
         : "0";
   const nav = getPublicProfileNav(profile.slug);
-  const reviewsCount = profile.ratingCount;
-  const swapsDisplay = profile.swapsCount;
+  // Temporary mocks until deals/reviews API is ready.
+  const reviewsCount = Math.max(profile.ratingCount, MOCK_REVIEWS.length);
+  const swapsDisplay = Math.max(profile.swapsCount, MOCK_DEALS.length);
+  const sidebarReviews = MOCK_REVIEWS.slice(0, 4);
 
   return (
     <aside className="flex w-full max-w-[342px] shrink-0 flex-col items-stretch gap-6">
@@ -172,9 +176,17 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
           Отзывы ({formatProfileNumber(reviewsCount)})
         </h2>
 
-        <p className="w-full py-6 text-center text-[14px] font-semibold leading-[1.4] text-[#626262]">
-          Пока нет отзывов.
-        </p>
+        {sidebarReviews.length === 0 ? (
+          <p className="w-full py-6 text-center text-[14px] font-semibold leading-[1.4] text-[#626262]">
+            Пока нет отзывов.
+          </p>
+        ) : (
+          <div className="flex max-h-[520px] w-full flex-col gap-3 overflow-y-auto pr-1">
+            {sidebarReviews.map((review) => (
+              <ProfileReviewCard key={review.id} review={review} compact />
+            ))}
+          </div>
+        )}
       </section>
     </aside>
   );

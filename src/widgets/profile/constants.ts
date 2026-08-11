@@ -2,12 +2,16 @@ export const PROFILE_ASSETS = {
   verified: "/profile/icon-verified.svg",
   pin: "/profile/icon-pin.svg",
   bolt: "/profile/icon-bolt.svg",
+  pointsBolt: "/profile/icon-points-bolt.svg",
   sortChevron: "/profile/icon-sort-chevron.svg",
   upload: "/profile/icon-upload.svg",
   settings: "/profile/icon-settings.svg",
   listings: "/profile/icon-listings.svg",
   deals: "/profile/icon-deals.svg",
   reviews: "/profile/icon-reviews.svg",
+  gallery: "/profile/icon-gallery.svg",
+  swap: "/profile/icon-swap.svg",
+  swapAlt: "/profile/icon-swap-alt.svg",
 } as const;
 
 export type ProfileSection = "listings" | "deals" | "reviews" | "settings";

@@ -1,21 +1,26 @@
 "use client";
 
+import { pluralRu } from "./constants";
+import { ProfileReviewCard } from "./ProfileReviewCard";
+import { MOCK_REVIEWS } from "./mocks";
+
 export function ProfileReviewsPanel() {
+  const total = MOCK_REVIEWS.length;
+  const countLabel = `${total} ${pluralRu(total, "отзыв", "отзыва", "отзывов")}`;
+
   return (
     <section className="flex w-[1074px] shrink-0 flex-col">
       <div className="flex flex-col gap-3">
         <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
           Отзывы
         </h1>
-        <p className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">
-          0 отзывов
-        </p>
+        <p className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">{countLabel}</p>
       </div>
 
-      <div className="mt-12">
-        <p className="text-[16px] font-semibold text-[#626262]">
-          Пока нет отзывов. Они появятся после завершённых обменов.
-        </p>
+      <div className="mt-12 flex flex-col gap-6">
+        {MOCK_REVIEWS.map((review) => (
+          <ProfileReviewCard key={review.id} review={review} />
+        ))}
       </div>
     </section>
   );
