@@ -11,7 +11,7 @@
   grid-template-columns: 342px minmax(0, 1075px);
   gap: 24px;
   margin: 0 auto;
-  padding: 70px 0 56px;
+  padding: 122px 0 56px;
 }
 
 .chats-sidebar {
@@ -275,7 +275,7 @@
   height: 843px;
   justify-content: flex-start;
   gap: 12px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .chats-offer-comparison {
@@ -287,7 +287,7 @@
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .chats-offer-column {
@@ -314,7 +314,7 @@
   margin: 0;
   display: flex;
   flex: none;
-  height: 17px;
+  min-height: 17px;
   align-items: center;
   font-size: 24px;
   font-weight: 800;
@@ -338,7 +338,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 24px;
-  overflow: hidden;
+  overflow: visible;
   padding: 24px;
   border: 0.5px solid #cacaca;
   border-radius: 31px;
@@ -398,6 +398,19 @@
   flex: 0 0 132px;
 }
 
+.chats-listing-detail__media-link {
+  display: block;
+  width: 132px;
+  height: 132px;
+  overflow: hidden;
+  border-radius: 21px;
+  transition: opacity 0.15s ease;
+}
+
+.chats-listing-detail__media-link:hover {
+  opacity: 0.86;
+}
+
 .chats-listing-detail__image {
   display: flex;
   width: 132px;
@@ -409,16 +422,43 @@
   object-fit: cover;
 }
 
-.chats-listing-detail__image-stack {
+.chats-listing-detail__image-stack-wrap {
   position: absolute;
   right: -7px;
   bottom: -8px;
+  width: 72px;
+  height: 72px;
+  pointer-events: none;
+}
+
+.chats-listing-detail__image-stack {
+  display: block;
   width: 72px;
   height: 72px;
   border: 3px solid #fff;
   border-radius: 21px;
   object-fit: cover;
   background: #fff;
+}
+
+.chats-listing-detail__stack-count {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  z-index: 1;
+  display: inline-flex;
+  min-width: 24px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: rgba(26, 26, 26, 0.72);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.022px;
 }
 
 .chats-listing-detail__meta {
@@ -433,6 +473,23 @@
 
 .chats-listing-detail__meta--with-next {
   padding-right: 44px;
+}
+
+.chats-listing-detail__title-link {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.chats-listing-detail__title-link:hover {
+  color: #8e8bed;
+}
+
+.chats-listing-detail__title-link:hover h3 {
+  color: inherit;
 }
 
 .chats-category {
@@ -665,12 +722,14 @@
 
 .chats-offer-next {
   position: absolute;
-  top: 64px;
-  right: 12px;
-  z-index: 2;
+  top: 65px;
+  left: 457px;
+  z-index: 3;
+  box-sizing: border-box;
   display: flex;
   width: 39px;
   height: 49px;
+  flex: none;
   align-items: center;
   justify-content: center;
   padding: 12px;
@@ -681,8 +740,11 @@
 }
 
 .chats-offer-next img {
-  width: 15px;
-  height: 25px;
+  display: block;
+  width: 25px;
+  height: 15px;
+  flex: none;
+  object-fit: contain;
   transform: rotate(90deg);
 }
 
@@ -1102,7 +1164,7 @@
   .chats-main {
     width: calc(100% - 24px);
     grid-template-columns: 1fr;
-    padding-top: 82px;
+    padding-top: 122px;
   }
 
   .chats-sidebar {

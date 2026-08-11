@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 import {
   EXTRA_PAY_LABELS,
@@ -33,6 +34,7 @@ import { acceptExchangeOffer, rejectExchangeOffer } from "@/shared/api/deals";
 import { ApiError } from "@/shared/api/http";
 import { LocationPinIcon, MenuSquareIcon, StarMiniIcon } from "@/shared/ui/icons";
 import { Header } from "@/widgets/header/Header";
+import { pluralRu } from "@/widgets/profile/constants";
 
 type ChatFilter = "all" | "chats" | "unread" | "offers";
 
@@ -158,7 +160,8 @@ function ListingCard({
   title,
   showWants = false,
   message,
-  secondaryImageUrl,
+  secondaryListing = null,
+  listingsCount,
   onNext,
   hasNext = false,
 }: {
@@ -166,7 +169,8 @@ function ListingCard({
   title: string;
   showWants?: boolean;
   message?: string;
-  secondaryImageUrl?: string | null;
+  secondaryListing?: ChatListing | null;
+  listingsCount?: number;
   onNext?: () => void;
   hasNext?: boolean;
 }) {
@@ -174,22 +178,39 @@ function ListingCard({
     listing.type === "service"
       ? mapServiceWorkLevelToLabel(listing.serviceWorkLevel)
       : mapApiConditionToLabel(listing.condition);
+  const listingHref = `/listings/${listing.id}`;
+  const totalListings = listingsCount ?? 1;
+  const hiddenCount = Math.max(totalListings - 2, 0);
+  const titleText =
+    listingsCount && listingsCount > 1
+      ? `${title} (${listingsCount} ${pluralRu(listingsCount, "объявление", "объявления", "объявлений")})`
+      : title;
 
   return (
     <section className="chats-offer-column">
-      <h2>{title}</h2>
+      <h2>{titleText}</h2>
       <article className="chats-listing-detail">
         <div className="chats-listing-detail__heading">
           <div className="chats-listing-detail__media">
-            <ListingImage listing={listing} className="chats-listing-detail__image" />
-            {secondaryImageUrl ? (
-              // Storage URL is dynamic and configured by the API.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={secondaryImageUrl}
-                alt=""
-                className="chats-listing-detail__image-stack"
-              />
+            <Link
+              href={listingHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="chats-listing-detail__media-link"
+              aria-label={listing.title}
+            >
+              <ListingImage listing={listing} className="chats-listing-detail__image" />
+            </Link>
+            {secondaryListing ? (
+              <span className="chats-listing-detail__image-stack-wrap">
+                <ListingImage
+                  listing={secondaryListing}
+                  className="chats-listing-detail__image-stack"
+                />
+                {hiddenCount > 0 ? (
+                  <span className="chats-listing-detail__stack-count">+{hiddenCount}</span>
+                ) : null}
+              </span>
             ) : null}
           </div>
           <div
@@ -201,7 +222,14 @@ function ListingCard({
               .join(" ")}
           >
             <span className="chats-category">{listing.category.name}</span>
-            <h3>{listing.title}</h3>
+            <Link
+              href={listingHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="chats-listing-detail__title-link"
+            >
+              <h3>{listing.title}</h3>
+            </Link>
             <div className="chats-listing-detail__pills">
               <span className="chats-location-pill">
                 <LocationPinIcon />
@@ -394,7 +422,8 @@ function IncomingOfferPanel({
             listing={offeredListing}
             title="Предложение"
             message={offer.message || undefined}
-            secondaryImageUrl={secondaryListing?.coverImageUrl}
+            secondaryListing={secondaryListing}
+            listingsCount={offeredListings.length}
             hasNext={offeredListings.length > 1}
             onNext={() =>
               setOfferIndex((current) => (current + 1) % offeredListings.length)
