@@ -73,7 +73,8 @@ const CATEGORY_PROFILE: readonly CategoryProfileStep[] = [
   { offsetX: 528, centerY: 150, iconWidth: 16, iconHeight: 16, labelSize: 3.6, labelLineHeight: 5, opacity: 0.6 },
 ] as const;
 
-const CATEGORY_ICON_ACTIVE_SHADOW = "drop-shadow(0 10px 24px rgba(217, 217, 217, 0.45))";
+const CATEGORY_ICON_ACTIVE_SHADOW =
+  "drop-shadow(0 4px 16px rgba(255, 255, 255, 0.45)) drop-shadow(0 0 36px rgba(217, 217, 217, 0.55)) drop-shadow(0 0 64px rgba(217, 217, 217, 0.35))";
 const CATEGORY_ICON_INACTIVE_SHADOW = "drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35))";
 const CATEGORY_ICON_PLACEHOLDER = categoryPlaceholderIconSrc;
 
@@ -598,13 +599,20 @@ export function CategoriesArc({
         <defs>
           <filter
             id="category-icon-shadow-active"
-            x="-120%"
-            y="-120%"
-            width="340%"
-            height="340%"
+            x="-200%"
+            y="-200%"
+            width="500%"
+            height="500%"
             colorInterpolationFilters="sRGB"
           >
-            <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgb(217, 217, 217)" floodOpacity="0.45" />
+            <feDropShadow
+              in="SourceGraphic"
+              dx="0"
+              dy="0"
+              stdDeviation="28"
+              floodColor="rgb(230, 230, 230)"
+              floodOpacity="0.6"
+            />
           </filter>
           <filter
             id="category-icon-shadow-inactive"
