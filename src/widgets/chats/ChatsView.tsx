@@ -108,7 +108,21 @@ function Avatar({
   );
 }
 
-function Pill({ children }: { children: ReactNode }) {
+function Pill({
+  children,
+  truncate = false,
+}: {
+  children: ReactNode;
+  truncate?: boolean;
+}) {
+  if (truncate) {
+    return (
+      <span className="chats-pill chats-pill--want">
+        <span className="chats-pill__text">{children}</span>
+      </span>
+    );
+  }
+
   return <span className="chats-pill">{children}</span>;
 }
 
@@ -245,7 +259,9 @@ function ListingCard({
                   ? listing.wantsTags
                   : ["Любые варианты"]
                 ).map((tag) => (
-                  <Pill key={tag}>{tag}</Pill>
+                  <Pill key={tag} truncate>
+                    {tag}
+                  </Pill>
                 ))}
               </div>
             </div>
