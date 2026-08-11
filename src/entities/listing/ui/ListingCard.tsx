@@ -190,7 +190,9 @@ export function ListingCard({
 
   const handleExchangeClick = () => {
     if (isInactive) return;
-    guardAuth("propose-exchange");
+    guardAuth("propose-exchange", () => {
+      router.push(freeListing ? listingHref : `${listingHref}/exchange`);
+    });
   };
 
   const handleWantCategoryClick = (category: ListingWantCategory) => {

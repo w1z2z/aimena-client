@@ -216,7 +216,10 @@ export function ListingDetailView() {
       : Math.min(DESCRIPTION_COLLAPSED_HEIGHT, descriptionFullHeight || DESCRIPTION_COLLAPSED_HEIGHT);
 
   const handleProposeExchange = () => {
-    guardAuth("propose-exchange");
+    if (!listing) return;
+    guardAuth("propose-exchange", () => {
+      router.push(`/listings/${listing.id}/exchange`);
+    });
   };
 
   const handleCategoryClick = (
