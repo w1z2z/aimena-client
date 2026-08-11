@@ -718,21 +718,27 @@ export function ChatsView() {
     const response = await getChats(signal);
     setSummaries(response.data);
     setSelectedId((current) => {
-      if (current && response.data.some((item) => item.id === current)) return current;
       if (
         selectedFromQuery &&
         response.data.some((item) => item.id === selectedFromQuery)
       ) {
         return selectedFromQuery;
       }
-      return response.data[0]?.id ?? null;
+      // Keep an in-page selection; do not auto-open the first chat on /chats.
+      if (current && response.data.some((item) => item.id === current)) return current;
+      return null;
     });
     return response.data;
   }, [selectedFromQuery]);
 
   useEffect(() => {
-    if (!selectedFromQuery) return;
-    setSelectedId(selectedFromQuery);
+    if (selectedFromQuery) {
+      setSelectedId(selectedFromQuery);
+      return;
+    }
+    setSelectedId(null);
+    setThread(null);
+    setIncomingOffer(null);
   }, [selectedFromQuery]);
 
   useEffect(() => {
@@ -746,14 +752,14 @@ export function ChatsView() {
       .then((response) => {
         setSummaries(response.data);
         setSelectedId((current) => {
-          if (current && response.data.some((item) => item.id === current)) return current;
           if (
             selectedFromQuery &&
             response.data.some((item) => item.id === selectedFromQuery)
           ) {
             return selectedFromQuery;
           }
-          return response.data[0]?.id ?? null;
+          if (current && response.data.some((item) => item.id === current)) return current;
+          return null;
         });
       })
       .catch((requestError: unknown) => {
@@ -898,6 +904,7 @@ export function ChatsView() {
   }, [filter, summaries]);
 
   const handleSelect = (item: ChatSummary) => {
+    if (item.id === selectedId) return;
     setSelectedId(item.id);
     setIncomingOffer(null);
     setThread(null);
