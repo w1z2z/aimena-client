@@ -1,6 +1,6 @@
 /* Listing card — Figma 2514:65704 Property 1=новая
- * Card 342×458, padding 12, gap 12, radius 31, border 3 (gradient overlay).
- * img-panel 342×342 full-bleed. Title 294×12 + leading-trim.
+ * Card 342×464, padding 12, gap 12, radius 31, border 3 (gradient overlay).
+ * img-panel 342×342 full-bleed. Title uses real line-box (no text-box-trim).
  */
 
 .home-listing-card {
@@ -12,7 +12,7 @@
   isolation: isolate;
   overflow: hidden;
   width: 342px;
-  height: 458px;
+  height: 464px;
   padding: 12px;
   gap: 12px;
   border: 0;
@@ -55,17 +55,17 @@
   overflow: visible;
 }
 
-/* card-title — Figma 294×12, padding 1px 12px, Label ML + leading-trim */
+/* card-title — Label ML; height fits 14px / 1.2 without Figma leading-trim */
 .home-listing-card__title {
   box-sizing: border-box;
   display: flex;
   z-index: 2;
   flex: none;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   width: 294px;
-  height: 12px;
-  padding: 1px 12px;
+  min-height: 17px;
+  padding: 0 12px;
   overflow: visible;
   color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
@@ -83,13 +83,11 @@
   margin: 0 auto;
   width: 271px;
   max-width: 100%;
-  height: 10px;
+  min-height: 17px;
   overflow: visible;
   color: inherit;
   text-decoration: none;
   line-height: 1.2;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__title span {
@@ -99,8 +97,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.2;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 /* Frame 32887 — 342×410, gap 16 */
@@ -214,8 +210,6 @@
   line-height: 16px;
   letter-spacing: 0.002em;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__location-icon {
@@ -307,8 +301,6 @@
   line-height: 16px;
   letter-spacing: 0.002em;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__categories {
@@ -339,8 +331,6 @@
   font-weight: 600;
   line-height: 16px;
   letter-spacing: 0.002em;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__category--button {
@@ -473,8 +463,6 @@
   line-height: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__wants-more {
@@ -486,8 +474,6 @@
   line-height: 16px;
   letter-spacing: 0.002em;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-listing-card__free-pill {
@@ -533,7 +519,7 @@
 
 .listing-skeleton-block--title {
   width: 168px;
-  height: 12px;
+  height: 17px;
   margin: 0 auto;
   border-radius: 999px;
 }

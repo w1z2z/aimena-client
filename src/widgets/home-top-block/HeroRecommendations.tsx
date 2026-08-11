@@ -13,7 +13,7 @@ function HeroRecommendationsEmpty({
 }) {
   return (
     <div
-      className="box-border flex h-[458px] w-[342px] flex-col items-center justify-center rounded-[31px] border-[3px] border-solid border-transparent px-[24px] py-[32px] text-center"
+      className="box-border flex h-[464px] w-[342px] flex-col items-center justify-center rounded-[31px] border-[3px] border-solid border-transparent px-[24px] py-[32px] text-center"
       style={{
         background:
           "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
@@ -140,7 +140,7 @@ export function HeroRecommendationsPanel({
               <div
                 key={listing.id}
                 data-recommendation-card
-                className="flex h-[458px] w-[342px] shrink-0 justify-center"
+                className="flex h-[464px] w-[342px] shrink-0 justify-center"
               >
                 <ListingCard
                   listingId={listing.id}
