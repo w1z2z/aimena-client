@@ -92,6 +92,10 @@ function readStoredAccessToken(): string | null {
   return window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
 }
 
+export function getStoredAccessToken(): string | null {
+  return readStoredAccessToken();
+}
+
 function writeStoredAccessToken(token: string | null) {
   if (typeof window === "undefined") return;
 

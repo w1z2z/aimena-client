@@ -5,6 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 import { useAuth, useAuthGate } from "@/features/auth";
+import {
+  connectChatSocket,
+  onChatThreadUpdated,
+} from "@/shared/api/chat-socket";
 import { getChats, type ChatSummary } from "@/shared/api/chats";
 import { ChatBubbleIcon } from "@/shared/ui/icons";
 
@@ -170,6 +174,43 @@ export function FloatingChat() {
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    void connectChatSocket();
+
+    const unsubscribe = onChatThreadUpdated((event) => {
+      setItems((current) => {
+        if (current.length === 0) return current;
+        const index = current.findIndex((item) => item.id === event.threadId);
+        if (index < 0) {
+          void getChats()
+            .then((response) => setItems(response.data.slice(0, 5)))
+            .catch(() => undefined);
+          return current;
+        }
+        const item = current[index];
+        const updated: ChatSummary = {
+          ...item,
+          preview: event.preview ?? item.preview,
+          updatedAt: event.lastMessageAt
+            ? typeof event.lastMessageAt === "string"
+              ? event.lastMessageAt
+              : new Date(event.lastMessageAt).toISOString()
+            : item.updatedAt,
+          unreadCount:
+            typeof event.unreadCount === "number" ? event.unreadCount : item.unreadCount,
+        };
+        const next = [...current];
+        next.splice(index, 1);
+        return [updated, ...next].slice(0, 5);
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isOpen || !isAuthenticated) return;

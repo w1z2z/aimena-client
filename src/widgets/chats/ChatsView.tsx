@@ -26,10 +26,20 @@ import {
   getIncomingOffer,
   sendChatMessage,
   type ChatListing,
+  type ChatMessage,
   type ChatSummary,
   type ChatThread,
   type IncomingOffer,
 } from "@/shared/api/chats";
+import {
+  connectChatSocket,
+  joinChatThread,
+  leaveChatThread,
+  markChatThreadRead,
+  onChatMessage,
+  onChatThreadUpdated,
+  sendChatSocketMessage,
+} from "@/shared/api/chat-socket";
 import { acceptExchangeOffer, rejectExchangeOffer } from "@/shared/api/deals";
 import { ApiError } from "@/shared/api/http";
 import { LocationPinIcon, MenuSquareIcon, StarMiniIcon } from "@/shared/ui/icons";
@@ -751,24 +761,44 @@ export function ChatsView() {
         setError("Не удалось загрузить чаты.");
       })
       .finally(() => setLoading(false));
+
+    void connectChatSocket();
+
     return () => controller.abort();
   }, [authLoading, guardAuth, isAuthenticated, selectedFromQuery]);
 
   const selectedSummary = summaries.find((item) => item.id === selectedId) ?? null;
+  // Stable key: do not depend on summary object identity (preview/unread updates
+  // must not re-fetch the open thread — that caused GET spam in API logs).
+  const selectedFetchKey = selectedSummary
+    ? selectedSummary.kind === "offer"
+      ? `offer:${selectedSummary.offerId}`
+      : `thread:${selectedSummary.threadId ?? selectedSummary.id}`
+    : null;
 
   useEffect(() => {
-    if (!selectedSummary) return;
+    if (!selectedFetchKey || !selectedId) return;
+    const selected = summaries.find((item) => item.id === selectedId);
+    if (!selected) return;
+
     const controller = new AbortController();
     const request =
-      selectedSummary.kind === "offer"
-        ? getIncomingOffer(selectedSummary.offerId, controller.signal).then((response) => {
+      selected.kind === "offer"
+        ? getIncomingOffer(selected.offerId, controller.signal).then((response) => {
             setThread(null);
             setIncomingOffer(response.offer);
           })
-        : getChatThread(selectedSummary.threadId ?? selectedSummary.id, controller.signal).then(
+        : getChatThread(selected.threadId ?? selected.id, controller.signal).then(
             (response) => {
               setIncomingOffer(null);
               setThread(response.thread);
+              setSummaries((current) => {
+                const index = current.findIndex((item) => item.id === selected.id);
+                if (index < 0 || current[index].unreadCount === 0) return current;
+                const next = [...current];
+                next[index] = { ...current[index], unreadCount: 0 };
+                return next;
+              });
             },
           );
     void request.catch((requestError: unknown) => {
@@ -776,7 +806,92 @@ export function ChatsView() {
       setError("Не удалось открыть выбранный чат.");
     });
     return () => controller.abort();
-  }, [selectedSummary]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fetch when selection identity changes
+  }, [selectedFetchKey, selectedId]);
+
+  useEffect(() => {
+    if (!thread?.id) return;
+    const threadId = thread.id;
+    void connectChatSocket().then(() => {
+      joinChatThread(threadId);
+      markChatThreadRead(threadId);
+    });
+    return () => {
+      leaveChatThread(threadId);
+    };
+  }, [thread?.id]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const unsubscribeMessage = onChatMessage((event) => {
+      const createdAt =
+        typeof event.message.createdAt === "string"
+          ? event.message.createdAt
+          : new Date(event.message.createdAt).toISOString();
+      const nextMessage: ChatMessage = { ...event.message, createdAt };
+
+      setThread((current) => {
+        if (!current || current.id !== event.threadId) return current;
+        if (current.messages.some((item) => item.id === nextMessage.id)) return current;
+        return { ...current, messages: [...current.messages, nextMessage] };
+      });
+
+      setSummaries((current) => {
+        const index = current.findIndex((item) => item.id === event.threadId);
+        if (index < 0) {
+          void loadSummaries();
+          return current;
+        }
+        const item = current[index];
+        const isOpen = selectedId === event.threadId;
+        const updated: ChatSummary = {
+          ...item,
+          preview: nextMessage.body,
+          updatedAt: createdAt,
+          unreadCount: isOpen
+            ? 0
+            : nextMessage.senderId === user?.id
+              ? item.unreadCount
+              : item.unreadCount + 1,
+        };
+        const next = [...current];
+        next.splice(index, 1);
+        return [updated, ...next];
+      });
+
+      if (selectedId === event.threadId) {
+        markChatThreadRead(event.threadId);
+      }
+    });
+
+    const unsubscribeUpdated = onChatThreadUpdated((event) => {
+      setSummaries((current) => {
+        const index = current.findIndex((item) => item.id === event.threadId);
+        if (index < 0) return current;
+        const item = current[index];
+        const updated: ChatSummary = {
+          ...item,
+          preview: event.preview ?? item.preview,
+          updatedAt: event.lastMessageAt
+            ? typeof event.lastMessageAt === "string"
+              ? event.lastMessageAt
+              : new Date(event.lastMessageAt).toISOString()
+            : item.updatedAt,
+          unreadCount:
+            typeof event.unreadCount === "number" ? event.unreadCount : item.unreadCount,
+        };
+        const next = [...current];
+        next.splice(index, 1);
+        return [updated, ...next];
+      });
+    });
+
+    return () => {
+      unsubscribeMessage();
+      unsubscribeUpdated();
+    };
+  }, [isAuthenticated, loadSummaries, selectedId, user?.id]);
 
   const filteredSummaries = useMemo(() => {
     return filterChatSummaries(summaries, filter);
@@ -830,13 +945,39 @@ export function ChatsView() {
   const handleSend = async (body: string) => {
     if (!thread) return false;
     try {
-      const response = await sendChatMessage(thread.id, body);
-      setThread((current) =>
-        current
-          ? { ...current, messages: [...current.messages, response.message] }
-          : current,
-      );
-      void loadSummaries();
+      let message: ChatMessage;
+      try {
+        message = await sendChatSocketMessage(thread.id, body);
+      } catch {
+        const response = await sendChatMessage(thread.id, body);
+        message = response.message;
+      }
+
+      const createdAt =
+        typeof message.createdAt === "string"
+          ? message.createdAt
+          : new Date(message.createdAt).toISOString();
+      const nextMessage = { ...message, createdAt };
+
+      setThread((current) => {
+        if (!current) return current;
+        if (current.messages.some((item) => item.id === nextMessage.id)) return current;
+        return { ...current, messages: [...current.messages, nextMessage] };
+      });
+      setSummaries((current) => {
+        const index = current.findIndex((item) => item.id === thread.id);
+        if (index < 0) return current;
+        const item = current[index];
+        const updated: ChatSummary = {
+          ...item,
+          preview: nextMessage.body,
+          updatedAt: createdAt,
+          unreadCount: 0,
+        };
+        const next = [...current];
+        next.splice(index, 1);
+        return [updated, ...next];
+      });
       return true;
     } catch {
       setError("Не удалось отправить сообщение.");
