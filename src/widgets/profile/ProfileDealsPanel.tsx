@@ -1,16 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { pluralRu } from "./constants";
 import { ProfileDealCard } from "./ProfileDealCard";
+import {
+  getProfilePageCount,
+  PROFILE_PAGE_SIZE,
+  ProfilePagination,
+} from "./ProfilePagination";
 import {
   ProfileSortControl,
   PROFILE_DEAL_TYPE_OPTIONS,
   type ProfileDealTypeFilter,
   type ProfileSortOrder,
 } from "./ProfileSortControl";
-import { filterMockDeals, MOCK_DEALS } from "./mocks";
+import { filterMockDeals, MOCK_DEALS, paginateItems } from "./mocks";
 
 const EMPTY_BY_TYPE: Record<ProfileDealTypeFilter, string> = {
   all: "Пока нет обменов. Когда сделки появятся, история будет здесь.",
@@ -22,12 +27,19 @@ const EMPTY_BY_TYPE: Record<ProfileDealTypeFilter, string> = {
 export function ProfileDealsPanel() {
   const [sort, setSort] = useState<ProfileSortOrder>("newest");
   const [typeFilter, setTypeFilter] = useState<ProfileDealTypeFilter>("all");
+  const [page, setPage] = useState(1);
 
-  const deals = useMemo(
+  useEffect(() => {
+    setPage(1);
+  }, [sort, typeFilter]);
+
+  const filteredDeals = useMemo(
     () => filterMockDeals(MOCK_DEALS, typeFilter, sort),
     [sort, typeFilter],
   );
-  const total = deals.length;
+  const total = filteredDeals.length;
+  const pageCount = getProfilePageCount(total);
+  const deals = paginateItems(filteredDeals, page, PROFILE_PAGE_SIZE);
   const countLabel = `${total} ${pluralRu(total, "обмен", "обмена", "обменов")}`;
 
   return (
@@ -54,11 +66,14 @@ export function ProfileDealsPanel() {
         {deals.length === 0 ? (
           <p className="text-[16px] font-semibold text-[#626262]">{EMPTY_BY_TYPE[typeFilter]}</p>
         ) : (
-          <div className="flex flex-col gap-6">
-            {deals.map((deal) => (
-              <ProfileDealCard key={deal.id} deal={deal} showReviewAction />
-            ))}
-          </div>
+          <>
+            <div className="flex flex-col gap-6">
+              {deals.map((deal) => (
+                <ProfileDealCard key={deal.id} deal={deal} showReviewAction />
+              ))}
+            </div>
+            <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
+          </>
         )}
       </div>
     </section>

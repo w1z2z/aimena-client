@@ -360,3 +360,8 @@ export function filterMockDeals(
     (a, b) => direction * (Date.parse(a.dateIso) - Date.parse(b.dateIso)),
   );
 }
+
+export function paginateItems<T>(items: T[], page: number, pageSize: number): T[] {
+  const start = (Math.max(page, 1) - 1) * pageSize;
+  return items.slice(start, start + pageSize);
+}

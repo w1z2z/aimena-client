@@ -1,11 +1,24 @@
 "use client";
 
+import { useMemo, useState } from "react";
+
 import { pluralRu } from "./constants";
+import {
+  getProfilePageCount,
+  PROFILE_PAGE_SIZE,
+  ProfilePagination,
+} from "./ProfilePagination";
 import { ProfileReviewCard } from "./ProfileReviewCard";
-import { MOCK_REVIEWS } from "./mocks";
+import { MOCK_REVIEWS, paginateItems } from "./mocks";
 
 export function PublicProfileReviewsPanel() {
+  const [page, setPage] = useState(1);
   const total = MOCK_REVIEWS.length;
+  const pageCount = getProfilePageCount(total);
+  const reviews = useMemo(
+    () => paginateItems(MOCK_REVIEWS, page, PROFILE_PAGE_SIZE),
+    [page],
+  );
   const countLabel = `${total} ${pluralRu(total, "отзыв", "отзыва", "отзывов")}`;
 
   return (
@@ -18,10 +31,11 @@ export function PublicProfileReviewsPanel() {
       </div>
 
       <div className="mt-12 flex flex-col gap-6">
-        {MOCK_REVIEWS.map((review) => (
+        {reviews.map((review) => (
           <ProfileReviewCard key={review.id} review={review} />
         ))}
       </div>
+      <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
     </section>
   );
 }

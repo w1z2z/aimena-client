@@ -1,21 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
-import { ListingCard, ListingCardSkeleton, ListingCardSkeletonGrid, listingQueryKeys, mapApiListingToCard } from "@/entities/listing";
+import {
+  ListingCard,
+  ListingCardSkeletonGrid,
+  listingQueryKeys,
+  mapApiListingToCard,
+} from "@/entities/listing";
 import { getListings } from "@/shared/api/listings";
-import { useInfiniteScrollSentinel } from "@/shared/lib/use-infinite-scroll-sentinel";
 import { Header } from "@/widgets/header/Header";
-
-const PAGE_SIZE = 24;
-
-const FREE_QUERY = {
-  pageSize: PAGE_SIZE,
-  isFree: true as const,
-  type: ["item"] as Array<"item">,
-};
+import {
+  CATALOG_PAGE_SIZE,
+  getProfilePageCount,
+  ProfilePagination,
+} from "@/widgets/profile/ProfilePagination";
 
 function pluralOffers(count: number) {
   const mod10 = count % 10;
@@ -26,14 +27,15 @@ function pluralOffers(count: number) {
 }
 
 export default function FreeGiveawaysPage() {
-  const listingsQuery = useInfiniteQuery({
-    queryKey: [...listingQueryKeys.all, "free-infinite", FREE_QUERY],
-    initialPageParam: 1,
-    queryFn: async ({ pageParam, signal }) => {
+  const [page, setPage] = useState(1);
+
+  const listingsQuery = useQuery({
+    queryKey: [...listingQueryKeys.all, "free-page", page, CATALOG_PAGE_SIZE],
+    queryFn: async ({ signal }) => {
       const response = await getListings(
         {
-          page: pageParam,
-          pageSize: PAGE_SIZE,
+          page,
+          pageSize: CATALOG_PAGE_SIZE,
           isFree: true,
           type: ["item"],
         },
@@ -43,30 +45,21 @@ export default function FreeGiveawaysPage() {
         items: response.data.map(mapApiListingToCard),
         total: response.meta.total,
         page: response.meta.page,
-        pageCount: response.meta.pageCount,
+        pageCount:
+          response.meta.pageCount ??
+          getProfilePageCount(response.meta.total, CATALOG_PAGE_SIZE),
       };
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.page < lastPage.pageCount ? lastPage.page + 1 : undefined,
+    placeholderData: (previous) => previous,
   });
 
-  const listings = useMemo(
-    () => listingsQuery.data?.pages.flatMap((page) => page.items) ?? [],
-    [listingsQuery.data],
-  );
-  const total = listingsQuery.data?.pages[0]?.total ?? listings.length;
-
-  const sentinelRef = useInfiniteScrollSentinel({
-    hasNextPage: Boolean(listingsQuery.hasNextPage),
-    isFetchingNextPage: listingsQuery.isFetchingNextPage,
-    fetchNextPage: () => {
-      if (!listingsQuery.hasNextPage || listingsQuery.isFetchingNextPage) return;
-      void listingsQuery.fetchNextPage();
-    },
-  });
+  const listings = listingsQuery.data?.items ?? [];
+  const total = listingsQuery.data?.total ?? 0;
+  const pageCount =
+    listingsQuery.data?.pageCount ?? getProfilePageCount(total, CATALOG_PAGE_SIZE);
 
   let body = (
-    <ListingCardSkeletonGrid count={8} className="favorites-page__grid" />
+    <ListingCardSkeletonGrid count={CATALOG_PAGE_SIZE} className="favorites-page__grid" />
   );
 
   if (listingsQuery.isError) {
@@ -111,13 +104,8 @@ export default function FreeGiveawaysPage() {
               ownerId={listing.ownerId}
             />
           ))}
-          {listingsQuery.isFetchingNextPage
-            ? Array.from({ length: 4 }, (_, index) => (
-                <ListingCardSkeleton key={`more-${index}`} />
-              ))
-            : null}
         </div>
-        <div ref={sentinelRef} className="favorites-page__sentinel" aria-hidden />
+        <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
       </div>
     );
   }

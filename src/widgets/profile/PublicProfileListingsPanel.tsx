@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
@@ -16,6 +16,11 @@ import { getPublicProfile, getUserListingsBySlug } from "@/shared/api/auth";
 import type { ApiListingCard } from "@/shared/api/listings";
 
 import { pluralRu } from "./constants";
+import {
+  getProfilePageCount,
+  PROFILE_PAGE_SIZE,
+  ProfilePagination,
+} from "./ProfilePagination";
 import { ProfileSortControl, type ProfileSortOrder } from "./ProfileSortControl";
 import {
   ProfileStatusFilter,
@@ -41,6 +46,7 @@ export function PublicProfileListingsPanel() {
   const slug = typeof params.slug === "string" ? params.slug : "";
   const [sort, setSort] = useState<ProfileSortOrder>("newest");
   const [statusFilter, setStatusFilter] = useState<ProfileListingStatusFilter>("all");
+  const [page, setPage] = useState(1);
 
   const profileQuery = useQuery({
     queryKey: ["public-profile", slug],
@@ -59,12 +65,16 @@ export function PublicProfileListingsPanel() {
         ? []
         : [statusFilter];
 
+  useEffect(() => {
+    setPage(1);
+  }, [sort, statusFilter, showCompleted]);
+
   const listingsQuery = useQuery({
-    queryKey: ["public-profile-listings", slug, statusFilter, sort, showCompleted],
+    queryKey: ["public-profile-listings", slug, statusFilter, sort, showCompleted, page],
     queryFn: ({ signal }) =>
       getUserListingsBySlug(
         slug,
-        { page: 1, pageSize: 50, status: statusQuery, sort },
+        { page, pageSize: PROFILE_PAGE_SIZE, status: statusQuery, sort },
         signal,
       ),
     enabled: Boolean(slug) && statusQuery.length > 0,
@@ -73,7 +83,11 @@ export function PublicProfileListingsPanel() {
 
   const listings = statusQuery.length === 0 ? [] : (listingsQuery.data?.data ?? []);
   const total =
-    statusQuery.length === 0 ? 0 : (listingsQuery.data?.meta.total ?? listings.length);
+    statusQuery.length === 0 ? 0 : (listingsQuery.data?.meta.total ?? 0);
+  const pageCount =
+    statusQuery.length === 0
+      ? 0
+      : (listingsQuery.data?.meta.pageCount ?? getProfilePageCount(total));
   const countLabel = `${total} ${pluralRu(total, "объявление", "объявления", "объявлений")}`;
 
   let body: ReactNode;
@@ -81,7 +95,7 @@ export function PublicProfileListingsPanel() {
   if (listingsQuery.isLoading && listings.length === 0 && statusQuery.length > 0) {
     body = (
       <ListingCardSkeletonGrid
-        count={6}
+        count={PROFILE_PAGE_SIZE}
         className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12"
         itemClassName="profile-listing-card-slot"
       />
@@ -96,30 +110,33 @@ export function PublicProfileListingsPanel() {
     );
   } else {
     body = (
-      <div className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12">
-        {listings.map((listing) => {
-          const lifecycle = resolvePublicLifecycle(listing);
-          return (
-            <div key={listing.id} className="profile-listing-card-slot">
-              <ListingCard
-                listingId={listing.id}
-                variant="mine"
-                title={listing.title}
-                city={listing.city.name}
-                condition={mapApiConditionToLabel(listing.condition)}
-                coverImageUrl={listing.coverImageUrl}
-                wants={buildWantsPreview(listing)}
-                wantCategories={buildWantCategories(listing)}
-                isFree={listing.isFree}
-                isFavorite={listing.isFavorite}
-                ownerId={listing.ownerId}
-                lifecycle={lifecycle}
-                imageMuted={Boolean(lifecycle)}
-              />
-            </div>
-          );
-        })}
-      </div>
+      <>
+        <div className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12">
+          {listings.map((listing) => {
+            const lifecycle = resolvePublicLifecycle(listing);
+            return (
+              <div key={listing.id} className="profile-listing-card-slot">
+                <ListingCard
+                  listingId={listing.id}
+                  variant="mine"
+                  title={listing.title}
+                  city={listing.city.name}
+                  condition={mapApiConditionToLabel(listing.condition)}
+                  coverImageUrl={listing.coverImageUrl}
+                  wants={buildWantsPreview(listing)}
+                  wantCategories={buildWantCategories(listing)}
+                  isFree={listing.isFree}
+                  isFavorite={listing.isFavorite}
+                  ownerId={listing.ownerId}
+                  lifecycle={lifecycle}
+                  imageMuted={Boolean(lifecycle)}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
+      </>
     );
   }
 

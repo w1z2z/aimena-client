@@ -90,9 +90,22 @@ function updateFavoriteInQueryData(
   }
 
   if (Array.isArray(record.items)) {
+    const nextItems = record.items.map((item) =>
+      updateFavoriteItem(item, listingId, isFavorite),
+    );
     return {
       ...record,
-      items: record.items.map((item) => updateFavoriteItem(item, listingId, isFavorite)),
+      items:
+        options?.removeFromList && !isFavorite
+          ? nextItems.filter((item) => {
+              if (!item || typeof item !== "object") return true;
+              return (item as Record<string, unknown>).id !== listingId;
+            })
+          : nextItems,
+      total:
+        options?.removeFromList && !isFavorite && typeof record.total === "number"
+          ? Math.max(0, record.total - 1)
+          : record.total,
     };
   }
 
