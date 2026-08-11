@@ -541,6 +541,82 @@ function ChatSupportMenu() {
   );
 }
 
+function SwapPreviewCard({
+  label,
+  listing,
+  listings,
+  activeIndex = 0,
+  menu = false,
+  onNext,
+}: {
+  label: string;
+  listing: ChatListing;
+  listings: ChatListing[];
+  activeIndex?: number;
+  menu?: boolean;
+  onNext?: () => void;
+}) {
+  const count = listings.length;
+  const hasNext = count > 1 && Boolean(onNext);
+  const listingHref = `/listings/${listing.id}`;
+  const labelText =
+    count > 1
+      ? `${label} (${count} ${pluralRu(count, "объявление", "объявления", "объявлений")})`
+      : label;
+
+  return (
+    <div
+      className={[
+        "chats-swap-preview",
+        menu ? "chats-swap-preview--theirs" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <div className="chats-swap-preview__media">
+        <Link
+          href={listingHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="chats-swap-preview__image-link"
+          aria-label={listing.title}
+        >
+          <ListingImage listing={listing} className="chats-swap-preview__image" />
+        </Link>
+        {hasNext && onNext ? (
+          <button
+            type="button"
+            className="chats-swap-preview__pager"
+            aria-label={`Следующее объявление, ${activeIndex + 1} из ${count}`}
+            onClick={onNext}
+          >
+            <span>
+              {activeIndex + 1}/{count}
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/chat/offer-chevron.svg" alt="" />
+          </button>
+        ) : null}
+      </div>
+      <div className="chats-swap-preview__body">
+        <div className="chats-swap-preview__copy">
+          <span className="chats-swap-preview__label">{labelText}</span>
+          <Link
+            href={listingHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="chats-swap-preview__title-link"
+          >
+            <strong className="chats-swap-preview__title">{listing.title}</strong>
+          </Link>
+        </div>
+        <span className="chats-swap-preview__status">Ждём готовности владельца</span>
+      </div>
+      {menu ? <ChatSupportMenu /> : null}
+    </div>
+  );
+}
+
 function SwapHeader({
   thread,
   currentUserId,
@@ -549,40 +625,73 @@ function SwapHeader({
   currentUserId: string;
 }) {
   const target = thread.offer.targetListing;
-  const offered = thread.offer.offeredListings[0];
-  const mine = target.ownerId === currentUserId ? target : offered;
-  const theirs = target.ownerId === currentUserId ? offered : target;
-  if (!mine || !theirs) return null;
+  const offeredListings = thread.offer.offeredListings;
+  const [offerIndex, setOfferIndex] = useState(0);
+  const offered =
+    offeredListings[offerIndex] ?? offeredListings[0] ?? null;
 
-  const preview = (
-    listing: ChatListing,
-    label: string,
-    options?: { menu?: boolean },
-  ) => (
-    <div
-      className={[
-        "chats-swap-preview",
-        options?.menu ? "chats-swap-preview--theirs" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      <ListingImage listing={listing} className="chats-swap-preview__image" />
-      <div className="chats-swap-preview__body">
-        <div className="chats-swap-preview__copy">
-          <span className="chats-swap-preview__label">{label}</span>
-          <strong className="chats-swap-preview__title">{listing.title}</strong>
-        </div>
-        <span className="chats-swap-preview__status">Ждём готовности владельца</span>
-      </div>
-      {options?.menu ? <ChatSupportMenu /> : null}
-    </div>
-  );
+  if (!offered) return null;
+
+  const iOwnTarget = target.ownerId === currentUserId;
+  const goNextOffered = () => {
+    if (offeredListings.length < 2) return;
+    setOfferIndex((current) => (current + 1) % offeredListings.length);
+  };
+
+  const mine = iOwnTarget
+    ? {
+        label: "Ваше",
+        listing: target,
+        listings: [target],
+        activeIndex: 0,
+        menu: false as const,
+        onNext: undefined,
+      }
+    : {
+        label: "Ваше",
+        listing: offered,
+        listings: offeredListings,
+        activeIndex: offerIndex,
+        menu: false as const,
+        onNext: goNextOffered,
+      };
+
+  const theirs = iOwnTarget
+    ? {
+        label: "Его",
+        listing: offered,
+        listings: offeredListings,
+        activeIndex: offerIndex,
+        menu: true as const,
+        onNext: goNextOffered,
+      }
+    : {
+        label: "Его",
+        listing: target,
+        listings: [target],
+        activeIndex: 0,
+        menu: true as const,
+        onNext: undefined,
+      };
 
   return (
     <div className="chats-swap-header">
-      {preview(mine, "Ваше")}
-      {preview(theirs, "Его", { menu: true })}
+      <SwapPreviewCard
+        label={mine.label}
+        listing={mine.listing}
+        listings={mine.listings}
+        activeIndex={mine.activeIndex}
+        menu={mine.menu}
+        onNext={mine.onNext}
+      />
+      <SwapPreviewCard
+        label={theirs.label}
+        listing={theirs.listing}
+        listings={theirs.listings}
+        activeIndex={theirs.activeIndex}
+        menu={theirs.menu}
+        onNext={theirs.onNext}
+      />
     </div>
   );
 }
