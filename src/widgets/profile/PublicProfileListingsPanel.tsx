@@ -21,16 +21,16 @@ import {
   PROFILE_PAGE_SIZE,
   ProfilePagination,
 } from "./ProfilePagination";
-import { ProfileSortControl, type ProfileSortOrder } from "./ProfileSortControl";
 import {
-  ProfileStatusFilter,
-  type ProfileListingStatusFilter,
-} from "./ProfileStatusFilter";
+  ProfileSortControl,
+  PUBLIC_LISTING_TYPE_OPTIONS,
+  type PublicProfileListingTypeFilter,
+  type ProfileSortOrder,
+} from "./ProfileSortControl";
 
-const EMPTY_BY_STATUS: Record<ProfileListingStatusFilter, string> = {
+const EMPTY_BY_TYPE: Record<PublicProfileListingTypeFilter, string> = {
   all: "Пока нет объявлений.",
   active: "Нет активных объявлений.",
-  archived: "Нет снятых с публикации объявлений.",
   completed: "Нет завершенных объявлений.",
 };
 
@@ -41,11 +41,21 @@ function resolvePublicLifecycle(listing: ApiListingCard): ListingCardLifecycle |
   return null;
 }
 
+function statusesForPublicTypeFilter(
+  typeFilter: PublicProfileListingTypeFilter,
+  showCompleted: boolean,
+): ApiListingCard["status"][] {
+  if (typeFilter === "all") {
+    return showCompleted ? ["active", "completed"] : ["active"];
+  }
+  return [typeFilter];
+}
+
 export function PublicProfileListingsPanel() {
   const params = useParams<{ slug: string }>();
   const slug = typeof params.slug === "string" ? params.slug : "";
   const [sort, setSort] = useState<ProfileSortOrder>("newest");
-  const [statusFilter, setStatusFilter] = useState<ProfileListingStatusFilter>("all");
+  const [typeFilter, setTypeFilter] = useState<PublicProfileListingTypeFilter>("all");
   const [page, setPage] = useState(1);
 
   const profileQuery = useQuery({
@@ -56,43 +66,39 @@ export function PublicProfileListingsPanel() {
 
   const showCompleted = profileQuery.data?.profile.showCompletedListings ?? false;
 
-  const statusQuery: ApiListingCard["status"][] =
-    statusFilter === "all"
-      ? showCompleted
-        ? ["active", "completed"]
-        : ["active"]
-      : statusFilter === "archived"
-        ? []
-        : [statusFilter];
+  const statusQuery = statusesForPublicTypeFilter(typeFilter, showCompleted);
 
   useEffect(() => {
     setPage(1);
-  }, [sort, statusFilter, showCompleted]);
+  }, [sort, typeFilter, showCompleted]);
+
+  useEffect(() => {
+    if (!showCompleted && typeFilter === "completed") {
+      setTypeFilter("all");
+    }
+  }, [showCompleted, typeFilter]);
 
   const listingsQuery = useQuery({
-    queryKey: ["public-profile-listings", slug, statusFilter, sort, showCompleted, page],
+    queryKey: ["public-profile-listings", slug, typeFilter, sort, showCompleted, page],
     queryFn: ({ signal }) =>
       getUserListingsBySlug(
         slug,
         { page, pageSize: PROFILE_PAGE_SIZE, status: statusQuery, sort },
         signal,
       ),
-    enabled: Boolean(slug) && statusQuery.length > 0,
+    enabled: Boolean(slug),
     placeholderData: (previous) => previous,
   });
 
-  const listings = statusQuery.length === 0 ? [] : (listingsQuery.data?.data ?? []);
-  const total =
-    statusQuery.length === 0 ? 0 : (listingsQuery.data?.meta.total ?? 0);
+  const listings = listingsQuery.data?.data ?? [];
+  const total = listingsQuery.data?.meta.total ?? 0;
   const pageCount =
-    statusQuery.length === 0
-      ? 0
-      : (listingsQuery.data?.meta.pageCount ?? getProfilePageCount(total));
+    listingsQuery.data?.meta.pageCount ?? getProfilePageCount(total);
   const countLabel = `${total} ${pluralRu(total, "объявление", "объявления", "объявлений")}`;
 
   let body: ReactNode;
 
-  if (listingsQuery.isLoading && listings.length === 0 && statusQuery.length > 0) {
+  if (listingsQuery.isLoading && listings.length === 0) {
     body = (
       <ListingCardSkeletonGrid
         count={PROFILE_PAGE_SIZE}
@@ -106,7 +112,7 @@ export function PublicProfileListingsPanel() {
     );
   } else if (listings.length === 0) {
     body = (
-      <p className="text-[16px] font-semibold text-[#626262]">{EMPTY_BY_STATUS[statusFilter]}</p>
+      <p className="text-[16px] font-semibold text-[#626262]">{EMPTY_BY_TYPE[typeFilter]}</p>
     );
   } else {
     body = (
@@ -150,15 +156,15 @@ export function PublicProfileListingsPanel() {
       </div>
 
       <div className="relative mt-12 w-full overflow-visible">
-        <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center gap-3 overflow-visible">
-          {showCompleted ? (
-            <ProfileStatusFilter
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options="public"
-            />
-          ) : null}
-          <ProfileSortControl sort={sort} onSortChange={setSort} />
+        <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center overflow-visible">
+          <ProfileSortControl
+            sort={sort}
+            onSortChange={setSort}
+            typeFilter={showCompleted ? typeFilter : undefined}
+            onTypeChange={showCompleted ? setTypeFilter : undefined}
+            typeOptions={showCompleted ? PUBLIC_LISTING_TYPE_OPTIONS : undefined}
+            dialogLabel="Сортировка объявлений"
+          />
         </div>
         {body}
       </div>

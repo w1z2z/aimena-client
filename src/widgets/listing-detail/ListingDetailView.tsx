@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -364,7 +365,24 @@ export function ListingDetailView() {
               <section className="listing-detail-wants" aria-label="Желаемый обмен">
                 <h2 className="listing-detail-wants__title">Желаемый обмен</h2>
                 <div className="listing-detail-wants__card">
-                  {hasWantsContent ? (
+                  {listing.isFree ? (
+                    <div className="listing-detail-wants__groups">
+                      <div className="listing-detail-wants__group">
+                        <h3 className="listing-detail-wants__subtitle">Категории</h3>
+                        <div className="listing-detail-wants__tags">
+                          <Link href="/free" className="listing-detail-wants__category">
+                            <span>Даром</span>
+                          </Link>
+                        </div>
+                      </div>
+                      <div className="listing-detail-wants__group">
+                        <h3 className="listing-detail-wants__subtitle">Вещи и Услуги</h3>
+                        <div className="listing-detail-wants__tags">
+                          <span className="listing-detail-wants__tag">Отдается даром</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : hasWantsContent ? (
                     <div className="listing-detail-wants__groups">
                       {wantsCategories.length > 0 ? (
                         <div className="listing-detail-wants__group">

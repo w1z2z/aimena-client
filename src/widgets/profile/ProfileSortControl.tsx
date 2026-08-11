@@ -23,6 +23,18 @@ export const PROFILE_LISTING_TYPE_OPTIONS: Array<{
   { value: "completed", label: "Завершенные" },
 ];
 
+/** Public profile: no paused/archived listings in the type filter. */
+export type PublicProfileListingTypeFilter = "all" | "active" | "completed";
+
+export const PUBLIC_LISTING_TYPE_OPTIONS: Array<{
+  value: PublicProfileListingTypeFilter;
+  label: string;
+}> = [
+  { value: "all", label: "Все" },
+  { value: "active", label: "Активные" },
+  { value: "completed", label: "Завершенные" },
+];
+
 export const PROFILE_DEAL_TYPE_OPTIONS: Array<{
   value: ProfileDealTypeFilter;
   label: string;
