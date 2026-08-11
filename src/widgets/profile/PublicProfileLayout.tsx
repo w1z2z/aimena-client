@@ -10,7 +10,6 @@ import { ApiError } from "@/shared/api/http";
 import { Header } from "@/widgets/header/Header";
 
 import type { PublicProfileSection } from "./constants";
-import { PublicProfileActionsMenu } from "./PublicProfileActionsMenu";
 import { PublicProfileSidebar } from "./PublicProfileSidebar";
 
 type PublicProfileLayoutProps = {
@@ -109,12 +108,7 @@ export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
       <div className="px-6 pb-12 pt-18">
         <div className="mx-auto flex w-full max-w-[1440px] items-start gap-6">
           <PublicProfileSidebar profile={profile} active={active} />
-          <div className="relative min-w-0 w-[1074px] shrink-0">
-            <div className="absolute right-0 top-0 z-10">
-              <PublicProfileActionsMenu userId={profile.id} />
-            </div>
-            {children}
-          </div>
+          <div className="relative min-w-0 w-[1074px] shrink-0">{children}</div>
         </div>
       </div>
     </div>

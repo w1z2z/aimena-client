@@ -93,10 +93,10 @@ export function PublicProfileActionsMenu({ userId }: PublicProfileActionsMenuPro
   };
 
   return (
-    <div ref={containerRef} className="listing-detail-actions">
+    <div ref={containerRef} className="absolute top-6 right-6 z-[6]">
       <button
         type="button"
-        className="listing-detail-actions__trigger"
+        className="box-border flex h-[34px] w-10 shrink-0 cursor-pointer items-center justify-center rounded-[12px] border-[0.5px] border-solid border-[#CACACA] bg-white p-2 hover:border-[#8E8BED]"
         aria-label="Действия с профилем"
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -106,7 +106,7 @@ export function PublicProfileActionsMenu({ userId }: PublicProfileActionsMenuPro
           setOpen((value) => !value);
         }}
       >
-        <MenuSquareIcon className="text-[#1A1A1A]" />
+        <MenuSquareIcon className="size-6 text-[#1A1A1A]" />
       </button>
 
       {isMounted ? (

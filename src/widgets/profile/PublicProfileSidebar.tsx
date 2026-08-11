@@ -13,6 +13,7 @@ import {
   type PublicProfileSection,
 } from "./constants";
 import { ProfileReviewCard } from "./ProfileReviewCard";
+import { PublicProfileActionsMenu } from "./PublicProfileActionsMenu";
 import { MOCK_DEALS, MOCK_REVIEWS } from "./mocks";
 
 type PublicProfileSidebarProps = {
@@ -38,7 +39,9 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
 
   return (
     <aside className="flex w-full max-w-[342px] shrink-0 flex-col items-stretch gap-6">
-      <div className="relative flex flex-col items-center gap-9 overflow-hidden rounded-[31px] bg-white p-6">
+      <div className="relative flex flex-col items-center gap-9 overflow-visible rounded-[31px] bg-white p-6">
+        <PublicProfileActionsMenu userId={profile.id} />
+
         <div className="relative size-[158px] shrink-0 overflow-hidden rounded-[49px] border-[0.5px] border-solid border-[#8E8BED]">
           {profile.avatarUrl ? (
             <img src={profile.avatarUrl} alt="" className="size-full object-cover" />
