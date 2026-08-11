@@ -18,6 +18,7 @@ import { pluralRu } from "./constants";
 import { ProfileListingCardActions } from "./ProfileListingCardActions";
 import {
   ProfileSortControl,
+  PROFILE_LISTING_TYPE_OPTIONS,
   type ProfileListingTypeFilter,
   type ProfileSortOrder,
 } from "./ProfileSortControl";
@@ -137,6 +138,8 @@ export function ProfileListingsPanel() {
             onSortChange={setSort}
             typeFilter={typeFilter}
             onTypeChange={setTypeFilter}
+            typeOptions={PROFILE_LISTING_TYPE_OPTIONS}
+            dialogLabel="Сортировка объявлений"
           />
         </div>
         {body}

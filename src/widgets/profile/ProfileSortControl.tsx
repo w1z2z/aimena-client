@@ -7,39 +7,60 @@ import { PROFILE_ASSETS } from "./constants";
 
 export type ProfileSortOrder = "newest" | "oldest";
 
-/** Own-profile type filter (no «Удаленные»). */
+/** Own-profile listing type filter (no «Удаленные», no drafts). */
 export type ProfileListingTypeFilter = "all" | "active" | "completed" | "archived";
 
-type ProfileSortControlProps = {
-  sort: ProfileSortOrder;
-  onSortChange: (next: ProfileSortOrder) => void;
-  /** When set with onTypeChange, popup includes «По типу». */
-  typeFilter?: ProfileListingTypeFilter;
-  onTypeChange?: (next: ProfileListingTypeFilter) => void;
-};
+/** Deal history type filter (frontend-only until deals API). */
+export type ProfileDealTypeFilter = "all" | "successful" | "in_progress" | "cancelled";
 
-const SORT_OPTIONS = [
-  { id: "newest" as const, label: "Сначала новые" },
-  { id: "oldest" as const, label: "Сначала старые" },
-];
-
-const TYPE_OPTIONS: Array<{ value: ProfileListingTypeFilter; label: string }> = [
+export const PROFILE_LISTING_TYPE_OPTIONS: Array<{
+  value: ProfileListingTypeFilter;
+  label: string;
+}> = [
   { value: "all", label: "Все" },
   { value: "active", label: "Активные" },
   { value: "archived", label: "Снятые с публикации" },
   { value: "completed", label: "Завершенные" },
 ];
 
-export function ProfileSortControl({
+export const PROFILE_DEAL_TYPE_OPTIONS: Array<{
+  value: ProfileDealTypeFilter;
+  label: string;
+}> = [
+  { value: "all", label: "Все" },
+  { value: "successful", label: "Успешные" },
+  { value: "in_progress", label: "В процессе" },
+  { value: "cancelled", label: "Отмененные" },
+];
+
+const SORT_OPTIONS = [
+  { id: "newest" as const, label: "Сначала новые" },
+  { id: "oldest" as const, label: "Сначала старые" },
+];
+
+type ProfileSortControlProps<T extends string = string> = {
+  sort: ProfileSortOrder;
+  onSortChange: (next: ProfileSortOrder) => void;
+  /** When set with onTypeChange + typeOptions, popup includes «По типу». */
+  typeFilter?: T;
+  onTypeChange?: (next: T) => void;
+  typeOptions?: ReadonlyArray<{ value: T; label: string }>;
+  dialogLabel?: string;
+};
+
+export function ProfileSortControl<T extends string = string>({
   sort,
   onSortChange,
   typeFilter,
   onTypeChange,
-}: ProfileSortControlProps) {
+  typeOptions,
+  dialogLabel = "Сортировка",
+}: ProfileSortControlProps<T>) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const activeSortIndex = sort === "oldest" ? 1 : 0;
-  const showTypeSection = typeFilter !== undefined && Boolean(onTypeChange);
+  const showTypeSection =
+    typeFilter !== undefined && Boolean(onTypeChange) && Boolean(typeOptions?.length);
 
   useEffect(() => {
     if (!open) return;
@@ -98,14 +119,14 @@ export function ProfileSortControl({
         >
           <div
             role="dialog"
-            aria-label="Сортировка объявлений"
+            aria-label={dialogLabel}
             className="profile-sort-popup box-border flex w-[326px] flex-col items-start justify-center gap-3 rounded-[31px] border-[0.5px] border-solid border-[#8E8BED] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
           >
             <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">По порядку:</p>
             <div
               className="profile-sort-switch"
               role="radiogroup"
-              aria-label="Порядок объявлений"
+              aria-label="Порядок"
               data-active-index={activeSortIndex}
             >
               <span
@@ -133,15 +154,11 @@ export function ProfileSortControl({
               })}
             </div>
 
-            {showTypeSection ? (
+            {showTypeSection && typeOptions ? (
               <>
                 <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">По типу:</p>
-                <div
-                  role="listbox"
-                  aria-label="Тип объявлений"
-                  className="flex w-[278px] flex-col gap-3"
-                >
-                  {TYPE_OPTIONS.map((option) => {
+                <div role="listbox" aria-label="Тип" className="flex w-[278px] flex-col gap-3">
+                  {typeOptions.map((option) => {
                     const isActive = typeFilter === option.value;
                     return (
                       <button
