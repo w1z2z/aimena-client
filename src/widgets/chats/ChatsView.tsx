@@ -709,21 +709,55 @@ function ActiveChatPanel({
   const [sending, setSending] = useState(false);
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const stickToBottomRef = useRef(true);
+  const lastMessage = thread.messages[thread.messages.length - 1];
+  const lastMessageId = lastMessage?.id;
+  const lastMessageSenderId = lastMessage?.senderId;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const body = message.trim();
     if (!body || sending) return;
     setSending(true);
+    stickToBottomRef.current = true;
     const sent = await onSend(body);
     if (sent) setMessage("");
     setSending(false);
   };
 
+  useEffect(() => {
+    const root = messagesRef.current;
+    if (!root) return;
+
+    const syncStickiness = () => {
+      const distanceFromBottom = root.scrollHeight - root.scrollTop - root.clientHeight;
+      stickToBottomRef.current = distanceFromBottom < 80;
+    };
+
+    syncStickiness();
+    root.addEventListener("scroll", syncStickiness, { passive: true });
+    return () => root.removeEventListener("scroll", syncStickiness);
+  }, [thread.id]);
+
+  useEffect(() => {
+    const root = messagesRef.current;
+    if (!root || !lastMessageId) return;
+
+    const fromMe = lastMessageSenderId === currentUserId;
+    if (!stickToBottomRef.current && !fromMe) return;
+
+    root.scrollTo({
+      top: root.scrollHeight,
+      behavior: stickToBottomRef.current || fromMe ? "smooth" : "auto",
+    });
+    stickToBottomRef.current = true;
+  }, [thread.id, lastMessageId, lastMessageSenderId, currentUserId, thread.messages.length]);
+
   return (
     <section className="chats-panel chats-panel--active">
       <SwapHeader thread={thread} currentUserId={currentUserId} />
-      <div className="chats-messages">
+      <div ref={messagesRef} className="chats-messages">
         <div className="chats-date-divider">Сегодня</div>
         {thread.messages.map((messageItem) =>
           messageItem.type === "system" ? (
