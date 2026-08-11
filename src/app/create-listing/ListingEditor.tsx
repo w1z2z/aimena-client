@@ -521,7 +521,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const [wantsParentCategoryId, setWantsParentCategoryId] = useState<string | null>(null);
   const [wantsChildCategoryId, setWantsChildCategoryId] = useState<string | null>(null);
   const [wantsCategoryPins, setWantsCategoryPins] = useState<WantsCategoryPin[]>([]);
-  const [wantsCategorySelectKey, setWantsCategorySelectKey] = useState(0);
   const [wantsTagInput, setWantsTagInput] = useState("");
   const [wantsTags, setWantsTags] = useState<string[]>([]);
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
@@ -1148,7 +1147,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     });
     setWantsParentCategoryId(null);
     setWantsChildCategoryId(null);
-    setWantsCategorySelectKey((current) => current + 1);
   };
 
   const removeWantsCategoryPin = (id: string) => {
@@ -1592,16 +1590,18 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>
               Опишите вашу {listingTypeName} подробнее (до 2000 символов)
             </p>
-            <textarea
-              maxLength={2000}
-              value={description}
-              onChange={(event) => {
-                setDescription(event.target.value);
-                clearError("description");
-              }}
-              placeholder="Введите описание...."
-              className="mt-2 min-h-[150px] w-full resize-y overflow-auto rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] px-3 py-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
-            />
+            <div className="create-listing-description mt-2">
+              <textarea
+                maxLength={2000}
+                value={description}
+                onChange={(event) => {
+                  setDescription(event.target.value);
+                  clearError("description");
+                }}
+                placeholder="Введите описание...."
+                className="create-listing-description__input"
+              />
+            </div>
             <FieldError message={errors.description} />
           </div>
 
@@ -1822,7 +1822,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     </div>
                   ) : null}
                   <SelectField
-                    key={`wants-parent-${wantsCategorySelectKey}`}
                     value={wantsParentCategoryId ?? ""}
                     onChange={handleWantsParentCategoryChange}
                     options={wantsParentCategoryOptions}
@@ -1848,7 +1847,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     <div className="create-listing-subcategory-panel__inner">
                       <div className="create-listing-subcategory-panel__content mt-2">
                         <SelectField
-                          key={`wants-child-${wantsCategorySelectKey}-${wantsParentCategoryId ?? "none"}`}
                           value={wantsChildCategoryId ?? ""}
                           onChange={handleWantsChildCategoryChange}
                           options={wantsChildCategoryOptions}

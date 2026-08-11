@@ -116,8 +116,13 @@ export function SelectField({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const safeValueRef = useRef(safeValue);
+  const optionsRef = useRef(options);
   const listId = useId();
   const showClear = clearable && Boolean(safeValue) && !isDisabled;
+
+  safeValueRef.current = safeValue;
+  optionsRef.current = options;
 
   const visibleOptions = useMemo(
     () => (searchable ? filterOptions(options, inputValue ?? "") : options),
@@ -248,9 +253,18 @@ export function SelectField({
 
   const handleOptionPick = (option: SelectOption) => {
     if (option.disabled) return;
-    setInputValue(option.label);
+    if (searchable) {
+      setInputValue(option.label);
+    }
     onChange(option.value);
     close();
+    if (!searchable) {
+      // Parent may accept the pick without storing it (value stays "").
+      // Sync label from the controlled value after React commits.
+      requestAnimationFrame(() => {
+        setInputValue(getLabelForValue(optionsRef.current, safeValueRef.current));
+      });
+    }
   };
 
   const handleBlur = () => {
