@@ -98,7 +98,7 @@ export function HomeTopBlock() {
                 </h1>
 
                 <div
-                  className="absolute left-[241px] top-[386px] z-10 flex h-[552px] w-[1440px] gap-[24px]"
+                  className="absolute left-[241px] top-[386px] z-10 flex h-[560px] w-[1440px] gap-[24px]"
                 >
                   <ModeFormColumn
                     mode={mode}

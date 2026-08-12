@@ -56,8 +56,9 @@ export function ChatInboxProvider({ children }: { children: ReactNode }) {
 
     const unsubscribeThread = onChatThreadUpdated((event) => {
       if (typeof event.unreadCount === "number") {
-        setHasUnread((current) => (event.unreadCount === 0 ? current : true));
-        if (event.unreadCount === 0) {
+        if (event.unreadCount > 0) {
+          setHasUnread(true);
+        } else {
           void refreshUnread();
         }
         return;

@@ -253,18 +253,28 @@ export function SelectField({
 
   const handleOptionPick = (option: SelectOption) => {
     if (option.disabled) return;
+    // Safari can jump the page when a portaled list closes or layout shifts
+    // after selection (e.g. subcategory panel opening on create-listing).
+    const scrollY = window.scrollY;
+    const restoreScroll = () => {
+      if (Math.abs(window.scrollY - scrollY) > 1) {
+        window.scrollTo(window.scrollX, scrollY);
+      }
+    };
     if (searchable) {
       setInputValue(option.label);
     }
     onChange(option.value);
     close();
-    if (!searchable) {
-      // Parent may accept the pick without storing it (value stays "").
-      // Sync label from the controlled value after React commits.
-      requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      restoreScroll();
+      if (!searchable) {
+        // Parent may accept the pick without storing it (value stays "").
+        // Sync label from the controlled value after React commits.
         setInputValue(getLabelForValue(optionsRef.current, safeValueRef.current));
-      });
-    }
+      }
+      window.requestAnimationFrame(restoreScroll);
+    });
   };
 
   const handleBlur = () => {
@@ -344,10 +354,21 @@ export function SelectField({
 
   useEffect(() => {
     if (!isOpen || !activeOptionValue || !listRef.current) return;
-    const activeNode = listRef.current.querySelector<HTMLButtonElement>(
+    const list = listRef.current;
+    const activeNode = list.querySelector<HTMLButtonElement>(
       `[data-option-value="${CSS.escape(activeOptionValue)}"]`,
     );
-    activeNode?.scrollIntoView({ block: "nearest" });
+    if (!activeNode) return;
+
+    // Avoid Element.scrollIntoView — in Safari it can scroll the document
+    // (including to the top) when the list is portaled with position:fixed.
+    const optionTop = activeNode.offsetTop;
+    const optionBottom = optionTop + activeNode.offsetHeight;
+    if (optionTop < list.scrollTop) {
+      list.scrollTop = optionTop;
+    } else if (optionBottom > list.scrollTop + list.clientHeight) {
+      list.scrollTop = optionBottom - list.clientHeight;
+    }
   }, [activeOptionValue, isOpen]);
 
   const showPlaceholderState = !safeValue && !(inputValue ?? "").trim();
@@ -359,7 +380,7 @@ export function SelectField({
     }
     setIsOpen(true);
     window.requestAnimationFrame(() => {
-      inputRef.current?.focus();
+      inputRef.current?.focus({ preventScroll: true });
     });
   };
 
@@ -370,7 +391,7 @@ export function SelectField({
     onChange("");
     setIsOpen(true);
     window.requestAnimationFrame(() => {
-      inputRef.current?.focus();
+      inputRef.current?.focus({ preventScroll: true });
     });
   };
 

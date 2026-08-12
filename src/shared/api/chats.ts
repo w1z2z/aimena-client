@@ -48,6 +48,7 @@ export type ChatSummary = {
   threadId: string | null;
   targetListingId?: string | null;
   targetListingTitle?: string | null;
+  isOfferSender?: boolean;
   status:
     | "incoming_request"
     | "active"

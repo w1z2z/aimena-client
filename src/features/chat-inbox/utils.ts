@@ -1,8 +1,10 @@
 import type { ChatSummary } from "@/shared/api/chats";
 
 export function chatSummaryHasUnread(item: ChatSummary) {
+  if (item.kind === "support") return false;
   if (item.notificationKind === "offer_rejected") return false;
-  return item.kind === "offer" || item.unreadCount > 0;
+  if (item.kind === "offer" && item.status === "incoming_request") return true;
+  return item.unreadCount > 0;
 }
 
 export function computeHasUnread(items: ChatSummary[]) {
@@ -38,22 +40,24 @@ export function formatNotificationTime(value: string) {
 function isOfferAcceptedItem(item: ChatSummary) {
   if (item.notificationKind === "offer_accepted") return true;
   return Boolean(
-    item.targetListingTitle &&
-      item.preview.includes("Предложение принято") &&
-      item.kind === "chat",
+    item.kind === "chat" &&
+      (item.preview.includes("Предложение принято") ||
+        item.preview.includes("Свяжитесь с владельцем") ||
+        item.preview.includes("Можно связаться в чате")),
   );
 }
 
+/** Заголовок = статус события, не имя человека и не название товара. */
 export function getNotificationTitle(item: ChatSummary) {
   if (isOfferAcceptedItem(item)) {
-    return item.targetListingTitle ?? "Предложение принято!";
+    return "Предложение принято!";
   }
 
   switch (item.notificationKind) {
     case "incoming_offer":
       return "Вам предложили обмен";
     case "offer_accepted":
-      return item.targetListingTitle ?? item.tags?.[0] ?? "Предложение принято!";
+      return "Предложение принято!";
     case "offer_rejected":
       return "Ваше предложение отклонено";
     case "support":
@@ -67,26 +71,41 @@ export function getNotificationTitle(item: ChatSummary) {
   }
 }
 
+/**
+ * Под заголовком:
+ * - оффер / отклонение → пилюли (через getNotificationTags), subtitle не нужен
+ * - принято → короткий CTA
+ * - сообщение → превью текста
+ */
 export function getNotificationSubtitle(item: ChatSummary) {
   if (isOfferAcceptedItem(item)) {
-    return item.preview.includes("Свяжитесь")
-      ? "Свяжитесь с владельцем"
-      : "Предложение принято!";
+    // У владельца (recipient) показываем пилюли offered — subtitle не дублируем.
+    if (item.isOfferSender === false && item.tags && item.tags.length > 0) {
+      return undefined;
+    }
+    return item.isOfferSender === false
+      ? "Можно связаться в чате"
+      : "Свяжитесь с владельцем";
   }
 
   switch (item.notificationKind) {
     case "incoming_offer":
-      return item.tags && item.tags.length > 0 ? undefined : item.preview;
+      return item.tags && item.tags.length > 0 ? undefined : "Откройте, чтобы рассмотреть";
     case "offer_accepted":
-      return "Свяжитесь с владельцем";
+      if (item.isOfferSender === false && item.tags && item.tags.length > 0) {
+        return undefined;
+      }
+      return item.isOfferSender === false
+        ? "Можно связаться в чате"
+        : "Свяжитесь с владельцем";
     case "offer_rejected":
-      return undefined;
+      return item.tags && item.tags.length > 0 ? undefined : undefined;
     case "support":
     case "chat_message":
       return item.preview;
     default:
       if (item.kind === "offer") {
-        return item.tags && item.tags.length > 0 ? undefined : item.preview;
+        return item.tags && item.tags.length > 0 ? undefined : "Откройте, чтобы рассмотреть";
       }
       return item.preview;
   }
@@ -94,6 +113,14 @@ export function getNotificationSubtitle(item: ChatSummary) {
 
 export function getNotificationTags(item: ChatSummary) {
   if (item.notificationKind === "incoming_offer" && item.tags?.length) {
+    return item.tags;
+  }
+  // Владелец после принятия: пилюли того, что ему предложили (offered).
+  if (
+    (item.notificationKind === "offer_accepted" || isOfferAcceptedItem(item)) &&
+    item.isOfferSender === false &&
+    item.tags?.length
+  ) {
     return item.tags;
   }
   if (item.notificationKind === "offer_rejected" && item.tags?.length) {
@@ -120,6 +147,8 @@ export function getNotificationImageFallback(item: ChatSummary) {
 }
 
 export function notificationHasUnread(item: ChatSummary) {
+  if (item.kind === "support") return false;
   if (item.notificationKind === "offer_rejected") return false;
-  return item.kind === "offer" || item.unreadCount > 0;
+  if (item.kind === "offer" && item.status === "incoming_request") return true;
+  return item.unreadCount > 0;
 }
