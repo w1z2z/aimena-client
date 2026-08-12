@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - staging
+      - dev
       - main
     paths-ignore:
       - "docs/**"
@@ -31,15 +32,23 @@ jobs:
           IMAGE="$(echo "${{ env.REGISTRY }}/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')"
           echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo "tags=${IMAGE}:prod,${IMAGE}:latest" >> "$GITHUB_OUTPUT"
-            echo "api_url=https://api.aimena.ru/api/v1" >> "$GITHUB_OUTPUT"
-            echo "app_url=https://aimena.ru" >> "$GITHUB_OUTPUT"
-          else
-            echo "tags=${IMAGE}:staging" >> "$GITHUB_OUTPUT"
-            echo "api_url=https://api-staging.aimena.ru/api/v1" >> "$GITHUB_OUTPUT"
-            echo "app_url=https://staging.aimena.ru" >> "$GITHUB_OUTPUT"
-          fi
+          case "${{ github.ref_name }}" in
+            main)
+              echo "tags=${IMAGE}:prod,${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+              echo "api_url=https://api.aimena.ru/api/v1" >> "$GITHUB_OUTPUT"
+              echo "app_url=https://aimena.ru" >> "$GITHUB_OUTPUT"
+              ;;
+            staging)
+              echo "tags=${IMAGE}:staging" >> "$GITHUB_OUTPUT"
+              echo "api_url=https://api-staging.aimena.ru/api/v1" >> "$GITHUB_OUTPUT"
+              echo "app_url=https://staging.aimena.ru" >> "$GITHUB_OUTPUT"
+              ;;
+            dev)
+              echo "tags=${IMAGE}:dev" >> "$GITHUB_OUTPUT"
+              echo "api_url=https://api-dev.aimena.ru/api/v1" >> "$GITHUB_OUTPUT"
+              echo "app_url=https://dev.aimena.ru" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -65,13 +74,14 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trigger Dokploy deploy
-        if: github.ref_name == 'staging'
+        if: github.ref_name == 'staging' || github.ref_name == 'dev'
         env:
-          DOKPLOY_DEPLOY_HOOK: ${{ secrets.DOKPLOY_DEPLOY_HOOK }}
+          DOKPLOY_DEPLOY_HOOK: ${{ github.ref_name == 'dev' && secrets.DOKPLOY_DEPLOY_HOOK_DEV || secrets.DOKPLOY_DEPLOY_HOOK }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           if [ -z "$DOKPLOY_DEPLOY_HOOK" ]; then
-            echo "Secret DOKPLOY_DEPLOY_HOOK is not set — skip deploy"
+            echo "Dokploy deploy hook secret is not set for ${BRANCH} — skip deploy"
             exit 0
           fi
 
@@ -92,4 +102,4 @@ jobs:
             -H 'X-GitHub-Event: push' \
             -d "$PAYLOAD"
 
-          echo "Dokploy deploy triggered: ${TITLE}"
+          echo "Dokploy deploy triggered (${BRANCH}): ${TITLE}"
