@@ -143,12 +143,17 @@ function ProfileHeader({
 }: {
   profile: {
     displayName: string;
+    slug: string;
     avatarUrl: string | null;
     swapsCount: number;
   };
 }) {
   return (
-    <header className="chats-profile-header">
+    <Link
+      href={`/users/${profile.slug}`}
+      className="chats-profile-header"
+      aria-label={`Профиль ${profile.displayName}`}
+    >
       <Avatar
         src={profile.avatarUrl}
         name={profile.displayName}
@@ -161,7 +166,7 @@ function ProfileHeader({
           {new Intl.NumberFormat("ru-RU").format(profile.swapsCount)}
         </span>
       </div>
-    </header>
+    </Link>
   );
 }
 
@@ -461,7 +466,13 @@ function IncomingOfferPanel({
   );
 }
 
-function ChatSupportMenu() {
+function ChatSupportMenu({
+  counterpart,
+}: {
+  counterpart: {
+    slug: string;
+  };
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
@@ -528,9 +539,16 @@ function ChatSupportMenu() {
             .filter(Boolean)
             .join(" ")}
         >
+          <Link
+            href={`/users/${counterpart.slug}`}
+            className="listing-detail-actions__item"
+            onClick={() => setOpen(false)}
+          >
+            Открыть профиль
+          </Link>
           <button
             type="button"
-            className="listing-detail-actions__item"
+            className="listing-detail-actions__item listing-detail-actions__item--danger"
             onClick={() => setOpen(false)}
           >
             Позвать поддержку
@@ -547,6 +565,7 @@ function SwapPreviewCard({
   listings,
   activeIndex = 0,
   menu = false,
+  counterpart = null,
   onNext,
 }: {
   label: string;
@@ -554,6 +573,9 @@ function SwapPreviewCard({
   listings: ChatListing[];
   activeIndex?: number;
   menu?: boolean;
+  counterpart?: {
+    slug: string;
+  } | null;
   onNext?: () => void;
 }) {
   const count = listings.length;
@@ -612,7 +634,7 @@ function SwapPreviewCard({
         </div>
         <span className="chats-swap-preview__status">Ждём готовности владельца</span>
       </div>
-      {menu ? <ChatSupportMenu /> : null}
+      {menu && counterpart ? <ChatSupportMenu counterpart={counterpart} /> : null}
     </div>
   );
 }
@@ -690,6 +712,7 @@ function SwapHeader({
         listings={theirs.listings}
         activeIndex={theirs.activeIndex}
         menu={theirs.menu}
+        counterpart={thread.counterpart}
         onNext={theirs.onNext}
       />
     </div>
@@ -756,88 +779,94 @@ function ActiveChatPanel({
 
   return (
     <section className="chats-panel chats-panel--active">
-      <SwapHeader thread={thread} currentUserId={currentUserId} />
-      <div ref={messagesRef} className="chats-messages">
-        <div className="chats-date-divider">Сегодня</div>
-        {thread.messages.map((messageItem) =>
-          messageItem.type === "system" ? (
-            <p key={messageItem.id} className="chats-system-message">
-              {messageItem.body}
-            </p>
-          ) : (
-            <div
-              key={messageItem.id}
-              className="chats-message"
-              data-own={messageItem.senderId === currentUserId ? "true" : undefined}
-            >
-              <p>{messageItem.body}</p>
-              <time>{formatTime(messageItem.createdAt)}</time>
+      <div className="chats-active-stage">
+        <SwapHeader thread={thread} currentUserId={currentUserId} />
+        <div ref={messagesRef} className="chats-messages">
+          <div className="chats-date-divider">Сегодня</div>
+          {thread.messages.map((messageItem) =>
+            messageItem.type === "system" ? (
+              <p key={messageItem.id} className="chats-system-message">
+                {messageItem.body}
+              </p>
+            ) : (
+              <div
+                key={messageItem.id}
+                className="chats-message"
+                data-own={messageItem.senderId === currentUserId ? "true" : undefined}
+              >
+                <p>{messageItem.body}</p>
+                <time>{formatTime(messageItem.createdAt)}</time>
+              </div>
+            ),
+          )}
+        </div>
+
+        <div className="chats-active-footer">
+          <div className="chats-footer-bar">
+            <div className="chats-composer-wrap">
+              {attachmentsOpen ? (
+                <div className="chats-attachments-menu">
+                  <button type="button">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/images/chat/file-upload.svg" alt="" />
+                    Загрузить файлы
+                  </button>
+                  <button type="button">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/images/chat/document-upload.svg" alt="" />
+                    Прикрепить документы
+                  </button>
+                </div>
+              ) : null}
+              <form className="chats-composer" onSubmit={submit}>
+                <button
+                  type="button"
+                  className="chats-composer__attach"
+                  aria-label="Прикрепить файл"
+                  onClick={() => setAttachmentsOpen((open) => !open)}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/chat/attachment.svg" alt="" />
+                </button>
+                <input
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  placeholder="Написать...."
+                  maxLength={2000}
+                />
+                <button
+                  type="submit"
+                  className="chats-composer__send"
+                  aria-label="Отправить"
+                  disabled={!message.trim() || sending}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/chat/send-star.svg" alt="" />
+                </button>
+              </form>
             </div>
-          ),
-        )}
-      </div>
 
-      <div className="chats-composer-wrap">
-        {attachmentsOpen ? (
-          <div className="chats-attachments-menu">
-            <button type="button">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/chat/file-upload.svg" alt="" />
-              Загрузить файлы
-            </button>
-            <button type="button">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/chat/document-upload.svg" alt="" />
-              Прикрепить документы
-            </button>
+            {notice ? <p className="chats-action-notice">{notice}</p> : null}
+            <div className="chats-actions">
+              <button
+                type="button"
+                onClick={() =>
+                  setNotice("Подтверждение готовности будет подключено к этапу сделки.")
+                }
+              >
+                Готов к обмену
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setNotice("Отмена будет доступна только как обоюдный запрос сделки.")
+                }
+              >
+                Отказаться от обмена
+              </button>
+            </div>
           </div>
-        ) : null}
-        <form className="chats-composer" onSubmit={submit}>
-          <button
-            type="button"
-            className="chats-composer__attach"
-            aria-label="Прикрепить файл"
-            onClick={() => setAttachmentsOpen((open) => !open)}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/chat/attachment.svg" alt="" />
-          </button>
-          <input
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            placeholder="Написать...."
-            maxLength={2000}
-          />
-          <button
-            type="submit"
-            className="chats-composer__send"
-            aria-label="Отправить"
-            disabled={!message.trim() || sending}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/chat/send-star.svg" alt="" />
-          </button>
-        </form>
-      </div>
-
-      {notice ? <p className="chats-action-notice">{notice}</p> : null}
-      <div className="chats-actions">
-        <button
-          type="button"
-          onClick={() =>
-            setNotice("Подтверждение готовности будет подключено к этапу сделки.")
-          }
-        >
-          Готов к обмену
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            setNotice("Отмена будет доступна только как обоюдный запрос сделки.")
-          }
-        >
-          Отказаться от обмена
-        </button>
+        </div>
       </div>
     </section>
   );

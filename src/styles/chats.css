@@ -235,6 +235,14 @@
   padding: 12px;
   border: 0.5px solid #cacaca;
   border-radius: 31px;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.chats-profile-header:hover {
+  border-color: #8e8bed;
+  background: #f8f8f5;
 }
 
 .chats-profile-header__avatar {
@@ -803,6 +811,8 @@
   flex: none;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
+  background: transparent;
+  pointer-events: auto;
 }
 
 .chats-panel--offer > .chats-actions {
@@ -842,6 +852,7 @@
   margin: 0 12px 8px;
   font-size: 12px;
   text-align: center;
+  pointer-events: auto;
 }
 
 .chats-action-error {
@@ -853,18 +864,80 @@
 }
 
 .chats-panel--active {
-  justify-content: space-between;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.chats-active-stage {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.chats-active-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.chats-footer-bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fff;
+  padding: 12px;
+  border-radius: 0 0 31px 31px;
+  pointer-events: auto;
+}
+
+.chats-footer-bar::before {
+  content: "";
+  position: absolute;
+  top: -16px;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: 16px;
+  pointer-events: none;
+  background: linear-gradient(to top, rgb(26 26 26 / 10%), transparent);
 }
 
 .chats-swap-header {
+  position: relative;
+  z-index: 2;
   display: grid;
-  width: 100%;
-  height: 108px;
-  min-height: 108px;
-  max-height: 108px;
   flex: none;
+  box-sizing: border-box;
+  align-items: start;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  padding: 12px;
+  border-radius: 31px 31px 0 0;
+  background: #fff;
+  pointer-events: none;
+}
+
+.chats-swap-header::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -16px;
+  left: 0;
+  z-index: 1;
+  height: 16px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(26 26 26 / 10%), transparent);
 }
 
 .chats-swap-preview {
@@ -882,6 +955,8 @@
   padding: 12px;
   border: 0.5px solid #cacaca;
   border-radius: 21px;
+  background: #fff;
+  pointer-events: auto;
 }
 
 .chats-swap-preview--theirs {
@@ -893,6 +968,7 @@
   top: 12px;
   right: 12px;
   z-index: 5;
+  pointer-events: auto;
 }
 
 .chats-swap-menu__trigger {
@@ -1077,8 +1153,11 @@
   flex: 1;
   flex-direction: column;
   gap: 24px;
+  margin: 8px 12px;
+  overflow-x: hidden;
   overflow-y: auto;
-  padding: 22px 12px 22px 0;
+  overscroll-behavior: contain;
+  padding: 8px 12px 8px 0;
 }
 
 .chats-date-divider {
@@ -1152,7 +1231,8 @@
 .chats-composer-wrap {
   position: relative;
   flex: none;
-  margin-bottom: 12px;
+  background: transparent;
+  pointer-events: auto;
 }
 
 .chats-composer {
@@ -1352,11 +1432,13 @@
   }
 
   .chats-swap-header {
-    height: auto;
-    min-height: 0;
-    max-height: none;
     grid-template-columns: 1fr;
-    overflow-y: auto;
+    pointer-events: auto;
+  }
+
+  .chats-messages {
+    margin: 8px 12px;
+    padding: 8px 12px 8px 0;
   }
 
   .chats-swap-preview {
