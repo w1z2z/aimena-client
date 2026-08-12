@@ -537,7 +537,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const [serviceFormats, setServiceFormats] = useState<ServiceFormatId[]>([]);
   const [extraPay, setExtraPay] = useState<ExtraPayId>("none");
   const [isFree, setIsFree] = useState(false);
-  const [exchangeEnabled, setExchangeEnabled] = useState(false);
+  const [exchangeEnabled, setExchangeEnabled] = useState(true);
   const [itemPhotos, setItemPhotos] = useState<PhotoItem[]>([]);
   const [docPhotos, setDocPhotos] = useState<PhotoItem[]>([]);
   const [dragSource, setDragSource] = useState<{ kind: PhotoKind; id: string } | null>(null);
@@ -792,11 +792,9 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           })),
         );
         setWantsTags(listing.wantsTags);
-        setExchangeEnabled(
-          listing.wantsTags.length > 0 ||
-            Boolean(listing.wantsCategories?.length) ||
-            Boolean(listing.wantsText),
-        );
+        setIsFree(listing.isFree);
+        // Exactly one of free / desired exchange is always on.
+        setExchangeEnabled(!listing.isFree);
         setCityId(listing.city.id);
         setDraftCityLabel(cityLabel);
         setCondition(
@@ -811,7 +809,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             ? listing.extraPay
             : "none",
         );
-        setIsFree(listing.isFree);
         setItemPhotos(photosFromListingImages(listing.images, "item"));
         setDocPhotos(photosFromListingImages(listing.images, "document"));
         setListingStatus(listing.status);
@@ -961,18 +958,26 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   }, [formattedPrice]);
 
   const handleIsFreeChange = (next: boolean) => {
-    setIsFree(next);
+    // Exactly one of free / desired exchange must stay enabled.
     if (next) {
+      setIsFree(true);
       // Defer layout collapse so it doesn't hitch the switch knob animation.
       requestAnimationFrame(() => setExchangeEnabled(false));
+      return;
     }
+    setIsFree(false);
+    requestAnimationFrame(() => setExchangeEnabled(true));
   };
 
   const handleExchangeEnabledChange = (next: boolean) => {
-    setExchangeEnabled(next);
+    // Exactly one of free / desired exchange must stay enabled.
     if (next) {
+      setExchangeEnabled(true);
       requestAnimationFrame(() => setIsFree(false));
+      return;
     }
+    setExchangeEnabled(false);
+    requestAnimationFrame(() => setIsFree(true));
   };
 
   const handleItemPhotosSelected = (event: ChangeEvent<HTMLInputElement>) => {
