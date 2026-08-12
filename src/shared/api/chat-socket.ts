@@ -22,6 +22,14 @@ export type ChatSocketThreadUpdatedEvent = {
   lastReadAt?: string;
 };
 
+export type ChatSocketInboxUpdatedEvent = {
+  itemId: string;
+  kind: "offer" | "chat" | "support";
+  preview?: string;
+  updatedAt?: string;
+  unreadCount?: number;
+};
+
 const SOCKET_ORIGIN =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "") ??
   "http://localhost:9000";
@@ -32,15 +40,20 @@ let connectPromise: Promise<Socket | null> | null = null;
 
 const messageHandlers = new Set<(event: ChatSocketMessageEvent) => void>();
 const threadUpdatedHandlers = new Set<(event: ChatSocketThreadUpdatedEvent) => void>();
+const inboxUpdatedHandlers = new Set<(event: ChatSocketInboxUpdatedEvent) => void>();
 
 function attachSocketHandlers(next: Socket) {
   next.off("message");
   next.off("thread_updated");
+  next.off("inbox_updated");
   next.on("message", (event: ChatSocketMessageEvent) => {
     for (const handler of messageHandlers) handler(event);
   });
   next.on("thread_updated", (event: ChatSocketThreadUpdatedEvent) => {
     for (const handler of threadUpdatedHandlers) handler(event);
+  });
+  next.on("inbox_updated", (event: ChatSocketInboxUpdatedEvent) => {
+    for (const handler of inboxUpdatedHandlers) handler(event);
   });
 }
 
@@ -167,5 +180,12 @@ export function onChatThreadUpdated(
   threadUpdatedHandlers.add(handler);
   return () => {
     threadUpdatedHandlers.delete(handler);
+  };
+}
+
+export function onChatInboxUpdated(handler: (event: ChatSocketInboxUpdatedEvent) => void) {
+  inboxUpdatedHandlers.add(handler);
+  return () => {
+    inboxUpdatedHandlers.delete(handler);
   };
 }

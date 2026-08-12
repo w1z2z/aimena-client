@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useAuth, useAuthGate } from "@/features/auth";
+import { useChatInbox } from "@/features/chat-inbox";
 import { getListings } from "@/shared/api/listings";
 import { requestHomeTitleSearch } from "@/shared/lib/home-title-search";
 
@@ -46,6 +47,7 @@ export function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const { isAuthenticated, user } = useAuth();
+  const { hasUnread } = useChatInbox();
   const { guardAuth } = useAuthGate();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -513,12 +515,22 @@ export function Header() {
                       aria-expanded={openPanel === "notifications"}
                       aria-haspopup="dialog"
                       onClick={() => togglePanel("notifications")}
+                      className="relative"
                     >
                       <BellIcon className="h-[15px] w-[14px] text-black" />
+                      {hasUnread ? (
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute right-[8px] top-[7px] size-[4px] rounded-full bg-[#FF2056]"
+                        />
+                      ) : null}
                     </IconButton>
                   }
                 >
-                  <NotificationsDropdown />
+                  <NotificationsDropdown
+                    isOpen={openPanel === "notifications"}
+                    onNavigate={() => setOpenPanel(null)}
+                  />
                 </HeaderDropdown>
 
                 <IconButton label="Избранное" onClick={() => router.push("/favorites")}>

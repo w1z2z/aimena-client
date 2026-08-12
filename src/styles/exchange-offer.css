@@ -27,12 +27,23 @@
 .exchange-offer-profile {
   display: flex;
   min-height: 86px;
+  box-sizing: border-box;
   align-items: center;
   gap: 12px;
   padding: 12px;
   border: 0.5px solid #cacaca;
   border-radius: 31px;
   background: #fff;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+a.exchange-offer-profile:hover {
+  border-color: #8e8bed;
+  background: #f8f8f5;
 }
 
 .exchange-offer-profile__avatar {

@@ -1595,7 +1595,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
           <div id={fieldAnchorId("description")}>
             <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>
-              Опишите вашу {listingTypeName} подробнее (до 2000 символов)
+              Опишите вашу {listingTypeName} подробнее (до 2000 символов)*
             </p>
             <div className="create-listing-description mt-2">
               <textarea

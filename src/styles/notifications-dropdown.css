@@ -1,0 +1,29 @@
+.notifications-dropdown-scroll {
+  box-sizing: border-box;
+  width: calc(100% + 24px);
+  max-height: 360px;
+  margin-right: -24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(142 139 237 / 45%) transparent;
+}
+
+.notifications-dropdown-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notifications-dropdown-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notifications-dropdown-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgb(142 139 237 / 45%);
+}
+
+.notifications-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(142 139 237 / 70%);
+}

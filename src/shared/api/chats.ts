@@ -33,11 +33,21 @@ export type ChatListing = {
   coverImageUrl: string | null;
 };
 
+export type NotificationKind =
+  | "incoming_offer"
+  | "offer_accepted"
+  | "offer_rejected"
+  | "chat_message"
+  | "support";
+
 export type ChatSummary = {
   id: string;
   kind: "offer" | "chat" | "support";
+  notificationKind?: NotificationKind;
   offerId: string;
   threadId: string | null;
+  targetListingId?: string | null;
+  targetListingTitle?: string | null;
   status:
     | "incoming_request"
     | "active"
@@ -45,6 +55,9 @@ export type ChatSummary = {
     | "read_only_reviewed";
   counterpart: ChatProfile;
   preview: string;
+  tags?: string[];
+  coverImageUrl?: string | null;
+  imageFallback?: string | null;
   updatedAt: string;
   unreadCount: number;
 };
@@ -84,6 +97,24 @@ export type ChatThread = {
 
 export function getChats(signal?: AbortSignal) {
   return httpRequest<{ data: ChatSummary[] }>("/chats", { signal });
+}
+
+export function getChatNotifications(options?: {
+  cursor?: string | null;
+  limit?: number;
+  signal?: AbortSignal;
+}) {
+  const params = new URLSearchParams();
+  if (options?.cursor) params.set("cursor", options.cursor);
+  if (options?.limit) params.set("limit", String(options.limit));
+  const query = params.toString();
+  const path = query ? `/chats/notifications?${query}` : "/chats/notifications";
+
+  return httpRequest<{
+    data: ChatSummary[];
+    nextCursor: string | null;
+    hasMore: boolean;
+  }>(path, { signal: options?.signal });
 }
 
 export function openSupportChat() {

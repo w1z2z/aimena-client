@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 import { useAuth, useAuthGate } from "@/features/auth";
+import { useChatInbox } from "@/features/chat-inbox";
 import {
   connectChatSocket,
   onChatThreadUpdated,
@@ -116,11 +117,11 @@ function ChatPanelRow({
           )}
         </span>
 
-        <span className="flex w-[164px] min-w-0 flex-col items-start gap-[12px] text-[#1A1A1A]">
+        <span className="flex w-[164px] min-w-0 flex-col items-start text-[#1A1A1A]">
           <span className="w-[153px] truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em]">
             {item.counterpart.displayName}
           </span>
-          <span className="w-[153px] truncate text-[14px] font-normal leading-[1.2]">
+          <span className="mt-[6px] w-[153px] truncate text-[14px] font-normal leading-[1.2]">
             {preview}
           </span>
         </span>
@@ -157,6 +158,7 @@ export function FloatingChat() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
+  const { hasUnread } = useChatInbox();
   const { guardAuth } = useAuthGate();
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -352,8 +354,18 @@ export function FloatingChat() {
         aria-label={isOpen ? "Закрыть чат" : "Открыть чат"}
         aria-expanded={isOpen}
         onClick={handleToggle}
-        className="pointer-events-auto relative flex size-[52px] shrink-0 items-center justify-center rounded-[19px] bg-[#C8FF00] p-[12px] transition hover:brightness-95"
+        className="pointer-events-auto relative box-border flex size-[52px] shrink-0 items-center justify-center rounded-[19px] border-2 border-solid border-transparent p-[12px] transition hover:brightness-95"
+        style={{
+          background:
+            "linear-gradient(#C8FF00, #C8FF00) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
+        }}
       >
+        {hasUnread && !isOpen ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute right-[11px] top-[11px] size-[5px] rounded-full bg-[#FF2056] ring-1 ring-[#C8FF00]"
+          />
+        ) : null}
         <span className="relative flex size-[27px] items-center justify-center">
           <span
             className="absolute inset-0 flex items-center justify-center"

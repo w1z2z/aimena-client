@@ -10,6 +10,7 @@
 @import "../styles/listing-detail.css";
 @import "../styles/favorites.css";
 @import "../styles/chat-badges.css";
+@import "../styles/notifications-dropdown.css";
 
 @theme {
   --color-brand: #1a1a1a;

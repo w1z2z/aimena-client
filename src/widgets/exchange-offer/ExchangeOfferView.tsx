@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
 import {
@@ -348,20 +349,41 @@ export function ExchangeOfferView() {
         ) : null}
         {!loading && target ? (
           <>
-            <section className="exchange-offer-profile">
-              <ListingImage
-                src={target.owner?.avatarUrl ?? null}
-                title={target.owner?.displayName ?? "Пользователь"}
-                className="exchange-offer-profile__avatar"
-              />
-              <div>
-                <strong>{target.owner?.displayName ?? "Пользователь"}</strong>
-                <span>
-                  <StarMiniIcon />
-                  {target.owner?.swapsCount ?? 0}
-                </span>
-              </div>
-            </section>
+            {target.owner?.slug ? (
+              <Link
+                href={`/users/${target.owner.slug}`}
+                className="exchange-offer-profile"
+                aria-label={`Профиль ${target.owner.displayName}`}
+              >
+                <ListingImage
+                  src={target.owner.avatarUrl ?? null}
+                  title={target.owner.displayName}
+                  className="exchange-offer-profile__avatar"
+                />
+                <div>
+                  <strong>{target.owner.displayName}</strong>
+                  <span>
+                    <StarMiniIcon />
+                    {target.owner.swapsCount ?? 0}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              <section className="exchange-offer-profile">
+                <ListingImage
+                  src={target.owner?.avatarUrl ?? null}
+                  title={target.owner?.displayName ?? "Пользователь"}
+                  className="exchange-offer-profile__avatar"
+                />
+                <div>
+                  <strong>{target.owner?.displayName ?? "Пользователь"}</strong>
+                  <span>
+                    <StarMiniIcon />
+                    {target.owner?.swapsCount ?? 0}
+                  </span>
+                </div>
+              </section>
+            )}
 
             <div className="exchange-offer-layout">
               <section className="exchange-offer-choice">
