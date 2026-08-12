@@ -51,10 +51,18 @@ type ChatFilter = "all" | "chats" | "unread" | "offers";
 const PANEL_CLOSE_MS = 220;
 
 function filterChatSummaries(items: ChatSummary[], filter: ChatFilter) {
-  if (filter === "chats") return items.filter((item) => item.kind === "chat");
+  if (filter === "chats") {
+    return items.filter((item) => item.kind === "chat" || item.kind === "support");
+  }
   if (filter === "offers") return items.filter((item) => item.kind === "offer");
   if (filter === "unread") return items.filter((item) => item.unreadCount > 0);
   return items;
+}
+
+function pinSupportFirst(items: ChatSummary[]) {
+  const support = items.filter((item) => item.kind === "support");
+  const rest = items.filter((item) => item.kind !== "support");
+  return [...support, ...rest];
 }
 
 function formatPrice(value: number | null) {
@@ -101,10 +109,12 @@ function Avatar({
   src,
   name,
   className,
+  fallback = null,
 }: {
   src: string | null;
   name: string;
   className: string;
+  fallback?: string | null;
 }) {
   if (src) {
     return (
@@ -115,7 +125,7 @@ function Avatar({
   }
   return (
     <span className={`${className} chats-avatar-placeholder`} aria-hidden>
-      {name.slice(0, 1).toUpperCase()}
+      {fallback ?? name.slice(0, 1).toUpperCase()}
     </span>
   );
 }
@@ -376,13 +386,20 @@ function Sidebar({
             key={item.id}
             type="button"
             className="chats-list-item"
+            data-kind={item.kind}
             data-active={selectedId === item.id ? "true" : undefined}
             onClick={() => onSelect(item)}
           >
             <Avatar
               src={item.counterpart.avatarUrl}
               name={item.counterpart.displayName}
-              className="chats-list-item__avatar"
+              className={[
+                "chats-list-item__avatar",
+                item.kind === "support" ? "chats-list-item__avatar--support" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              fallback={item.kind === "support" ? "❤️" : null}
             />
             <span className="chats-list-item__copy">
               <strong>{item.counterpart.displayName}</strong>
@@ -637,6 +654,15 @@ function SwapPreviewCard({
   );
 }
 
+function SupportHeader({ name }: { name: string }) {
+  return (
+    <div className="chats-support-header">
+      <strong>{name}</strong>
+      <span>Мы на связи в этом чате</span>
+    </div>
+  );
+}
+
 function SwapHeader({
   thread,
   currentUserId,
@@ -644,6 +670,8 @@ function SwapHeader({
   thread: ChatThread;
   currentUserId: string;
 }) {
+  if (!thread.offer) return null;
+
   const target = thread.offer.targetListing;
   const offeredListings = thread.offer.offeredListings;
   const [offerIndex, setOfferIndex] = useState(0);
@@ -775,10 +803,16 @@ function ActiveChatPanel({
     stickToBottomRef.current = true;
   }, [thread.id, lastMessageId, lastMessageSenderId, currentUserId, thread.messages.length]);
 
+  const isSupport = thread.kind === "support" || !thread.offer;
+
   return (
     <section className="chats-panel chats-panel--active">
       <div className="chats-active-stage">
-        <SwapHeader thread={thread} currentUserId={currentUserId} />
+        {isSupport ? (
+          <SupportHeader name={thread.counterpart.displayName} />
+        ) : (
+          <SwapHeader thread={thread} currentUserId={currentUserId} />
+        )}
         <div ref={messagesRef} className="chats-messages">
           <div className="chats-date-divider">Сегодня</div>
           {thread.messages.map((messageItem) =>
@@ -845,24 +879,26 @@ function ActiveChatPanel({
             </div>
 
             {notice ? <p className="chats-action-notice">{notice}</p> : null}
-            <div className="chats-actions">
-              <button
-                type="button"
-                onClick={() =>
-                  setNotice("Подтверждение готовности будет подключено к этапу сделки.")
-                }
-              >
-                Готов к обмену
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setNotice("Отмена будет доступна только как обоюдный запрос сделки.")
-                }
-              >
-                Отказаться от обмена
-              </button>
-            </div>
+            {!isSupport ? (
+              <div className="chats-actions">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNotice("Подтверждение готовности будет подключено к этапу сделки.")
+                  }
+                >
+                  Готов к обмену
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNotice("Отмена будет доступна только как обоюдный запрос сделки.")
+                  }
+                >
+                  Отказаться от обмена
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -875,6 +911,7 @@ export function ChatsView() {
   const { guardAuth } = useAuthGate();
   const searchParams = useSearchParams();
   const selectedFromQuery = searchParams.get("selected");
+  const openSupportFromQuery = searchParams.get("support") === "1";
   const [summaries, setSummaries] = useState<ChatSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(selectedFromQuery);
   const [filter, setFilter] = useState<ChatFilter>("all");
@@ -906,10 +943,11 @@ export function ChatsView() {
       setSelectedId(selectedFromQuery);
       return;
     }
+    if (openSupportFromQuery) return;
     setSelectedId(null);
     setThread(null);
     setIncomingOffer(null);
-  }, [selectedFromQuery]);
+  }, [openSupportFromQuery, selectedFromQuery]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -920,15 +958,26 @@ export function ChatsView() {
     const controller = new AbortController();
     void getChats(controller.signal)
       .then((response) => {
-        setSummaries(response.data);
+        const items = response.data;
+        const supportItem = items.find((item) => item.kind === "support");
+        let nextSelected =
+          selectedFromQuery && items.some((item) => item.id === selectedFromQuery)
+            ? selectedFromQuery
+            : null;
+
+        if (!nextSelected && openSupportFromQuery && supportItem) {
+          nextSelected = supportItem.id;
+          window.history.replaceState(
+            null,
+            "",
+            `/chats?selected=${encodeURIComponent(nextSelected)}`,
+          );
+        }
+
+        setSummaries(items);
         setSelectedId((current) => {
-          if (
-            selectedFromQuery &&
-            response.data.some((item) => item.id === selectedFromQuery)
-          ) {
-            return selectedFromQuery;
-          }
-          if (current && response.data.some((item) => item.id === current)) return current;
+          if (nextSelected) return nextSelected;
+          if (current && items.some((item) => item.id === current)) return current;
           return null;
         });
       })
@@ -941,7 +990,13 @@ export function ChatsView() {
     void connectChatSocket();
 
     return () => controller.abort();
-  }, [authLoading, guardAuth, isAuthenticated, selectedFromQuery]);
+  }, [
+    authLoading,
+    guardAuth,
+    isAuthenticated,
+    openSupportFromQuery,
+    selectedFromQuery,
+  ]);
 
   const selectedSummary = summaries.find((item) => item.id === selectedId) ?? null;
   // Stable key: do not depend on summary object identity (preview/unread updates
@@ -1033,7 +1088,7 @@ export function ChatsView() {
         };
         const next = [...current];
         next.splice(index, 1);
-        return [updated, ...next];
+        return pinSupportFirst([updated, ...next]);
       });
 
       if (selectedId === event.threadId) {
@@ -1059,7 +1114,7 @@ export function ChatsView() {
         };
         const next = [...current];
         next.splice(index, 1);
-        return [updated, ...next];
+        return pinSupportFirst([updated, ...next]);
       });
     });
 
@@ -1153,7 +1208,7 @@ export function ChatsView() {
         };
         const next = [...current];
         next.splice(index, 1);
-        return [updated, ...next];
+        return pinSupportFirst([updated, ...next]);
       });
       return true;
     } catch {

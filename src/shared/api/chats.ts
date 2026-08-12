@@ -35,7 +35,7 @@ export type ChatListing = {
 
 export type ChatSummary = {
   id: string;
-  kind: "offer" | "chat";
+  kind: "offer" | "chat" | "support";
   offerId: string;
   threadId: string | null;
   status:
@@ -69,6 +69,7 @@ export type ChatMessage = {
 
 export type ChatThread = {
   id: string;
+  kind: "chat" | "support";
   status: "active" | "read_only_cancelled" | "read_only_reviewed";
   counterpart: ChatProfile;
   offer: {
@@ -77,12 +78,18 @@ export type ChatThread = {
     message: string;
     targetListing: ChatListing;
     offeredListings: ChatListing[];
-  };
+  } | null;
   messages: ChatMessage[];
 };
 
 export function getChats(signal?: AbortSignal) {
   return httpRequest<{ data: ChatSummary[] }>("/chats", { signal });
+}
+
+export function openSupportChat() {
+  return httpRequest<{ thread: ChatThread }>("/chats/support", {
+    method: "POST",
+  });
 }
 
 export function getIncomingOffer(offerId: string, signal?: AbortSignal) {

@@ -9,7 +9,7 @@ import {
   connectChatSocket,
   onChatThreadUpdated,
 } from "@/shared/api/chat-socket";
-import { getChats, type ChatSummary } from "@/shared/api/chats";
+import { getChats, openSupportChat, type ChatSummary } from "@/shared/api/chats";
 import { ChatBubbleIcon } from "@/shared/ui/icons";
 
 const LINK_CHEVRON_SRC = "/images/chat/link-chevron.svg";
@@ -84,7 +84,10 @@ function ChatPanelRow({
 }) {
   const href = `/chats?selected=${encodeURIComponent(item.id)}`;
   const preview = item.kind === "offer" ? "Вам предложение!" : item.preview;
-  const avatarInitial = item.counterpart.displayName.slice(0, 1).toUpperCase();
+  const isSupport = item.kind === "support";
+  const avatarFallback = isSupport
+    ? "❤️"
+    : item.counterpart.displayName.slice(0, 1).toUpperCase();
 
   return (
     <Link
@@ -94,8 +97,13 @@ function ChatPanelRow({
       className="flex h-[49px] w-[255px] shrink-0 items-end justify-between appearance-none [-webkit-appearance:none] transition hover:opacity-80"
     >
       <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
-        <span className="relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] bg-[#D9D9D9] text-[14px] font-extrabold text-[#1A1A1A]">
-          {item.counterpart.avatarUrl ? (
+        <span
+          className={[
+            "relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] text-[14px] font-extrabold text-[#1A1A1A]",
+            isSupport ? "bg-[#1A1A1A] text-[22px] leading-none" : "bg-[#D9D9D9]",
+          ].join(" ")}
+        >
+          {item.counterpart.avatarUrl && !isSupport ? (
             // Storage URL is dynamic and configured by the API.
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -104,7 +112,7 @@ function ChatPanelRow({
               className="absolute inset-0 size-full object-cover"
             />
           ) : (
-            <span aria-hidden>{avatarInitial}</span>
+            <span aria-hidden>{avatarFallback}</span>
           )}
         </span>
 
@@ -181,11 +189,14 @@ export function FloatingChat() {
         const index = current.findIndex((item) => item.id === event.threadId);
         if (index < 0) {
           void getChats()
-            .then((response) => setItems(response.data.slice(0, 5)))
+            .then((response) =>
+              setItems(response.data.filter((item) => item.kind !== "support").slice(0, 5)),
+            )
             .catch(() => undefined);
           return current;
         }
         const item = current[index];
+        if (item.kind === "support") return current;
         const updated: ChatSummary = {
           ...item,
           preview: event.preview ?? item.preview,
@@ -214,7 +225,9 @@ export function FloatingChat() {
     setLoading(true);
     setError("");
     void getChats(controller.signal)
-      .then((response) => setItems(response.data.slice(0, 5)))
+      .then((response) =>
+        setItems(response.data.filter((item) => item.kind !== "support").slice(0, 5)),
+      )
       .catch((requestError: unknown) => {
         if (requestError instanceof DOMException && requestError.name === "AbortError") return;
         setError("Не удалось загрузить чаты.");
@@ -232,6 +245,20 @@ export function FloatingChat() {
     event.preventDefault();
     setIsOpen(false);
     guardAuth("chat", () => router.push(href));
+  };
+
+  const handleOpenSupport = (href: string, event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    setIsOpen(false);
+    guardAuth("chat", () => {
+      void openSupportChat()
+        .then((response) => {
+          router.push(`/chats?selected=${encodeURIComponent(response.thread.id)}`);
+        })
+        .catch(() => {
+          router.push(href.startsWith("/chats") ? href : "/chats?support=1");
+        });
+    });
   };
 
   const handleToggle = () => {
@@ -307,10 +334,10 @@ export function FloatingChat() {
 
             <div className="absolute inset-x-0 bottom-0 top-[454px] flex items-center justify-end px-[24px]">
               <TextLink
-                href="/chats"
+                href="/chats?support=1"
                 label="Поддержка"
                 tabIndex={isOpen ? 0 : -1}
-                onNavigate={handleChatNavigate}
+                onNavigate={handleOpenSupport}
               />
             </div>
 
