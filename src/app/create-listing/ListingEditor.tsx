@@ -286,8 +286,8 @@ function resolveCategorySelection(
   return null;
 }
 
-function isConditionId(value: string): value is ConditionId {
-  return CONDITION_OPTIONS.some((option) => option.id === value);
+function isConditionId(value: string | null | undefined): value is ConditionId {
+  return typeof value === "string" && CONDITION_OPTIONS.some((option) => option.id === value);
 }
 
 function isServiceFormatId(value: string): value is ServiceFormatId {
