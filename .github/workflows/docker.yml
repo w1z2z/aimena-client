@@ -45,8 +45,8 @@ jobs:
               ;;
             dev)
               echo "tags=${IMAGE}:dev" >> "$GITHUB_OUTPUT"
-              echo "api_url=https://api-dev.aimena.ru/api/v1" >> "$GITHUB_OUTPUT"
-              echo "app_url=https://dev.aimena.ru" >> "$GITHUB_OUTPUT"
+              echo "api_url=https://aimenastaging-sdev-fop2dc-330c0a-194-67-74-30.sslip.io/api/v1" >> "$GITHUB_OUTPUT"
+              echo "app_url=https://aimenastaging-cdev-itpssm-f09c12-194-67-74-30.sslip.io" >> "$GITHUB_OUTPUT"
               ;;
           esac
 
