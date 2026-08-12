@@ -326,7 +326,7 @@ export function ListingDetailView() {
                     </span>
                   ) : null}
                   {listing.type === "service"
-                    ? listing.serviceFormats.map((format) => (
+                    ? (listing.serviceFormats ?? []).map((format) => (
                         <span key={format} className="listing-detail-pill">
                           <img
                             src="/images/listing-detail/service-format-dot.svg"

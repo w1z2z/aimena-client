@@ -88,7 +88,7 @@ function OwnListingCard({
           <Pill>{formatPrice(listing.estimatedPrice)}</Pill>
           {detailLabel ? <Pill>{detailLabel}</Pill> : null}
           {listing.type === "service"
-            ? listing.serviceFormats.slice(0, 1).map((format) => (
+            ? (listing.serviceFormats ?? []).slice(0, 1).map((format) => (
                 <Pill key={format}>{mapServiceFormatToLabel(format)}</Pill>
               ))
             : null}
@@ -132,7 +132,7 @@ function TargetListing({ listing }: { listing: ApiListingDetail }) {
               {listing.city.name}
             </Pill>
             {listing.type === "service"
-              ? listing.serviceFormats.map((format) => (
+              ? (listing.serviceFormats ?? []).map((format) => (
                   <Pill key={format}>{mapServiceFormatToLabel(format)}</Pill>
                 ))
               : null}

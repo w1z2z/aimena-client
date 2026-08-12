@@ -253,7 +253,7 @@ function ListingCard({
                 {listing.city.name}
               </span>
               {listing.type === "service"
-                ? listing.serviceFormats.slice(0, 1).map((format) => (
+                ? (listing.serviceFormats ?? []).slice(0, 1).map((format) => (
                     <span key={format} className="chats-location-pill">
                       {mapServiceFormatToLabel(format)}
                     </span>

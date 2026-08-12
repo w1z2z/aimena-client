@@ -763,7 +763,9 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           listingCategories,
           listing.category.id,
         );
-        const nextFormats = listing.serviceFormats.filter(isServiceFormatId).slice(0, 1);
+        const nextFormats = (listing.serviceFormats ?? [])
+          .filter(isServiceFormatId)
+          .slice(0, 1);
         const nextWorkLevel = isServiceWorkLevelId(listing.serviceWorkLevel)
           ? listing.serviceWorkLevel
           : listing.type === "service"
