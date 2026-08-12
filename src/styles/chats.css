@@ -1,5 +1,6 @@
 .chats-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #f8f8f5;
   color: #1a1a1a;
 }
@@ -628,8 +629,6 @@
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.072px;
-  leading-trim: both;
-  text-edge: cap;
 }
 
 .chats-listing-wants__label {
@@ -639,8 +638,6 @@
   font-size: 14px;
   font-weight: 400;
   line-height: 1.7;
-  leading-trim: both;
-  text-edge: cap;
 }
 
 .chats-listing-wants__row {

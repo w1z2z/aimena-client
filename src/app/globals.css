@@ -63,6 +63,7 @@ body {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--color-text-primary);
   background: var(--color-bg-page);
   font-family: var(--font-manrope), Arial, sans-serif;
@@ -133,6 +134,12 @@ input[type="checkbox"],
 input[type="radio"],
 input[type="range"] {
   cursor: pointer;
+}
+
+/* Safari: custom-styled buttons ignore child backgrounds/colors without this */
+button {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),

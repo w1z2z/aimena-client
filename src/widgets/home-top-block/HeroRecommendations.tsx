@@ -115,8 +115,9 @@ export function HeroRecommendationsPanel({
 
   return (
     <div className="relative flex h-[552px] w-[464px] flex-col items-center gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
-      <div className="flex h-[17px] w-[330px] shrink-0 items-center justify-center text-center text-[#1A1A1A]">
-        <p className="text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+      {/* Fixed 17px slot matches Figma trim; avoids growing and clipping the 464px listing card */}
+      <div className="flex h-[17px] w-[330px] shrink-0 items-center justify-center overflow-hidden text-center text-[#1A1A1A]">
+        <p className="text-[24px] font-extrabold leading-none tracking-[-0.003em]">
           {heading}
         </p>
       </div>

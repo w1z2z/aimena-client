@@ -1,5 +1,6 @@
 .exchange-offer-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #f8f8f5;
   color: #1a1a1a;
 }

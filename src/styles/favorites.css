@@ -1,5 +1,6 @@
 .favorites-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #f8f8f5;
 }
 
@@ -96,8 +97,8 @@
   grid-template-columns: repeat(4, 342px);
   justify-content: start;
   gap: 48px 24px;
-  width: 1440px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 1440px;
   margin-top: 0;
 }
 

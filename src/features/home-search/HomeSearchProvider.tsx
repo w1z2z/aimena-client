@@ -77,7 +77,7 @@ type HomeSearchContextValue = {
 const HomeSearchContext = createContext<HomeSearchContextValue | null>(null);
 
 export function HomeSearchProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<HomeSearchMode>("browse");
+  const [mode, setMode] = useState<HomeSearchMode>("exchange");
   const [categoryId, setCategoryId] = useState<string>("all");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");

@@ -66,7 +66,7 @@ function TextLink({
       onClick={(event) => onNavigate(href, event)}
       className="inline-flex items-center gap-[6px] text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A] transition hover:opacity-70"
     >
-      <span className="[text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">{label}</span>
+      <span>{label}</span>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={LINK_CHEVRON_SRC} alt="" aria-hidden className="h-[6px] w-[4px] shrink-0" />
     </Link>
@@ -271,7 +271,7 @@ export function FloatingChat() {
           >
             <div className="flex h-[406px] w-[255px] flex-col items-start gap-[48px]">
               <div className="flex h-[17px] w-[255px] shrink-0 items-center justify-between">
-                <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A] [text-box-trim:trim-both] [text-box-edge:cap_alphabetic]">
+                <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
                   Чаты
                 </h2>
                 <TextLink

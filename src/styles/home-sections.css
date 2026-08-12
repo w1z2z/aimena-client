@@ -95,17 +95,15 @@
   flex: none;
   flex-grow: 0;
   align-items: center;
-  width: 672px;
-  height: 17px;
+  width: min(672px, 100%);
+  max-width: 100%;
+  height: auto;
+  min-height: 32px;
   color: #1a1a1a;
   font-size: 24px;
   font-weight: 800;
   line-height: 32px;
   letter-spacing: -0.003em;
-  leading-trim: both;
-  text-edge: cap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-exchange-cta__title p {
@@ -119,18 +117,16 @@
   flex: none;
   flex-grow: 0;
   align-items: center;
-  width: 500px;
-  height: 12px;
+  width: min(500px, 100%);
+  max-width: 100%;
+  height: auto;
+  min-height: 24px;
   color: #5a5a5a;
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: 0.01em;
   white-space: nowrap;
-  leading-trim: both;
-  text-edge: cap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-exchange-cta__subtitle p {
@@ -208,25 +204,6 @@
   white-space: nowrap;
 }
 
-@supports not (leading-trim: both) {
-  .home-exchange-cta__title {
-    height: 17px;
-    line-height: 17px;
-  }
-
-  .home-exchange-cta__title p {
-    line-height: 17px;
-  }
-
-  .home-exchange-cta__subtitle {
-    height: 12px;
-    line-height: 12px;
-  }
-
-  .home-exchange-cta__subtitle p {
-    line-height: 12px;
-  }
-}
 
 .home-recommendations-header {
   position: relative;

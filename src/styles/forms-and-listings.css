@@ -1011,18 +1011,16 @@
 .home-recommendations-header__heading {
   flex: none;
   flex-grow: 0;
-  width: 816px;
-  height: 31px;
+  width: min(816px, 100%);
+  max-width: 100%;
+  height: auto;
+  min-height: 40px;
   margin: 0;
   color: #1a1a1a;
   font-size: 40px;
   font-weight: 800;
   line-height: 40px;
   letter-spacing: -0.005em;
-  leading-trim: both;
-  text-edge: cap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-recommendations-header__heading-accent {
@@ -1034,8 +1032,10 @@
   flex: none;
   flex-grow: 0;
   align-items: center;
-  width: 222px;
-  height: 14px;
+  width: min(222px, 100%);
+  max-width: 100%;
+  height: auto;
+  min-height: 20px;
   margin: 0;
   color: #3d3d3d;
   font-family: var(--font-golos), Arial, sans-serif;
@@ -1043,10 +1043,6 @@
   font-weight: 400;
   line-height: 100%;
   letter-spacing: -0.022em;
-  leading-trim: both;
-  text-edge: cap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .home-recommendations-header__filter {
@@ -1089,34 +1085,16 @@
   flex: none;
   flex-grow: 0;
   align-items: center;
-  width: 51px;
-  height: 9px;
+  width: auto;
+  min-width: 51px;
+  height: auto;
+  min-height: 18px;
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
   letter-spacing: 0.001em;
-  leading-trim: both;
-  text-edge: cap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
-@supports not (leading-trim: both) {
-  .home-recommendations-header__heading {
-    height: 40px;
-    line-height: 40px;
-  }
-
-  .home-recommendations-header__count {
-    height: 20px;
-    line-height: 20px;
-  }
-
-  .home-recommendations-header__filter-label {
-    height: 18px;
-    line-height: 18px;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .home-recommendations-filters-panel {
