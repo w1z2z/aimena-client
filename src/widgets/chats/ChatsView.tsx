@@ -391,11 +391,9 @@ function Sidebar({
             <span className="chats-list-item__meta">
               <time>{formatListTime(item.updatedAt)}</time>
               {item.kind === "offer" ? (
-                <span className="chats-list-item__badge chats-list-item__badge--offer">!</span>
+                <span className="chat-badge chat-badge--offer">!</span>
               ) : item.unreadCount > 0 ? (
-                <span className="chats-list-item__badge chats-list-item__badge--count">
-                  {item.unreadCount}
-                </span>
+                <span className="chat-badge chat-badge--count">{item.unreadCount}</span>
               ) : null}
             </span>
           </button>

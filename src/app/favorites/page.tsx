@@ -154,7 +154,7 @@ export default function FavoritesPage() {
       <Header />
       <main className="favorites-page__main">
         <h1 className="favorites-page__title">Избранное</h1>
-        {isAuthenticated && (listings.length > 0 || favoritesQuery.isSuccess) ? (
+        {isAuthenticated && listings.length > 0 ? (
           <p className="favorites-page__count">
             {total} {pluralOffers(total)}
           </p>

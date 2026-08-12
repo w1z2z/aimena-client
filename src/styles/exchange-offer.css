@@ -172,15 +172,23 @@
 }
 
 .exchange-offer-list {
-  display: flex;
   height: 364px;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-  padding: 24px;
+  overflow: hidden;
   border: 0.5px solid #cacaca;
   border-radius: 31px;
   background: #fff;
+}
+
+.exchange-offer-list__scroll {
+  display: flex;
+  box-sizing: border-box;
+  height: 100%;
+  flex-direction: column;
+  gap: 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
 }
 
 .exchange-offer-own-card {
@@ -195,7 +203,10 @@
 }
 
 .exchange-offer-own-card[data-selected="true"] {
-  border-color: #8e8bed;
+  border-color: transparent;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
 }
 
 .exchange-offer-own-card__image {
@@ -264,13 +275,15 @@
   display: flex;
   width: 37px;
   height: 86px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  padding: 0;
   border: 0;
   border-radius: 19px;
   background: #1a1a1a;
   color: #fff;
-  font-size: 24px;
+  line-height: 0;
   transition: background 150ms ease;
 }
 
@@ -481,7 +494,7 @@
     border-radius: 21px;
   }
 
-  .exchange-offer-list {
+  .exchange-offer-list__scroll {
     padding: 12px;
   }
 

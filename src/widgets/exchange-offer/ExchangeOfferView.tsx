@@ -50,6 +50,48 @@ function Pill({ children }: { children: React.ReactNode }) {
   return <span className="exchange-offer-pill">{children}</span>;
 }
 
+function SelectAddIcon() {
+  return (
+    <svg width="21" height="21" viewBox="0 0 21 21" fill="none" aria-hidden>
+      <path
+        d="M1 10.5C1 6.02166 1 3.78249 2.39124 2.39125C3.78249 1 6.02166 1 10.5 1C14.9783 1 17.2175 1 18.6088 2.39125C20 3.78249 20 6.02166 20 10.5C20 14.9783 20 17.2176 18.6088 18.6088C17.2175 20.0001 14.9783 20 10.5 20C6.02166 20 3.78249 20.0001 2.39124 18.6088C1 17.2176 1 14.9783 1 10.5Z"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10.5 6.5V14.5M14.5 10.5001H6.5"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SelectRemoveIcon() {
+  return (
+    <svg width="21" height="21" viewBox="0 0 21 21" fill="none" aria-hidden>
+      <path
+        d="M1 10.5C1 6.02166 1 3.78249 2.39124 2.39124C3.78249 1 6.02166 1 10.5 1C14.9783 1 17.2175 1 18.6088 2.39124C20 3.78249 20 6.02166 20 10.5C20 14.9783 20 17.2175 18.6088 18.6087C17.2175 20 14.9783 20 10.5 20C6.02166 20 3.78249 20 2.39124 18.6087C1 17.2175 1 14.9783 1 10.5Z"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14.5 10.5L6.5 10.5"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function OwnListingCard({
   listing,
   selected,
@@ -102,7 +144,7 @@ function OwnListingCard({
         aria-pressed={selected}
         aria-label={selected ? `Убрать ${listing.title}` : `Выбрать ${listing.title}`}
       >
-        {selected ? "−" : "+"}
+        {selected ? <SelectRemoveIcon /> : <SelectAddIcon />}
       </button>
     </article>
   );
@@ -342,22 +384,24 @@ export function ExchangeOfferView() {
                   />
                 </label>
                 <div className="exchange-offer-list">
-                  {filteredListings.length > 0 ? (
-                    filteredListings.map((listing) => (
-                      <OwnListingCard
-                        key={listing.id}
-                        listing={listing}
-                        selected={selectedIds.includes(listing.id)}
-                        onToggle={() => toggleListing(listing.id)}
-                      />
-                    ))
-                  ) : (
-                    <p className="exchange-offer-empty">
-                      {ownListings.length === 0
-                        ? "Сначала разместите активное предложение для обмена."
-                        : "Ничего не найдено."}
-                    </p>
-                  )}
+                  <div className="exchange-offer-list__scroll">
+                    {filteredListings.length > 0 ? (
+                      filteredListings.map((listing) => (
+                        <OwnListingCard
+                          key={listing.id}
+                          listing={listing}
+                          selected={selectedIds.includes(listing.id)}
+                          onToggle={() => toggleListing(listing.id)}
+                        />
+                      ))
+                    ) : (
+                      <p className="exchange-offer-empty">
+                        {ownListings.length === 0
+                          ? "Сначала разместите активное предложение для обмена."
+                          : "Ничего не найдено."}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <textarea
                   value={message}

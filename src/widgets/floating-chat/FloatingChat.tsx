@@ -91,7 +91,7 @@ function ChatPanelRow({
       href={href}
       tabIndex={tabIndex}
       onClick={(event) => onNavigate(href, event)}
-      className="flex h-[49px] w-[255px] shrink-0 items-end justify-between transition hover:opacity-80"
+      className="flex h-[49px] w-[255px] shrink-0 items-end justify-between appearance-none [-webkit-appearance:none] transition hover:opacity-80"
     >
       <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
         <span className="relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] bg-[#D9D9D9] text-[14px] font-extrabold text-[#1A1A1A]">
@@ -123,13 +123,9 @@ function ChatPanelRow({
           {formatListTime(item.updatedAt)}
         </span>
         {item.kind === "offer" ? (
-          <span className="inline-flex h-[17px] w-[17px] items-center justify-center rounded-[9.5px] bg-[#8E8BED] text-[11px] font-semibold leading-4 tracking-[0.002em] text-white">
-            !
-          </span>
+          <span className="chat-badge chat-badge--offer">!</span>
         ) : item.unreadCount > 0 ? (
-          <span className="inline-flex h-4 min-w-[32px] items-center justify-center rounded-[9.5px] bg-[#C8FF00] px-[6px] py-1 text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#1A1A1A]">
-            {item.unreadCount}
-          </span>
+          <span className="chat-badge chat-badge--count">{item.unreadCount}</span>
         ) : null}
       </span>
     </Link>

@@ -78,6 +78,9 @@
   color: #1a1a1a;
   text-align: left;
   cursor: pointer;
+  /* Safari: without this, child badge backgrounds/colors inside <button> are ignored */
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .chats-list-item:hover {
@@ -158,6 +161,7 @@
 .chats-list-item__badge {
   display: inline-flex;
   box-sizing: border-box;
+  flex-shrink: 0;
   min-width: 17px;
   height: 17px;
   align-items: center;
@@ -169,13 +173,15 @@
   line-height: 1;
   letter-spacing: 0.022px;
   text-align: center;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .chats-list-item__badge--count {
   min-width: 32px;
   height: 16px;
-  background: #c8ff00;
-  color: #1a1a1a;
+  background-color: #c8ff00;
+  color: #1a1a1a !important;
 }
 
 .chats-list-item__badge--offer {
@@ -183,8 +189,8 @@
   min-width: 17px;
   height: 17px;
   padding: 0;
-  background: #8e8bed;
-  color: #fff;
+  background-color: #8e8bed;
+  color: #fff !important;
 }
 
 .chats-list__empty {
