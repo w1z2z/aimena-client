@@ -799,7 +799,11 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         setCityId(listing.city.id);
         setDraftCityLabel(cityLabel);
         setCondition(
-          listing.type === "item" && isConditionId(listing.condition) ? listing.condition : null,
+          listing.type === "item" &&
+            typeof listing.condition === "string" &&
+            isConditionId(listing.condition)
+            ? listing.condition
+            : null,
         );
         setServiceWorkLevel(nextWorkLevel);
         setServiceFormats(nextFormats);
@@ -1282,6 +1286,17 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
     setSubmitError(null);
     setIsSubmitting(true);
+    let retriedWithoutWantsCategoryIds = false;
+    let payload:
+      | (Parameters<typeof createListingDraft>[0] & { wantsCategoryIds?: string[] })
+      | null = null;
+
+    let payloadWithoutWantsCategoryIds:
+      | (Parameters<typeof createListingDraft>[0] & { wantsCategoryIds?: string[] })
+      | null = null;
+
+    let estimatedPrice: number | null = null;
+
     try {
       await ensureFreshAccessToken();
 
@@ -1291,14 +1306,17 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       ]);
 
       const wantsCategoryIds =
-        exchangeEnabled && !isFree ? wantsCategoryPins.map((pin) => pin.id) : [];
+        exchangeEnabled && !isFree && wantsCategoryPins.length > 0
+          ? wantsCategoryPins.map((pin) => pin.id)
+          : undefined;
       const wantsPayloadTags = exchangeEnabled && !isFree ? wantsTags : [];
-      const estimatedPrice = priceDigits ? Number(priceDigits) : null;
+      estimatedPrice = priceDigits ? Number(priceDigits) : null;
 
-      const payload = {
+      payload = {
         type: listingKind,
         serviceFormats: listingKind === "service" ? serviceFormats : undefined,
-        serviceWorkLevel: listingKind === "service" ? serviceWorkLevel ?? undefined : undefined,
+        serviceWorkLevel:
+          listingKind === "service" ? serviceWorkLevel ?? undefined : undefined,
         title: title.trim(),
         description: normalizeListingDescription(description),
         categoryId,
@@ -1313,15 +1331,24 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         documentUploadIds,
       };
 
+      payloadWithoutWantsCategoryIds = payload
+        ? (() => {
+            const next = { ...payload };
+            // Some staging builds don't have wantsCategoryIds in CreateListingDto yet.
+            delete (next as { wantsCategoryIds?: string[] }).wantsCategoryIds;
+            return next;
+          })()
+        : null;
+
       if (isEditMode) {
         if (!listingId) {
           throw new Error("Не указан идентификатор объявления");
         }
 
         await updateListing(listingId, {
-          ...payload,
+          ...(payload as object),
           estimatedPrice,
-        });
+        } as any);
 
         if (listingStatus !== "active") {
           await publishListing(listingId);
@@ -1331,12 +1358,47 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         return;
       }
 
-      const created = await createListingDraft(payload);
-
+      const created = await createListingDraft(payload as any);
       await publishListing(created.listing.id);
       clearHeroListingDraft();
       setIsPublishedModalOpen(true);
     } catch (error: unknown) {
+      const isApiError =
+        error instanceof ApiError &&
+        error.message.toLowerCase().includes("wantscategoryids should not exist");
+
+      if (isApiError && !retriedWithoutWantsCategoryIds && payloadWithoutWantsCategoryIds) {
+        retriedWithoutWantsCategoryIds = true;
+        try {
+          if (isEditMode) {
+            if (!listingId) {
+              throw new Error("Не указан идентификатор объявления");
+            }
+
+            await updateListing(listingId, {
+              ...(payloadWithoutWantsCategoryIds as object),
+              estimatedPrice,
+            } as any);
+
+            if (listingStatus !== "active") {
+              await publishListing(listingId);
+            }
+
+            router.push(`/listings/${listingId}`);
+            return;
+          }
+
+          const created = await createListingDraft(payloadWithoutWantsCategoryIds as any);
+          await publishListing(created.listing.id);
+          clearHeroListingDraft();
+          setIsPublishedModalOpen(true);
+          return;
+        } catch (retryError: unknown) {
+          // fall through to the default error handler
+          error = retryError;
+        }
+      }
+
       if (error instanceof ApiError) {
         setSubmitError(error.message);
       } else if (error instanceof Error) {
