@@ -8,10 +8,11 @@
   display: grid;
   width: min(1440px, calc(100% - 48px));
   min-height: 818px;
-  grid-template-columns: 342px minmax(0, 1075px);
+  grid-template-columns: 342px minmax(0, 1fr);
   gap: 24px;
   margin: 0 auto;
   padding: 122px 0 56px;
+  box-sizing: border-box;
 }
 
 .chats-sidebar {
@@ -209,12 +210,13 @@
 
 .chats-panel {
   display: flex;
-  width: 1075px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 1075px;
   height: 818px;
   flex-direction: column;
   padding: 12px;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .chats-empty-panel {
@@ -297,24 +299,26 @@
 
 .chats-offer-comparison {
   display: flex;
-  width: 1049px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 1049px;
   height: 654px;
   flex: none;
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
   overflow: visible;
+  min-width: 0;
+  gap: 12px;
 }
 
 .chats-offer-column {
   display: flex;
   box-sizing: border-box;
-  width: 490px;
+  width: 100%;
   min-width: 0;
   max-width: 490px;
   height: 654px;
-  flex: 0 1 490px;
+  flex: 1 1 0;
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
@@ -322,10 +326,10 @@
 }
 
 .chats-offer-comparison > .chats-offer-column {
-  width: 490px;
+  width: 100%;
   min-width: 0;
   max-width: 490px;
-  flex: 0 1 490px;
+  flex: 1 1 0;
 }
 
 .chats-offer-column > h2 {
@@ -338,15 +342,13 @@
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.072px;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-listing-detail {
   position: relative;
   display: flex;
   box-sizing: border-box;
-  width: 490px;
+  width: 100%;
   min-width: 0;
   max-width: 490px;
   height: 625px;
@@ -518,8 +520,6 @@
   font-weight: 600;
   line-height: 16px;
   letter-spacing: 0.022px;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-listing-detail h3 {
@@ -532,8 +532,6 @@
   letter-spacing: -0.072px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-listing-detail__pills {
@@ -558,8 +556,6 @@
   line-height: 16px;
   letter-spacing: 0.022px;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-location-pill svg {
@@ -584,8 +580,6 @@
   line-height: 1.2;
   letter-spacing: 0.014px;
   white-space: nowrap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-listing-stats > div > span:first-child {
@@ -594,8 +588,6 @@
   flex: none;
   align-items: center;
   line-height: 1.2;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-listing-stats .chats-pill {
@@ -638,8 +630,6 @@
   letter-spacing: -0.072px;
   leading-trim: both;
   text-edge: cap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-listing-wants__label {
@@ -651,8 +641,6 @@
   line-height: 1.7;
   leading-trim: both;
   text-edge: cap;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-listing-wants__row {
@@ -749,8 +737,6 @@
   line-height: 1.7;
   scrollbar-width: thin;
   scrollbar-color: rgb(142 139 237 / 60%) transparent;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .chats-offer-message__text::-webkit-scrollbar {
