@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/features/auth";
 import {
   connectChatSocket,
+  onChatDealUpdated,
   onChatInboxUpdated,
   onChatThreadUpdated,
 } from "@/shared/api/chat-socket";
@@ -72,10 +73,14 @@ export function ChatInboxProvider({ children }: { children: ReactNode }) {
     const unsubscribeInbox = onChatInboxUpdated(() => {
       void refreshUnread();
     });
+    const unsubscribeDeal = onChatDealUpdated(() => {
+      void refreshUnread();
+    });
 
     return () => {
       unsubscribeThread();
       unsubscribeInbox();
+      unsubscribeDeal();
     };
   }, [isAuthenticated, refreshUnread]);
 

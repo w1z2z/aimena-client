@@ -849,6 +849,11 @@
   font-weight: 600;
 }
 
+.chats-actions button.is-pressed {
+  background: #fff;
+  color: #8e8bed;
+}
+
 .chats-actions button:last-child {
   border-color: #ff2056;
   background: #fff2f5;

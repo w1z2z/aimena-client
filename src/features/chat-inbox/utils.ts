@@ -3,7 +3,17 @@ import type { ChatSummary } from "@/shared/api/chats";
 export function notificationHasUnread(item: ChatSummary) {
   if (item.notificationKind === "offer_rejected") return false;
   if (item.notificationKind === "offer_accepted") return false;
+  if (item.notificationKind === "deal_aborted") return false;
+  if (item.notificationKind === "deal_cancelled") return false;
   if (item.kind === "offer" && item.status === "incoming_request") return true;
+  if (
+    item.notificationKind === "cancel_requested" ||
+    item.notificationKind === "partner_ready" ||
+    item.notificationKind === "complete_requested" ||
+    item.notificationKind === "review_needed"
+  ) {
+    return item.unreadCount > 0;
+  }
   return false;
 }
 
@@ -23,7 +33,17 @@ export function chatSummaryToHref(item: ChatSummary) {
   if (item.notificationKind === "offer_rejected" && item.targetListingId) {
     return `/listings/${item.targetListingId}`;
   }
-  return `/chats?selected=${encodeURIComponent(item.id)}`;
+
+  const selected = item.threadId ?? item.id;
+  const params = new URLSearchParams({ selected });
+  if (item.notificationKind === "cancel_requested") {
+    params.set("dealModal", "cancel_request");
+  } else if (item.notificationKind === "review_needed") {
+    params.set("dealModal", "review");
+  } else if (item.notificationKind === "complete_requested") {
+    params.set("dealModal", "complete");
+  }
+  return `/chats?${params.toString()}`;
 }
 
 export function formatNotificationTime(value: string) {
@@ -68,6 +88,18 @@ export function getNotificationTitle(item: ChatSummary) {
       return "Предложение принято!";
     case "offer_rejected":
       return "Ваше предложение отклонено";
+    case "cancel_requested":
+      return "Запрос на обоюдный отказ";
+    case "deal_aborted":
+      return "Сделка отменена";
+    case "deal_cancelled":
+      return "Обоюдный отказ от обмена";
+    case "partner_ready":
+      return "Партнёр готов к обмену";
+    case "complete_requested":
+      return "Обмен состоялся?";
+    case "review_needed":
+      return "Оставьте отзыв";
     case "support":
       return "Сообщение от поддержки";
     case "chat_message":
@@ -108,6 +140,18 @@ export function getNotificationSubtitle(item: ChatSummary) {
         : "Свяжитесь с владельцем";
     case "offer_rejected":
       return item.tags && item.tags.length > 0 ? undefined : undefined;
+    case "cancel_requested":
+      return "Участник запрашивает обоюдный отказ от обмена";
+    case "deal_aborted":
+      return "Сделка отменена";
+    case "deal_cancelled":
+      return "Сделка отменена по обоюдному согласию";
+    case "partner_ready":
+      return "Подтвердите готовность в чате";
+    case "complete_requested":
+      return "Подтвердите, что обмен состоялся";
+    case "review_needed":
+      return "Оставьте отзыв о проведённом обмене";
     case "support":
     case "chat_message":
       return item.preview;

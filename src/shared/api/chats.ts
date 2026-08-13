@@ -1,6 +1,7 @@
 "use client";
 
 import { httpRequest } from "./http";
+import type { DealView } from "./deals";
 import type {
   ApiListingCondition,
   ApiListingServiceFormat,
@@ -38,7 +39,13 @@ export type NotificationKind =
   | "offer_accepted"
   | "offer_rejected"
   | "chat_message"
-  | "support";
+  | "support"
+  | "cancel_requested"
+  | "deal_aborted"
+  | "deal_cancelled"
+  | "partner_ready"
+  | "complete_requested"
+  | "review_needed";
 
 export type ChatSummary = {
   id: string;
@@ -93,6 +100,7 @@ export type ChatThread = {
     targetListing: ChatListing;
     offeredListings: ChatListing[];
   } | null;
+  deal: DealView | null;
   messages: ChatMessage[];
 };
 

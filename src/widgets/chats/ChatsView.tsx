@@ -36,6 +36,7 @@ import {
   joinChatThread,
   leaveChatThread,
   markChatThreadRead,
+  onChatDealUpdated,
   onChatMessage,
   onChatThreadUpdated,
   sendChatSocketMessage,
@@ -45,6 +46,8 @@ import { ApiError } from "@/shared/api/http";
 import { LocationPinIcon, MenuSquareIcon, StarMiniIcon } from "@/shared/ui/icons";
 import { Header } from "@/widgets/header/Header";
 import { pluralRu } from "@/widgets/profile/constants";
+
+import { DealFlow, dealSideStatus, dealModalFromQuery } from "./DealFlow";
 
 type ChatFilter = "all" | "chats" | "unread" | "offers";
 
@@ -63,6 +66,34 @@ function pinSupportFirst(items: ChatSummary[]) {
   const support = items.filter((item) => item.kind === "support");
   const rest = items.filter((item) => item.kind !== "support");
   return [...support, ...rest];
+}
+
+function sortChatsByActivity(items: ChatSummary[]) {
+  const support = items.filter((item) => item.kind === "support");
+  const rest = items
+    .filter((item) => item.kind !== "support")
+    .sort(
+      (left, right) =>
+        new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
+    );
+  return [...support, ...rest];
+}
+
+function replaceChatSummary(
+  items: ChatSummary[],
+  updated: ChatSummary,
+  resortByActivity: boolean,
+) {
+  const index = items.findIndex((item) => item.id === updated.id);
+  if (index < 0) {
+    return resortByActivity
+      ? sortChatsByActivity([updated, ...items])
+      : pinSupportFirst([updated, ...items]);
+  }
+
+  const next = [...items];
+  next[index] = updated;
+  return resortByActivity ? sortChatsByActivity(next) : next;
 }
 
 function formatPrice(value: number | null) {
@@ -581,6 +612,7 @@ function SwapPreviewCard({
   activeIndex = 0,
   menu = false,
   counterpart = null,
+  statusLabel,
   onNext,
 }: {
   label: string;
@@ -591,6 +623,7 @@ function SwapPreviewCard({
   counterpart?: {
     slug: string;
   } | null;
+  statusLabel: string;
   onNext?: () => void;
 }) {
   const count = listings.length;
@@ -647,7 +680,7 @@ function SwapPreviewCard({
             <strong className="chats-swap-preview__title">{listing.title}</strong>
           </Link>
         </div>
-        <span className="chats-swap-preview__status">Ждём готовности владельца</span>
+        <span className="chats-swap-preview__status">{statusLabel}</span>
       </div>
       {menu && counterpart ? <ChatSupportMenu counterpart={counterpart} /> : null}
     </div>
@@ -672,6 +705,8 @@ function SwapHeader({
 }) {
   if (!thread.offer) return null;
 
+  const mineStatus = dealSideStatus(thread.deal, "mine");
+  const theirsStatus = dealSideStatus(thread.deal, "theirs");
   const target = thread.offer.targetListing;
   const offeredListings = thread.offer.offeredListings;
   const [offerIndex, setOfferIndex] = useState(0);
@@ -730,6 +765,7 @@ function SwapHeader({
         listings={mine.listings}
         activeIndex={mine.activeIndex}
         menu={mine.menu}
+        statusLabel={mineStatus}
         onNext={mine.onNext}
       />
       <SwapPreviewCard
@@ -739,6 +775,7 @@ function SwapHeader({
         activeIndex={theirs.activeIndex}
         menu={theirs.menu}
         counterpart={thread.counterpart}
+        statusLabel={theirsStatus}
         onNext={theirs.onNext}
       />
     </div>
@@ -748,16 +785,19 @@ function SwapHeader({
 function ActiveChatPanel({
   thread,
   currentUserId,
+  initialDealModal,
   onSend,
+  onDealUpdated,
 }: {
   thread: ChatThread;
   currentUserId: string;
+  initialDealModal: ReturnType<typeof dealModalFromQuery>;
   onSend: (body: string) => Promise<boolean>;
+  onDealUpdated: (deal: ChatThread["deal"]) => void;
 }) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
-  const [notice, setNotice] = useState("");
   const messagesRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
   const lastMessage = thread.messages[thread.messages.length - 1];
@@ -804,6 +844,7 @@ function ActiveChatPanel({
   }, [thread.id, lastMessageId, lastMessageSenderId, currentUserId, thread.messages.length]);
 
   const isSupport = thread.kind === "support" || !thread.offer;
+  const composerLocked = thread.status !== "active";
 
   return (
     <section className="chats-panel chats-panel--active">
@@ -855,7 +896,10 @@ function ActiveChatPanel({
                   type="button"
                   className="chats-composer__attach"
                   aria-label="Прикрепить файл"
-                  onClick={() => setAttachmentsOpen((open) => !open)}
+                  disabled={composerLocked}
+                  onClick={() => {
+                    if (!composerLocked) setAttachmentsOpen((open) => !open);
+                  }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/images/chat/attachment.svg" alt="" />
@@ -863,14 +907,15 @@ function ActiveChatPanel({
                 <input
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
-                  placeholder="Написать...."
+                  placeholder={composerLocked ? "Чат только для чтения" : "Написать...."}
                   maxLength={2000}
+                  disabled={composerLocked}
                 />
                 <button
                   type="submit"
                   className="chats-composer__send"
                   aria-label="Отправить"
-                  disabled={!message.trim() || sending}
+                  disabled={composerLocked || !message.trim() || sending}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/images/chat/send-star.svg" alt="" />
@@ -878,26 +923,13 @@ function ActiveChatPanel({
               </form>
             </div>
 
-            {notice ? <p className="chats-action-notice">{notice}</p> : null}
             {!isSupport ? (
-              <div className="chats-actions">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setNotice("Подтверждение готовности будет подключено к этапу сделки.")
-                  }
-                >
-                  Готов к обмену
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setNotice("Отмена будет доступна только как обоюдный запрос сделки.")
-                  }
-                >
-                  Отказаться от обмена
-                </button>
-              </div>
+              <DealFlow
+                deal={thread.deal}
+                threadStatus={thread.status}
+                initialModal={initialDealModal}
+                onDealUpdated={onDealUpdated}
+              />
             ) : null}
           </div>
         </div>
@@ -912,6 +944,7 @@ export function ChatsView() {
   const searchParams = useSearchParams();
   const selectedFromQuery = searchParams.get("selected");
   const openSupportFromQuery = searchParams.get("support") === "1";
+  const initialDealModal = dealModalFromQuery(searchParams.get("dealModal"));
   const [summaries, setSummaries] = useState<ChatSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(selectedFromQuery);
   const [filter, setFilter] = useState<ChatFilter>("all");
@@ -1086,9 +1119,7 @@ export function ChatsView() {
               ? item.unreadCount
               : item.unreadCount + 1,
         };
-        const next = [...current];
-        next.splice(index, 1);
-        return pinSupportFirst([updated, ...next]);
+        return replaceChatSummary(current, updated, true);
       });
 
       if (selectedId === event.threadId) {
@@ -1101,26 +1132,40 @@ export function ChatsView() {
         const index = current.findIndex((item) => item.id === event.threadId);
         if (index < 0) return current;
         const item = current[index];
+        const nextUpdatedAt = event.lastMessageAt
+          ? typeof event.lastMessageAt === "string"
+            ? event.lastMessageAt
+            : new Date(event.lastMessageAt).toISOString()
+          : item.updatedAt;
         const updated: ChatSummary = {
           ...item,
           preview: event.preview ?? item.preview,
-          updatedAt: event.lastMessageAt
-            ? typeof event.lastMessageAt === "string"
-              ? event.lastMessageAt
-              : new Date(event.lastMessageAt).toISOString()
-            : item.updatedAt,
+          updatedAt: nextUpdatedAt,
           unreadCount:
             typeof event.unreadCount === "number" ? event.unreadCount : item.unreadCount,
         };
-        const next = [...current];
-        next.splice(index, 1);
-        return pinSupportFirst([updated, ...next]);
+        const activityChanged = nextUpdatedAt !== item.updatedAt;
+        return replaceChatSummary(current, updated, activityChanged);
+      });
+    });
+
+    const unsubscribeDeal = onChatDealUpdated((event) => {
+      setThread((current) => {
+        if (!current || current.id !== event.threadId) return current;
+        const nextStatus =
+          event.deal.status === "cancelled"
+            ? "read_only_cancelled"
+            : event.deal.status === "reviewed"
+              ? "read_only_reviewed"
+              : current.status;
+        return { ...current, deal: event.deal, status: nextStatus };
       });
     });
 
     return () => {
       unsubscribeMessage();
       unsubscribeUpdated();
+      unsubscribeDeal();
     };
   }, [isAuthenticated, loadSummaries, selectedId, user?.id]);
 
@@ -1206,9 +1251,7 @@ export function ChatsView() {
           updatedAt: createdAt,
           unreadCount: 0,
         };
-        const next = [...current];
-        next.splice(index, 1);
-        return pinSupportFirst([updated, ...next]);
+        return replaceChatSummary(current, updated, true);
       });
       return true;
     } catch {
@@ -1243,7 +1286,20 @@ export function ChatsView() {
             key={thread.id}
             thread={thread}
             currentUserId={user.id}
+            initialDealModal={initialDealModal}
             onSend={handleSend}
+            onDealUpdated={(deal) => {
+              setThread((current) => {
+                if (!current) return current;
+                const nextStatus =
+                  deal?.status === "cancelled"
+                    ? "read_only_cancelled"
+                    : deal?.status === "reviewed"
+                      ? "read_only_reviewed"
+                      : current.status;
+                return { ...current, deal, status: nextStatus };
+              });
+            }}
           />
         ) : null}
         {!loading && !incomingOffer && !thread ? (

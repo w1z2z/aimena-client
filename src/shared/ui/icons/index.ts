@@ -19,6 +19,7 @@ export { HeartIcon } from "./HeartIcon";
 export { LogoutIcon } from "./LogoutIcon";
 export { LogoIcon } from "./LogoIcon";
 export { ListingActionStarIcon } from "./ListingActionStarIcon";
+export { DealCancelIcon } from "./DealCancelIcon";
 export { LocationPinIcon } from "./LocationPinIcon";
 export { MenuSquareIcon } from "./MenuSquareIcon";
 export { MoreDotsIcon } from "./MoreDotsIcon";

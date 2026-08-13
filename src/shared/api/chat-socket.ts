@@ -8,6 +8,7 @@ import {
   getStoredAccessToken,
 } from "./http";
 import type { ChatMessage } from "./chats";
+import type { DealView } from "./deals";
 
 export type ChatSocketMessageEvent = {
   threadId: string;
@@ -30,6 +31,12 @@ export type ChatSocketInboxUpdatedEvent = {
   unreadCount?: number;
 };
 
+export type ChatSocketDealUpdatedEvent = {
+  threadId: string;
+  action: string;
+  deal: DealView;
+};
+
 const SOCKET_ORIGIN =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "") ??
   "http://localhost:9000";
@@ -41,11 +48,13 @@ let connectPromise: Promise<Socket | null> | null = null;
 const messageHandlers = new Set<(event: ChatSocketMessageEvent) => void>();
 const threadUpdatedHandlers = new Set<(event: ChatSocketThreadUpdatedEvent) => void>();
 const inboxUpdatedHandlers = new Set<(event: ChatSocketInboxUpdatedEvent) => void>();
+const dealUpdatedHandlers = new Set<(event: ChatSocketDealUpdatedEvent) => void>();
 
 function attachSocketHandlers(next: Socket) {
   next.off("message");
   next.off("thread_updated");
   next.off("inbox_updated");
+  next.off("deal_updated");
   next.on("message", (event: ChatSocketMessageEvent) => {
     for (const handler of messageHandlers) handler(event);
   });
@@ -54,6 +63,9 @@ function attachSocketHandlers(next: Socket) {
   });
   next.on("inbox_updated", (event: ChatSocketInboxUpdatedEvent) => {
     for (const handler of inboxUpdatedHandlers) handler(event);
+  });
+  next.on("deal_updated", (event: ChatSocketDealUpdatedEvent) => {
+    for (const handler of dealUpdatedHandlers) handler(event);
   });
 }
 
@@ -187,5 +199,12 @@ export function onChatInboxUpdated(handler: (event: ChatSocketInboxUpdatedEvent)
   inboxUpdatedHandlers.add(handler);
   return () => {
     inboxUpdatedHandlers.delete(handler);
+  };
+}
+
+export function onChatDealUpdated(handler: (event: ChatSocketDealUpdatedEvent) => void) {
+  dealUpdatedHandlers.add(handler);
+  return () => {
+    dealUpdatedHandlers.delete(handler);
   };
 }

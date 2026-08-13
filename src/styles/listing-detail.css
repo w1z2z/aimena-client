@@ -1254,6 +1254,124 @@
   text-align: center;
 }
 
+.listing-action-modal__card--deal {
+  padding: 48px 24px;
+  overflow: visible;
+  border: 3px solid transparent;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+}
+
+.listing-action-modal__card--deal .listing-action-modal__title {
+  max-width: 402px;
+}
+
+.listing-action-modal__description--left {
+  text-align: left;
+}
+
+.listing-action-modal__steps {
+  display: flex;
+  width: 100%;
+  max-width: 426px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.listing-action-modal__step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.listing-action-modal__num {
+  box-sizing: border-box;
+  display: flex;
+  width: 27px;
+  height: 27px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.listing-action-modal__step p {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.listing-action-modal__actions--deal {
+  flex-wrap: nowrap;
+}
+
+.listing-action-modal__actions--deal .listing-action-modal__btn {
+  flex: 1 0 0;
+  width: auto;
+  min-width: 0;
+  padding: 16px 24px;
+}
+
+.listing-action-modal__actions--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.listing-action-modal__actions--stacked .listing-action-modal__btn--full {
+  flex: none;
+  width: 100%;
+  max-width: none;
+}
+
+.listing-action-modal__btn--full {
+  width: 100%;
+  max-width: none;
+}
+
+.listing-action-modal__btn--danger {
+  border: 0;
+  background: #ff2056;
+  color: #fff;
+}
+
+.listing-action-modal__textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 88px;
+  resize: none;
+  padding: 24px;
+  border: 0.5px solid #cacaca;
+  border-radius: 31px;
+  color: #1a1a1a;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.listing-action-modal__textarea::placeholder {
+  color: #626262;
+}
+
+.listing-action-modal__icon {
+  flex-shrink: 0;
+  width: 68px;
+  height: 68px;
+}
+
 .listing-detail-skeleton__gallery {
   display: flex;
   flex-direction: column;
