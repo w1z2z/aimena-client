@@ -1,8 +1,9 @@
 export { ChatInboxProvider, useChatInbox } from "./ChatInboxProvider";
 export {
-  chatSummaryHasUnread,
   chatSummaryToHref,
-  computeHasUnread,
+  computeHasUnreadConversations,
+  computeHasUnreadNotifications,
+  conversationHasUnread,
   formatNotificationTime,
   getNotificationImageFallback,
   getNotificationImageUrl,

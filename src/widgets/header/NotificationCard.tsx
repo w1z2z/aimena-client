@@ -44,12 +44,7 @@ function NotificationAvatar({
           <span aria-hidden>{isSupport ? "❤️" : fallback}</span>
         )}
       </div>
-      {hasUnread ? (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute right-0 top-0 size-[4px] rounded-full bg-[#FF2056]"
-        />
-      ) : null}
+      {hasUnread ? <span aria-hidden className="unread-dot unread-dot--avatar" /> : null}
     </div>
   );
 }

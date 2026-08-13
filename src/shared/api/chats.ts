@@ -100,6 +100,25 @@ export function getChats(signal?: AbortSignal) {
   return httpRequest<{ data: ChatSummary[] }>("/chats", { signal });
 }
 
+export function getChatConversations(options?: {
+  limit?: number;
+  signal?: AbortSignal;
+}) {
+  const params = new URLSearchParams();
+  if (options?.limit) params.set("limit", String(options.limit));
+  const query = params.toString();
+  const path = query ? `/chats/conversations?${query}` : "/chats/conversations";
+
+  return httpRequest<{ data: ChatSummary[] }>(path, { signal: options?.signal });
+}
+
+export function getChatInboxStatus(signal?: AbortSignal) {
+  return httpRequest<{
+    hasUnreadNotifications: boolean;
+    hasUnreadConversations: boolean;
+  }>("/chats/inbox-status", { signal });
+}
+
 export function getChatNotifications(options?: {
   cursor?: string | null;
   limit?: number;

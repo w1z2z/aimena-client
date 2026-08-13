@@ -32,3 +32,45 @@
   background-color: #8e8bed;
   color: #fff !important;
 }
+
+/* Safari: empty dots need explicit box model (same idea as .chat-badge). */
+.unread-dot {
+  position: absolute;
+  display: inline-flex;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  min-height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: #ff2056;
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  overflow: visible;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  z-index: 2;
+}
+
+.unread-dot--bell {
+  right: 7px;
+  top: 6px;
+}
+
+.unread-dot--fab {
+  right: 10px;
+  top: 10px;
+  box-shadow: 0 0 0 1px #c8ff00;
+}
+
+.unread-dot--avatar {
+  right: 0;
+  top: 0;
+}

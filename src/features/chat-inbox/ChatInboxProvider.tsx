@@ -16,12 +16,11 @@ import {
   onChatInboxUpdated,
   onChatThreadUpdated,
 } from "@/shared/api/chat-socket";
-import { getChats, type ChatSummary } from "@/shared/api/chats";
-
-import { computeHasUnread } from "./utils";
+import { getChatInboxStatus, type ChatSummary } from "@/shared/api/chats";
 
 type ChatInboxContextValue = {
-  hasUnread: boolean;
+  hasUnreadNotifications: boolean;
+  hasUnreadConversations: boolean;
   refreshUnread: () => Promise<void>;
 };
 
@@ -29,17 +28,20 @@ const ChatInboxContext = createContext<ChatInboxContextValue | null>(null);
 
 export function ChatInboxProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
-  const [hasUnread, setHasUnread] = useState(false);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+  const [hasUnreadConversations, setHasUnreadConversations] = useState(false);
 
   const refreshUnread = useCallback(async () => {
     if (!isAuthenticated) {
-      setHasUnread(false);
+      setHasUnreadNotifications(false);
+      setHasUnreadConversations(false);
       return;
     }
 
     try {
-      const response = await getChats();
-      setHasUnread(computeHasUnread(response.data));
+      const status = await getChatInboxStatus();
+      setHasUnreadNotifications(status.hasUnreadNotifications);
+      setHasUnreadConversations(status.hasUnreadConversations);
     } catch {
       // Keep the previous unread state if the request fails.
     }
@@ -47,7 +49,8 @@ export function ChatInboxProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setHasUnread(false);
+      setHasUnreadNotifications(false);
+      setHasUnreadConversations(false);
       return;
     }
 
@@ -57,7 +60,7 @@ export function ChatInboxProvider({ children }: { children: ReactNode }) {
     const unsubscribeThread = onChatThreadUpdated((event) => {
       if (typeof event.unreadCount === "number") {
         if (event.unreadCount > 0) {
-          setHasUnread(true);
+          setHasUnreadConversations(true);
         } else {
           void refreshUnread();
         }
@@ -78,10 +81,11 @@ export function ChatInboxProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<ChatInboxContextValue>(
     () => ({
-      hasUnread,
+      hasUnreadNotifications,
+      hasUnreadConversations,
       refreshUnread,
     }),
-    [hasUnread, refreshUnread],
+    [hasUnreadNotifications, hasUnreadConversations, refreshUnread],
   );
 
   return <ChatInboxContext.Provider value={value}>{children}</ChatInboxContext.Provider>;

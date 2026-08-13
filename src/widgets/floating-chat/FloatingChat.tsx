@@ -10,7 +10,7 @@ import {
   connectChatSocket,
   onChatThreadUpdated,
 } from "@/shared/api/chat-socket";
-import { getChats, openSupportChat, type ChatSummary } from "@/shared/api/chats";
+import { getChatConversations, openSupportChat, type ChatSummary } from "@/shared/api/chats";
 import { ChatBubbleIcon } from "@/shared/ui/icons";
 
 const LINK_CHEVRON_SRC = "/images/chat/link-chevron.svg";
@@ -84,11 +84,8 @@ function ChatPanelRow({
   onNavigate: (href: string, event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const href = `/chats?selected=${encodeURIComponent(item.id)}`;
-  const preview = item.kind === "offer" ? "Вам предложение!" : item.preview;
-  const isSupport = item.kind === "support";
-  const avatarFallback = isSupport
-    ? "❤️"
-    : item.counterpart.displayName.slice(0, 1).toUpperCase();
+  const preview = item.preview;
+  const avatarFallback = item.counterpart.displayName.slice(0, 1).toUpperCase();
 
   return (
     <Link
@@ -99,12 +96,9 @@ function ChatPanelRow({
     >
       <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
         <span
-          className={[
-            "relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] text-[14px] font-extrabold text-[#1A1A1A]",
-            isSupport ? "bg-[#1A1A1A] text-[22px] leading-none" : "bg-[#D9D9D9]",
-          ].join(" ")}
+          className="relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] bg-[#D9D9D9] text-[14px] font-extrabold text-[#1A1A1A]"
         >
-          {item.counterpart.avatarUrl && !isSupport ? (
+          {item.counterpart.avatarUrl ? (
             // Storage URL is dynamic and configured by the API.
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -131,9 +125,7 @@ function ChatPanelRow({
         <span className="text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#797979]">
           {formatListTime(item.updatedAt)}
         </span>
-        {item.kind === "offer" ? (
-          <span className="chat-badge chat-badge--offer">!</span>
-        ) : item.unreadCount > 0 ? (
+        {item.unreadCount > 0 ? (
           <span className="chat-badge chat-badge--count">{item.unreadCount}</span>
         ) : null}
       </span>
@@ -158,7 +150,7 @@ export function FloatingChat() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
-  const { hasUnread } = useChatInbox();
+  const { hasUnreadConversations } = useChatInbox();
   const { guardAuth } = useAuthGate();
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -190,15 +182,12 @@ export function FloatingChat() {
         if (current.length === 0) return current;
         const index = current.findIndex((item) => item.id === event.threadId);
         if (index < 0) {
-          void getChats()
-            .then((response) =>
-              setItems(response.data.filter((item) => item.kind !== "support").slice(0, 5)),
-            )
+          void getChatConversations({ limit: 5 })
+            .then((response) => setItems(response.data))
             .catch(() => undefined);
           return current;
         }
         const item = current[index];
-        if (item.kind === "support") return current;
         const updated: ChatSummary = {
           ...item,
           preview: event.preview ?? item.preview,
@@ -226,10 +215,8 @@ export function FloatingChat() {
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    void getChats(controller.signal)
-      .then((response) =>
-        setItems(response.data.filter((item) => item.kind !== "support").slice(0, 5)),
-      )
+    void getChatConversations({ limit: 5, signal: controller.signal })
+      .then((response) => setItems(response.data))
       .catch((requestError: unknown) => {
         if (requestError instanceof DOMException && requestError.name === "AbortError") return;
         setError("Не удалось загрузить чаты.");
@@ -319,7 +306,7 @@ export function FloatingChat() {
                   <p className="m-0 text-[14px] text-[#FF2056]">{error}</p>
                 ) : null}
                 {!loading && !error && items.length === 0 ? (
-                  <p className="m-0 text-[14px] text-[#626262]">Пока нет чатов и предложений.</p>
+                  <p className="m-0 text-[14px] text-[#626262]">Пока нет чатов.</p>
                 ) : null}
                 {!loading && !error
                   ? items.map((item) => (
@@ -354,17 +341,14 @@ export function FloatingChat() {
         aria-label={isOpen ? "Закрыть чат" : "Открыть чат"}
         aria-expanded={isOpen}
         onClick={handleToggle}
-        className="pointer-events-auto relative box-border flex size-[52px] shrink-0 items-center justify-center rounded-[19px] border-2 border-solid border-transparent p-[12px] transition hover:brightness-95"
+        className="pointer-events-auto relative box-border flex size-[52px] shrink-0 items-center justify-center overflow-visible rounded-[19px] border-2 border-solid border-transparent p-[12px] transition hover:brightness-95 [-webkit-transform:translateZ(0)] [transform:translateZ(0)]"
         style={{
           background:
             "linear-gradient(#C8FF00, #C8FF00) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
         }}
       >
-        {hasUnread && !isOpen ? (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute right-[11px] top-[11px] size-[5px] rounded-full bg-[#FF2056] ring-1 ring-[#C8FF00]"
-          />
+        {hasUnreadConversations && !isOpen ? (
+          <span aria-hidden className="unread-dot unread-dot--fab" />
         ) : null}
         <span className="relative flex size-[27px] items-center justify-center">
           <span

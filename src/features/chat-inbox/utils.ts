@@ -1,14 +1,22 @@
 import type { ChatSummary } from "@/shared/api/chats";
 
-export function chatSummaryHasUnread(item: ChatSummary) {
-  if (item.kind === "support") return false;
+export function notificationHasUnread(item: ChatSummary) {
   if (item.notificationKind === "offer_rejected") return false;
+  if (item.notificationKind === "offer_accepted") return false;
   if (item.kind === "offer" && item.status === "incoming_request") return true;
+  return false;
+}
+
+export function computeHasUnreadNotifications(items: ChatSummary[]) {
+  return items.some(notificationHasUnread);
+}
+
+export function conversationHasUnread(item: ChatSummary) {
   return item.unreadCount > 0;
 }
 
-export function computeHasUnread(items: ChatSummary[]) {
-  return items.some(chatSummaryHasUnread);
+export function computeHasUnreadConversations(items: ChatSummary[]) {
+  return items.some(conversationHasUnread);
 }
 
 export function chatSummaryToHref(item: ChatSummary) {
@@ -146,9 +154,3 @@ export function getNotificationImageFallback(item: ChatSummary) {
   return item.imageFallback ?? item.counterpart.displayName.slice(0, 1).toUpperCase();
 }
 
-export function notificationHasUnread(item: ChatSummary) {
-  if (item.kind === "support") return false;
-  if (item.notificationKind === "offer_rejected") return false;
-  if (item.kind === "offer" && item.status === "incoming_request") return true;
-  return item.unreadCount > 0;
-}

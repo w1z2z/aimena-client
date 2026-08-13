@@ -47,7 +47,7 @@ export function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const { isAuthenticated, user } = useAuth();
-  const { hasUnread } = useChatInbox();
+  const { hasUnreadNotifications } = useChatInbox();
   const { guardAuth } = useAuthGate();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -518,11 +518,8 @@ export function Header() {
                       className="relative"
                     >
                       <BellIcon className="h-[15px] w-[14px] text-black" />
-                      {hasUnread ? (
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute right-[8px] top-[7px] size-[4px] rounded-full bg-[#FF2056]"
-                        />
+                      {hasUnreadNotifications ? (
+                        <span aria-hidden className="unread-dot unread-dot--bell" />
                       ) : null}
                     </IconButton>
                   }
