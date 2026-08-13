@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import type { ApiListingOwner } from "@/shared/api/listings";
 import { BoltIcon } from "@/shared/ui/icons";
-import { formatProfileNumber, PROFILE_ASSETS } from "@/widgets/profile/constants";
+import { formatRatingPoints, PROFILE_ASSETS } from "@/widgets/profile/constants";
 
 type ListingOwnerCardProps = {
   owner: ApiListingOwner;
@@ -13,12 +13,7 @@ type ListingOwnerCardProps = {
 
 export function ListingOwnerCard({ owner }: ListingOwnerCardProps) {
   const avatarInitial = owner.displayName.trim().charAt(0).toUpperCase() || "U";
-  const ratingDisplay =
-    owner.ratingAvg >= 100
-      ? formatProfileNumber(Math.round(owner.ratingAvg))
-      : owner.ratingAvg > 0
-        ? owner.ratingAvg.toFixed(1).replace(".", ",")
-        : formatProfileNumber(owner.swapsCount);
+  const ratingDisplay = formatRatingPoints(owner.ratingAvg);
 
   return (
     <Link href={`/users/${owner.slug}`} className="listing-detail-owner">

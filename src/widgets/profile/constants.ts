@@ -42,6 +42,12 @@ export function getPublicProfileNav(slug: string): Array<{
   ];
 }
 
+export function formatProfileDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("ru-RU");
+}
+
 export function formatJoinedMonth(createdAt: string | null | undefined) {
   if (!createdAt) return null;
   const date = new Date(createdAt);
@@ -53,6 +59,10 @@ export function formatJoinedMonth(createdAt: string | null | undefined) {
 
 export function formatProfileNumber(value: number) {
   return new Intl.NumberFormat("ru-RU").format(value);
+}
+
+export function formatRatingPoints(value: number) {
+  return formatProfileNumber(Math.max(0, Math.round(value)));
 }
 
 export function pluralRu(count: number, one: string, few: string, many: string) {

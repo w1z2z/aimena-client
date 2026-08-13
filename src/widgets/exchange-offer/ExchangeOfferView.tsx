@@ -364,7 +364,7 @@ export function ExchangeOfferView() {
                   <strong>{target.owner.displayName}</strong>
                   <span>
                     <StarMiniIcon />
-                    {target.owner.swapsCount ?? 0}
+                    {target.owner.ratingAvg ?? 0}
                   </span>
                 </div>
               </Link>
@@ -379,7 +379,7 @@ export function ExchangeOfferView() {
                   <strong>{target.owner?.displayName ?? "Пользователь"}</strong>
                   <span>
                     <StarMiniIcon />
-                    {target.owner?.swapsCount ?? 0}
+                    {target.owner?.ratingAvg ?? 0}
                   </span>
                 </div>
               </section>

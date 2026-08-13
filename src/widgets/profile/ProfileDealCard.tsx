@@ -1,11 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { formatProfileNumber, PROFILE_ASSETS } from "./constants";
-import type { MockDeal } from "./mocks";
+import Link from "next/link";
+
+import type { DealHistoryItem, DealHistoryListingSide } from "@/shared/api/deals";
+
+import { formatProfileDate, formatProfileNumber, PROFILE_ASSETS } from "./constants";
 
 const STATUS_BADGE: Record<
-  MockDeal["status"],
+  DealHistoryItem["status"],
   { bg: string; icon: string; label: string }
 > = {
   successful: {
@@ -26,13 +29,58 @@ const STATUS_BADGE: Record<
 };
 
 type ProfileDealCardProps = {
-  deal: MockDeal;
+  deal: DealHistoryItem;
   /** Hide review CTA on public profiles. */
   showReviewAction?: boolean;
+  showChatAction?: boolean;
 };
 
-export function ProfileDealCard({ deal, showReviewAction = true }: ProfileDealCardProps) {
+function ListingThumb({ side }: { side: DealHistoryListingSide }) {
+  const hiddenCount = Math.max((side.listingsCount ?? 1) - 2, 0);
+  const showStack = Boolean(side.secondaryImageUrl) || hiddenCount > 0;
+
+  return (
+    <div className="relative size-20 shrink-0">
+      <div className="relative size-20 overflow-hidden rounded-[21px] bg-[#EBEBEB]">
+        {side.imageUrl ? (
+          <img src={side.imageUrl} alt="" className="size-full object-cover" />
+        ) : null}
+      </div>
+      {showStack ? (
+        <span className="pointer-events-none absolute -bottom-1.5 -right-1.5 size-11">
+          <span className="block size-11 overflow-hidden rounded-[14px] border-[3px] border-solid border-white bg-[#EBEBEB]">
+            {side.secondaryImageUrl ? (
+              <img
+                src={side.secondaryImageUrl}
+                alt=""
+                className="size-full object-cover"
+              />
+            ) : null}
+          </span>
+          {hiddenCount > 0 ? (
+            <span className="absolute bottom-1.5 right-1.5 z-[1] inline-flex h-5 min-w-5 items-center justify-center rounded-[10px] bg-[rgba(26,26,26,0.72)] px-1.5 text-[11px] font-semibold leading-none tracking-[0.022px] text-white">
+              +{hiddenCount}
+            </span>
+          ) : null}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+export function ProfileDealCard({
+  deal,
+  showReviewAction = true,
+  showChatAction = true,
+}: ProfileDealCardProps) {
   const badge = STATUS_BADGE[deal.status];
+  const chatHref = deal.threadId
+    ? `/chats?selected=${encodeURIComponent(deal.threadId)}`
+    : null;
+  const reviewHref = deal.threadId
+    ? `/chats?selected=${encodeURIComponent(deal.threadId)}&dealModal=review`
+    : null;
+  const partnerHref = deal.partner.slug ? `/users/${deal.partner.slug}` : null;
 
   return (
     <article
@@ -43,24 +91,19 @@ export function ProfileDealCard({ deal, showReviewAction = true }: ProfileDealCa
       }`}
     >
       <p className="absolute right-6 top-6 text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
-        {deal.date}
+        {formatProfileDate(deal.date)}
       </p>
 
       <div className="flex flex-wrap items-center gap-x-[24px] gap-y-4 pr-16 lg:gap-x-[132px]">
         <div className="flex items-start gap-3">
-          <div className="relative size-20 shrink-0 overflow-hidden rounded-[21px] bg-[#EBEBEB]">
-            <img src={deal.given.imageUrl} alt="" className="size-full object-cover" />
-          </div>
-          <div className="flex h-20 w-[220px] flex-col justify-between sm:w-[262px]">
-            <div className="flex flex-col gap-2">
-              <p className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
-                Отдал
-              </p>
-              <p className="truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-                {deal.given.title}
-              </p>
-            </div>
-            <img src={PROFILE_ASSETS.gallery} alt="" className="size-8" />
+          <ListingThumb side={deal.given} />
+          <div className="flex h-20 w-[220px] flex-col gap-2 sm:w-[262px]">
+            <p className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
+              Отдал
+            </p>
+            <p className="truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
+              {deal.given.title}
+            </p>
           </div>
         </div>
 
@@ -74,19 +117,14 @@ export function ProfileDealCard({ deal, showReviewAction = true }: ProfileDealCa
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="relative size-20 shrink-0 overflow-hidden rounded-[21px] bg-[#EBEBEB]">
-              <img src={deal.received.imageUrl} alt="" className="size-full object-cover" />
-            </div>
-            <div className="flex h-20 w-[220px] flex-col justify-between sm:w-[259px]">
-              <div className="flex flex-col gap-2">
-                <p className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
-                  Получил
-                </p>
-                <p className="truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-                  {deal.received.title}
-                </p>
-              </div>
-              <img src={PROFILE_ASSETS.gallery} alt="" className="size-8" />
+            <ListingThumb side={deal.received} />
+            <div className="flex h-20 w-[220px] flex-col gap-2 sm:w-[259px]">
+              <p className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
+                Получил
+              </p>
+              <p className="truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
+                {deal.received.title}
+              </p>
             </div>
           </div>
         </div>
@@ -94,18 +132,39 @@ export function ProfileDealCard({ deal, showReviewAction = true }: ProfileDealCa
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="relative size-11 shrink-0 overflow-hidden rounded-[9px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F2F4F7]">
-            {deal.partner.avatarUrl ? (
-              <img src={deal.partner.avatarUrl} alt="" className="size-full object-cover" />
-            ) : (
-              <div className="flex size-full items-center justify-center text-[16px] font-extrabold text-[#1A1A1A]">
-                {deal.partner.avatarInitial}
-              </div>
-            )}
-          </div>
-          <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-            {deal.partner.name}
-          </p>
+          {partnerHref ? (
+            <Link href={partnerHref} className="relative size-11 shrink-0 overflow-hidden rounded-[9px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F2F4F7]">
+              {deal.partner.avatarUrl ? (
+                <img src={deal.partner.avatarUrl} alt="" className="size-full object-cover" />
+              ) : (
+                <div className="flex size-full items-center justify-center text-[16px] font-extrabold text-[#1A1A1A]">
+                  {deal.partner.avatarInitial}
+                </div>
+              )}
+            </Link>
+          ) : (
+            <div className="relative size-11 shrink-0 overflow-hidden rounded-[9px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F2F4F7]">
+              {deal.partner.avatarUrl ? (
+                <img src={deal.partner.avatarUrl} alt="" className="size-full object-cover" />
+              ) : (
+                <div className="flex size-full items-center justify-center text-[16px] font-extrabold text-[#1A1A1A]">
+                  {deal.partner.avatarInitial}
+                </div>
+              )}
+            </div>
+          )}
+          {partnerHref ? (
+            <Link
+              href={partnerHref}
+              className="text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A] hover:text-[#8E8BED]"
+            >
+              {deal.partner.name}
+            </Link>
+          ) : (
+            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
+              {deal.partner.name}
+            </p>
+          )}
           <span className="inline-flex items-center justify-center gap-0.5 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
             <img src={PROFILE_ASSETS.pointsBolt} alt="" className="h-[6px] w-[4px]" />
             <span className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-white">
@@ -115,20 +174,22 @@ export function ProfileDealCard({ deal, showReviewAction = true }: ProfileDealCa
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {showReviewAction && deal.canLeaveReview ? (
-            <button
-              type="button"
+          {showReviewAction && deal.canLeaveReview && reviewHref ? (
+            <Link
+              href={reviewHref}
               className="rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-[#C8FF00] px-3 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]"
             >
               Оставить отзыв
-            </button>
+            </Link>
           ) : null}
-          <button
-            type="button"
-            className="rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-white px-3 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]"
-          >
-            Открыть чат
-          </button>
+          {showChatAction && chatHref ? (
+            <Link
+              href={chatHref}
+              className="rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-white px-3 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]"
+            >
+              Открыть чат
+            </Link>
+          ) : null}
         </div>
       </div>
     </article>

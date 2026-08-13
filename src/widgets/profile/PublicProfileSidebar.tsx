@@ -4,17 +4,19 @@
 import Link from "next/link";
 
 import type { BackendPublicProfile } from "@/shared/api/auth";
+import { getUserDealReviews } from "@/shared/api/deals";
+import { useQuery } from "@tanstack/react-query";
 
 import {
   formatJoinedMonth,
   formatProfileNumber,
+  formatRatingPoints,
   getPublicProfileNav,
   PROFILE_ASSETS,
   type PublicProfileSection,
 } from "./constants";
 import { ProfileReviewCard } from "./ProfileReviewCard";
 import { PublicProfileActionsMenu } from "./PublicProfileActionsMenu";
-import { MOCK_DEALS, MOCK_REVIEWS } from "./mocks";
 
 type PublicProfileSidebarProps = {
   profile: BackendPublicProfile;
@@ -24,18 +26,17 @@ type PublicProfileSidebarProps = {
 export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarProps) {
   const joined = formatJoinedMonth(profile.joinedAt);
   const avatarInitial = profile.displayName.trim().charAt(0).toUpperCase() || "U";
-  const ratingDisplay =
-    profile.ratingAvg >= 100
-      ? formatProfileNumber(Math.round(profile.ratingAvg))
-      : profile.ratingAvg > 0
-        ? profile.ratingAvg.toFixed(1).replace(".", ",")
-        : "0";
+  const ratingDisplay = formatRatingPoints(profile.ratingAvg);
   const nav = getPublicProfileNav(profile.slug);
-  // Temporary mocks until deals/reviews API is ready.
-  const reviewsCount = Math.max(profile.ratingCount, MOCK_REVIEWS.length);
-  const swapsDisplay = Math.max(profile.swapsCount, MOCK_DEALS.length);
-  const sidebarReviews = MOCK_REVIEWS.slice(0, 3);
+  const reviewsCount = profile.ratingCount;
   const showReviewsBlock = active !== "reviews";
+  const reviewsPreviewQuery = useQuery({
+    queryKey: ["public-profile-reviews-preview", profile.slug],
+    queryFn: ({ signal }) =>
+      getUserDealReviews(profile.slug, { page: 1, pageSize: 3 }, signal),
+    enabled: showReviewsBlock,
+  });
+  const sidebarReviews = reviewsPreviewQuery.data?.data ?? [];
 
   return (
     <aside className="flex w-full max-w-[342px] shrink-0 flex-col items-stretch gap-6">
@@ -105,13 +106,13 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
               Обменов
             </p>
             <p className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#8E8BED]">
-              {formatProfileNumber(swapsDisplay)}
+              {formatProfileNumber(profile.swapsCount)}
             </p>
           </div>
         </div>
 
         <p className="relative z-[1] text-center text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
-          {joined ? `На Аймена с ${joined}` : "На Аймена"}
+          {joined ? `На Aimena с ${joined}` : "На Aimena"}
         </p>
       </div>
 
@@ -182,7 +183,11 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
             Отзывы ({formatProfileNumber(reviewsCount)})
           </h2>
 
-          {sidebarReviews.length === 0 ? (
+          {reviewsPreviewQuery.isLoading ? (
+            <p className="w-full py-6 text-center text-[14px] font-semibold leading-[1.4] text-[#626262]">
+              Загрузка отзывов…
+            </p>
+          ) : sidebarReviews.length === 0 ? (
             <p className="w-full py-6 text-center text-[14px] font-semibold leading-[1.4] text-[#626262]">
               Пока нет отзывов.
             </p>

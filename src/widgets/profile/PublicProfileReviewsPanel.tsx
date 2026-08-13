@@ -1,6 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+
+import { getUserDealReviews } from "@/shared/api/deals";
 
 import { pluralRu } from "./constants";
 import {
@@ -9,17 +13,48 @@ import {
   ProfilePagination,
 } from "./ProfilePagination";
 import { ProfileReviewCard } from "./ProfileReviewCard";
-import { MOCK_REVIEWS, paginateItems } from "./mocks";
 
 export function PublicProfileReviewsPanel() {
+  const params = useParams<{ slug: string }>();
+  const slug = typeof params.slug === "string" ? params.slug : "";
   const [page, setPage] = useState(1);
-  const total = MOCK_REVIEWS.length;
-  const pageCount = getProfilePageCount(total);
-  const reviews = useMemo(
-    () => paginateItems(MOCK_REVIEWS, page, PROFILE_PAGE_SIZE),
-    [page],
-  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [slug]);
+
+  const reviewsQuery = useQuery({
+    queryKey: ["public-profile-reviews", slug, page],
+    queryFn: ({ signal }) =>
+      getUserDealReviews(slug, { page, pageSize: PROFILE_PAGE_SIZE }, signal),
+    enabled: Boolean(slug),
+    placeholderData: (previous) => previous,
+  });
+
+  const reviews = reviewsQuery.data?.data ?? [];
+  const total = reviewsQuery.data?.meta.total ?? 0;
+  const pageCount = reviewsQuery.data?.meta.pageCount ?? getProfilePageCount(total);
   const countLabel = `${total} ${pluralRu(total, "отзыв", "отзыва", "отзывов")}`;
+
+  let body: ReactNode;
+  if (reviewsQuery.isLoading && reviews.length === 0) {
+    body = <p className="text-[16px] font-semibold text-[#626262]">Загрузка отзывов…</p>;
+  } else if (reviewsQuery.isError && reviews.length === 0) {
+    body = <p className="text-[16px] font-semibold text-[#FF2056]">Не удалось загрузить отзывы.</p>;
+  } else if (reviews.length === 0) {
+    body = <p className="text-[16px] font-semibold text-[#626262]">Пока нет отзывов.</p>;
+  } else {
+    body = (
+      <>
+        <div className="flex flex-col gap-6">
+          {reviews.map((review) => (
+            <ProfileReviewCard key={review.id} review={review} />
+          ))}
+        </div>
+        <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
+      </>
+    );
+  }
 
   return (
     <section className="flex w-full flex-col">
@@ -30,12 +65,7 @@ export function PublicProfileReviewsPanel() {
         <p className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">{countLabel}</p>
       </div>
 
-      <div className="mt-12 flex flex-col gap-6">
-        {reviews.map((review) => (
-          <ProfileReviewCard key={review.id} review={review} />
-        ))}
-      </div>
-      <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
+      <div className="mt-12 flex flex-col">{body}</div>
     </section>
   );
 }

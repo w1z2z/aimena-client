@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+
+import { getUserDealHistory } from "@/shared/api/deals";
 
 import { pluralRu } from "./constants";
 import { ProfileDealCard } from "./ProfileDealCard";
@@ -15,7 +19,6 @@ import {
   type ProfileDealTypeFilter,
   type ProfileSortOrder,
 } from "./ProfileSortControl";
-import { filterMockDeals, MOCK_DEALS, paginateItems } from "./mocks";
 
 const EMPTY_BY_TYPE: Record<ProfileDealTypeFilter, string> = {
   all: "Пока нет обменов.",
@@ -25,22 +28,59 @@ const EMPTY_BY_TYPE: Record<ProfileDealTypeFilter, string> = {
 };
 
 export function PublicProfileDealsPanel() {
+  const params = useParams<{ slug: string }>();
+  const slug = typeof params.slug === "string" ? params.slug : "";
   const [sort, setSort] = useState<ProfileSortOrder>("newest");
   const [typeFilter, setTypeFilter] = useState<ProfileDealTypeFilter>("all");
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     setPage(1);
-  }, [sort, typeFilter]);
+  }, [sort, typeFilter, slug]);
 
-  const filteredDeals = useMemo(
-    () => filterMockDeals(MOCK_DEALS, typeFilter, sort),
-    [sort, typeFilter],
-  );
-  const total = filteredDeals.length;
-  const pageCount = getProfilePageCount(total);
-  const deals = paginateItems(filteredDeals, page, PROFILE_PAGE_SIZE);
+  const dealsQuery = useQuery({
+    queryKey: ["public-profile-deals", slug, typeFilter, sort, page],
+    queryFn: ({ signal }) =>
+      getUserDealHistory(
+        slug,
+        { page, pageSize: PROFILE_PAGE_SIZE, status: typeFilter, sort },
+        signal,
+      ),
+    enabled: Boolean(slug),
+    placeholderData: (previous) => previous,
+  });
+
+  const deals = dealsQuery.data?.data ?? [];
+  const total = dealsQuery.data?.meta.total ?? 0;
+  const pageCount = dealsQuery.data?.meta.pageCount ?? getProfilePageCount(total);
   const countLabel = `${total} ${pluralRu(total, "обмен", "обмена", "обменов")}`;
+
+  let body: ReactNode;
+  if (dealsQuery.isLoading && deals.length === 0) {
+    body = <p className="text-[16px] font-semibold text-[#626262]">Загрузка истории обменов…</p>;
+  } else if (dealsQuery.isError && deals.length === 0) {
+    body = (
+      <p className="text-[16px] font-semibold text-[#FF2056]">Не удалось загрузить историю обменов.</p>
+    );
+  } else if (deals.length === 0) {
+    body = <p className="text-[16px] font-semibold text-[#626262]">{EMPTY_BY_TYPE[typeFilter]}</p>;
+  } else {
+    body = (
+      <>
+        <div className="flex flex-col gap-6">
+          {deals.map((deal) => (
+            <ProfileDealCard
+              key={deal.id}
+              deal={deal}
+              showReviewAction={false}
+              showChatAction={false}
+            />
+          ))}
+        </div>
+        <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
+      </>
+    );
+  }
 
   return (
     <section className="flex w-full flex-col">
@@ -62,19 +102,7 @@ export function PublicProfileDealsPanel() {
             dialogLabel="Сортировка истории обменов"
           />
         </div>
-
-        {deals.length === 0 ? (
-          <p className="text-[16px] font-semibold text-[#626262]">{EMPTY_BY_TYPE[typeFilter]}</p>
-        ) : (
-          <>
-            <div className="flex flex-col gap-6">
-              {deals.map((deal) => (
-                <ProfileDealCard key={deal.id} deal={deal} showReviewAction={false} />
-              ))}
-            </div>
-            <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
-          </>
-        )}
+        {body}
       </div>
     </section>
   );

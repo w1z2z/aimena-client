@@ -187,6 +187,7 @@ function ProfileHeader({
     slug: string;
     avatarUrl: string | null;
     swapsCount: number;
+    ratingAvg: number;
   };
 }) {
   return (
@@ -204,7 +205,7 @@ function ProfileHeader({
         <strong>{profile.displayName}</strong>
         <span>
           <StarMiniIcon />
-          {new Intl.NumberFormat("ru-RU").format(profile.swapsCount)}
+          {new Intl.NumberFormat("ru-RU").format(profile.ratingAvg ?? 0)}
         </span>
       </div>
     </Link>

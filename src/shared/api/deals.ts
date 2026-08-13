@@ -133,3 +133,96 @@ export function createDealReview(dealId: string, body: string) {
     body: { body },
   });
 }
+
+export type DealHistoryStatus = "successful" | "in_progress" | "cancelled";
+
+export type DealHistoryPerson = {
+  id: string;
+  slug: string | null;
+  name: string;
+  avatarUrl: string | null;
+  avatarInitial: string;
+  points: number;
+};
+
+export type DealHistoryListingSide = {
+  title: string;
+  imageUrl: string | null;
+  secondaryImageUrl: string | null;
+  listingsCount: number;
+};
+
+export type DealHistoryItem = {
+  id: string;
+  threadId: string | null;
+  status: DealHistoryStatus;
+  date: string;
+  given: DealHistoryListingSide;
+  received: DealHistoryListingSide;
+  partner: DealHistoryPerson;
+  canLeaveReview: boolean;
+  highlighted: boolean;
+};
+
+export type DealReviewItem = {
+  id: string;
+  text: string;
+  date: string;
+  author: DealHistoryPerson;
+};
+
+export type DealListMeta = {
+  total: number;
+  page: number | null;
+  pageSize: number | null;
+  pageCount: number | null;
+};
+
+export type DealHistoryQuery = {
+  status?: "all" | DealHistoryStatus;
+  sort?: "newest" | "oldest";
+  page?: number;
+  pageSize?: number;
+};
+
+export type DealReviewsQuery = {
+  sort?: "newest" | "oldest";
+  page?: number;
+  pageSize?: number;
+};
+
+export function getMyDealHistory(query: DealHistoryQuery = {}, signal?: AbortSignal) {
+  return httpRequest<{ data: DealHistoryItem[]; meta: DealListMeta }>("/deals/history", {
+    query,
+    signal,
+  });
+}
+
+export function getMyDealReviews(query: DealReviewsQuery = {}, signal?: AbortSignal) {
+  return httpRequest<{ data: DealReviewItem[]; meta: DealListMeta }>("/deals/reviews", {
+    query,
+    signal,
+  });
+}
+
+export function getUserDealHistory(
+  slug: string,
+  query: DealHistoryQuery = {},
+  signal?: AbortSignal,
+) {
+  return httpRequest<{ data: DealHistoryItem[]; meta: DealListMeta }>(
+    `/users/${slug}/deals`,
+    { query, signal },
+  );
+}
+
+export function getUserDealReviews(
+  slug: string,
+  query: DealReviewsQuery = {},
+  signal?: AbortSignal,
+) {
+  return httpRequest<{ data: DealReviewItem[]; meta: DealListMeta }>(
+    `/users/${slug}/reviews`,
+    { query, signal },
+  );
+}

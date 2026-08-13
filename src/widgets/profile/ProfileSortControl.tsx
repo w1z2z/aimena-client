@@ -10,7 +10,7 @@ export type ProfileSortOrder = "newest" | "oldest";
 /** Own-profile listing type filter (no «Удаленные», no drafts). */
 export type ProfileListingTypeFilter = "all" | "active" | "completed" | "archived";
 
-/** Deal history type filter (frontend-only until deals API). */
+/** Deal history type filter. */
 export type ProfileDealTypeFilter = "all" | "successful" | "in_progress" | "cancelled";
 
 export const PROFILE_LISTING_TYPE_OPTIONS: Array<{

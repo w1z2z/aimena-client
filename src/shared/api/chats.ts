@@ -13,6 +13,7 @@ export type ChatProfile = {
   displayName: string;
   slug: string;
   swapsCount: number;
+  ratingAvg: number;
   avatarUrl: string | null;
 };
 

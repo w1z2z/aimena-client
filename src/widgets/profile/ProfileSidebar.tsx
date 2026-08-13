@@ -8,11 +8,11 @@ import type { AuthUser } from "@/features/auth";
 import {
   formatJoinedMonth,
   formatProfileNumber,
+  formatRatingPoints,
   PROFILE_ASSETS,
   PROFILE_NAV,
   type ProfileSection,
 } from "./constants";
-import { MOCK_DEALS, MOCK_REVIEWS } from "./mocks";
 
 type ProfileSidebarProps = {
   user: AuthUser;
@@ -21,15 +21,7 @@ type ProfileSidebarProps = {
 
 export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
   const joined = formatJoinedMonth(user.createdAt);
-  const ratingDisplay =
-    user.ratingAvg >= 100
-      ? formatProfileNumber(Math.round(user.ratingAvg))
-      : user.ratingAvg > 0
-        ? user.ratingAvg.toFixed(1).replace(".", ",")
-        : "0";
-  // Temporary mocks until deals/reviews API is ready.
-  const reviewsCount = Math.max(user.ratingCount, MOCK_REVIEWS.length);
-  const swapsCount = Math.max(user.swapsCount, MOCK_DEALS.length);
+  const ratingDisplay = formatRatingPoints(user.ratingAvg);
 
   return (
     <aside className="flex w-full max-w-[342px] shrink-0 flex-col items-stretch gap-6">
@@ -80,7 +72,7 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
               Отзывов
             </p>
             <p className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#8E8BED]">
-              {formatProfileNumber(reviewsCount)}
+              {formatProfileNumber(user.ratingCount)}
             </p>
           </div>
 
@@ -89,13 +81,13 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
               Обменов
             </p>
             <p className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#8E8BED]">
-              {formatProfileNumber(swapsCount)}
+              {formatProfileNumber(user.swapsCount)}
             </p>
           </div>
         </div>
 
         <p className="relative z-[1] text-center text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
-          {joined ? `На Аймена с ${joined}` : "На Аймена"}
+          {joined ? `На Aimena с ${joined}` : "На Aimena"}
         </p>
       </div>
 
