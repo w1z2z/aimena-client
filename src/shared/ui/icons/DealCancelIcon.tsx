@@ -12,6 +12,7 @@ export function DealCancelIcon({ className, ...props }: IconProps) {
       height={68}
       viewBox="0 0 40 40"
       fill="none"
+      overflow="visible"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
       className={`block shrink-0 ${className ?? ""}`}

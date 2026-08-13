@@ -997,6 +997,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 24px;
   background: rgb(26 26 26 / 48%);
   opacity: 0;
@@ -1012,8 +1014,10 @@
 .listing-action-modal__card {
   box-sizing: border-box;
   display: flex;
-  width: min(100%, 588px);
+  width: 100%;
+  max-width: 588px;
   max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   flex-direction: column;
   align-items: center;
   gap: 48px;
@@ -1082,13 +1086,18 @@
   align-items: center;
   justify-content: center;
   height: 42px;
-  padding: 16px 74px;
+  min-height: 42px;
+  margin: 0;
+  padding: 0 74px;
   border-radius: 21px;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.001em;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .listing-action-modal__btn:disabled {
@@ -1255,12 +1264,52 @@
 }
 
 .listing-action-modal__card--deal {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 588px;
+  max-height: none;
+  align-items: stretch;
+  overflow: hidden;
   padding: 48px 24px;
-  overflow: visible;
-  border: 3px solid transparent;
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+  border: 0;
+  background: #fff;
+}
+
+.listing-action-modal__card--deal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%);
+  padding: 3px;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.listing-action-modal__card--deal .listing-action-modal__icon,
+.listing-action-modal__card--deal .listing-action-modal__title,
+.listing-action-modal__card--deal .listing-action-modal__description,
+.listing-action-modal__card--deal .listing-action-modal__steps,
+.listing-action-modal__card--deal .listing-action-modal__error {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+}
+
+.listing-action-modal__card--deal .listing-action-modal__actions,
+.listing-action-modal__card--deal > .listing-action-modal__btn {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
 }
 
 .listing-action-modal__card--deal .listing-action-modal__title {
@@ -1282,31 +1331,58 @@
 
 .listing-action-modal__step {
   display: flex;
+  width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 12px;
 }
 
 .listing-action-modal__num {
   box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
   display: flex;
   width: 27px;
+  min-width: 27px;
   height: 27px;
+  min-height: 27px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
+  overflow: hidden;
+  border: 0;
   border-radius: 7px;
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+  background: #fff;
   color: #1a1a1a;
   font-size: 16px;
   font-weight: 700;
-  line-height: 20px;
+  line-height: 1;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.listing-action-modal__num::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%);
+  padding: 1px;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
 }
 
 .listing-action-modal__step p {
   margin: 0;
+  min-width: 0;
   color: #1a1a1a;
   font-size: 14px;
   font-weight: 400;
@@ -1318,10 +1394,10 @@
 }
 
 .listing-action-modal__actions--deal .listing-action-modal__btn {
-  flex: 1 0 0;
+  flex: 1 1 0%;
   width: auto;
   min-width: 0;
-  padding: 16px 24px;
+  padding: 0 24px;
 }
 
 .listing-action-modal__actions--stacked {

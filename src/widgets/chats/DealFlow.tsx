@@ -237,13 +237,14 @@ export function DealFlow({
   const showReady = deal.canConfirmTerms || deal.canUnconfirmTerms;
   const readyPressed = deal.termsConfirmedByMe && deal.canUnconfirmTerms;
   const showComplete = deal.canComplete;
-  const showRefuse = deal.canAbort || deal.canRequestCancel;
+  const showRefuse =
+    (deal.canAbort || deal.canRequestCancel) &&
+    !(deal.status === "cancellation_pending" && deal.cancellationRequestedByMe);
   const showReviewButton = deal.canReview && modal !== "review";
-  const waitingCancel = deal.status === "cancellation_pending" && deal.cancellationRequestedByMe;
 
   return (
     <>
-      {showReady || showComplete || showRefuse || showReviewButton || waitingCancel ? (
+      {showReady || showComplete || showRefuse || showReviewButton ? (
         <div className="chats-actions">
           {showReady ? (
             <button
@@ -272,12 +273,7 @@ export function DealFlow({
               Оставить отзыв
             </button>
           ) : null}
-          {waitingCancel ? (
-            <button type="button" disabled>
-              Ждём решения партнёра
-            </button>
-          ) : null}
-          {showRefuse && !waitingCancel ? (
+          {showRefuse ? (
             <button type="button" onClick={() => setModal("refuse")}>
               Отказаться от обмена
             </button>
