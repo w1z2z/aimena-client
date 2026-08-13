@@ -42,9 +42,11 @@ export type NotificationKind =
   | "chat_message"
   | "support"
   | "cancel_requested"
+  | "cancel_rejected"
   | "deal_aborted"
   | "deal_cancelled"
   | "partner_ready"
+  | "both_ready"
   | "complete_requested"
   | "review_needed";
 
