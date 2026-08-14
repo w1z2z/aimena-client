@@ -39,16 +39,11 @@
   mask-composite: exclude;
 }
 
-.home-listing-card:not(.home-listing-card--hero):not(.home-listing-card--mine):not(.home-listing-card--free):hover {
+.home-listing-card:not(.home-listing-card--hero):hover {
   box-shadow:
     -4px 0 14px rgba(142, 139, 237, 0.4),
     4px 0 14px rgba(200, 255, 0, 0.35),
     0 6px 16px rgba(142, 139, 237, 0.18);
-}
-
-.home-listing-card--hero,
-.home-listing-card--mine:hover {
-  box-shadow: none;
 }
 
 .home-listing-card--has-title-accessory {
