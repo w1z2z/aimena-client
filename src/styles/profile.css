@@ -441,10 +441,34 @@ a.profile-deal-card__partner-name:hover {
   line-height: 1.2;
   letter-spacing: 0.001em;
   text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    filter 160ms ease;
+}
+
+.profile-deal-card__action:hover {
+  border-color: #8e8bed;
+  background: #fafaff;
+  color: #8e8bed;
+}
+
+.profile-deal-card__action:focus-visible {
+  outline: 2px solid #8e8bed;
+  outline-offset: 2px;
 }
 
 .profile-deal-card__action.is-primary {
   background: #c8ff00;
+}
+
+.profile-deal-card__action.is-primary:hover {
+  border-color: #cacaca;
+  background: #b8ef00;
+  color: #1a1a1a;
+  filter: brightness(0.98);
 }
 
 /* Thumbs: layout box includes stack overhang so Safari flex/grid doesn't shift */

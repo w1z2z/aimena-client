@@ -32,10 +32,6 @@ export function computeHasUnreadConversations(items: ChatSummary[]) {
 }
 
 export function chatSummaryToHref(item: ChatSummary) {
-  if (item.notificationKind === "offer_rejected" && item.targetListingId) {
-    return `/listings/${item.targetListingId}`;
-  }
-
   const selected = item.threadId ?? item.id;
   const params = new URLSearchParams({ selected });
   if (item.notificationKind === "cancel_requested") {

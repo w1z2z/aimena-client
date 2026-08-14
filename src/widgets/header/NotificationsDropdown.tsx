@@ -187,7 +187,12 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
         <p className="m-0 w-[364px] text-[14px] text-[#626262]">Пока нет уведомлений.</p>
       ) : null}
       {!loading && !error ? (
-        <NotificationList items={visibleItems} onItemClick={handleNotificationClick} />
+        <NotificationList
+          items={visibleItems.filter(
+            (item) => item.notificationKind !== "offer_rejected" || item.isOfferSender !== false,
+          )}
+          onItemClick={handleNotificationClick}
+        />
       ) : null}
       {expanded && loadingMore ? (
         <p className="m-0 w-[364px] text-center text-[14px] text-[#626262]">Загружаем ещё…</p>

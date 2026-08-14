@@ -36,6 +36,9 @@ export function ProfileSettingsPanel() {
   const [showCompleted, setShowCompleted] = useState(true);
   const [hidePersonal, setHidePersonal] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [privacySaving, setPrivacySaving] = useState<"showCompleted" | "hidePersonal" | null>(
+    null,
+  );
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
   const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
@@ -72,8 +75,6 @@ export function ProfileSettingsPanel() {
   const resetForm = () => {
     setDisplayName(user.name);
     setCityId(user.cityId ?? "");
-    setShowCompleted(user.showCompletedListings);
-    setHidePersonal(user.hidePersonalData);
     if (user.cityId && user.city) {
       setPinnedCity({ value: user.cityId, label: user.city });
     } else {
@@ -176,12 +177,8 @@ export function ProfileSettingsPanel() {
       const payload: {
         displayName: string;
         cityId?: string;
-        showCompletedListings: boolean;
-        hidePersonalData: boolean;
       } = {
         displayName: trimmedName,
-        showCompletedListings: showCompleted,
-        hidePersonalData: hidePersonal,
       };
       if (cityId) payload.cityId = cityId;
 
@@ -197,6 +194,37 @@ export function ProfileSettingsPanel() {
     } finally {
       setIsSaving(false);
       setIsUploadingAvatar(false);
+    }
+  };
+
+  const handlePrivacyToggle = async (
+    field: "showCompletedListings" | "hidePersonalData",
+    next: boolean,
+  ) => {
+    if (!accessToken || privacySaving) return;
+
+    const previous =
+      field === "showCompletedListings" ? showCompleted : hidePersonal;
+    if (field === "showCompletedListings") setShowCompleted(next);
+    else setHidePersonal(next);
+
+    setPrivacySaving(field === "showCompletedListings" ? "showCompleted" : "hidePersonal");
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await updateMe(accessToken, { [field]: next });
+      applyUser(mapBackendUserToAuthUser(response.user));
+    } catch (requestError) {
+      if (field === "showCompletedListings") setShowCompleted(previous);
+      else setHidePersonal(previous);
+      setError(
+        requestError instanceof ApiError
+          ? requestError.message
+          : "Не удалось сохранить настройку приватности.",
+      );
+    } finally {
+      setPrivacySaving(null);
     }
   };
 
@@ -218,27 +246,10 @@ export function ProfileSettingsPanel() {
             Управляйте данными аккаунта и настройками приватности.
           </p>
         </div>
-        <div className="flex h-12 items-center gap-3">
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={() => void handleSave()}
-            className="flex h-12 w-[243px] items-center justify-center rounded-[21px] bg-[#8E8BED] px-6 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-white transition hover:brightness-[0.98] disabled:opacity-60"
-          >
-            {isSaving ? "Сохраняем…" : "Сохранить изменения"}
-          </button>
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={resetForm}
-            className="flex h-12 items-center justify-center rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white px-6 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition hover:bg-[#FAFAFA] disabled:opacity-60"
-          >
-            Отмена
-          </button>
-        </div>
       </div>
 
-      <form className="flex flex-col gap-6" onSubmit={handleSave}>
+      <div className="flex flex-col gap-6">
+        <form className="flex flex-col gap-6" onSubmit={handleSave}>
         <div className="flex flex-col gap-6 rounded-[31px] bg-[#C8FF00] p-6">
           <h2 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#626262]">
             Учётные данные
@@ -373,57 +384,60 @@ export function ProfileSettingsPanel() {
             </button>
           </div>
         </div>
+      </form>
 
-        <div className="flex flex-col gap-6 rounded-[31px] bg-white p-6">
-          <h2 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#626262]">
-            Приватность
-          </h2>
+      <div className="flex flex-col gap-6 rounded-[31px] bg-white p-6">
+        <h2 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#626262]">
+          Приватность
+        </h2>
 
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex min-w-0 flex-1 flex-col gap-3">
-              <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-                Показывать завершённые объявления
-              </p>
-              <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
-                Другие пользователи смогут видеть вашу историю обменов
-              </p>
-            </div>
-            <Switch
-              checked={showCompleted}
-              onChange={setShowCompleted}
-              aria-label="Показывать завершённые объявления"
-            />
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
+              Показывать завершённые объявления
+            </p>
+            <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
+              Другие пользователи смогут видеть вашу историю обменов
+            </p>
           </div>
-
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex min-w-0 flex-1 flex-col gap-3">
-              <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-                Не отображать личные данные на странице
-              </p>
-              <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
-                Если вы снимаете видео или стримите, ваши личные данные будут под защитой
-              </p>
-            </div>
-            <Switch
-              checked={hidePersonal}
-              onChange={setHidePersonal}
-              aria-label="Не отображать личные данные на странице"
-            />
-          </div>
+          <Switch
+            checked={showCompleted}
+            disabled={privacySaving !== null}
+            onChange={(next) => void handlePrivacyToggle("showCompletedListings", next)}
+            aria-label="Показывать завершённые объявления"
+          />
         </div>
 
-        {error ? <p className="text-[14px] font-semibold text-[#FF2056]">{error}</p> : null}
-        {message ? <p className="text-[14px] font-semibold text-[#1A1A1A]">{message}</p> : null}
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
+              Не отображать личные данные на странице
+            </p>
+            <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
+              Если вы снимаете видео или стримите, ваши личные данные будут под защитой
+            </p>
+          </div>
+          <Switch
+            checked={hidePersonal}
+            disabled={privacySaving !== null}
+            onChange={(next) => void handlePrivacyToggle("hidePersonalData", next)}
+            aria-label="Не отображать личные данные на странице"
+          />
+        </div>
+      </div>
 
-        <button
-          type="button"
-          onClick={() => void handleLogout()}
-          className="flex h-[67px] w-full items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white text-[14px] font-semibold tracking-[0.014px] text-[#FF2056] transition hover:bg-[#FFF5F7]"
-        >
-          <LogoutIcon className="h-[18px] w-[18px] text-[#FF2056]" />
-          Выйти из аккаунта
-        </button>
-      </form>
+      {error ? <p className="text-[14px] font-semibold text-[#FF2056]">{error}</p> : null}
+      {message ? <p className="text-[14px] font-semibold text-[#1A1A1A]">{message}</p> : null}
+
+      <button
+        type="button"
+        onClick={() => void handleLogout()}
+        className="flex h-[67px] w-full items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white text-[14px] font-semibold tracking-[0.014px] text-[#FF2056] transition hover:bg-[#FFF5F7]"
+      >
+        <LogoutIcon className="h-[18px] w-[18px] text-[#FF2056]" />
+        Выйти из аккаунта
+      </button>
+      </div>
     </section>
   );
 }

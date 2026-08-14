@@ -436,11 +436,17 @@ function Sidebar({
             />
             <span className="chats-list-item__copy">
               <strong>{item.counterpart.displayName}</strong>
-              <span>{item.kind === "offer" ? "Вам предложение!" : item.preview}</span>
+              <span>
+                {item.notificationKind === "offer_rejected"
+                  ? "Предложение отклонено"
+                  : item.kind === "offer"
+                    ? "Вам предложение!"
+                    : item.preview}
+              </span>
             </span>
             <span className="chats-list-item__meta">
               <time>{formatListTime(item.updatedAt)}</time>
-              {item.kind === "offer" ? (
+              {item.kind === "offer" && item.notificationKind !== "offer_rejected" ? (
                 <span className="chat-badge chat-badge--offer">!</span>
               ) : item.unreadCount > 0 ? (
                 <span className="chat-badge chat-badge--count">{item.unreadCount}</span>
@@ -476,40 +482,73 @@ function IncomingOfferPanel({
     offeredListings.length > 1
       ? offeredListings[(offerIndex + 1) % offeredListings.length]
       : null;
+  const isSenderView = offer.viewerRole === "sender" || offer.status === "rejected";
+  const counterpart = isSenderView ? offer.recipient : offer.sender;
+  const declined = offer.status === "rejected";
 
   return (
     <section className="chats-panel chats-panel--offer">
-      <ProfileHeader profile={offer.sender} />
+      <ProfileHeader profile={counterpart ?? offer.sender} />
       <div className="chats-offer-comparison">
-        <ListingCard listing={offer.targetListing} title="Мое" showWants />
-        <span className="chats-swap-badge" aria-hidden>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/chat/swap-arrows.svg" alt="" />
-        </span>
-        {offeredListing ? (
-          <ListingCard
-            listing={offeredListing}
-            title="Предложение"
-            message={offer.message || ""}
-            showMessage
-            secondaryListing={secondaryListing}
-            listingsCount={offeredListings.length}
-            hasNext={offeredListings.length > 1}
-            onNext={() =>
-              setOfferIndex((current) => (current + 1) % offeredListings.length)
-            }
-          />
-        ) : null}
+        {isSenderView ? (
+          <>
+            {offeredListing ? (
+              <ListingCard
+                listing={offeredListing}
+                title="Мое"
+                message={offer.message || ""}
+                showMessage
+                secondaryListing={secondaryListing}
+                listingsCount={offeredListings.length}
+                hasNext={offeredListings.length > 1}
+                onNext={() =>
+                  setOfferIndex((current) => (current + 1) % offeredListings.length)
+                }
+              />
+            ) : null}
+            <span className="chats-swap-badge" aria-hidden>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/chat/swap-arrows.svg" alt="" />
+            </span>
+            <ListingCard listing={offer.targetListing} title="Объявление" showWants />
+          </>
+        ) : (
+          <>
+            <ListingCard listing={offer.targetListing} title="Мое" showWants />
+            <span className="chats-swap-badge" aria-hidden>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/chat/swap-arrows.svg" alt="" />
+            </span>
+            {offeredListing ? (
+              <ListingCard
+                listing={offeredListing}
+                title="Предложение"
+                message={offer.message || ""}
+                showMessage
+                secondaryListing={secondaryListing}
+                listingsCount={offeredListings.length}
+                hasNext={offeredListings.length > 1}
+                onNext={() =>
+                  setOfferIndex((current) => (current + 1) % offeredListings.length)
+                }
+              />
+            ) : null}
+          </>
+        )}
       </div>
       {error ? <p className="chats-action-error">{error}</p> : null}
-      <div className="chats-actions">
-        <button type="button" disabled={busy} onClick={onAccept}>
-          {busy ? "Обрабатываем…" : "Принять предложение"}
-        </button>
-        <button type="button" disabled={busy} onClick={onReject}>
-          Отказаться от предложения
-        </button>
-      </div>
+      {declined ? (
+        <p className="chats-action-error">Предложение отклонено</p>
+      ) : (
+        <div className="chats-actions">
+          <button type="button" disabled={busy} onClick={onAccept}>
+            {busy ? "Обрабатываем…" : "Принять предложение"}
+          </button>
+          <button type="button" disabled={busy} onClick={onReject}>
+            Отказаться от предложения
+          </button>
+        </div>
+      )}
     </section>
   );
 }

@@ -75,10 +75,12 @@ export type ChatSummary = {
 
 export type IncomingOffer = {
   id: string;
-  status: "pending";
+  status: "pending" | "rejected";
   message: string;
   createdAt: string;
+  viewerRole?: "sender" | "recipient";
   sender: ChatProfile;
+  recipient?: ChatProfile;
   targetListing: ChatListing;
   offeredListings: ChatListing[];
 };
