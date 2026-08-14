@@ -1050,18 +1050,20 @@
   position: absolute;
   z-index: 1;
   top: auto;
+  right: 0;
   bottom: 0;
-  left: 1331px;
+  left: auto;
   display: flex;
   flex: none;
   flex-grow: 0;
   align-items: center;
-  gap: 6px;
-  width: 109px;
-  height: 30px;
+  gap: 8px;
+  width: auto;
+  height: auto;
+  min-height: 32px;
   padding: 8px 18px;
   border: 0.5px solid #cacaca;
-  border-radius: 10px;
+  border-radius: 21px;
   background: #ffffff;
   color: #1a1a1a;
   cursor: pointer;
@@ -1076,7 +1078,7 @@
   flex: none;
   flex-grow: 0;
   width: 16px;
-  height: 14px;
+  height: 16px;
   color: #1a1a1a;
 }
 
@@ -1086,13 +1088,12 @@
   flex-grow: 0;
   align-items: center;
   width: auto;
-  min-width: 51px;
   height: auto;
-  min-height: 18px;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
-  letter-spacing: 0.001em;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 

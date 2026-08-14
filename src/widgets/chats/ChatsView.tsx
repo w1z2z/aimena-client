@@ -38,6 +38,7 @@ import {
   leaveChatThread,
   markChatThreadRead,
   onChatDealUpdated,
+  onChatInboxUpdated,
   onChatMessage,
   onChatThreadUpdated,
   sendChatSocketMessage,
@@ -1247,7 +1248,10 @@ export function ChatsView() {
     const unsubscribeUpdated = onChatThreadUpdated((event) => {
       setSummaries((current) => {
         const index = current.findIndex((item) => item.id === event.threadId);
-        if (index < 0) return current;
+        if (index < 0) {
+          void loadSummaries();
+          return current;
+        }
         const item = current[index];
         const nextUpdatedAt = event.lastMessageAt
           ? typeof event.lastMessageAt === "string"
@@ -1264,6 +1268,11 @@ export function ChatsView() {
         const activityChanged = nextUpdatedAt !== item.updatedAt;
         return replaceChatSummary(current, updated, activityChanged);
       });
+    });
+
+    const unsubscribeInbox = onChatInboxUpdated(() => {
+      void loadSummaries();
+      void refreshUnread();
     });
 
     const unsubscribeDeal = onChatDealUpdated((event) => {
@@ -1286,6 +1295,7 @@ export function ChatsView() {
     return () => {
       unsubscribeMessage();
       unsubscribeUpdated();
+      unsubscribeInbox();
       unsubscribeDeal();
     };
   }, [isAuthenticated, loadSummaries, refreshUnread, selectedId, user?.id]);

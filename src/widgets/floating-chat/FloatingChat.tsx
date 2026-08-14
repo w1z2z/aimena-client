@@ -8,6 +8,7 @@ import { useAuth, useAuthGate } from "@/features/auth";
 import { useChatInbox } from "@/features/chat-inbox";
 import {
   connectChatSocket,
+  onChatInboxUpdated,
   onChatThreadUpdated,
 } from "@/shared/api/chat-socket";
 import { getChatConversations, openSupportChat, type ChatSummary } from "@/shared/api/chats";
@@ -205,8 +206,15 @@ export function FloatingChat() {
       });
     });
 
+    const unsubscribeInbox = onChatInboxUpdated(() => {
+      void getChatConversations({ limit: 5 })
+        .then((response) => setItems(response.data))
+        .catch(() => undefined);
+    });
+
     return () => {
       unsubscribe();
+      unsubscribeInbox();
     };
   }, [isAuthenticated]);
 
