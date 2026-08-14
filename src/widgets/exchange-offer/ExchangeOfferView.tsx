@@ -331,7 +331,7 @@ export function ExchangeOfferView() {
     } catch (submitError) {
       setError(
         submitError instanceof ApiError && submitError.status === 409
-          ? "Вы уже отправили предложение по этому объявлению."
+          ? "По этому объявлению уже идёт обмен."
           : "Не удалось отправить предложение. Попробуйте ещё раз.",
       );
     } finally {

@@ -20,6 +20,7 @@ import {
   mapServiceWorkLevelToLabel,
 } from "@/entities/listing";
 import { useAuth, useAuthGate } from "@/features/auth";
+import { useChatInbox } from "@/features/chat-inbox";
 import {
   getChats,
   getChatThread,
@@ -942,6 +943,7 @@ function ActiveChatPanel({
 export function ChatsView() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { guardAuth } = useAuthGate();
+  const { refreshUnread } = useChatInbox();
   const searchParams = useSearchParams();
   const selectedFromQuery = searchParams.get("selected");
   const openSupportFromQuery = searchParams.get("support") === "1";
@@ -1064,6 +1066,7 @@ export function ChatsView() {
                 next[index] = { ...current[index], unreadCount: 0 };
                 return next;
               });
+              void refreshUnread();
             },
           );
     void request.catch((requestError: unknown) => {
@@ -1161,6 +1164,10 @@ export function ChatsView() {
               : current.status;
         return { ...current, deal: event.deal, status: nextStatus };
       });
+      if (selectedId === event.threadId) {
+        markChatThreadRead(event.threadId);
+        void refreshUnread();
+      }
     });
 
     return () => {
@@ -1168,7 +1175,7 @@ export function ChatsView() {
       unsubscribeUpdated();
       unsubscribeDeal();
     };
-  }, [isAuthenticated, loadSummaries, selectedId, user?.id]);
+  }, [isAuthenticated, loadSummaries, refreshUnread, selectedId, user?.id]);
 
   const filteredSummaries = useMemo(() => {
     return filterChatSummaries(summaries, filter);
