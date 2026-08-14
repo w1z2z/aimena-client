@@ -915,6 +915,7 @@ function ActiveChatPanel({
   const [sending, setSending] = useState(false);
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const attachmentsRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
   const lastMessage = thread.messages[thread.messages.length - 1];
   const lastMessageId = lastMessage?.id;
@@ -930,6 +931,27 @@ function ActiveChatPanel({
     if (sent) setMessage("");
     setSending(false);
   };
+
+  useEffect(() => {
+    if (!attachmentsOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!attachmentsRef.current?.contains(event.target as Node)) {
+        setAttachmentsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAttachmentsOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [attachmentsOpen]);
 
   useEffect(() => {
     const root = messagesRef.current;
@@ -992,15 +1014,15 @@ function ActiveChatPanel({
 
         <div className="chats-active-footer">
           <div className="chats-footer-bar">
-            <div className="chats-composer-wrap">
+            <div ref={attachmentsRef} className="chats-composer-wrap">
               {attachmentsOpen ? (
-                <div className="chats-attachments-menu">
-                  <button type="button">
+                <div className="chats-attachments-menu" role="menu">
+                  <button type="button" role="menuitem">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/images/chat/file-upload.svg" alt="" />
                     Загрузить файлы
                   </button>
-                  <button type="button">
+                  <button type="button" role="menuitem">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/images/chat/document-upload.svg" alt="" />
                     Прикрепить документы
@@ -1012,6 +1034,8 @@ function ActiveChatPanel({
                   type="button"
                   className="chats-composer__attach"
                   aria-label="Прикрепить файл"
+                  aria-expanded={attachmentsOpen}
+                  aria-haspopup="menu"
                   disabled={composerLocked}
                   onClick={() => {
                     if (!composerLocked) setAttachmentsOpen((open) => !open);
