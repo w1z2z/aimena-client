@@ -2,10 +2,12 @@
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
+import { useAuth } from "@/features/auth";
 import { ApiError } from "@/shared/api/http";
 import { getListings, getRecommendations } from "@/shared/api/listings";
 
 import { listingQueryKeys } from "@/entities/listing/api/query-keys";
+import { excludeOwnListings } from "@/entities/listing/model/exclude-own";
 import { mapApiListingToCard } from "@/entities/listing/model/mappers";
 import type { ListingCardData } from "@/entities/listing/model/types";
 import {
@@ -48,9 +50,17 @@ export function useHeroRecommendations({
   categoryUiKeyToBackendId,
   enabled = true,
 }: HeroRecommendationsParams) {
+  const { user, isLoading } = useAuth();
+
   return useQuery({
-    queryKey: [...listingQueryKeys.all, "hero-recommendations", hero, categoryUiKeyToBackendId],
-    enabled,
+    queryKey: [
+      ...listingQueryKeys.all,
+      "hero-recommendations",
+      user?.id ?? "anon",
+      hero,
+      categoryUiKeyToBackendId,
+    ],
+    enabled: enabled && !isLoading,
     queryFn: async ({ signal }) => {
       const isAllCategory = hero.categoryId === "all";
       const categoryBackendId = isAllCategory
@@ -97,10 +107,10 @@ export function useHeroRecommendations({
           hero.mode === "exchange" ? "have" : "want",
           HERO_RANDOM_POOL_SIZE,
         );
-        return shuffleItems(response.data.map(mapApiListingToCard)).slice(
-          0,
-          HERO_RECOMMENDATIONS_LIMIT,
-        );
+        return excludeOwnListings(
+          shuffleItems(response.data.map(mapApiListingToCard)),
+          user?.id,
+        ).slice(0, HERO_RECOMMENDATIONS_LIMIT);
       }
 
       if (hero.mode === "exchange") {
@@ -113,18 +123,18 @@ export function useHeroRecommendations({
             },
             signal,
           );
-          return response.data.map(mapApiListingToCard);
+          return excludeOwnListings(response.data.map(mapApiListingToCard), user?.id);
         } catch (requestError) {
           if (requestError instanceof ApiError && requestError.status === 404) {
             const response = await fetchListingsFeed("have", HERO_RECOMMENDATIONS_LIMIT);
-            return response.data.map(mapApiListingToCard);
+            return excludeOwnListings(response.data.map(mapApiListingToCard), user?.id);
           }
           throw requestError;
         }
       }
 
       const response = await fetchListingsFeed("want", HERO_RECOMMENDATIONS_LIMIT);
-      return response.data.map(mapApiListingToCard);
+      return excludeOwnListings(response.data.map(mapApiListingToCard), user?.id);
     },
     placeholderData: (previous) => previous,
   });
@@ -139,9 +149,11 @@ export function useFilteredListings({
   appliedFilters,
   enabled = true,
 }: FilteredListingsParams) {
+  const { user, isLoading } = useAuth();
+
   return useInfiniteQuery({
-    queryKey: [...listingQueryKeys.all, "filtered", appliedFilters],
-    enabled,
+    queryKey: [...listingQueryKeys.all, "filtered", user?.id ?? "anon", appliedFilters],
+    enabled: enabled && !isLoading,
     initialPageParam: 1,
     queryFn: async ({ pageParam, signal }) => {
       const cityId = appliedFilters.city || undefined;
@@ -190,7 +202,10 @@ export function useFilteredListings({
         }
 
         return {
-          items: response.data.map(mapApiListingToCard) as ListingCardData[],
+          items: excludeOwnListings(
+            response.data.map(mapApiListingToCard) as ListingCardData[],
+            user?.id,
+          ),
           total: response.meta.total,
           page: response.meta.page,
           pageCount: response.meta.pageCount,

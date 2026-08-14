@@ -11,7 +11,8 @@ import {
   type ReactNode,
 } from "react";
 
-import type { ListingCardData } from "@/entities/listing";
+import { excludeOwnListings, type ListingCardData } from "@/entities/listing";
+import { useAuth } from "@/features/auth";
 import { writeHeroListingDraft } from "@/shared/lib/hero-listing-draft";
 import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
 import type { SelectOption } from "@/shared/ui/select-field";
@@ -77,6 +78,7 @@ type HomeSearchContextValue = {
 const HomeSearchContext = createContext<HomeSearchContextValue | null>(null);
 
 export function HomeSearchProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [mode, setMode] = useState<HomeSearchMode>("exchange");
   const [categoryId, setCategoryId] = useState<string>("all");
   const [title, setTitle] = useState("");
@@ -241,8 +243,12 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
   }, [openFiltersAndScroll]);
 
   const filteredListings = useMemo(
-    () => filteredListingsQuery.data?.pages.flatMap((page) => page.items) ?? [],
-    [filteredListingsQuery.data],
+    () =>
+      excludeOwnListings(
+        filteredListingsQuery.data?.pages.flatMap((page) => page.items) ?? [],
+        user?.id,
+      ),
+    [filteredListingsQuery.data, user?.id],
   );
 
   const listingsCount = filteredListingsQuery.data?.pages[0]?.total ?? 0;
@@ -274,7 +280,10 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       openFiltersAndScroll,
       isFiltersOpen,
       setIsFiltersOpen,
-      heroRecommendations: heroRecommendationsQuery.data ?? [],
+      heroRecommendations: excludeOwnListings(
+        heroRecommendationsQuery.data ?? [],
+        user?.id,
+      ),
       heroRecommendationsLoading: heroRecommendationsQuery.isLoading,
       filteredListings,
       listingsCount,
@@ -314,6 +323,7 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       openFiltersAndScroll,
       pinSelectedCity,
       resetFilters,
+      user?.id,
     ],
   );
 

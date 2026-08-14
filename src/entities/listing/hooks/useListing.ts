@@ -2,9 +2,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { useAuth } from "@/features/auth";
 import { getListing, getSimilarListings } from "@/shared/api/listings";
 
 import { listingQueryKeys } from "../api/query-keys";
+import { excludeOwnListings } from "../model/exclude-own";
 
 export function useListing(listingId: string) {
   return useQuery({
@@ -15,9 +17,17 @@ export function useListing(listingId: string) {
 }
 
 export function useSimilarListings(listingId: string, limit = 12) {
+  const { user, isLoading } = useAuth();
+
   return useQuery({
-    queryKey: listingQueryKeys.similar(listingId, limit),
-    queryFn: ({ signal }) => getSimilarListings(listingId, { limit }, signal),
-    enabled: Boolean(listingId),
+    queryKey: [...listingQueryKeys.similar(listingId, limit), user?.id ?? "anon"],
+    queryFn: async ({ signal }) => {
+      const response = await getSimilarListings(listingId, { limit }, signal);
+      return {
+        ...response,
+        data: excludeOwnListings(response.data, user?.id),
+      };
+    },
+    enabled: Boolean(listingId) && !isLoading,
   });
 }

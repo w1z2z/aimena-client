@@ -7,9 +7,11 @@ import { useState } from "react";
 import {
   ListingCard,
   ListingCardSkeletonGrid,
+  excludeOwnListings,
   listingQueryKeys,
   mapApiListingToCard,
 } from "@/entities/listing";
+import { useAuth } from "@/features/auth";
 import { getListings } from "@/shared/api/listings";
 import { Header } from "@/widgets/header/Header";
 import {
@@ -27,10 +29,12 @@ function pluralOffers(count: number) {
 }
 
 export default function FreeGiveawaysPage() {
+  const { user, isLoading: authLoading } = useAuth();
   const [page, setPage] = useState(1);
 
   const listingsQuery = useQuery({
-    queryKey: [...listingQueryKeys.all, "free-page", page, CATALOG_PAGE_SIZE],
+    queryKey: [...listingQueryKeys.all, "free-page", user?.id ?? "anon", page, CATALOG_PAGE_SIZE],
+    enabled: !authLoading,
     queryFn: async ({ signal }) => {
       const response = await getListings(
         {
@@ -42,7 +46,7 @@ export default function FreeGiveawaysPage() {
         signal,
       );
       return {
-        items: response.data.map(mapApiListingToCard),
+        items: excludeOwnListings(response.data.map(mapApiListingToCard), user?.id),
         total: response.meta.total,
         page: response.meta.page,
         pageCount:
