@@ -27,6 +27,7 @@ export type ChatListing = {
   serviceFormats: ApiListingServiceFormat[];
   estimatedPrice: number | null;
   extraPay: "none" | "i_pay" | "they_pay" | "both";
+  isFree?: boolean;
   hasDocuments: boolean;
   wantsTags: string[];
   wantsCategories: Array<{ id: string; name: string; slug: string }>;

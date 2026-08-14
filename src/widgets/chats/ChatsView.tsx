@@ -327,32 +327,51 @@ function ListingCard({
 
         {showWants ? (
           <div className="chats-listing-wants">
-            <h3>Желаю взамен</h3>
-            {listing.wantsCategories?.length ? (
-              <div>
-                <span className="chats-listing-wants__label">Категории</span>
-                <div className="chats-listing-wants__row">
-                  {listing.wantsCategories.map((category) => (
-                    <span key={category.id} className="chats-category">
-                      {category.name}
-                    </span>
-                  ))}
+            <h3>{listing.isFree ? "Желаемый обмен" : "Желаю взамен"}</h3>
+            {listing.isFree ? (
+              <>
+                <div>
+                  <span className="chats-listing-wants__label">Категории</span>
+                  <div className="chats-listing-wants__row">
+                    <span className="chats-category">Даром</span>
+                  </div>
                 </div>
-              </div>
-            ) : null}
-            <div>
-              <span className="chats-listing-wants__label">Вещи и Услуги</span>
-              <div className="chats-listing-wants__row">
-                {(listing.wantsTags.length > 0
-                  ? listing.wantsTags
-                  : ["Любые варианты"]
-                ).map((tag) => (
-                  <Pill key={tag} truncate>
-                    {tag}
-                  </Pill>
-                ))}
-              </div>
-            </div>
+                <div>
+                  <span className="chats-listing-wants__label">Вещи и Услуги</span>
+                  <div className="chats-listing-wants__row">
+                    <Pill>Отдается даром</Pill>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {listing.wantsCategories?.length ? (
+                  <div>
+                    <span className="chats-listing-wants__label">Категории</span>
+                    <div className="chats-listing-wants__row">
+                      {listing.wantsCategories.map((category) => (
+                        <span key={category.id} className="chats-category">
+                          {category.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                <div>
+                  <span className="chats-listing-wants__label">Вещи и Услуги</span>
+                  <div className="chats-listing-wants__row">
+                    {(listing.wantsTags.length > 0
+                      ? listing.wantsTags
+                      : ["Любые варианты"]
+                    ).map((tag) => (
+                      <Pill key={tag} truncate>
+                        {tag}
+                      </Pill>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         ) : null}
 
@@ -373,6 +392,40 @@ function ListingCard({
             <img src="/images/chat/offer-chevron.svg" alt="" />
           </button>
         ) : null}
+      </article>
+    </section>
+  );
+}
+
+function FreeClaimCard({
+  message,
+  kindLabel,
+  kindLabelAccusative,
+  isSenderView,
+}: {
+  message: string;
+  kindLabel: string;
+  kindLabelAccusative: string;
+  isSenderView: boolean;
+}) {
+  const panelTitle = isSenderView
+    ? "Выбирать свои объявления не нужно"
+    : "Взамен ничего не предлагают";
+  const panelText = isSenderView
+    ? `Эта ${kindLabel} отдаётся даром — взамен ничего не требуется. Ниже ваше сообщение владельцу.`
+    : `Это объявление вы отдаёте даром, поэтому взамен ничего не получите. Ниже сообщение от человека, который хочет получить ${kindLabelAccusative}.`;
+
+  return (
+    <section className="chats-offer-column">
+      <h2>Предложение</h2>
+      <article className="chats-listing-detail chats-listing-detail--free-claim">
+        <div className="chats-free-claim-panel">
+          <p className="chats-free-claim-panel__title">{panelTitle}</p>
+          <p className="chats-free-claim-panel__text">{panelText}</p>
+        </div>
+        <div className="chats-offer-message">
+          <p className="chats-offer-message__text">{message.trim()}</p>
+        </div>
       </article>
     </section>
   );
@@ -485,6 +538,23 @@ function IncomingOfferPanel({
   const isSenderView = offer.viewerRole === "sender" || offer.status === "rejected";
   const counterpart = isSenderView ? offer.recipient : offer.sender;
   const declined = offer.status === "rejected";
+  const isFreeClaim =
+    Boolean(offer.targetListing.isFree) || offeredListings.length === 0;
+  const freeKindNoun = offer.targetListing.type === "service" ? "услуга" : "вещь";
+  const freeKindAccusative =
+    offer.targetListing.type === "service" ? "услугу" : "вещь";
+  const targetListing = {
+    ...offer.targetListing,
+    isFree: Boolean(offer.targetListing.isFree) || isFreeClaim,
+  };
+  const freeClaimCard = (
+    <FreeClaimCard
+      message={offer.message || ""}
+      kindLabel={freeKindNoun}
+      kindLabelAccusative={freeKindAccusative}
+      isSenderView={isSenderView}
+    />
+  );
 
   return (
     <section className="chats-panel chats-panel--offer">
@@ -492,7 +562,9 @@ function IncomingOfferPanel({
       <div className="chats-offer-comparison">
         {isSenderView ? (
           <>
-            {offeredListing ? (
+            {isFreeClaim ? (
+              freeClaimCard
+            ) : offeredListing ? (
               <ListingCard
                 listing={offeredListing}
                 title="Мое"
@@ -510,16 +582,18 @@ function IncomingOfferPanel({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/images/chat/swap-arrows.svg" alt="" />
             </span>
-            <ListingCard listing={offer.targetListing} title="Объявление" showWants />
+            <ListingCard listing={targetListing} title="Объявление" showWants />
           </>
         ) : (
           <>
-            <ListingCard listing={offer.targetListing} title="Мое" showWants />
+            <ListingCard listing={targetListing} title="Мое" showWants />
             <span className="chats-swap-badge" aria-hidden>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/images/chat/swap-arrows.svg" alt="" />
             </span>
-            {offeredListing ? (
+            {isFreeClaim ? (
+              freeClaimCard
+            ) : offeredListing ? (
               <ListingCard
                 listing={offeredListing}
                 title="Предложение"
