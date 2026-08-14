@@ -1,0 +1,18 @@
+<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="16" y="28" width="100" height="128" rx="20" fill="#EDECFB"/>
+  <rect x="32" y="44" width="68" height="52" rx="12" fill="#8E8BED"/>
+  <rect x="32" y="108" width="48" height="10" rx="5" fill="#CACACA"/>
+  <rect x="32" y="126" width="36" height="8" rx="4" fill="#E4E4E4"/>
+
+  <rect x="184" y="28" width="100" height="128" rx="20" fill="#F3FFB8"/>
+  <rect x="200" y="44" width="68" height="52" rx="12" fill="#C8FF00"/>
+  <rect x="200" y="108" width="48" height="10" rx="5" fill="#CACACA"/>
+  <rect x="200" y="126" width="36" height="8" rx="4" fill="#D8D8D8"/>
+
+  <!-- Gap between cards: 116 → 184. Arrow stays fully inside. -->
+  <path d="M128 92 H164" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round"/>
+  <path d="M154 82 L168 92 L154 102" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <circle cx="66" cy="20" r="10" fill="#C8FF00"/>
+  <circle cx="234" cy="164" r="8" fill="#8E8BED"/>
+</svg>
