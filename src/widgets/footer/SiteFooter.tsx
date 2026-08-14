@@ -12,7 +12,7 @@ const serviceLinks = [
 const helpLinks = [
   { label: "Пользовательское соглашение", href: "/terms" },
   { label: "Политика конфиденциальности", href: "/privacy" },
-  { label: "О проекте", href: "#" },
+  { label: "О проекте", href: "/about" },
 ] as const;
 
 export function SiteFooter() {
