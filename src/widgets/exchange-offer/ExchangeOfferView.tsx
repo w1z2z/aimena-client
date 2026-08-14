@@ -174,6 +174,7 @@ function TargetListing({ listing }: { listing: ApiListingDetail }) {
               <LocationPinIcon />
               {listing.city.name}
             </Pill>
+            {listing.isFree ? <Pill>Даром</Pill> : null}
             {listing.type === "service"
               ? (listing.serviceFormats ?? []).map((format) => (
                   <Pill key={format}>{mapServiceFormatToLabel(format)}</Pill>
@@ -186,7 +187,7 @@ function TargetListing({ listing }: { listing: ApiListingDetail }) {
       <div className="exchange-offer-stats">
         <div>
           <span>Примерная стоимость</span>
-          <Pill>{formatPrice(listing.estimatedPrice)}</Pill>
+          <Pill>{listing.isFree ? "Даром" : formatPrice(listing.estimatedPrice)}</Pill>
         </div>
         <div>
           <span>{listing.type === "service" ? "Уровень работы" : "Состояние"}</span>
@@ -194,7 +195,7 @@ function TargetListing({ listing }: { listing: ApiListingDetail }) {
         </div>
         <div>
           <span>Доплата</span>
-          <Pill>{EXTRA_PAY_LABELS[listing.extraPay]}</Pill>
+          <Pill>{listing.isFree ? "Не нужна" : EXTRA_PAY_LABELS[listing.extraPay]}</Pill>
         </div>
         <div>
           <span>Документы</span>
@@ -204,28 +205,47 @@ function TargetListing({ listing }: { listing: ApiListingDetail }) {
 
       <div className="exchange-offer-wants">
         <h3>Желает взамен</h3>
-        {listing.wantsCategories.length > 0 ? (
-          <div>
-            <span className="exchange-offer-wants__label">Категории</span>
-            <div className="exchange-offer-wants__row">
-              {listing.wantsCategories.map((category) => (
-                <span key={category.id} className="exchange-offer-category">
-                  {category.name}
-                </span>
-              ))}
+        {listing.isFree ? (
+          <>
+            <div>
+              <span className="exchange-offer-wants__label">Категории</span>
+              <div className="exchange-offer-wants__row">
+                <span className="exchange-offer-category">Даром</span>
+              </div>
             </div>
-          </div>
-        ) : null}
-        <div>
-          <span className="exchange-offer-wants__label">Вещи и Услуги</span>
-          <div className="exchange-offer-wants__row">
-            {(listing.wantsTags.length > 0 ? listing.wantsTags : ["Любые варианты"]).map(
-              (tag) => (
-                <Pill key={tag}>{tag}</Pill>
-              ),
-            )}
-          </div>
-        </div>
+            <div>
+              <span className="exchange-offer-wants__label">Вещи и Услуги</span>
+              <div className="exchange-offer-wants__row">
+                <Pill>Отдается даром</Pill>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {listing.wantsCategories.length > 0 ? (
+              <div>
+                <span className="exchange-offer-wants__label">Категории</span>
+                <div className="exchange-offer-wants__row">
+                  {listing.wantsCategories.map((category) => (
+                    <span key={category.id} className="exchange-offer-category">
+                      {category.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <div>
+              <span className="exchange-offer-wants__label">Вещи и Услуги</span>
+              <div className="exchange-offer-wants__row">
+                {(listing.wantsTags.length > 0 ? listing.wantsTags : ["Любые варианты"]).map(
+                  (tag) => (
+                    <Pill key={tag}>{tag}</Pill>
+                  ),
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
@@ -255,19 +275,22 @@ export function ExchangeOfferView() {
     }
 
     const controller = new AbortController();
-    void Promise.all([
-      getListing(listingId, controller.signal),
-      getMyListings(
-        { page: 1, pageSize: 50, status: ["active"], sort: "newest" },
-        controller.signal,
-      ),
-    ])
-      .then(([targetResponse, ownResponse]) => {
+    void getListing(listingId, controller.signal)
+      .then(async (targetResponse) => {
         if (targetResponse.listing.owner?.id === user?.id) {
           setError("Нельзя предложить обмен на собственное объявление.");
           return;
         }
         setTarget(targetResponse.listing);
+        if (targetResponse.listing.isFree) {
+          setOwnListings([]);
+          setSelectedIds([]);
+          return;
+        }
+        const ownResponse = await getMyListings(
+          { page: 1, pageSize: 50, status: ["active"], sort: "newest" },
+          controller.signal,
+        );
         setOwnListings(ownResponse.data.filter((listing) => listing.id !== listingId));
       })
       .catch((requestError: unknown) => {
@@ -282,6 +305,9 @@ export function ExchangeOfferView() {
 
     return () => controller.abort();
   }, [authLoading, guardAuth, isAuthenticated, listingId, user?.id]);
+
+  const isFreeOffer = Boolean(target?.isFree);
+  const freeKindLabel = target?.type === "service" ? "услуга" : "вещь";
 
   const filteredListings = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -302,8 +328,9 @@ export function ExchangeOfferView() {
   );
 
   const difference = selectedTotal - (target?.estimatedPrice ?? 0);
-  const differenceText =
-    selectedIds.length === 0
+  const differenceText = isFreeOffer
+    ? "Взамен ничего не нужно"
+    : selectedIds.length === 0
       ? "Выберите хотя бы одно предложение"
       : difference === 0
         ? "Предложения примерно равноценны"
@@ -312,19 +339,22 @@ export function ExchangeOfferView() {
           ).replace("~", "~")}`;
 
   const toggleListing = (id: string) => {
+    if (isFreeOffer) return;
     setSelectedIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
   };
 
+  const canSubmit = isFreeOffer || selectedIds.length > 0;
+
   const submit = async () => {
-    if (!target || selectedIds.length === 0 || submitting) return;
+    if (!target || !canSubmit || submitting) return;
     setSubmitting(true);
     setError("");
     try {
       await createExchangeOffer({
         targetListingId: target.id,
-        offeredListingIds: selectedIds,
+        offeredListingIds: isFreeOffer ? [] : selectedIds,
         message: message.trim(),
       });
       setSent(true);
@@ -386,45 +416,66 @@ export function ExchangeOfferView() {
             )}
 
             <div className="exchange-offer-layout">
-              <section className="exchange-offer-choice">
+              <section
+                className={`exchange-offer-choice${isFreeOffer ? " is-free" : ""}`}
+                aria-disabled={isFreeOffer || undefined}
+              >
                 <div className="exchange-offer-title">
                   <h1>Вот это</h1>
-                  <span>Выбрано: {selectedIds.length}</span>
+                  <span>{isFreeOffer ? "Даром" : `Выбрано: ${selectedIds.length}`}</span>
                 </div>
                 <div
                   className="exchange-offer-balance"
-                  data-balanced={difference === 0 && selectedIds.length > 0 ? "true" : undefined}
+                  data-balanced={
+                    isFreeOffer || (difference === 0 && selectedIds.length > 0)
+                      ? "true"
+                      : undefined
+                  }
                 >
                   {differenceText}
                 </div>
-                <label className="exchange-offer-search">
-                  <SearchIcon />
-                  <input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Слишком много? Поможем найти нужное"
-                  />
-                </label>
-                <div className="exchange-offer-list">
-                  <div className="exchange-offer-list__scroll">
-                    {filteredListings.length > 0 ? (
-                      filteredListings.map((listing) => (
-                        <OwnListingCard
-                          key={listing.id}
-                          listing={listing}
-                          selected={selectedIds.includes(listing.id)}
-                          onToggle={() => toggleListing(listing.id)}
-                        />
-                      ))
-                    ) : (
-                      <p className="exchange-offer-empty">
-                        {ownListings.length === 0
-                          ? "Сначала разместите активное предложение для обмена."
-                          : "Ничего не найдено."}
-                      </p>
-                    )}
+                {isFreeOffer ? (
+                  <div className="exchange-offer-free-panel">
+                    <p className="exchange-offer-free-panel__title">
+                      Выбирать свои объявления не нужно
+                    </p>
+                    <p className="exchange-offer-free-panel__text">
+                      Эта {freeKindLabel} отдаётся даром — взамен ничего не требуется.
+                      Просто напишите сообщение владельцу и отправьте запрос.
+                    </p>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <label className="exchange-offer-search">
+                      <SearchIcon />
+                      <input
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder="Слишком много? Поможем найти нужное"
+                      />
+                    </label>
+                    <div className="exchange-offer-list">
+                      <div className="exchange-offer-list__scroll">
+                        {filteredListings.length > 0 ? (
+                          filteredListings.map((listing) => (
+                            <OwnListingCard
+                              key={listing.id}
+                              listing={listing}
+                              selected={selectedIds.includes(listing.id)}
+                              onToggle={() => toggleListing(listing.id)}
+                            />
+                          ))
+                        ) : (
+                          <p className="exchange-offer-empty">
+                            {ownListings.length === 0
+                              ? "Сначала разместите активное предложение для обмена."
+                              : "Ничего не найдено."}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
                 <textarea
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
@@ -439,7 +490,7 @@ export function ExchangeOfferView() {
               </div>
 
               <div className="exchange-offer-result">
-                <h1>Хочу обменять на это</h1>
+                <h1>{isFreeOffer ? "Хочу получить это" : "Хочу обменять на это"}</h1>
                 <TargetListing listing={target} />
               </div>
             </div>
@@ -459,8 +510,8 @@ export function ExchangeOfferView() {
                 <button
                   type="button"
                   className="exchange-offer-actions__submit"
-                  disabled={selectedIds.length === 0 || submitting}
-                  onClick={submit}
+                  disabled={!canSubmit || submitting}
+                  onClick={() => void submit()}
                 >
                   {submitting ? "Отправляем…" : "Отправить предложение"}
                 </button>
