@@ -147,7 +147,7 @@ export function ProfileListingsPanel() {
 
       {/* 48px от счётчика до карточек; сортировка — 8px над сеткой */}
       <div className="relative mt-12 w-full overflow-visible">
-        <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center overflow-visible">
+        <div className="absolute bottom-full right-0 z-30 mb-12 flex items-center overflow-visible">
           <ProfileSortControl
             sort={sort}
             onSortChange={setSort}

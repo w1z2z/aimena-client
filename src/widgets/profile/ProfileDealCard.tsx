@@ -18,11 +18,6 @@ const STATUS_BADGE: Record<
     icon: PROFILE_ASSETS.swapAlt,
     label: "Успешный обмен",
   },
-  in_progress: {
-    bg: "bg-[#8E8BED]",
-    icon: PROFILE_ASSETS.swap,
-    label: "Обмен в процессе",
-  },
   cancelled: {
     bg: "bg-[#FF2056]",
     icon: PROFILE_ASSETS.swap,

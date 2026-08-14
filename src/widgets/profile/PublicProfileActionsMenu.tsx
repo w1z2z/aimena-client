@@ -96,7 +96,7 @@ export function PublicProfileActionsMenu({ userId }: PublicProfileActionsMenuPro
     <div ref={containerRef} className="absolute top-6 right-6 z-[6]">
       <button
         type="button"
-        className="box-border flex h-[34px] w-10 shrink-0 cursor-pointer items-center justify-center rounded-[12px] border-[0.5px] border-solid border-[#CACACA] bg-white p-2 hover:border-[#8E8BED]"
+        className="box-border flex h-[34px] w-10 shrink-0 cursor-pointer items-center justify-center gap-[5.89px] rounded-[12px] border-[0.5px] border-solid border-[#CACACA] bg-white p-2 hover:border-[#8E8BED]"
         aria-label="Действия с профилем"
         aria-haspopup="dialog"
         aria-expanded={open}

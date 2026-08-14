@@ -134,7 +134,7 @@ export function createDealReview(dealId: string, body: string) {
   });
 }
 
-export type DealHistoryStatus = "successful" | "in_progress" | "cancelled";
+export type DealHistoryStatus = "successful" | "cancelled";
 
 export type DealHistoryPerson = {
   id: string;

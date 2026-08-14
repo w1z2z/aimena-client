@@ -156,7 +156,7 @@ export function PublicProfileListingsPanel() {
       </div>
 
       <div className="relative mt-12 w-full overflow-visible">
-        <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center overflow-visible">
+        <div className="absolute bottom-full right-0 z-30 mb-12 flex items-center overflow-visible">
           <ProfileSortControl
             sort={sort}
             onSortChange={setSort}

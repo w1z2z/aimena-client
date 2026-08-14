@@ -23,7 +23,6 @@ import {
 const EMPTY_BY_TYPE: Record<ProfileDealTypeFilter, string> = {
   all: "Пока нет обменов. Когда сделки появятся, история будет здесь.",
   successful: "Нет успешных обменов.",
-  in_progress: "Нет обменов в процессе.",
   cancelled: "Нет отмененных обменов.",
 };
 
@@ -87,7 +86,7 @@ export function ProfileDealsPanel() {
       </div>
 
       <div className="relative mt-12 w-full overflow-visible">
-        <div className="absolute bottom-full right-0 z-30 mb-2 flex items-center overflow-visible">
+        <div className="absolute bottom-full right-0 z-30 mb-12 flex items-center overflow-visible">
           <ProfileSortControl
             sort={sort}
             onSortChange={setSort}

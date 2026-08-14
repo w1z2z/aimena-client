@@ -105,11 +105,13 @@
 .listing-detail-actions__trigger {
   box-sizing: border-box;
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: 34px;
+  gap: 5.89px;
+  width: 40px;
   height: 34px;
-  padding: 0;
+  padding: 8px;
   border: 0.5px solid #cacaca;
   border-radius: 12px;
   background: #fff;
@@ -120,6 +122,8 @@
 .listing-detail-actions__trigger svg {
   display: block;
   flex-shrink: 0;
+  width: 24px;
+  height: 24px;
 }
 
 .listing-detail-actions__trigger:hover {

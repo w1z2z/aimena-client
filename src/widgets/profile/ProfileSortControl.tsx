@@ -10,8 +10,8 @@ export type ProfileSortOrder = "newest" | "oldest";
 /** Own-profile listing type filter (no «Удаленные», no drafts). */
 export type ProfileListingTypeFilter = "all" | "active" | "completed" | "archived";
 
-/** Deal history type filter. */
-export type ProfileDealTypeFilter = "all" | "successful" | "in_progress" | "cancelled";
+/** Deal history type filter (only finished deals: successful or cancelled). */
+export type ProfileDealTypeFilter = "all" | "successful" | "cancelled";
 
 export const PROFILE_LISTING_TYPE_OPTIONS: Array<{
   value: ProfileListingTypeFilter;
@@ -41,7 +41,6 @@ export const PROFILE_DEAL_TYPE_OPTIONS: Array<{
 }> = [
   { value: "all", label: "Все" },
   { value: "successful", label: "Успешные" },
-  { value: "in_progress", label: "В процессе" },
   { value: "cancelled", label: "Отмененные" },
 ];
 
