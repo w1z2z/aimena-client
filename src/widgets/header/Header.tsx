@@ -457,7 +457,7 @@ export function Header() {
                   type="button"
                   aria-label="Поиск"
                   onClick={handleSearchToggle}
-                  className="flex h-[32px] w-[32px] items-center justify-center rounded-[13px] border-[0.5px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#fafaff]"
+                  className="flex h-[32px] w-[32px] items-center justify-center rounded-[36px] border-[0.5px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#fafaff]"
                 >
                   <SearchIcon className="h-[16px] w-[16px]" />
                 </button>
