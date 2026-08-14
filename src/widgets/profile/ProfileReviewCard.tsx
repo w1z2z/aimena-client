@@ -5,7 +5,9 @@ import Link from "next/link";
 
 import type { DealReviewItem } from "@/shared/api/deals";
 
-import { formatProfileDate, formatProfileNumber, PROFILE_ASSETS } from "./constants";
+import { RatingStarIcon } from "@/shared/ui/icons";
+
+import { formatProfileDate, formatProfileNumber } from "./constants";
 
 type ProfileReviewCardProps = {
   review: DealReviewItem;
@@ -60,8 +62,8 @@ export function ProfileReviewCard({ review, compact = false }: ProfileReviewCard
                 {review.author.name}
               </p>
             )}
-            <span className="inline-flex w-fit items-center justify-center gap-0.5 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
-              <img src={PROFILE_ASSETS.pointsBolt} alt="" className="h-[6px] w-[4px]" />
+            <span className="inline-flex w-fit items-center justify-center gap-1 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
+              <RatingStarIcon className="size-[13px]" />
               <span className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-white">
                 {formatProfileNumber(review.author.points)}
               </span>

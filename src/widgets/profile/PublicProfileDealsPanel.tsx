@@ -83,7 +83,7 @@ export function PublicProfileDealsPanel() {
   }
 
   return (
-    <section className="flex w-full flex-col">
+    <section className="flex w-[1074px] max-w-full shrink-0 flex-col">
       <div className="flex flex-col gap-3">
         <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
           История обменов

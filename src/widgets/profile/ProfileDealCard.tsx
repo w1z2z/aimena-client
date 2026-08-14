@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import type { DealHistoryItem, DealHistoryListingSide } from "@/shared/api/deals";
 
+import { RatingStarIcon } from "@/shared/ui/icons";
+
 import { formatProfileDate, formatProfileNumber, PROFILE_ASSETS } from "./constants";
 
 const STATUS_BADGE: Record<
@@ -40,30 +42,46 @@ function ListingThumb({ side }: { side: DealHistoryListingSide }) {
   const showStack = Boolean(side.secondaryImageUrl) || hiddenCount > 0;
 
   return (
-    <div className="relative size-20 shrink-0">
-      <div className="relative size-20 overflow-hidden rounded-[21px] bg-[#EBEBEB]">
+    <div className={`profile-deal-thumb${showStack ? " has-stack" : ""}`}>
+      <div className="profile-deal-thumb__main">
         {side.imageUrl ? (
-          <img src={side.imageUrl} alt="" className="size-full object-cover" />
+          <img src={side.imageUrl} alt="" className="profile-deal-thumb__image" />
         ) : null}
       </div>
       {showStack ? (
-        <span className="pointer-events-none absolute -bottom-1.5 -right-1.5 size-11">
-          <span className="block size-11 overflow-hidden rounded-[14px] border-[3px] border-solid border-white bg-[#EBEBEB]">
-            {side.secondaryImageUrl ? (
-              <img
-                src={side.secondaryImageUrl}
-                alt=""
-                className="size-full object-cover"
-              />
-            ) : null}
-          </span>
+        <span className="profile-deal-thumb__stack">
+          {side.secondaryImageUrl ? (
+            <img
+              src={side.secondaryImageUrl}
+              alt=""
+              className="profile-deal-thumb__stack-image"
+            />
+          ) : null}
           {hiddenCount > 0 ? (
-            <span className="absolute bottom-1.5 right-1.5 z-[1] inline-flex h-5 min-w-5 items-center justify-center rounded-[10px] bg-[rgba(26,26,26,0.72)] px-1.5 text-[11px] font-semibold leading-none tracking-[0.022px] text-white">
-              +{hiddenCount}
-            </span>
+            <span className="profile-deal-thumb__stack-count">+{hiddenCount}</span>
           ) : null}
         </span>
       ) : null}
+    </div>
+  );
+}
+
+function ListingSide({
+  label,
+  side,
+}: {
+  label: string;
+  side: DealHistoryListingSide;
+}) {
+  return (
+    <div className="profile-deal-side">
+      <ListingThumb side={side} />
+      <div className="profile-deal-side__meta">
+        <p className="profile-deal-side__label">{label}</p>
+        <p className="profile-deal-side__title" title={side.title}>
+          {side.title}
+        </p>
+      </div>
     </div>
   );
 }
@@ -84,109 +102,64 @@ export function ProfileDealCard({
 
   return (
     <article
-      className={`relative flex w-full flex-col gap-6 rounded-[31px] bg-white p-6 ${
-        deal.highlighted
-          ? "border-2 border-solid border-[#8E8BED]"
-          : "border-[0.5px] border-solid border-[#CACACA]"
-      }`}
+      className={`profile-deal-card${deal.highlighted ? " is-highlighted" : ""}`}
     >
-      <p className="absolute right-6 top-6 text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
-        {formatProfileDate(deal.date)}
-      </p>
+      <p className="profile-deal-card__date">{formatProfileDate(deal.date)}</p>
 
-      <div className="flex flex-wrap items-center gap-x-[24px] gap-y-4 pr-16 lg:gap-x-[132px]">
-        <div className="flex items-start gap-3">
-          <ListingThumb side={deal.given} />
-          <div className="flex h-20 w-[220px] flex-col gap-2 sm:w-[262px]">
-            <p className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
-              Отдал
-            </p>
-            <p className="truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-              {deal.given.title}
-            </p>
-          </div>
+      <div className="profile-deal-card__exchange">
+        <ListingSide label="Отдал" side={deal.given} />
+
+        <div
+          className={`profile-deal-card__badge ${badge.bg}`}
+          title={badge.label}
+          aria-label={badge.label}
+        >
+          <img src={badge.icon} alt="" width={19} height={17} />
         </div>
 
-        <div className="flex items-center gap-6">
-          <div
-            className={`flex size-[50px] shrink-0 items-center justify-center rounded-[17.857px] border-[0.641px] border-solid border-[#CACACA] ${badge.bg}`}
-            title={badge.label}
-            aria-label={badge.label}
-          >
-            <img src={badge.icon} alt="" className="h-[17px] w-[19px]" />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <ListingThumb side={deal.received} />
-            <div className="flex h-20 w-[220px] flex-col gap-2 sm:w-[259px]">
-              <p className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
-                Получил
-              </p>
-              <p className="truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-                {deal.received.title}
-              </p>
-            </div>
-          </div>
-        </div>
+        <ListingSide label="Получил" side={deal.received} />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="profile-deal-card__footer">
+        <div className="profile-deal-card__partner">
           {partnerHref ? (
-            <Link href={partnerHref} className="relative size-11 shrink-0 overflow-hidden rounded-[9px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F2F4F7]">
+            <Link href={partnerHref} className="profile-deal-card__avatar">
               {deal.partner.avatarUrl ? (
-                <img src={deal.partner.avatarUrl} alt="" className="size-full object-cover" />
+                <img src={deal.partner.avatarUrl} alt="" />
               ) : (
-                <div className="flex size-full items-center justify-center text-[16px] font-extrabold text-[#1A1A1A]">
-                  {deal.partner.avatarInitial}
-                </div>
+                <span>{deal.partner.avatarInitial}</span>
               )}
             </Link>
           ) : (
-            <div className="relative size-11 shrink-0 overflow-hidden rounded-[9px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F2F4F7]">
+            <div className="profile-deal-card__avatar">
               {deal.partner.avatarUrl ? (
-                <img src={deal.partner.avatarUrl} alt="" className="size-full object-cover" />
+                <img src={deal.partner.avatarUrl} alt="" />
               ) : (
-                <div className="flex size-full items-center justify-center text-[16px] font-extrabold text-[#1A1A1A]">
-                  {deal.partner.avatarInitial}
-                </div>
+                <span>{deal.partner.avatarInitial}</span>
               )}
             </div>
           )}
           {partnerHref ? (
-            <Link
-              href={partnerHref}
-              className="text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A] hover:text-[#8E8BED]"
-            >
+            <Link href={partnerHref} className="profile-deal-card__partner-name">
               {deal.partner.name}
             </Link>
           ) : (
-            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-              {deal.partner.name}
-            </p>
+            <p className="profile-deal-card__partner-name">{deal.partner.name}</p>
           )}
-          <span className="inline-flex items-center justify-center gap-0.5 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
-            <img src={PROFILE_ASSETS.pointsBolt} alt="" className="h-[6px] w-[4px]" />
-            <span className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-white">
-              {formatProfileNumber(deal.partner.points)}
-            </span>
+          <span className="profile-deal-card__points">
+            <RatingStarIcon />
+            <span>{formatProfileNumber(deal.partner.points)}</span>
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="profile-deal-card__actions">
           {showReviewAction && deal.canLeaveReview && reviewHref ? (
-            <Link
-              href={reviewHref}
-              className="rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-[#C8FF00] px-3 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]"
-            >
+            <Link href={reviewHref} className="profile-deal-card__action is-primary">
               Оставить отзыв
             </Link>
           ) : null}
           {showChatAction && chatHref ? (
-            <Link
-              href={chatHref}
-              className="rounded-[34px] border-[0.5px] border-solid border-[#CACACA] bg-white px-3 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]"
-            >
+            <Link href={chatHref} className="profile-deal-card__action">
               Открыть чат
             </Link>
           ) : null}

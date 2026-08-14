@@ -4,7 +4,7 @@
 import Link from "next/link";
 
 import type { ApiListingOwner } from "@/shared/api/listings";
-import { BoltIcon } from "@/shared/ui/icons";
+import { RatingStarIcon } from "@/shared/ui/icons";
 import { formatRatingPoints, PROFILE_ASSETS } from "@/widgets/profile/constants";
 
 type ListingOwnerCardProps = {
@@ -33,7 +33,7 @@ export function ListingOwnerCard({ owner }: ListingOwnerCardProps) {
           ) : null}
         </div>
         <div className="listing-detail-owner__rating">
-          <BoltIcon className="h-[11px] w-[8px] rotate-[15deg] text-white" />
+          <RatingStarIcon className="size-[13px]" />
           <span>{ratingDisplay}</span>
         </div>
       </div>

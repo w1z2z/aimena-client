@@ -108,7 +108,7 @@ export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
       <div className="px-6 pb-12 pt-18">
         <div className="mx-auto flex w-full max-w-[1440px] items-start gap-6">
           <PublicProfileSidebar profile={profile} active={active} />
-          <div className="relative min-w-0 w-[1074px] shrink-0">{children}</div>
+          <div className="relative min-w-0 flex-1">{children}</div>
         </div>
       </div>
     </div>

@@ -43,7 +43,7 @@ import {
 } from "@/shared/api/chat-socket";
 import { acceptExchangeOffer, rejectExchangeOffer } from "@/shared/api/deals";
 import { ApiError } from "@/shared/api/http";
-import { LocationPinIcon, MenuSquareIcon, StarMiniIcon } from "@/shared/ui/icons";
+import { LocationPinIcon, MenuSquareIcon, RatingStarIcon } from "@/shared/ui/icons";
 import { Header } from "@/widgets/header/Header";
 import { pluralRu } from "@/widgets/profile/constants";
 
@@ -204,7 +204,7 @@ function ProfileHeader({
       <div>
         <strong>{profile.displayName}</strong>
         <span>
-          <StarMiniIcon />
+          <RatingStarIcon />
           {new Intl.NumberFormat("ru-RU").format(profile.ratingAvg ?? 0)}
         </span>
       </div>

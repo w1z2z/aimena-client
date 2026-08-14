@@ -19,7 +19,7 @@ import {
   type ApiListingCard,
   type ApiListingDetail,
 } from "@/shared/api/listings";
-import { LocationPinIcon, SearchIcon, StarMiniIcon, SwapIcon } from "@/shared/ui/icons";
+import { LocationPinIcon, RatingStarIcon, SearchIcon, SwapIcon } from "@/shared/ui/icons";
 import { Header } from "@/widgets/header/Header";
 
 function formatPrice(value: number | null | undefined) {
@@ -363,7 +363,7 @@ export function ExchangeOfferView() {
                 <div>
                   <strong>{target.owner.displayName}</strong>
                   <span>
-                    <StarMiniIcon />
+                    <RatingStarIcon />
                     {target.owner.ratingAvg ?? 0}
                   </span>
                 </div>
@@ -378,7 +378,7 @@ export function ExchangeOfferView() {
                 <div>
                   <strong>{target.owner?.displayName ?? "Пользователь"}</strong>
                   <span>
-                    <StarMiniIcon />
+                    <RatingStarIcon />
                     {target.owner?.ratingAvg ?? 0}
                   </span>
                 </div>

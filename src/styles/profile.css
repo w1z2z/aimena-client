@@ -228,3 +228,315 @@
   font-weight: 600;
   line-height: 1.3;
 }
+
+/* Deal history card — CSS layout (Safari-safe; avoid flex-wrap + absolute overhang) */
+.profile-deal-card {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 24px;
+  overflow: visible;
+  border: 0.5px solid #cacaca;
+  border-radius: 31px;
+  background: #fff;
+  padding: 24px;
+}
+
+.profile-deal-card.is-highlighted {
+  border: 2px solid #8e8bed;
+}
+
+.profile-deal-card__date {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  margin: 0;
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.002em;
+}
+
+.profile-deal-card__exchange {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 50px minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding-right: 64px;
+}
+
+.profile-deal-side {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-deal-side__meta {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-deal-side__label {
+  margin: 0;
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.002em;
+}
+
+.profile-deal-side__title {
+  margin: 0;
+  overflow: hidden;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-deal-card__badge {
+  box-sizing: border-box;
+  display: flex;
+  width: 50px;
+  height: 50px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 0.641px solid #cacaca;
+  border-radius: 17.857px;
+}
+
+.profile-deal-card__badge img {
+  display: block;
+  width: 19px;
+  height: 17px;
+  max-width: none;
+}
+
+.profile-deal-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profile-deal-card__partner {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-deal-card__avatar {
+  position: relative;
+  box-sizing: border-box;
+  display: block;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  overflow: hidden;
+  border: 0.5px solid #8e8bed;
+  border-radius: 9px;
+  background: #f2f4f7;
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile-deal-card__avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+
+.profile-deal-card__avatar span {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.profile-deal-card__partner-name {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.profile-deal-card__partner-name:hover {
+  color: #8e8bed;
+}
+
+.profile-deal-card__points {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 44px;
+  background: #1a1a1a;
+  padding: 8px 12px;
+  color: #fff;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.002em;
+}
+
+.profile-deal-card__points svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+}
+
+.profile-deal-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-deal-card__action {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid #cacaca;
+  border-radius: 34px;
+  background: #fff;
+  padding: 12px;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  text-decoration: none;
+}
+
+.profile-deal-card__action.is-primary {
+  background: #c8ff00;
+}
+
+/* Thumbs: layout box includes stack overhang so Safari flex/grid doesn't shift */
+.profile-deal-thumb {
+  position: relative;
+  box-sizing: border-box;
+  flex: 0 0 80px;
+  width: 80px;
+  height: 80px;
+}
+
+.profile-deal-thumb.has-stack {
+  flex-basis: 86px;
+  width: 86px;
+  height: 86px;
+}
+
+.profile-deal-thumb__main {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 21px;
+  background: #ebebeb;
+}
+
+.profile-deal-thumb__image {
+  display: block;
+  width: 80px;
+  height: 80px;
+  max-width: none;
+  object-fit: cover;
+}
+
+.profile-deal-thumb__stack {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+}
+
+.profile-deal-thumb__stack-image {
+  display: block;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  max-width: none;
+  border: 3px solid #fff;
+  border-radius: 14px;
+  object-fit: cover;
+  background: #ebebeb;
+}
+
+.profile-deal-thumb__stack-count {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  z-index: 2;
+  display: inline-flex;
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: rgb(26 26 26 / 72%);
+  color: #fff;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.022px;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .profile-deal-card__exchange {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding-right: 0;
+  }
+
+  .profile-deal-card__badge {
+    justify-self: start;
+  }
+}
+

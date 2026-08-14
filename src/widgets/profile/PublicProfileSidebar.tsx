@@ -4,6 +4,7 @@
 import Link from "next/link";
 
 import type { BackendPublicProfile } from "@/shared/api/auth";
+import { RatingStarIcon } from "@/shared/ui/icons";
 import { getUserDealReviews } from "@/shared/api/deals";
 import { useQuery } from "@tanstack/react-query";
 
@@ -85,7 +86,7 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
               Рейтинг профиля
             </p>
             <div className="flex items-center gap-1">
-              <img src={PROFILE_ASSETS.bolt} alt="" className="h-[17px] w-[10px]" />
+              <RatingStarIcon className="size-[17px]" />
               <p className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#8E8BED]">
                 {ratingDisplay}
               </p>
