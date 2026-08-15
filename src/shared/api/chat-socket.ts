@@ -152,7 +152,15 @@ export function markChatThreadRead(threadId: string) {
   socket?.emit("read", { threadId });
 }
 
-export function sendChatSocketMessage(threadId: string, body: string) {
+export function sendChatSocketMessage(
+  threadId: string,
+  payload: {
+    body?: string;
+    chatUploadIds?: string[];
+    chatFileNames?: string[];
+    listingDocumentIds?: string[];
+  },
+) {
   return new Promise<ChatMessage>((resolve, reject) => {
     if (!socket?.connected) {
       reject(new Error("Chat socket is not connected"));
@@ -163,7 +171,7 @@ export function sendChatSocketMessage(threadId: string, body: string) {
       .timeout(10_000)
       .emit(
         "message",
-        { threadId, body },
+        { threadId, ...payload },
         (error: Error | null, response?: { ok?: boolean; message?: ChatMessage }) => {
           if (error) {
             reject(error);

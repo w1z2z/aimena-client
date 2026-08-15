@@ -86,12 +86,38 @@ export type IncomingOffer = {
   offeredListings: ChatListing[];
 };
 
+export type ChatMessageAttachment = {
+  id: string;
+  kind: "image" | "file";
+  fileName: string;
+  mime: string;
+  url: string;
+  thumbUrl: string;
+  fullUrl: string;
+  sourceListingId: string | null;
+  size?: number;
+};
+
 export type ChatMessage = {
   id: string;
   senderId: string | null;
-  type: "text" | "system";
+  type: "text" | "system" | "attachment";
   body: string;
   createdAt: string;
+  attachments?: ChatMessageAttachment[];
+};
+
+export type AttachableListingDocuments = {
+  listingId: string;
+  title: string;
+  documents: Array<{
+    listingImageId: string;
+    fileName: string;
+    mime: string;
+    url: string;
+    thumbUrl: string;
+    fullUrl: string;
+  }>;
 };
 
 export type ChatThread = {
@@ -167,9 +193,24 @@ export function getChatThread(threadId: string, signal?: AbortSignal) {
   return httpRequest<{ thread: ChatThread }>(`/chats/${threadId}`, { signal });
 }
 
-export function sendChatMessage(threadId: string, body: string) {
+export function getChatAttachableDocuments(threadId: string, signal?: AbortSignal) {
+  return httpRequest<{ listings: AttachableListingDocuments[] }>(
+    `/chats/${threadId}/attachable-documents`,
+    { signal },
+  );
+}
+
+export function sendChatMessage(
+  threadId: string,
+  payload: {
+    body?: string;
+    chatUploadIds?: string[];
+    chatFileNames?: string[];
+    listingDocumentIds?: string[];
+  },
+) {
   return httpRequest<{ message: ChatMessage }>(`/chats/${threadId}/messages`, {
     method: "POST",
-    body: { body },
+    body: payload,
   });
 }

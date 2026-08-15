@@ -23,9 +23,11 @@ import { useAuth, useAuthGate } from "@/features/auth";
 import { useChatInbox } from "@/features/chat-inbox";
 import {
   getChats,
+  getChatAttachableDocuments,
   getChatThread,
   getIncomingOffer,
   sendChatMessage,
+  type AttachableListingDocuments,
   type ChatListing,
   type ChatMessage,
   type ChatSummary,
@@ -45,11 +47,21 @@ import {
 } from "@/shared/api/chat-socket";
 import { acceptExchangeOffer, rejectExchangeOffer } from "@/shared/api/deals";
 import { ApiError } from "@/shared/api/http";
+import { uploadChatFileViaBackend } from "@/shared/api/media";
 import { LocationPinIcon, MenuSquareIcon, RatingStarIcon } from "@/shared/ui/icons";
 import { Header } from "@/widgets/header/Header";
 import { pluralRu } from "@/widgets/profile/constants";
 
+import { ChatDocumentsPicker } from "./ChatDocumentsPicker";
+import { ChatMessageBubble, chatMessagePreview } from "./ChatMessageBubble";
 import { DealFlow, dealSideStatus, dealModalFromQuery } from "./DealFlow";
+
+type SendMessagePayload = {
+  body?: string;
+  chatUploadIds?: string[];
+  chatFileNames?: string[];
+  listingDocumentIds?: string[];
+};
 
 type ChatFilter = "all" | "chats" | "unread" | "offers";
 
@@ -908,14 +920,20 @@ function ActiveChatPanel({
   thread: ChatThread;
   currentUserId: string;
   initialDealModal: ReturnType<typeof dealModalFromQuery>;
-  onSend: (body: string) => Promise<boolean>;
+  onSend: (payload: SendMessagePayload) => Promise<boolean>;
   onDealUpdated: (deal: ChatThread["deal"]) => void;
 }) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
+  const [docsPickerOpen, setDocsPickerOpen] = useState(false);
+  const [attachableDocs, setAttachableDocs] = useState<AttachableListingDocuments[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [attachError, setAttachError] = useState("");
+  const [pendingMessages, setPendingMessages] = useState<ChatMessage[]>([]);
   const messagesRef = useRef<HTMLDivElement>(null);
   const attachmentsRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const stickToBottomRef = useRef(true);
   const lastMessage = thread.messages[thread.messages.length - 1];
   const lastMessageId = lastMessage?.id;
@@ -927,7 +945,7 @@ function ActiveChatPanel({
     if (!body || sending) return;
     setSending(true);
     stickToBottomRef.current = true;
-    const sent = await onSend(body);
+    const sent = await onSend({ body });
     if (sent) setMessage("");
     setSending(false);
   };
@@ -984,6 +1002,132 @@ function ActiveChatPanel({
   const isSupport = thread.kind === "support" || !thread.offer;
   const composerLocked = thread.status !== "active";
 
+  const openDocumentsPicker = async () => {
+    setAttachmentsOpen(false);
+    setAttachError("");
+    setAttachableDocs([]);
+    setDocsLoading(true);
+    setDocsPickerOpen(true);
+    try {
+      const response = await getChatAttachableDocuments(thread.id);
+      setAttachableDocs(response.listings);
+    } catch (error) {
+      setAttachableDocs([]);
+      setAttachError(
+        error instanceof ApiError
+          ? error.message
+          : "Не удалось загрузить документы объявлений.",
+      );
+      setDocsPickerOpen(false);
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+
+  const sendListingDocuments = async (listingDocumentIds: string[]) => {
+    setSending(true);
+    stickToBottomRef.current = true;
+    let allSent = true;
+    try {
+      for (const listingDocumentId of listingDocumentIds) {
+        const sent = await onSend({ listingDocumentIds: [listingDocumentId] });
+        if (!sent) {
+          allSent = false;
+          break;
+        }
+      }
+      if (allSent) {
+        setDocsPickerOpen(false);
+        setAttachError("");
+      } else {
+        setAttachError("Не удалось отправить документы.");
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleFilesSelected = async (files: FileList | null) => {
+    if (!files?.length || composerLocked || sending) return;
+    setAttachmentsOpen(false);
+    setAttachError("");
+    const selected = [...files].slice(0, 10);
+    const batchId = `pending-${Date.now()}`;
+    const pendingItems = selected.map((file, index) => {
+      const isImage = file.type.startsWith("image/");
+      const previewUrl = isImage ? URL.createObjectURL(file) : "";
+      const attachment = {
+        id: `${batchId}-${index}`,
+        kind: (isImage ? "image" : "file") as "image" | "file",
+        fileName: file.name,
+        mime: file.type || "application/octet-stream",
+        url: previewUrl || "#",
+        thumbUrl: previewUrl || "",
+        fullUrl: previewUrl || "",
+        sourceListingId: null as string | null,
+        size: file.size,
+      };
+      const message: ChatMessage = {
+        id: `${batchId}-msg-${index}`,
+        senderId: currentUserId,
+        type: "attachment",
+        body: "",
+        createdAt: new Date().toISOString(),
+        attachments: [attachment],
+      };
+      return { file, message, attachment };
+    });
+
+    setPendingMessages((current) => [
+      ...current,
+      ...pendingItems.map((item) => item.message),
+    ]);
+    stickToBottomRef.current = true;
+    setSending(true);
+
+    try {
+      const uploaded = await Promise.all(
+        pendingItems.map((item) => uploadChatFileViaBackend(item.file)),
+      );
+
+      let failed = false;
+      for (let index = 0; index < uploaded.length; index += 1) {
+        const item = pendingItems[index];
+        const upload = uploaded[index];
+        const sent = await onSend({
+          chatUploadIds: [upload.uploadId],
+          chatFileNames: [upload.fileName],
+        });
+        setPendingMessages((current) =>
+          current.filter((message) => message.id !== item.message.id),
+        );
+        if (item.attachment.url.startsWith("blob:")) {
+          URL.revokeObjectURL(item.attachment.url);
+        }
+        if (!sent) {
+          failed = true;
+          break;
+        }
+      }
+      if (failed) setAttachError("Не удалось отправить файлы.");
+    } catch (error) {
+      setAttachError(
+        error instanceof ApiError ? error.message : "Не удалось загрузить файлы.",
+      );
+      setPendingMessages((current) =>
+        current.filter((message) => !message.id.startsWith(`${batchId}-msg-`)),
+      );
+      pendingItems.forEach((item) => {
+        if (item.attachment.url.startsWith("blob:")) {
+          URL.revokeObjectURL(item.attachment.url);
+        }
+      });
+    } finally {
+      setSending(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <section className="chats-panel chats-panel--active">
       <div className="chats-active-stage">
@@ -1000,35 +1144,66 @@ function ActiveChatPanel({
                 {messageItem.body}
               </p>
             ) : (
-              <div
+              <ChatMessageBubble
                 key={messageItem.id}
-                className="chats-message"
-                data-own={messageItem.senderId === currentUserId ? "true" : undefined}
-              >
-                <p>{messageItem.body}</p>
-                <time>{formatTime(messageItem.createdAt)}</time>
-              </div>
+                message={messageItem}
+                isOwn={messageItem.senderId === currentUserId}
+              />
             ),
           )}
+          {pendingMessages.map((messageItem) => (
+            <ChatMessageBubble
+              key={messageItem.id}
+              message={messageItem}
+              isOwn
+              pending
+            />
+          ))}
         </div>
 
         <div className="chats-active-footer">
+          {attachError ? <p className="chats-attach-error">{attachError}</p> : null}
           <div className="chats-footer-bar">
             <div ref={attachmentsRef} className="chats-composer-wrap">
               {attachmentsOpen ? (
                 <div className="chats-attachments-menu" role="menu">
-                  <button type="button" role="menuitem">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={composerLocked || sending}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/images/chat/file-upload.svg" alt="" />
                     Загрузить файлы
                   </button>
-                  <button type="button" role="menuitem">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/images/chat/document-upload.svg" alt="" />
-                    Прикрепить документы
-                  </button>
+                  {!isSupport ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={composerLocked || sending}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        void openDocumentsPicker();
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/images/chat/document-upload.svg" alt="" />
+                      Прикрепить документы
+                    </button>
+                  ) : null}
                 </div>
               ) : null}
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="absolute h-px w-px overflow-hidden whitespace-nowrap"
+                style={{ clip: "rect(0, 0, 0, 0)" }}
+                accept="image/png,image/jpeg,image/webp,application/pdf"
+                multiple
+                onChange={(event) => void handleFilesSelected(event.target.files)}
+              />
               <form className="chats-composer" onSubmit={submit}>
                 <button
                   type="button"
@@ -1036,7 +1211,7 @@ function ActiveChatPanel({
                   aria-label="Прикрепить файл"
                   aria-expanded={attachmentsOpen}
                   aria-haspopup="menu"
-                  disabled={composerLocked}
+                  disabled={composerLocked || sending}
                   onClick={() => {
                     if (!composerLocked) setAttachmentsOpen((open) => !open);
                   }}
@@ -1049,7 +1224,7 @@ function ActiveChatPanel({
                   onChange={(event) => setMessage(event.target.value)}
                   placeholder={composerLocked ? "Чат только для чтения" : "Написать...."}
                   maxLength={2000}
-                  disabled={composerLocked}
+                  disabled={composerLocked || sending}
                 />
                 <button
                   type="submit"
@@ -1074,6 +1249,18 @@ function ActiveChatPanel({
           </div>
         </div>
       </div>
+
+      {docsPickerOpen ? (
+        <ChatDocumentsPicker
+          listings={attachableDocs}
+          loading={docsLoading}
+          busy={sending}
+          onClose={() => {
+            if (!sending) setDocsPickerOpen(false);
+          }}
+          onSend={(ids) => void sendListingDocuments(ids)}
+        />
+      ) : null}
     </section>
   );
 }
@@ -1253,7 +1440,7 @@ export function ChatsView() {
         const isOpen = selectedId === event.threadId;
         const updated: ChatSummary = {
           ...item,
-          preview: nextMessage.body,
+          preview: chatMessagePreview(nextMessage),
           updatedAt: createdAt,
           unreadCount: isOpen
             ? 0
@@ -1374,14 +1561,14 @@ export function ChatsView() {
     }
   };
 
-  const handleSend = async (body: string) => {
+  const handleSend = async (payload: SendMessagePayload) => {
     if (!thread) return false;
     try {
       let message: ChatMessage;
       try {
-        message = await sendChatSocketMessage(thread.id, body);
+        message = await sendChatSocketMessage(thread.id, payload);
       } catch {
-        const response = await sendChatMessage(thread.id, body);
+        const response = await sendChatMessage(thread.id, payload);
         message = response.message;
       }
 
@@ -1389,7 +1576,11 @@ export function ChatsView() {
         typeof message.createdAt === "string"
           ? message.createdAt
           : new Date(message.createdAt).toISOString();
-      const nextMessage = { ...message, createdAt };
+      const nextMessage = {
+        ...message,
+        createdAt,
+        attachments: message.attachments ?? [],
+      };
 
       setThread((current) => {
         if (!current) return current;
@@ -1402,15 +1593,19 @@ export function ChatsView() {
         const item = current[index];
         const updated: ChatSummary = {
           ...item,
-          preview: nextMessage.body,
+          preview: chatMessagePreview(nextMessage),
           updatedAt: createdAt,
           unreadCount: 0,
         };
         return replaceChatSummary(current, updated, true);
       });
       return true;
-    } catch {
-      setError("Не удалось отправить сообщение.");
+    } catch (error) {
+      setError(
+        error instanceof ApiError
+          ? error.message
+          : "Не удалось отправить сообщение.",
+      );
       return false;
     }
   };
