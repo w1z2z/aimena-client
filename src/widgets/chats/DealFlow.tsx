@@ -142,30 +142,55 @@ function NumberedSteps({ intro, items }: { intro: string; items: string[] }) {
 export function dealSideStatus(
   deal: DealView | null,
   side: "mine" | "theirs",
-) {
-  if (!deal) return "Ждём готовности";
-  if (deal.status === "cancelled") return "Обмен отменён";
+): { label: string; active: boolean } {
+  if (!deal) {
+    return { label: "Ждём готовности владельца", active: false };
+  }
+  if (deal.status === "cancelled") {
+    return { label: "Обмен отменён", active: false };
+  }
   if (
     deal.status === "awaiting_reviews" ||
     deal.status === "partially_reviewed" ||
     deal.status === "reviewed"
   ) {
-    return "Обмен состоялся";
+    return { label: "Обмен состоялся", active: false };
   }
   if (deal.status === "cancellation_pending") {
     const iRequested = deal.cancellationRequestedByMe;
     const thisSideRequested = side === "mine" ? iRequested : !iRequested;
-    return thisSideRequested ? "Запросил отмену" : "Ждём решения";
+    return {
+      label: thisSideRequested ? "Запросил отмену" : "Ждём решения",
+      active: false,
+    };
   }
   if (deal.status === "completion_pending") {
     const done =
       side === "mine" ? deal.completedByMe : deal.completedByOther;
-    return done ? "Обмен состоялся" : "Ждём подтверждения";
+    if (done) {
+      return {
+        label: side === "mine" ? "Вы подтвердили обмен" : "Владелец подтвердил обмен",
+        active: true,
+      };
+    }
+    return {
+      label:
+        side === "mine"
+          ? "Ждём вашего подтверждения окончания обмена"
+          : "Ждём подтверждения окончания обмена",
+      active: false,
+    };
   }
-  if (deal.status === "agreed") return "Готов к обмену";
+
   const ready =
     side === "mine" ? deal.termsConfirmedByMe : deal.termsConfirmedByOther;
-  return ready ? "Готов к обмену" : "Ждём готовности";
+  if (ready) {
+    return {
+      label: side === "mine" ? "Вы готовы к обмену" : "Владелец готов к обмену",
+      active: true,
+    };
+  }
+  return { label: "Ждём готовности владельца", active: false };
 }
 
 export function DealFlow({

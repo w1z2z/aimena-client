@@ -765,6 +765,7 @@ function SwapPreviewCard({
   menu = false,
   counterpart = null,
   statusLabel,
+  statusActive = false,
   onNext,
 }: {
   label: string;
@@ -776,6 +777,7 @@ function SwapPreviewCard({
     slug: string;
   } | null;
   statusLabel: string;
+  statusActive?: boolean;
   onNext?: () => void;
 }) {
   const count = listings.length;
@@ -832,7 +834,11 @@ function SwapPreviewCard({
             <strong className="chats-swap-preview__title">{listing.title}</strong>
           </Link>
         </div>
-        <span className="chats-swap-preview__status">{statusLabel}</span>
+        <span
+          className={`chats-swap-preview__status${statusActive ? " is-active" : ""}`}
+        >
+          {statusLabel}
+        </span>
       </div>
       {menu && counterpart ? <ChatSupportMenu counterpart={counterpart} /> : null}
     </div>
@@ -917,7 +923,8 @@ function SwapHeader({
         listings={mine.listings}
         activeIndex={mine.activeIndex}
         menu={mine.menu}
-        statusLabel={mineStatus}
+        statusLabel={mineStatus.label}
+        statusActive={mineStatus.active}
         onNext={mine.onNext}
       />
       <SwapPreviewCard
@@ -927,7 +934,8 @@ function SwapHeader({
         activeIndex={theirs.activeIndex}
         menu={theirs.menu}
         counterpart={thread.counterpart}
-        statusLabel={theirsStatus}
+        statusLabel={theirsStatus.label}
+        statusActive={theirsStatus.active}
         onNext={theirs.onNext}
       />
     </div>
@@ -1309,17 +1317,16 @@ function ActiveChatPanel({
         </div>
       </div>
 
-      {docsPickerOpen ? (
-        <ChatDocumentsPicker
-          listings={attachableDocs}
-          loading={docsLoading}
-          busy={sending}
-          onClose={() => {
-            if (!sending) setDocsPickerOpen(false);
-          }}
-          onSend={(ids) => void sendListingDocuments(ids)}
-        />
-      ) : null}
+      <ChatDocumentsPicker
+        open={docsPickerOpen}
+        listings={attachableDocs}
+        loading={docsLoading}
+        busy={sending}
+        onClose={() => {
+          if (!sending) setDocsPickerOpen(false);
+        }}
+        onSend={(ids) => void sendListingDocuments(ids)}
+      />
     </section>
   );
 }
