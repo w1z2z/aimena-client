@@ -26,7 +26,7 @@ export function HomeFreeGiveawaySection() {
           </h2>
 
           <div
-            className="relative box-border overflow-visible rounded-[20px] bg-surface-muted"
+            className="relative box-border overflow-visible rounded-[31px] bg-surface-muted"
             style={{
               width: `${PANEL_WIDTH}px`,
               height: `${PANEL_HEIGHT}px`,
