@@ -18,9 +18,10 @@ export type ChatSocketMessageEvent = {
 export type ChatSocketThreadUpdatedEvent = {
   threadId: string;
   preview?: string;
-  lastMessageAt?: string;
+  lastMessageAt?: string | Date;
   unreadCount?: number;
-  lastReadAt?: string;
+  lastReadAt?: string | Date;
+  counterpartLastReadAt?: string | Date;
 };
 
 export type ChatSocketInboxUpdatedEvent = {

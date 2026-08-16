@@ -1247,7 +1247,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 8px 12px 8px 0;
+  padding: 8px 12px 24px 0;
 }
 
 .chats-date-divider {
@@ -1263,24 +1263,24 @@
 }
 
 .chats-message {
+  position: relative;
   display: flex;
   box-sizing: border-box;
   width: fit-content;
-  max-width: min(72%, 420px);
+  max-width: min(72%, 520px);
   align-self: flex-start;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
-  padding: 8px 10px 6px;
+  gap: 10px;
+  padding: 12px;
   border: 0.5px solid #cacaca;
-  border-radius: 16px 16px 16px 4px;
+  border-radius: 21px;
   background: #fff;
 }
 
 .chats-message[data-own="true"] {
   align-self: flex-end;
-  border-color: #c8ff00;
-  border-radius: 16px 16px 4px 16px;
+  border: 0;
   background: #c8ff00;
 }
 
@@ -1319,17 +1319,61 @@
 .chats-message p {
   margin: 0;
   min-width: 0;
+  color: #1a1a1a;
   font-size: 14px;
   font-weight: 400;
-  line-height: 1.45;
+  line-height: 1.7;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
-.chats-message time {
-  align-self: flex-end;
-  flex: none;
+.chats-message p::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.chats-message__meta {
+  display: inline-flex;
+  float: right;
+  position: relative;
+  top: calc((1.7em - 16px) / 2);
+  z-index: 1;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 0 10px;
   color: #797979;
+}
+
+.chats-message > .chats-message__meta:not(.chats-message__meta--overlay) {
+  align-self: flex-end;
+  float: none;
+  top: 0;
+  margin: 0;
+}
+
+.chats-message[data-own="true"] .chats-message__meta {
+  color: #1a1a1a;
+}
+
+.chats-message__meta--overlay {
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  top: auto;
+  float: none;
+  z-index: 1;
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 55%);
+}
+
+.chats-message[data-own="true"] .chats-message__meta--overlay {
+  color: #fff;
+}
+
+.chats-message__meta time {
+  color: inherit;
   font-size: 11px;
   font-weight: 600;
   line-height: 16px;
@@ -1337,8 +1381,19 @@
   white-space: nowrap;
 }
 
-.chats-message[data-own="true"] time {
-  color: #1a1a1a;
+.chats-message__ticks {
+  display: block;
+  width: 12px;
+  height: 8px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: url("/images/chat/check-sent.svg") center / contain no-repeat;
+  mask: url("/images/chat/check-sent.svg") center / contain no-repeat;
+}
+
+.chats-message__ticks[data-read="true"] {
+  -webkit-mask: url("/images/chat/check-read.svg") center / contain no-repeat;
+  mask: url("/images/chat/check-read.svg") center / contain no-repeat;
 }
 
 .chats-message-images {
@@ -1374,6 +1429,18 @@
   cursor: pointer;
 }
 
+.chats-message--media .chats-message-images__item::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 44px;
+  background: linear-gradient(to top, rgb(0 0 0 / 45%), transparent);
+  pointer-events: none;
+}
+
 .chats-message-images[data-count="1"] .chats-message-images__item {
   width: fit-content;
   max-width: min(320px, 78vw);
@@ -1406,37 +1473,18 @@
   object-fit: cover;
 }
 
-.chats-message-images__meta {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 28px 8px 7px;
-  background: linear-gradient(to top, rgb(0 0 0 / 45%), transparent);
-  pointer-events: none;
-}
-
 .chats-message-images__tag {
+  position: absolute;
+  left: 8px;
+  bottom: 7px;
+  z-index: 1;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   text-shadow: 0 1px 2px rgb(0 0 0 / 55%);
-}
-
-.chats-message-images__time {
-  margin-left: auto;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 55%);
+  pointer-events: none;
 }
 
 .chats-message-images__spinner {
@@ -1911,7 +1959,7 @@
 
   .chats-messages {
     margin: 8px 12px;
-    padding: 8px 12px 8px 0;
+    padding: 8px 12px 24px 0;
   }
 
   .chats-swap-preview {

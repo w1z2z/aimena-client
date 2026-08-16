@@ -19,14 +19,47 @@ function formatBytes(size?: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function ChatMessageTicks({ read }: { read: boolean }) {
+  return (
+    <span
+      className="chats-message__ticks"
+      data-read={read ? "true" : undefined}
+      aria-label={read ? "Прочитано" : "Отправлено"}
+    />
+  );
+}
+
+function ChatMessageMeta({
+  time,
+  iso,
+  read,
+  pending,
+  overlay,
+}: {
+  time: string;
+  iso: string;
+  read: boolean;
+  pending?: boolean;
+  overlay?: boolean;
+}) {
+  return (
+    <span className={overlay ? "chats-message__meta chats-message__meta--overlay" : "chats-message__meta"}>
+      <time dateTime={iso}>{pending ? "…" : time}</time>
+      <ChatMessageTicks read={!pending && read} />
+    </span>
+  );
+}
+
 export function ChatMessageBubble({
   message,
   isOwn,
   pending,
+  read,
 }: {
   message: ChatMessage;
   isOwn: boolean;
   pending?: boolean;
+  read?: boolean;
 }) {
   const attachments = message.attachments ?? [];
   const images = useMemo(
@@ -41,9 +74,19 @@ export function ChatMessageBubble({
   const hasText = Boolean(message.body.trim());
   const mediaOnly = !hasText && images.length > 0 && files.length === 0;
   const timeLabel = formatTime(message.createdAt);
+  const isRead = Boolean(isOwn && read);
   const listingDocLabel = images.some((item) => item.sourceListingId)
     ? "Документ объявления"
     : null;
+  const meta = (
+    <ChatMessageMeta
+      time={timeLabel}
+      iso={message.createdAt}
+      read={isRead}
+      pending={pending}
+      overlay={mediaOnly}
+    />
+  );
 
   return (
     <div
@@ -56,8 +99,6 @@ export function ChatMessageBubble({
         .join(" ")}
       data-own={isOwn ? "true" : undefined}
     >
-      {hasText ? <p>{message.body}</p> : null}
-
       {listingDocLabel && mediaOnly ? (
         <span className="chats-message-doc-badge">{listingDocLabel}</span>
       ) : null}
@@ -83,16 +124,14 @@ export function ChatMessageBubble({
                 alt={image.fileName}
                 loading="lazy"
               />
-              <span className="chats-message-images__meta">
-                {image.sourceListingId ? (
-                  <span className="chats-message-images__tag">Документ</span>
-                ) : (
-                  <span />
-                )}
-                <span className="chats-message-images__time">
-                  {pending ? "…" : timeLabel}
-                </span>
-              </span>
+              {mediaOnly && index === images.length - 1 ? (
+                <>
+                  {image.sourceListingId ? (
+                    <span className="chats-message-images__tag">Документ</span>
+                  ) : null}
+                  {meta}
+                </>
+              ) : null}
               {pending ? <span className="chats-message-images__spinner" aria-hidden /> : null}
             </button>
           ))}
@@ -132,7 +171,14 @@ export function ChatMessageBubble({
         </ul>
       ) : null}
 
-      {!mediaOnly ? <time>{pending ? "…" : timeLabel}</time> : null}
+      {hasText ? (
+        <p>
+          {message.body}
+          {meta}
+        </p>
+      ) : !mediaOnly ? (
+        meta
+      ) : null}
 
       {lightboxIndex !== null ? (
         <ChatImageLightbox

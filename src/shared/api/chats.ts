@@ -125,6 +125,7 @@ export type ChatThread = {
   kind: "chat" | "support";
   status: "active" | "read_only_cancelled" | "read_only_reviewed";
   counterpart: ChatProfile;
+  counterpartLastReadAt?: string | null;
   offer: {
     id: string;
     senderId: string;

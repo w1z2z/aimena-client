@@ -122,6 +122,30 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
+function chatDayKey(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+function formatChatDayLabel(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const today = new Date();
+  if (date.toDateString() === today.toDateString()) return "Сегодня";
+
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) return "Вчера";
+
+  const sameYear = date.getFullYear() === today.getFullYear();
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "long",
+    ...(sameYear ? {} : { year: "numeric" }),
+  }).format(date);
+}
+
 function formatListTime(value: string) {
   const date = new Date(value);
   const today = new Date();
@@ -1137,28 +1161,63 @@ function ActiveChatPanel({
           <SwapHeader thread={thread} currentUserId={currentUserId} />
         )}
         <div ref={messagesRef} className="chats-messages">
-          <div className="chats-date-divider">Сегодня</div>
-          {thread.messages.map((messageItem) =>
-            messageItem.type === "system" ? (
-              <p key={messageItem.id} className="chats-system-message">
-                {messageItem.body}
-              </p>
-            ) : (
-              <ChatMessageBubble
-                key={messageItem.id}
-                message={messageItem}
-                isOwn={messageItem.senderId === currentUserId}
-              />
-            ),
-          )}
-          {pendingMessages.map((messageItem) => (
-            <ChatMessageBubble
-              key={messageItem.id}
-              message={messageItem}
-              isOwn
-              pending
-            />
-          ))}
+          {(() => {
+            let lastDay = "";
+            const nodes: ReactNode[] = [];
+
+            const pushDay = (iso: string, key: string) => {
+              const day = chatDayKey(iso);
+              if (!day || day === lastDay) return;
+              lastDay = day;
+              nodes.push(
+                <p key={`day-${day}-${key}`} className="chats-system-message">
+                  {formatChatDayLabel(iso)}
+                </p>,
+              );
+            };
+
+            thread.messages.forEach((messageItem) => {
+              pushDay(messageItem.createdAt, messageItem.id);
+              if (messageItem.type === "system") {
+                nodes.push(
+                  <p key={messageItem.id} className="chats-system-message">
+                    {messageItem.body}
+                  </p>,
+                );
+                return;
+              }
+              nodes.push(
+                <ChatMessageBubble
+                  key={messageItem.id}
+                  message={messageItem}
+                  isOwn={messageItem.senderId === currentUserId}
+                  read={
+                    messageItem.senderId === currentUserId &&
+                    Boolean(
+                      thread.counterpartLastReadAt &&
+                        new Date(thread.counterpartLastReadAt).getTime() >=
+                          new Date(messageItem.createdAt).getTime(),
+                    )
+                  }
+                />,
+              );
+            });
+
+            pendingMessages.forEach((messageItem) => {
+              pushDay(messageItem.createdAt, messageItem.id);
+              nodes.push(
+                <ChatMessageBubble
+                  key={messageItem.id}
+                  message={messageItem}
+                  isOwn
+                  pending
+                  read={false}
+                />,
+              );
+            });
+
+            return nodes;
+          })()}
         </div>
 
         <div className="chats-active-footer">
@@ -1457,6 +1516,18 @@ export function ChatsView() {
     });
 
     const unsubscribeUpdated = onChatThreadUpdated((event) => {
+      if (event.counterpartLastReadAt) {
+        const readAt =
+          typeof event.counterpartLastReadAt === "string"
+            ? event.counterpartLastReadAt
+            : new Date(event.counterpartLastReadAt).toISOString();
+        setThread((current) =>
+          current && current.id === event.threadId
+            ? { ...current, counterpartLastReadAt: readAt }
+            : current,
+        );
+      }
+
       setSummaries((current) => {
         const index = current.findIndex((item) => item.id === event.threadId);
         if (index < 0) {
