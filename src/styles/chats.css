@@ -1247,7 +1247,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 8px 12px 24px 0;
+  padding: 24px 12px 32px 0;
 }
 
 .chats-date-divider {
@@ -1959,7 +1959,7 @@
 
   .chats-messages {
     margin: 8px 12px;
-    padding: 8px 12px 24px 0;
+    padding: 24px 12px 32px 0;
   }
 
   .chats-swap-preview {
