@@ -26,7 +26,7 @@ type SearchSuggestion = {
   title: string;
 };
 
-const HEADER_CATEGORIES_LEFT = 166;
+const HEADER_CATEGORIES_LEFT = 177;
 const HEADER_ACTIONS_LEFT = 1049;
 /** Gap between categories ↔ search and search ↔ «Разместить предложение». */
 const HEADER_SEARCH_SIDE_GAP = 16;
@@ -336,7 +336,7 @@ export function Header() {
       >
         <div className="site-header__backdrop" aria-hidden="true" />
         <div className="site-header__inner relative mx-auto h-full w-full max-w-[1440px]">
-          <div className="absolute left-[3px] top-[5px] flex h-[41px] w-[101px] items-start">
+          <div className="absolute left-0 top-0 flex h-[54px] w-[162px] items-center">
             <Logo tone={logoTone} />
           </div>
 

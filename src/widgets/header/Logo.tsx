@@ -43,12 +43,11 @@ export function Logo({ tone = "brand" }: LogoProps) {
       href="/"
       scroll
       onClick={handleClick}
-      className="inline-flex h-[41px] w-[101px] items-start overflow-hidden"
+      className="inline-flex h-[54px] w-[162px] items-center"
       aria-label="На главную"
     >
       <LogoIcon
-        className={`block h-full w-full object-fill ${tone === "dark" ? "brightness-0" : ""}`}
-        style={{ transform: "translateX(-9px) scale(1.22)", transformOrigin: "left center" }}
+        className={`block h-full w-full object-contain ${tone === "dark" ? "brightness-0" : ""}`}
       />
     </Link>
   );
