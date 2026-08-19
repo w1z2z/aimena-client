@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { getUserDealReviews } from "@/shared/api/deals";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 
 import { pluralRu } from "./constants";
 import {
@@ -40,7 +41,12 @@ export function PublicProfileReviewsPanel() {
   if (reviewsQuery.isLoading && reviews.length === 0) {
     body = <p className="text-[16px] font-semibold text-[#626262]">Загрузка отзывов…</p>;
   } else if (reviewsQuery.isError && reviews.length === 0) {
-    body = <p className="text-[16px] font-semibold text-[#FF2056]">Не удалось загрузить отзывы.</p>;
+    body = (
+      <ErrorBlock
+        title="Не удалось загрузить отзывы"
+        onRetry={() => void reviewsQuery.refetch()}
+      />
+    );
   } else if (reviews.length === 0) {
     body = <p className="text-[16px] font-semibold text-[#626262]">Пока нет отзывов.</p>;
   } else {

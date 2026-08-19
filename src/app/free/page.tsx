@@ -11,6 +11,7 @@ import {
   listingQueryKeys,
   mapApiListingToCard,
 } from "@/entities/listing";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 import { useAuth } from "@/features/auth";
 import { getListings } from "@/shared/api/listings";
 import { Header } from "@/widgets/header/Header";
@@ -68,9 +69,10 @@ export default function FreeGiveawaysPage() {
 
   if (listingsQuery.isError) {
     body = (
-      <p className="favorites-page__status favorites-page__status--error">
-        Не удалось загрузить объявления.
-      </p>
+      <ErrorBlock
+        title="Не удалось загрузить объявления"
+        onRetry={() => void listingsQuery.refetch()}
+      />
     );
   } else if (!listingsQuery.isLoading && listings.length === 0) {
     body = (

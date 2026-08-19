@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { getUserDealHistory } from "@/shared/api/deals";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 
 import { pluralRu } from "./constants";
 import { ProfileDealCard } from "./ProfileDealCard";
@@ -59,7 +60,10 @@ export function PublicProfileDealsPanel() {
     body = <p className="text-[16px] font-semibold text-[#626262]">Загрузка истории обменов…</p>;
   } else if (dealsQuery.isError && deals.length === 0) {
     body = (
-      <p className="text-[16px] font-semibold text-[#FF2056]">Не удалось загрузить историю обменов.</p>
+      <ErrorBlock
+        title="Не удалось загрузить историю обменов"
+        onRetry={() => void dealsQuery.refetch()}
+      />
     );
   } else if (deals.length === 0) {
     body = <p className="text-[16px] font-semibold text-[#626262]">{EMPTY_BY_TYPE[typeFilter]}</p>;

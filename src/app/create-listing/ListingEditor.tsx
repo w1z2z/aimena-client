@@ -16,6 +16,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useAuthGate } from "@/features/auth";
 import { getCategories, getCities, type ApiCategoryNode, type ApiCity } from "@/shared/api/catalog";
 import { ApiError, ensureFreshAccessToken } from "@/shared/api/http";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 import { uploadListingFileViaBackend } from "@/shared/api/media";
 import { compressListingImageForUpload } from "@/shared/lib/compress-image";
 import {
@@ -1368,7 +1369,11 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             Редактирование объявления
           </h1>
           {loadError ? (
-            <p className="m-0 text-[14px] font-normal leading-[170%] text-[#FF2056]">{loadError}</p>
+            <ErrorBlock
+              title="Не удалось загрузить объявление"
+              message={loadError}
+              onRetry={() => window.location.reload()}
+            />
           ) : (
             <p className="m-0 text-[14px] font-semibold leading-[120%] text-[#3D3D3D]">
               Загружаем объявление...

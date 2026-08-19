@@ -14,6 +14,7 @@ import {
 } from "@/entities/listing";
 import { getPublicProfile, getUserListingsBySlug } from "@/shared/api/auth";
 import type { ApiListingCard } from "@/shared/api/listings";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 
 import { pluralRu } from "./constants";
 import {
@@ -108,7 +109,10 @@ export function PublicProfileListingsPanel() {
     );
   } else if (listingsQuery.isError && listings.length === 0) {
     body = (
-      <p className="text-[16px] font-semibold text-[#FF2056]">Не удалось загрузить объявления.</p>
+      <ErrorBlock
+        title="Не удалось загрузить объявления"
+        onRetry={() => void listingsQuery.refetch()}
+      />
     );
   } else if (listings.length === 0) {
     body = (

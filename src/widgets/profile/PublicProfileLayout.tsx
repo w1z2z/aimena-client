@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth";
 import { getPublicProfile } from "@/shared/api/auth";
 import { ApiError } from "@/shared/api/http";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 import { Header } from "@/widgets/header/Header";
 
 import type { PublicProfileSection } from "./constants";
@@ -86,15 +87,16 @@ export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
     return (
       <div className="min-h-screen bg-[#F8F8F5]">
         <Header />
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col items-start gap-4 px-6 pb-12 pt-18">
-          <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
-            {notFound ? "Профиль не найден" : "Не удалось загрузить профиль"}
-          </h1>
-          <p className="text-[16px] font-semibold text-[#626262]">
-            {notFound
-              ? "Такого пользователя нет или профиль недоступен."
-              : "Попробуйте обновить страницу чуть позже."}
-          </p>
+        <div className="mx-auto w-full max-w-[1440px] px-6 pb-12 pt-18">
+          <ErrorBlock
+            title={notFound ? "Профиль не найден" : "Не удалось загрузить профиль"}
+            message={
+              notFound
+                ? "Такого пользователя нет или профиль недоступен."
+                : "Попробуйте обновить страницу чуть позже."
+            }
+            onRetry={notFound ? undefined : () => void profileQuery.refetch()}
+          />
         </div>
       </div>
     );

@@ -13,6 +13,7 @@ import {
 import { useAuth, useAuthGate } from "@/features/auth";
 import { createExchangeOffer } from "@/shared/api/deals";
 import { ApiError } from "@/shared/api/http";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 import {
   getListing,
   getMyListings,
@@ -375,7 +376,10 @@ export function ExchangeOfferView() {
       <main className="exchange-offer-main">
         {loading ? <div className="exchange-offer-state">Загружаем предложение…</div> : null}
         {!loading && error && !target ? (
-          <div className="exchange-offer-state exchange-offer-state--error">{error}</div>
+          <ErrorBlock
+            title={error}
+            onRetry={() => window.location.reload()}
+          />
         ) : null}
         {!loading && target ? (
           <>

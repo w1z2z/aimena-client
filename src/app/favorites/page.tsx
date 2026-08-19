@@ -10,6 +10,7 @@ import {
   ListingCardSkeletonGrid,
   mapApiListingToCard,
 } from "@/entities/listing";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 import { useAuth } from "@/features/auth";
 import { favoriteQueryKeys } from "@/features/favorites";
 import { getFavorites, removeInactiveFavorites } from "@/shared/api/favorites";
@@ -89,9 +90,10 @@ export default function FavoritesPage() {
     );
   } else if (isAuthenticated && favoritesQuery.isError) {
     body = (
-      <p className="favorites-page__status favorites-page__status--error">
-        Не удалось загрузить избранное.
-      </p>
+      <ErrorBlock
+        title="Не удалось загрузить избранное"
+        onRetry={() => void favoritesQuery.refetch()}
+      />
     );
   } else if (isAuthenticated && !favoritesQuery.isLoading && listings.length === 0) {
     body = (

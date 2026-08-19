@@ -16,6 +16,7 @@ import { useAuthGate } from "@/features/auth";
 import { ApiError } from "@/shared/api/http";
 import { requestOpenHomeFilters } from "@/shared/lib/home-open-filters";
 import { LocationPinIcon } from "@/shared/ui/icons/LocationPinIcon";
+import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 import { Header } from "@/widgets/header/Header";
 
 import { ListingActionsMenu } from "./ListingActionsMenu";
@@ -251,9 +252,10 @@ export function ListingDetailView() {
         ) : null}
 
         {isError && !notFound ? (
-          <p className="listing-detail-page__status">
-            Не удалось загрузить объявление. Попробуйте обновить страницу.
-          </p>
+          <ErrorBlock
+            title="Не удалось загрузить объявление"
+            onRetry={() => window.location.reload()}
+          />
         ) : null}
 
         {listing ? (
