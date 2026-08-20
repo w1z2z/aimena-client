@@ -35,6 +35,6 @@ export function mapBackendUserToAuthUser(user: BackendUserMe): AuthUser {
     ratingCount: user.profile?.ratingCount ?? 0,
     createdAt: user.createdAt ?? null,
     showCompletedListings: user.profile?.showCompletedListings ?? true,
-    hidePersonalData: user.profile?.hidePersonalData ?? false,
+    hidePersonalData: user.profile?.hidePersonalData ?? true,
   };
 }
