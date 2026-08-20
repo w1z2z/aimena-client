@@ -89,17 +89,13 @@ export default function RegisterConfirmPage() {
           <>
             <div className="flex w-full flex-col items-center gap-[8px]">
               <p className="mb-0">
-                Необходимо подтвердить вашу почту для дальнейшей авторизации.
-              </p>
-              <p className="mb-0">
-                Отправили письмо с ссылкой на подтверждение
                 {email ? (
                   <>
-                    {" "}
-                    на <span className="font-semibold text-[#1A1A1A]">{email}</span>
+                    Письмо со ссылкой отправлено на{" "}
+                    <span className="font-semibold text-[#1A1A1A]">{email}</span>
                   </>
                 ) : (
-                  " на указанную почту"
+                  "Отправили письмо со ссылкой для подтверждения"
                 )}
               </p>
             </div>

@@ -57,10 +57,19 @@ type BackendUserMeResponse = {
   user: BackendUserMe;
 };
 
-export function registerUser(email: string, password: string) {
+export function registerUser(
+  email: string,
+  password: string,
+  options: { marketingConsent?: boolean; acceptTerms?: boolean } = {},
+) {
   return httpRequest<{ message: string }>("/auth/register", {
     method: "POST",
-    body: { email, password },
+    body: {
+      email,
+      password,
+      acceptTerms: options.acceptTerms ?? true,
+      marketingConsent: options.marketingConsent ?? false,
+    },
     withCredentials: true,
   });
 }

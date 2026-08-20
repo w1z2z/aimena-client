@@ -33,7 +33,11 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ needsOnboarding: boolean }>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    options?: { marketingConsent?: boolean },
+  ) => Promise<void>;
   logout: () => Promise<void>;
   completeOnboarding: (categories: string[], cityId: string | null) => Promise<void>;
   markOnboardingSkipped: () => void;
@@ -228,9 +232,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { needsOnboarding: !nextUser.onboardingCompleted };
   }, [persistUser]);
 
-  const register = useCallback(async (email: string, password: string) => {
-    await registerUser(email, password);
-  }, []);
+  const register = useCallback(
+    async (email: string, password: string, options?: { marketingConsent?: boolean }) => {
+      await registerUser(email, password, {
+        acceptTerms: true,
+        marketingConsent: options?.marketingConsent ?? false,
+      });
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     try {

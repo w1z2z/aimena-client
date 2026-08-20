@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 
 type AuthLinkProps = {
   href: string;
@@ -7,6 +7,7 @@ type AuthLinkProps = {
   className?: string;
   /** Inline legal links (14px Manrope) vs nav links (18px Golos Text). */
   variant?: "nav" | "inline";
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
 };
 
 export function AuthLink({
@@ -14,6 +15,7 @@ export function AuthLink({
   children,
   className,
   variant = "nav",
+  onClick,
 }: AuthLinkProps) {
   const variantClassName =
     variant === "inline"
@@ -21,7 +23,11 @@ export function AuthLink({
       : "auth-link--nav font-[family-name:var(--font-golos)] text-[18px] font-normal leading-none tracking-[-0.01em]";
 
   return (
-    <Link href={href} className={`auth-link ${variantClassName} ${className ?? ""}`}>
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`auth-link ${variantClassName} ${className ?? ""}`}
+    >
       {children}
     </Link>
   );

@@ -65,34 +65,16 @@ export function ForgotPasswordSentPanel({
   };
 
   const isCoolingDown = cooldownLeft > 0;
-  const title =
+  const title = "Письмо отправлено";
+  const body =
     variant === "change"
-      ? "Письмо для смены пароля отправлено"
-      : "Письмо для сброса отправлено";
-  const bodyLead =
-    variant === "change"
-      ? "Необходимо зайти в почту для смены пароля."
-      : "Необходимо зайти в почту для сброса пароля.";
-  const bodySent =
-    variant === "change"
-      ? "Отправили письмо со ссылкой для смены пароля"
-      : "Отправили письмо со ссылкой для сброса пароля";
+      ? "Проверьте почту и перейдите по ссылке для смены пароля"
+      : "Проверьте почту и перейдите по ссылке для сброса пароля";
 
   return (
     <AuthMessage title={title}>
       <div className="flex w-full flex-col items-center gap-[8px]">
-        <p className="mb-0">{bodyLead}</p>
-        <p className="mb-0">
-          {bodySent}
-          {email ? (
-            <>
-              {" "}
-              на <span className="font-semibold text-[#1A1A1A]">{email}</span>
-            </>
-          ) : (
-            " на указанную почту"
-          )}
-        </p>
+        <p className="mb-0">{body}</p>
       </div>
 
       {error ? <p className="mb-0 w-full text-center text-[14px] text-[#FF2056]">{error}</p> : null}

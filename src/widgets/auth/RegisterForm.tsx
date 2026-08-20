@@ -20,6 +20,8 @@ export function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,9 +34,14 @@ export function RegisterForm() {
       return;
     }
 
+    if (!acceptTerms) {
+      setError("Примите условия Пользовательского соглашения и Политики конфиденциальности");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await register(email.trim(), password);
+      await register(email.trim(), password, { marketingConsent });
       rememberPendingVerifyEmail(email.trim());
       router.push("/register/confirm");
     } catch (requestError) {
@@ -84,26 +91,51 @@ export function RegisterForm() {
             onChange={(event) => setConfirmPassword(event.target.value)}
             required
           />
+
+          <div className="flex w-full max-w-[508px] flex-col gap-[12px]">
+            <label className="auth-checkbox">
+              <input
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(event) => setAcceptTerms(event.target.checked)}
+                required
+              />
+              <span>
+                Принимаю условия{" "}
+                <AuthLink
+                  href="/terms"
+                  variant="inline"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  Пользовательского соглашения
+                </AuthLink>{" "}
+                и{" "}
+                <AuthLink
+                  href="/privacy"
+                  variant="inline"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  Политики конфиденциальности
+                </AuthLink>
+              </span>
+            </label>
+
+            <label className="auth-checkbox">
+              <input
+                type="checkbox"
+                checked={marketingConsent}
+                onChange={(event) => setMarketingConsent(event.target.checked)}
+              />
+              <span>Согласен получать новости и предложения от сервиса</span>
+            </label>
+          </div>
+
           {error ? <p className="w-full text-center text-[14px] text-[#FF2056]">{error}</p> : null}
         </AuthFormFields>
 
-        <div className="flex w-full flex-col items-center gap-[24px]">
-          <AuthButton type="submit" disabled={isSubmitting}>
-            Зарегистрироваться
-          </AuthButton>
-
-          <p className="max-w-[494px] text-center font-[family-name:var(--font-manrope)] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">
-            Регистрируясь, вы соглашаетесь с{" "}
-            <AuthLink href="/terms" variant="inline">
-              Правилами пользования сервисом
-            </AuthLink>{" "}
-            и{" "}
-            <AuthLink href="/privacy" variant="inline">
-              Политикой конфиденциальности
-            </AuthLink>{" "}
-            и даёте согласие на получение рассылок.
-          </p>
-        </div>
+        <AuthButton type="submit" disabled={isSubmitting || !acceptTerms}>
+          Зарегистрироваться
+        </AuthButton>
       </form>
 
       <AuthLink href="/login">У меня есть аккаунт</AuthLink>

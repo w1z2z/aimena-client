@@ -209,3 +209,33 @@
 .auth-city-select.site-select--field .site-select__clear {
   color: #626262;
 }
+
+/* Registration consent checkboxes */
+.auth-checkbox {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 170%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.auth-checkbox input[type="checkbox"] {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+  accent-color: #8e8bed;
+  cursor: pointer;
+}
+
+.auth-checkbox span {
+  min-width: 0;
+}
+

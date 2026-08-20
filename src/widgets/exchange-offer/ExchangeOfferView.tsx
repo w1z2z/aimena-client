@@ -205,7 +205,7 @@ function TargetListing({ listing }: { listing: ApiListingDetail }) {
       </div>
 
       <div className="exchange-offer-wants">
-        <h3>Желает взамен</h3>
+        <h3>Обмен на</h3>
         {listing.isFree ? (
           <>
             <div>
@@ -425,7 +425,7 @@ export function ExchangeOfferView() {
                 aria-disabled={isFreeOffer || undefined}
               >
                 <div className="exchange-offer-title">
-                  <h1>Вот это</h1>
+                  <h1>Вы предлагаете</h1>
                   <span>{isFreeOffer ? "Даром" : `Выбрано: ${selectedIds.length}`}</span>
                 </div>
                 <div
@@ -455,7 +455,7 @@ export function ExchangeOfferView() {
                       <input
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
-                        placeholder="Слишком много? Поможем найти нужное"
+                        placeholder="Найти среди своих объявлений"
                       />
                     </label>
                     <div className="exchange-offer-list">
@@ -484,8 +484,8 @@ export function ExchangeOfferView() {
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   maxLength={1000}
-                  placeholder="Сообщение владельцу…"
-                  aria-label="Сообщение владельцу"
+                  placeholder="Предложите условия обмена или задайте вопрос"
+                  aria-label="Предложите условия обмена или задайте вопрос"
                 />
               </section>
 
@@ -494,7 +494,7 @@ export function ExchangeOfferView() {
               </div>
 
               <div className="exchange-offer-result">
-                <h1>{isFreeOffer ? "Хочу получить это" : "Хочу обменять на это"}</h1>
+                <h1>Хотите получить</h1>
                 <TargetListing listing={target} />
               </div>
             </div>

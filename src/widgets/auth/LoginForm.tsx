@@ -57,7 +57,7 @@ export function LoginForm() {
       <AuthTitle>Вход</AuthTitle>
 
       <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-[48px]">
-        <AuthFormFields subtitle="Введите почту, которая привязана к аккаунту">
+        <AuthFormFields subtitle="Введите данные аккаунта">
           <AuthInput
             label="Email"
             type="email"

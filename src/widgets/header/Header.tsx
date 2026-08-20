@@ -28,7 +28,7 @@ type SearchSuggestion = {
 
 const HEADER_CATEGORIES_LEFT = 177;
 const HEADER_ACTIONS_LEFT = 1049;
-/** Gap between categories ↔ search and search ↔ «Разместить предложение». */
+/** Gap between categories ↔ search and search ↔ «Разместить объявление». */
 const HEADER_SEARCH_SIDE_GAP = 16;
 const HEADER_SEARCH_ICON_SIZE = 32;
 const HEADER_CATEGORIES_WIDTH_FALLBACK = 178;
@@ -500,7 +500,7 @@ export function Header() {
 
           <div className="absolute left-[1049px] top-[11px] flex h-[32px] items-center justify-end gap-[16px]">
             <ButtonPrimary className="w-[243px]" onClick={handleCreateListing}>
-              Разместить предложение
+              Разместить объявление
             </ButtonPrimary>
 
             {isAuthenticated && user ? (

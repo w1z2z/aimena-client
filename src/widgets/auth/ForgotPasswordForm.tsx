@@ -26,13 +26,13 @@ const COPY: Record<
 > = {
   forgot: {
     title: "Забыли пароль?",
-    subtitle: "Введите почту, которая привязана к аккаунту для сброса пароля",
+    subtitle: "Введите почту, чтобы сбросить пароль",
     submit: "Сбросить пароль",
     sentPath: "/forgot-password/sent",
   },
   change: {
     title: "Сменить пароль",
-    subtitle: "Введите почту, которая привязана к аккаунту для смены пароля",
+    subtitle: "Введите почту, чтобы сменить пароль",
     submit: "Сменить пароль",
     sentPath: "/change-password/sent",
   },

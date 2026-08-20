@@ -11,13 +11,13 @@ export const registrationPromptCopy: Record<
   { subtitle: string }
 > = {
   "create-listing": {
-    subtitle: "Авторизуйтесь, чтобы создавать объявления",
+    subtitle: "Авторизуйтесь, чтобы создать объявление",
   },
   favorites: {
     subtitle: "Авторизуйтесь, чтобы добавлять в избранное",
   },
   chat: {
-    subtitle: "Авторизуйтесь, чтобы общаться с людьми",
+    subtitle: "Авторизуйтесь, чтобы начать общение",
   },
   "propose-exchange": {
     subtitle: "Авторизуйтесь, чтобы предложить обмен",

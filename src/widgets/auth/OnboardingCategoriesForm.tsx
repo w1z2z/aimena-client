@@ -67,13 +67,12 @@ export function OnboardingCategoriesForm() {
 
   return (
     <AuthCard>
-      <AuthTitle className="max-w-[536px]">Выберите любимые категории</AuthTitle>
+      <AuthTitle className="max-w-[536px]">Что вас интересует?</AuthTitle>
 
       <div className="flex w-full max-w-[540px] flex-col items-center gap-[24px] self-stretch">
         <div className="flex w-full flex-col items-center gap-[24px]">
           <AuthSubtitle className="max-w-[454px]">
-            Введите категории, которые вам нравятся, чтобы мы могли лучше подобрать вам лучшие
-            предложения
+            Выберите категории для персональных рекомендаций
           </AuthSubtitle>
 
           <div className="auth-category-grid">

@@ -69,7 +69,7 @@ export function AboutPageView() {
                   <path d="M5 1V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   <path d="M1 5H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
-                <span>Разместить предложение</span>
+                <span>Разместить объявление</span>
               </Link>
               <Link href="/listings" className={styles.ctaGhost}>
                 Смотреть каталог

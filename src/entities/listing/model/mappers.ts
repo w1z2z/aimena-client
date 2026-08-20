@@ -68,9 +68,9 @@ export function buildWantsPreview(listing: WantsSource): string[] {
 
 export const EXTRA_PAY_LABELS: Record<ApiListingDetail["extraPay"], string> = {
   none: "Без доплаты",
-  i_pay: "Готов доплатить",
-  they_pay: "Хочу доплату",
-  both: "В обе стороны",
+  i_pay: "Могу доплатить",
+  they_pay: "Приму доплату",
+  both: "По договоренности",
 };
 
 export function mapApiListingToCard(listing: ApiListingCard): ListingCardData {

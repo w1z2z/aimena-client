@@ -67,7 +67,7 @@ export function OnboardingCityForm() {
 
       <div className="flex w-full max-w-[508px] flex-col items-center gap-[24px]">
         <AuthSubtitle className="max-w-[476px]">
-          Укажите город, чтобы вам попадались объявления поближе к вам
+          Покажем объявления рядом с вами
         </AuthSubtitle>
 
         <SelectField
