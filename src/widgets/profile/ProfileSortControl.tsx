@@ -108,17 +108,13 @@ export function ProfileSortControl<T extends string = string>({
           event.stopPropagation();
           setOpen((current) => !current);
         }}
-        className="flex h-7 items-center justify-center gap-2 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white px-3 py-2"
+        className="profile-sort-btn"
       >
-        <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-          Сортировка
-        </span>
+        Сортировка
         <img
           src={PROFILE_ASSETS.sortChevron}
           alt=""
-          className={`h-1 w-2 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`profile-sort-btn__chevron${open ? " is-open" : ""}`}
         />
       </button>
 

@@ -24,6 +24,140 @@
   overflow: visible;
 }
 
+/* Figma btn-sorting — all profile tabs (own + public) */
+.profile-sort-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  flex-grow: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 124px;
+  height: 28px;
+  /* Extra bottom padding lifts Manrope ink when text-box-trim is unsupported */
+  padding: 0 12px 2px;
+  border: 0.5px solid #cacaca;
+  border-radius: 21px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.001em;
+  white-space: nowrap;
+  cursor: pointer;
+  /* Cap-height box so Manrope isn’t optically stuck to the bottom */
+  text-box: trim-both cap alphabetic;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+
+.profile-sort-btn__chevron {
+  display: block;
+  flex: none;
+  width: 10px;
+  height: 6px;
+  /* Same optical level as Manrope after bottom padding / text-box-trim */
+  margin-top: 2px;
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-sort-btn__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-sort-btn__chevron {
+    transition: none;
+  }
+}
+
+/* Profile sidebar avatar — Figma: 158×158, radius 49, lilac 0.5 #8E8BED */
+.profile-avatar {
+  box-sizing: border-box;
+  position: relative;
+  flex: none;
+  flex-grow: 0;
+  width: 158px;
+  height: 158px;
+  overflow: hidden;
+  border: 0.5px solid #8e8bed;
+  border-radius: 49px;
+  z-index: 1;
+}
+
+.profile-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar__fallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background: #cacaca;
+  color: #1a1a1a;
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Profile left nav — active border 2px, items gap 24px (set on <nav>) */
+.profile-nav-item {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 67px;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid transparent;
+  border-radius: 21px;
+  background: #ffffff;
+  padding: 12px 24px;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.014px;
+  transition: background-color 150ms ease;
+}
+
+.profile-nav-item:hover {
+  background: #f8f8f5;
+}
+
+.profile-nav-item--active {
+  border-color: transparent;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
+}
+
+.profile-nav-item--active:hover {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
+}
+
+.profile-nav-item--disabled {
+  cursor: not-allowed;
+  color: #626262;
+  opacity: 0.6;
+}
+
+.profile-nav-item--disabled:hover {
+  background: #ffffff;
+}
+
 /* Same sliding mode-switch as home filters */
 .profile-sort-switch {
   position: relative;

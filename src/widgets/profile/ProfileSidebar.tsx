@@ -27,13 +27,11 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
   return (
     <aside className="flex w-full max-w-[342px] shrink-0 flex-col items-stretch gap-6">
       <div className="relative flex flex-col items-center gap-9 overflow-hidden rounded-[31px] bg-white p-6">
-        <div className="relative size-[158px] shrink-0 overflow-hidden rounded-[49px] border-[0.5px] border-solid border-[#8E8BED]">
+        <div className="profile-avatar">
           {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt="" className="size-full object-cover" />
+            <img src={user.avatarUrl} alt="" />
           ) : (
-            <div className="flex size-full items-center justify-center bg-[#cacaca] text-[48px] font-extrabold text-[#1A1A1A]">
-              {user.avatarInitial}
-            </div>
+            <div className="profile-avatar__fallback">{user.avatarInitial}</div>
           )}
         </div>
 
@@ -92,7 +90,7 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
         </p>
       </div>
 
-      <nav className="flex w-full flex-col gap-3">
+      <nav className="flex w-full flex-col gap-6">
         {PROFILE_NAV.map((item) => {
           const isActive = item.id === active;
           return (
@@ -101,8 +99,8 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
               href={item.href}
               className={
                 isActive
-                  ? "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] border-2 border-solid border-transparent bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] [background:linear-gradient(#fff,#fff)_padding-box,linear-gradient(90deg,#8E8BED_0%,#c8ff02_100%)_border-box]"
-                  : "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition hover:bg-[#f8f8f5]"
+                  ? "profile-nav-item profile-nav-item--active"
+                  : "profile-nav-item"
               }
             >
               <span className="relative size-6 shrink-0 overflow-hidden">

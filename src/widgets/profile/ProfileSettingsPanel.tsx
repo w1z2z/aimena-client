@@ -34,7 +34,7 @@ export function ProfileSettingsPanel() {
   const [cityId, setCityId] = useState("");
   const [pinnedCity, setPinnedCity] = useState<SelectOption | null>(null);
   const [showCompleted, setShowCompleted] = useState(true);
-  const [hidePersonal, setHidePersonal] = useState(true);
+  const [hidePersonal, setHidePersonal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [privacySaving, setPrivacySaving] = useState<"showCompleted" | "hidePersonal" | null>(
     null,
@@ -261,7 +261,9 @@ export function ProfileSettingsPanel() {
             </p>
             <div className="flex items-center gap-3">
               <div className={CREDENTIALS_FIELD_CLASS}>
-                <p className="break-all">{user.email}</p>
+                <p className="break-all">
+                  {hidePersonal ? "••••••••••••••••" : user.email}
+                </p>
               </div>
               <button
                 type="button"
