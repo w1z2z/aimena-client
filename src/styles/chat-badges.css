@@ -20,7 +20,7 @@
   min-width: 32px;
   height: 16px;
   padding: 0 6px;
-  background-color: #c8ff00;
+  background-color: #c8ff02;
   color: #1a1a1a !important;
 }
 
@@ -67,7 +67,7 @@
 .unread-dot--fab {
   right: 10px;
   top: 10px;
-  box-shadow: 0 0 0 1px #c8ff00;
+  box-shadow: 0 0 0 1px #c8ff02;
 }
 
 .unread-dot--avatar {

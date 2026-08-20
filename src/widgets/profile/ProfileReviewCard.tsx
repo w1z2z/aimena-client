@@ -71,7 +71,7 @@ export function ProfileReviewCard({ review, compact = false }: ProfileReviewCard
           </div>
         </div>
         {!compact ? (
-          <p className="shrink-0 text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#636363]">
+          <p className="shrink-0 text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
             {formatProfileDate(review.date)}
           </p>
         ) : null}

@@ -242,7 +242,7 @@ export function ProfileSettingsPanel() {
           <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
             Настройки профиля
           </h1>
-          <p className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">
+          <p className="text-[14px] font-normal leading-[1.7] text-[#626262]">
             Управляйте данными аккаунта и настройками приватности.
           </p>
         </div>
@@ -250,7 +250,7 @@ export function ProfileSettingsPanel() {
 
       <div className="flex flex-col gap-6">
         <form className="flex flex-col gap-6" onSubmit={handleSave}>
-        <div className="flex flex-col gap-6 rounded-[31px] bg-[#C8FF00] p-6">
+        <div className="flex flex-col gap-6 rounded-[31px] bg-[#c8ff02] p-6">
           <h2 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#626262]">
             Учётные данные
           </h2>
@@ -352,7 +352,7 @@ export function ProfileSettingsPanel() {
                 <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
                   {isUploadingAvatar ? "Загрузка…" : "Загрузить фото"}
                 </span>
-                <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#969D9D]">
+                <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#626262]">
                   JPEG, PNG, WebP до 2 МБ
                 </span>
               </button>
@@ -432,7 +432,7 @@ export function ProfileSettingsPanel() {
       <button
         type="button"
         onClick={() => void handleLogout()}
-        className="flex h-[67px] w-full items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white text-[14px] font-semibold tracking-[0.014px] text-[#FF2056] transition hover:bg-[#FFF5F7]"
+        className="flex h-[67px] w-full items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white text-[14px] font-semibold tracking-[0.014px] text-[#FF2056] transition hover:bg-[#fff2f5]"
       >
         <LogoutIcon className="h-[18px] w-[18px] text-[#FF2056]" />
         Выйти из аккаунта

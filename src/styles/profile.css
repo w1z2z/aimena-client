@@ -145,14 +145,14 @@
   height: 32px;
   padding: 4px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #f2f4f7;
   color: #1a1a1a;
   cursor: pointer;
 }
 
 .profile-listing-menu__trigger:hover {
-  background: #e8eaee;
+  background: #cacaca;
 }
 
 .profile-listing-menu__panel {
@@ -451,7 +451,7 @@ a.profile-deal-card__partner-name:hover {
 
 .profile-deal-card__action:hover {
   border-color: #8e8bed;
-  background: #fafaff;
+  background: #f0e8ff;
   color: #8e8bed;
 }
 
@@ -461,7 +461,7 @@ a.profile-deal-card__partner-name:hover {
 }
 
 .profile-deal-card__action.is-primary {
-  background: #c8ff00;
+  background: #c8ff02;
 }
 
 .profile-deal-card__action.is-primary:hover {
@@ -495,7 +495,7 @@ a.profile-deal-card__partner-name:hover {
   height: 80px;
   overflow: hidden;
   border-radius: 21px;
-  background: #ebebeb;
+  background: #cacaca;
 }
 
 .profile-deal-thumb__image {
@@ -526,7 +526,7 @@ a.profile-deal-card__partner-name:hover {
   border: 3px solid #fff;
   border-radius: 14px;
   object-fit: cover;
-  background: #ebebeb;
+  background: #cacaca;
 }
 
 .profile-deal-thumb__stack-count {

@@ -24,7 +24,7 @@
 
 .favorites-page__count {
   margin: 12px 0 0;
-  color: #3d3d3d;
+  color: #626262;
   font-family: var(--font-manrope), sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -83,7 +83,7 @@
 }
 
 .favorites-page__clear-inactive:hover:not(:disabled) {
-  background: #fafafa;
+  background: #f8f8f5;
   border-color: #8e8bed;
 }
 

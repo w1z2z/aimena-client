@@ -14,7 +14,7 @@
   border-radius: 31px;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
 }
 
 /* Auth form inputs — Figma input 0.5px #CACACA / radius 18 */

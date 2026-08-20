@@ -107,10 +107,10 @@ export function HeaderCategoriesDropdown({
         aria-haspopup="dialog"
         aria-controls={panelId}
         onClick={() => setOpen((current) => !current)}
-        className={`flex h-[32px] items-center justify-center gap-[8px] rounded-[36px] border border-solid px-[24px] py-[8px] text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition-colors ${
+        className={`flex h-[32px] cursor-pointer items-center justify-center gap-[8px] rounded-[36px] border border-solid px-[24px] py-[8px] text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition-colors ${
           open
-            ? "border-[#8E8BED] bg-[#F3F2FF]"
-            : "border-[#CACACA] bg-white hover:bg-[#FAFAFA]"
+            ? "border-[#8E8BED] bg-[#f0e8ff]"
+            : "border-[#CACACA] bg-white hover:bg-[#f8f8f5]"
         }`}
       >
         Все категории
@@ -155,7 +155,7 @@ export function HeaderCategoriesDropdown({
                     key={parent.id}
                     type="button"
                     role="listitem"
-                    className={`header-categories-menu__parent${isActive ? " is-active" : ""}`}
+                    className={`header-categories-menu__parent cursor-pointer${isActive ? " is-active" : ""}`}
                     onMouseEnter={() => setHoveredParentId(parent.id)}
                     onFocus={() => setHoveredParentId(parent.id)}
                     onClick={() => selectCategory(parent.id)}
@@ -185,7 +185,7 @@ export function HeaderCategoriesDropdown({
                   key={child.id}
                   type="button"
                   role="listitem"
-                  className="header-categories-menu__child"
+                  className="header-categories-menu__child cursor-pointer"
                   onClick={() => selectCategory(hoveredParent.id, child.id)}
                 >
                   {child.name}

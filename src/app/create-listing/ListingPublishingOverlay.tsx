@@ -40,7 +40,7 @@ export function ListingPublishingOverlay({
       aria-live="polite"
       aria-label={title}
     >
-      <div className="flex w-full max-w-[360px] flex-col items-center gap-4 rounded-[24px] bg-white px-8 py-10 text-center shadow-[0_16px_48px_rgba(15,23,42,0.18)]">
+      <div className="flex w-full max-w-[360px] flex-col items-center gap-4 rounded-[21px] bg-white px-8 py-10 text-center shadow-[0_16px_48px_rgba(15,23,42,0.18)]">
         <span
           className="box-border h-10 w-10 animate-spin rounded-full border-[3px] border-[#E8E8EE] border-t-[#8E8BED]"
           aria-hidden

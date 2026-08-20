@@ -15,7 +15,7 @@ export function FreePromoBanner() {
         <h3 className="flex h-[31px] items-center text-[40px] font-bold leading-[40px] tracking-[-0.005em] text-[#1A1A1A]">
           Всё даром
         </h3>
-        <p className="flex w-full items-center text-[14px] font-normal leading-[170%] text-[#3D3D3D]">
+        <p className="flex w-full items-center text-[14px] font-normal leading-[170%] text-[#626262]">
           Люди отдают всё что угодно. Просто так.
         </p>
       </div>

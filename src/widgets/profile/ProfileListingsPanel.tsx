@@ -146,7 +146,7 @@ export function ProfileListingsPanel() {
         <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
           Ваши объявления
         </h1>
-        <p className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">{countLabel}</p>
+        <p className="text-[14px] font-normal leading-[1.7] text-[#626262]">{countLabel}</p>
       </div>
 
       {/* 48px от счётчика до карточек; сортировка — 8px над сеткой */}

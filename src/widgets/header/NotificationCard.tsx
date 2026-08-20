@@ -37,7 +37,7 @@ function NotificationAvatar({
       <div
         className={[
           "flex size-full items-center justify-center overflow-hidden rounded-[15px] text-[14px] font-extrabold text-[#1A1A1A]",
-          isSupport ? "bg-[#1A1A1A] text-[22px] leading-none" : "bg-[#D9D9D9]",
+          isSupport ? "bg-[#1A1A1A] text-[22px] leading-none" : "bg-[#cacaca]",
         ].join(" ")}
       >
         {imageUrl && !isSupport ? (

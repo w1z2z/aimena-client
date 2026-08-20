@@ -156,7 +156,7 @@ export function PublicProfileListingsPanel() {
         <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
           Объявления
         </h1>
-        <p className="text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">{countLabel}</p>
+        <p className="text-[14px] font-normal leading-[1.7] text-[#626262]">{countLabel}</p>
       </div>
 
       <div className="relative mt-12 w-full overflow-visible">

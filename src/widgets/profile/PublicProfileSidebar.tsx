@@ -48,7 +48,7 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
           {profile.avatarUrl ? (
             <img src={profile.avatarUrl} alt="" className="size-full object-cover" />
           ) : (
-            <div className="flex size-full items-center justify-center bg-[#D9D9D9] text-[48px] font-extrabold text-[#1A1A1A]">
+            <div className="flex size-full items-center justify-center bg-[#cacaca] text-[48px] font-extrabold text-[#1A1A1A]">
               {avatarInitial}
             </div>
           )}
@@ -65,7 +65,7 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
           </div>
 
           {profile.city ? (
-            <div className="flex items-center justify-center gap-2 rounded-[16px] border-[0.5px] border-solid border-[#CACACA] bg-white px-5 py-2">
+            <div className="flex items-center justify-center gap-2 rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-white px-5 py-2">
               <img src={PROFILE_ASSETS.pin} alt="" className="h-[12px] w-[9px]" />
               <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
                 {profile.city.name}
@@ -74,7 +74,7 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
           ) : null}
 
           {profile.bio ? (
-            <p className="max-w-[270px] text-center text-[14px] font-normal leading-[1.7] text-[#3D3D3D]">
+            <p className="max-w-[270px] text-center text-[14px] font-normal leading-[1.7] text-[#626262]">
               {profile.bio}
             </p>
           ) : null}
@@ -123,11 +123,11 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
           const dealsHidden =
             item.id === "deals" && !profile.showCompletedListings;
           const activeClass =
-            "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] border-2 border-solid border-transparent bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] [background:linear-gradient(#fff,#fff)_padding-box,linear-gradient(90deg,#8E8BED_0%,#C8FF00_100%)_border-box]";
+            "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] border-2 border-solid border-transparent bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] [background:linear-gradient(#fff,#fff)_padding-box,linear-gradient(90deg,#8E8BED_0%,#c8ff02_100%)_border-box]";
           const idleClass =
-            "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition hover:bg-[#FAFAFA]";
+            "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition hover:bg-[#f8f8f5]";
           const disabledClass =
-            "relative flex h-[67px] w-full cursor-not-allowed items-center gap-3 rounded-[21px] bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#969D9D] opacity-60";
+            "relative flex h-[67px] w-full cursor-not-allowed items-center gap-3 rounded-[21px] bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#626262] opacity-60";
 
           if (dealsHidden) {
             return (
@@ -150,7 +150,7 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
                 <span
                   id="deals-history-hidden-hint"
                   role="tooltip"
-                  className="pointer-events-none absolute left-1/2 top-full z-40 mt-2 w-[min(100%,280px)] -translate-x-1/2 rounded-[16px] bg-[#1A1A1A] px-3 py-2 text-center text-[12px] font-semibold leading-[1.35] text-white opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.18)] transition-opacity duration-150 group-hover:opacity-100"
+                  className="pointer-events-none absolute left-1/2 top-full z-40 mt-2 w-[min(100%,280px)] -translate-x-1/2 rounded-[18px] bg-[#1A1A1A] px-3 py-2 text-center text-[12px] font-semibold leading-[1.35] text-white opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.18)] transition-opacity duration-150 group-hover:opacity-100"
                 >
                   Пользователь скрыл историю обменов в настройках приватности.
                 </span>

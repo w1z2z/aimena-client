@@ -15,33 +15,43 @@
 @theme {
   --color-brand: #1a1a1a;
   --color-accent: #8e8bed;
-  --color-lime: #c8ff00;
+  --color-accent-dark: #7f7cdd;
+  --color-accent-light: #f0e8ff;
+  --color-lime: #c8ff02;
+  --color-lime-light: #e0ffb8;
   --color-surface: #f8f8f5;
   --color-surface-muted: #f0e8ff;
+  --color-surface-light: #f2f4f7;
   --color-text-primary: #1a1a1a;
-  --color-text-secondary: #3d3d3d;
+  --color-text-secondary: #626262;
   --color-text-muted: #626262;
   --color-border: #cacaca;
+  --color-success: #0d7200;
+  --color-error: #ff2056;
+  --color-error-hover: #ba0833;
+  --color-error-bg: #fff2f5;
   --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
+  --radius-md: 18px;
+  --radius-lg: 21px;
+  --radius-xl: 31px;
   --spacing-card: 342px;
   --spacing-container-home: 1441px;
   --max-width-container-home: 1441px;
 }
 
 :root {
-  --color-bg-page: #f6f8fb;
+  --color-bg-page: #f8f8f5;
   --color-bg-surface: #ffffff;
-  --color-bg-muted: #eef2f7;
-  --color-text-primary: #111827;
-  --color-text-secondary: #4b5563;
-  --color-border: #d1d5db;
-  --color-accent: #2563eb;
-  --color-accent-soft: #dbeafe;
+  --color-bg-muted: #f2f4f7;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #626262;
+  --color-border: #cacaca;
+  --color-accent: #8e8bed;
+  --color-accent-soft: #f0e8ff;
   --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-lg: 21px;
+  --radius-xl: 31px;
   --shadow-sm: 0 1px 2px rgb(15 23 42 / 8%);
   --shadow-md: 0 12px 30px rgb(15 23 42 / 8%);
   --container-lg: 1440px;
@@ -123,7 +133,7 @@ a.auth-link--nav {
 }
 
 a.auth-link:hover {
-  color: #7a77e0;
+  color: #7f7cdd;
 }
 
 button,
@@ -141,6 +151,7 @@ input[type="range"] {
 button {
   -webkit-appearance: none;
   appearance: none;
+  cursor: pointer;
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),

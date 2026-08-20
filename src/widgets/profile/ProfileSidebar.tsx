@@ -31,7 +31,7 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
           {user.avatarUrl ? (
             <img src={user.avatarUrl} alt="" className="size-full object-cover" />
           ) : (
-            <div className="flex size-full items-center justify-center bg-[#D9D9D9] text-[48px] font-extrabold text-[#1A1A1A]">
+            <div className="flex size-full items-center justify-center bg-[#cacaca] text-[48px] font-extrabold text-[#1A1A1A]">
               {user.avatarInitial}
             </div>
           )}
@@ -47,7 +47,7 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
             ) : null}
           </div>
 
-          <div className="flex items-center justify-center gap-2 rounded-[16px] border-[0.5px] border-solid border-[#CACACA] bg-white px-5 py-2">
+          <div className="flex items-center justify-center gap-2 rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-white px-5 py-2">
             <img src={PROFILE_ASSETS.pin} alt="" className="h-[12px] w-[9px]" />
             <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
               {user.city ?? "Город не указан"}
@@ -101,8 +101,8 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
               href={item.href}
               className={
                 isActive
-                  ? "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] border-2 border-solid border-transparent bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] [background:linear-gradient(#fff,#fff)_padding-box,linear-gradient(90deg,#8E8BED_0%,#C8FF00_100%)_border-box]"
-                  : "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition hover:bg-[#FAFAFA]"
+                  ? "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] border-2 border-solid border-transparent bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] [background:linear-gradient(#fff,#fff)_padding-box,linear-gradient(90deg,#8E8BED_0%,#c8ff02_100%)_border-box]"
+                  : "relative flex h-[67px] w-full items-center gap-3 rounded-[21px] bg-white px-6 py-3 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A] transition hover:bg-[#f8f8f5]"
               }
             >
               <span className="relative size-6 shrink-0 overflow-hidden">

@@ -15,7 +15,7 @@ const tickerItems = [
 
 function TickerPin({ label }: { label: string }) {
   return (
-    <div className="home-ticker-pin flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] rounded-[16.327px] bg-[#C8FF00] px-[18px] py-[12px]">
+    <div className="home-ticker-pin flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] rounded-[16.327px] bg-[#c8ff02] px-[18px] py-[12px]">
       <span className="whitespace-nowrap text-center text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
         {label}
       </span>

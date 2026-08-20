@@ -6,7 +6,7 @@ type HeaderDropdownPanelProps = ComponentPropsWithoutRef<"div"> & {
 
 const gradientBorderStyle: CSSProperties = {
   background:
-    "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
+    "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
 };
 
 export function HeaderDropdownPanel({ children, className, style, ...props }: HeaderDropdownPanelProps) {

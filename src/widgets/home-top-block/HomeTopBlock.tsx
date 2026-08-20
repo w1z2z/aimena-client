@@ -131,7 +131,7 @@ export function HomeTopBlock() {
                   className="pointer-events-none absolute left-1/2 z-20 w-max -translate-x-1/2 text-center text-[24px] font-extrabold leading-[32px] tracking-[-0.072px] text-white"
                   style={{ top: "981px" }}
                 >
-                  Почему <span className="text-[#C8FF00]">Aimena</span>?
+                  Почему <span className="text-[#c8ff02]">Aimena</span>?
                 </p>
 
                 <TickerCarousel />

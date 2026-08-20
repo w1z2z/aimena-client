@@ -13,7 +13,7 @@ export function ErrorBlock({
 }: ErrorBlockProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[#F3F2FF]">
+      <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[#f0e8ff]">
         <svg
           width="28"
           height="28"
@@ -32,7 +32,7 @@ export function ErrorBlock({
         <button
           type="button"
           onClick={onRetry}
-          className="mt-6 inline-flex h-[40px] items-center justify-center rounded-[36px] bg-[#8E8BED] px-7 text-[14px] font-semibold !text-white transition-colors hover:bg-[#7A77E0]"
+          className="mt-6 inline-flex h-[40px] items-center justify-center rounded-[36px] bg-[#8E8BED] px-7 text-[14px] font-semibold !text-white transition-colors hover:bg-[#7f7cdd]"
         >
           Попробовать снова
         </button>

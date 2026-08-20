@@ -14,7 +14,7 @@ const STATUS_BADGE: Record<
   { bg: string; icon: string; label: string }
 > = {
   successful: {
-    bg: "bg-[#C8FF00]",
+    bg: "bg-[#c8ff02]",
     icon: PROFILE_ASSETS.swapAlt,
     label: "Успешный обмен",
   },

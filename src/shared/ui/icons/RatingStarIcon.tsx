@@ -35,7 +35,7 @@ export function RatingStarIcon({ className, ...props }: IconProps) {
           gradientUnits="userSpaceOnUse"
         >
           <stop stopColor="#8E8BED" />
-          <stop offset="1" stopColor="#C8FF00" />
+          <stop offset="1" stopColor="#c8ff02" />
         </linearGradient>
       </defs>
     </svg>

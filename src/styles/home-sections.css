@@ -86,7 +86,7 @@
   padding: 28px;
   gap: 24px;
   border-radius: 31px;
-  background: #c8ff00;
+  background: #c8ff02;
 }
 
 .home-exchange-cta__title,
@@ -364,7 +364,7 @@
   border-radius: 27px;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
   padding: 24px;
   opacity: 0;
   transform: translateY(-8px);
@@ -502,7 +502,7 @@
   top: 50%;
   z-index: 1;
   transform: translateY(-50%);
-  color: #3d3d3d;
+  color: #626262;
   font-family: var(--font-manrope), sans-serif;
   font-size: 14px;
   font-weight: 400;

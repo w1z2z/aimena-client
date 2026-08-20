@@ -356,7 +356,7 @@ export function Header() {
             <div className="h-full w-full overflow-hidden">
               {showExpandedSearch ? (
                 <div
-                  className={`site-header-search flex h-full w-full items-center gap-[9px] rounded-[36px] border-[0.5px] border-solid px-[8px] transition-[border-color,background-color,color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+                  className={`site-header-search flex h-full w-full items-center gap-[9px] rounded-[31px] border-[0.3px] border-solid px-[8px] transition-[border-color,background-color,color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
                     isSearchClosing
                       ? "border-[#8E8BED] bg-white text-[#1A1A1A]"
                       : "site-header-search-field border-[#CACACA]"
@@ -457,7 +457,7 @@ export function Header() {
                   type="button"
                   aria-label="Поиск"
                   onClick={handleSearchToggle}
-                  className="flex h-[32px] w-[32px] items-center justify-center rounded-[36px] border-[0.5px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#fafaff]"
+                  className="flex h-[32px] w-[32px] items-center justify-center rounded-[31px] border-[0.3px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#f0e8ff]"
                 >
                   <SearchIcon className="h-[16px] w-[16px]" />
                 </button>
@@ -469,7 +469,7 @@ export function Header() {
             (isSearchLoading || searchQuery.trim().length >= 2) ? (
               <div className="site-header-search site-header-search-dropdown absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
                 {isSearchLoading ? (
-                  <p className="px-[12px] py-[10px] text-[14px] text-[#3D3D3D]">Ищем...</p>
+                  <p className="px-[12px] py-[10px] text-[14px] text-[#626262]">Ищем...</p>
                 ) : searchSuggestions.length > 0 ? (
                   <ul className="max-h-[260px] overflow-y-auto">
                     {searchSuggestions.map((suggestion, index) => (
@@ -482,7 +482,7 @@ export function Header() {
                             setSearchQuery(suggestion.title);
                             applyHomeFeedSearch(suggestion.title);
                           }}
-                          className={`block w-full px-[12px] py-[10px] text-left text-[14px] text-[#3D3D3D] outline-none transition hover:bg-[#1A1A1A]/6 focus:outline-none focus-visible:outline-none ${
+                          className={`block w-full px-[12px] py-[10px] text-left text-[14px] text-[#626262] outline-none transition hover:bg-[#1A1A1A]/6 focus:outline-none focus-visible:outline-none ${
                             index === activeSearchSuggestionIndex ? "bg-[#1A1A1A]/6" : ""
                           }`}
                         >
@@ -492,7 +492,7 @@ export function Header() {
                     ))}
                   </ul>
                 ) : searchQuery.trim().length >= 2 ? (
-                  <p className="px-[12px] py-[10px] text-[14px] text-[#3D3D3D]">Ничего не найдено</p>
+                  <p className="px-[12px] py-[10px] text-[14px] text-[#626262]">Ничего не найдено</p>
                 ) : null}
               </div>
             ) : null}

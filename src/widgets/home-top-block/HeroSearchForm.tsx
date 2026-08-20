@@ -44,7 +44,7 @@ function HeroBackgroundStar({ className, gradientId }: { className: string; grad
       <defs>
         <linearGradient id={gradientId} x1="-45.875" y1="94.1588" x2="50.4352" y2="220.512" gradientUnits="userSpaceOnUse">
           <stop stopColor="#8E8BED" />
-          <stop offset="1" stopColor="#C8FF00" />
+          <stop offset="1" stopColor="#c8ff02" />
         </linearGradient>
       </defs>
     </svg>
@@ -183,7 +183,7 @@ function LabeledInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white px-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[#3D3D3D]"
+        className="h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white px-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[#626262]"
       />
     </div>
   );
@@ -210,7 +210,7 @@ function HeroPriceInput({
     <div className="w-[250px] flex-1">
       <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Примерная стоимость</p>
       <div className="relative">
-        <span className="pointer-events-none absolute left-[12px] top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#3D3D3D]">
+        <span className="pointer-events-none absolute left-[12px] top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]">
           ~
         </span>
         <input
@@ -220,7 +220,7 @@ function HeroPriceInput({
           value={formattedPrice}
           onChange={(event) => setPrice(extractPriceDigits(event.target.value))}
           placeholder="0"
-          className="h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white pl-[28px] pr-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[#3D3D3D]"
+          className="h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white pl-[28px] pr-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[#626262]"
           aria-label="Примерная стоимость"
         />
         <span
@@ -231,7 +231,7 @@ function HeroPriceInput({
           {formattedPrice || "0"}
         </span>
         <span
-          className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#3D3D3D]"
+          className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]"
           style={{ left: `calc(28px + ${priceTextWidth}px + 4px)` }}
         >
           руб.
@@ -310,7 +310,7 @@ function FilterChip({
       type="button"
       tabIndex={tabIndex}
       onClick={onClick}
-      className={`flex h-[25px] shrink-0 items-center justify-center whitespace-nowrap rounded-[16px] border-[0.5px] px-[12px] text-[12px] font-medium leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
+      className={`flex h-[25px] shrink-0 items-center justify-center whitespace-nowrap rounded-[18px] border-[0.5px] px-[12px] text-[12px] font-medium leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
         active
           ? "border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
           : "border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
@@ -530,7 +530,7 @@ export function ModeFormColumn({
 
   return (
     <div className="flex h-[552px] w-[952px] flex-col gap-[24px]">
-      <div className="h-[264px] w-full rounded-[31px] bg-[#C8FF00] p-[24px]">
+      <div className="h-[264px] w-full rounded-[31px] bg-[#c8ff02] p-[24px]">
         <div className="mb-[48px] flex items-center justify-between">
           <div>
             <ModeHeading isExchange={isExchange} />

@@ -344,7 +344,7 @@ function getDocPhotoGridLayout(photoCount: number) {
 }
 
 const EXCHANGE_FIELD_INPUT_CLASS =
-  "box-border h-[50px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] px-3 py-[11px] text-[14px] font-normal leading-[140%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[140%] placeholder:text-[#3D3D3D]";
+  "box-border h-[50px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] px-3 py-[11px] text-[14px] font-normal leading-[140%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[140%] placeholder:text-[#626262]";
 
 const SECTION_TITLE_CLASS =
   "m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#626262]";
@@ -355,7 +355,7 @@ const PHOTO_UPLOAD_LABEL_CLASS =
 
 function PlaceholderImage() {
   return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8 text-[#5F6677]" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg viewBox="0 0 24 24" className="h-8 w-8 text-[#626262]" fill="none" stroke="currentColor" strokeWidth="1.8">
       <rect x="3" y="4" width="18" height="16" rx="2.5" />
       <circle cx="9" cy="10" r="1.8" />
       <path d="M5.5 17l4.6-4.8a1.3 1.3 0 011.9 0L14.6 15l1.7-1.7a1.3 1.3 0 011.9 0L20 15.2" />
@@ -370,7 +370,7 @@ function PdfPlaceholder({ label }: { label?: string }) {
         PDF
       </span>
       {label ? (
-        <span className="line-clamp-2 text-[11px] font-medium leading-[130%] text-[#3D3D3D]">
+        <span className="line-clamp-2 text-[11px] font-medium leading-[130%] text-[#626262]">
           {label}
         </span>
       ) : null}
@@ -474,7 +474,7 @@ function AddPhotoCard({
       onClick={onClick}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className="aspect-square w-full rounded-[12px] border border-dashed border-[#D1D8E7] bg-[#FAFBFE] text-[13px] font-semibold text-[#636B7D]"
+      className="aspect-square w-full rounded-[12px] border border-dashed border-[#cacaca] bg-[#ffffff] text-[13px] font-semibold text-[#626262]"
     >
       {label}
     </button>
@@ -1375,7 +1375,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
               onRetry={() => window.location.reload()}
             />
           ) : (
-            <p className="m-0 text-[14px] font-semibold leading-[120%] text-[#3D3D3D]">
+            <p className="m-0 text-[14px] font-semibold leading-[120%] text-[#626262]">
               Загружаем объявление...
             </p>
           )}
@@ -1395,13 +1395,13 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             <h1 className="m-0 text-[40px] font-bold leading-[40px] tracking-[-0.005em] text-[#1A1A1A]">
               {isEditMode ? "Редактирование объявления" : "Создание объявления"}
             </h1>
-            <p className="mb-5 mt-2 text-[14px] font-semibold leading-[120%] tracking-[-0.002em] text-[#3D3D3D]">
+            <p className="mb-5 mt-2 text-[14px] font-semibold leading-[120%] tracking-[-0.002em] text-[#626262]">
               {isEditMode
                 ? "Обновите данные объявления и сохраните изменения"
                 : "Создавайте объявления, чтобы обмениваться с другими"}
             </p>
           </div>
-          <div className="mt-1 rounded-[15px] bg-[linear-gradient(135deg,#8E8BED_0%,#C8FF00_100%)] p-[1px]">
+          <div className="mt-1 rounded-[15px] bg-[linear-gradient(135deg,#8E8BED_0%,#c8ff02_100%)] p-[1px]">
             <div className="relative box-border inline-flex h-[42px] w-[212px] items-center gap-[4px] rounded-[15px] border-0 bg-[#F2F4F7] p-[4px]">
               <span
                 aria-hidden="true"
@@ -1431,7 +1431,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </div>
         </section>
 
-        <section className="rounded-[16px] bg-[#C8FF00] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+        <section className="rounded-[18px] bg-[#c8ff02] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
           <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
             Основная информация*
           </h2>
@@ -1446,7 +1446,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                   clearError("title");
                 }}
                 placeholder={`Наименование вашей ${listingTypeName}`}
-                className="h-11 rounded-[18px] border-[0.5px] border-[#C4D86F] bg-white px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
+                className="h-11 rounded-[18px] border-[0.5px] border-[#C4D86F] bg-white px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#626262]"
               />
               <FieldError message={errors.title} />
             </div>
@@ -1534,7 +1534,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </div>
         </section>
 
-        <section id={fieldAnchorId("photos")} className="rounded-[16px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+        <section id={fieldAnchorId("photos")} className="rounded-[18px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
           <h3 className={SECTION_TITLE_CLASS}>Добавить фото (до 10 фото)*</h3>
           <p className={`mt-4 ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить фото</p>
           <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>PNG, JPG, WebP до 5 МБ каждое</p>
@@ -1595,7 +1595,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           <FieldError message={errors.photos} />
         </section>
 
-        <section className="rounded-[16px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+        <section className="rounded-[18px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
           <h3 className={SECTION_TITLE_CLASS}>Дополнительная информация</h3>
 
           <div id={fieldAnchorId("description")}>
@@ -1709,7 +1709,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                 равноценный обмен)
               </p>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#3D3D3D]">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]">
                   ~
                 </span>
                 <input
@@ -1722,7 +1722,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     setPriceDigits(nextDigits);
                   }}
                   placeholder="0"
-                  className="h-11 w-full rounded-[12px] border border-[#E2E6EF] bg-[#F6F7FB] pl-6 pr-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#3D3D3D]"
+                  className="h-11 w-full rounded-[12px] border border-[#cacaca] bg-[#f2f4f7] pl-6 pr-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#626262]"
                 />
                 <span
                   ref={priceMeasureRef}
@@ -1732,7 +1732,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                   {formattedPrice || "0"}
                 </span>
                 <span
-                  className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#3D3D3D]"
+                  className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]"
                   style={{ left: `calc(1.5rem + ${priceTextWidth}px + 0.25rem)` }}
                 >
                   руб.
@@ -1768,8 +1768,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         </section>
 
         <section
-          className={`create-listing-free-section rounded-[16px] p-6 shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${
-            isFree ? "is-on bg-[#C8FF00]" : "bg-white"
+          className={`create-listing-free-section rounded-[18px] p-6 shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${
+            isFree ? "is-on bg-[#c8ff02]" : "bg-white"
           }`}
         >
           <div className="flex items-center justify-between gap-6">
@@ -1791,7 +1791,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </div>
         </section>
 
-        <section className="rounded-[16px] bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+        <section className="rounded-[18px] bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
           <div className="flex items-center justify-between gap-6">
             <div className="min-w-0">
               <h3 className={SECTION_TITLE_CLASS}>Желаемый обмен</h3>
@@ -1937,7 +1937,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                               onClick={() => addWantsTag(item.value)}
                               className={`block w-full rounded-[8px] px-3 py-2 text-left text-[13px] leading-[120%] ${
                                 item.isCreateAction
-                                  ? "bg-[#F3F2FF] text-[#1A1A1A]"
+                                  ? "bg-[#f0e8ff] text-[#1A1A1A]"
                                   : "text-[#1A1A1A] hover:bg-[#F8F8F5]"
                               }`}
                             >
@@ -1956,7 +1956,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
         <section
           id={fieldAnchorId("documents")}
-          className="rounded-[16px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+          className="rounded-[18px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
         >
           <h3 className={SECTION_TITLE_CLASS}>
             Добавить документы, сертификаты, дипломы (до 5 файлов)

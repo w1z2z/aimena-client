@@ -1,5 +1,5 @@
 .listing-detail-page__status {
-  color: #3d3d3d;
+  color: #626262;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
@@ -224,7 +224,7 @@
   aspect-ratio: 1 / 1;
   width: 100%;
   border-radius: 31px;
-  background: #d8d8d8;
+  background: #cacaca;
 }
 
 .listing-detail-gallery__open {
@@ -271,7 +271,7 @@
   width: 52px;
   height: 52px;
   border: 0.5px solid #cacaca;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #fff;
   cursor: pointer;
 }
@@ -318,7 +318,7 @@
   height: 24px;
   padding: 8px 12px;
   gap: 10px;
-  border-radius: 33px;
+  border-radius: 31px;
   background: #8e8bed;
   color: #fff;
   font-family: var(--font-manrope), Manrope, sans-serif;
@@ -352,7 +352,7 @@
   padding: 0;
   border: 0.5px solid transparent;
   border-radius: 21px;
-  background: #d8d8d8;
+  background: #cacaca;
   cursor: pointer;
 }
 
@@ -409,7 +409,7 @@
   width: 52px;
   height: 52px;
   border: 0.5px solid #cacaca;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #fff;
   color: #1a1a1a;
   cursor: pointer;
@@ -455,7 +455,7 @@
   min-width: 40px;
   height: 24px;
   padding: 0 12px;
-  border-radius: 33px;
+  border-radius: 31px;
   background: #8e8bed;
   color: #fff;
   font-family: var(--font-manrope), Manrope, sans-serif;
@@ -491,7 +491,7 @@
   overflow: hidden;
   width: 62px;
   height: 62px;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #1a1a1a;
   flex-shrink: 0;
 }
@@ -603,7 +603,7 @@
   display: flex;
   flex-direction: column;
   padding: 24px;
-  border: 0.5px solid #d8ffb0;
+  border: 0.5px solid #e0ffb8;
   border-radius: 31px;
   background: #fff;
 }
@@ -717,7 +717,7 @@
   padding: 24px;
   border: 0.5px solid #cacaca;
   border-radius: 21px;
-  background: #c8ff00;
+  background: #c8ff02;
 }
 
 .listing-detail-stat--price,
@@ -864,7 +864,7 @@
 
 .listing-detail-similar__status {
   margin: 0;
-  color: #3d3d3d;
+  color: #626262;
   font-size: 14px;
   font-weight: 500;
 }
@@ -989,7 +989,7 @@
   .listing-detail-gallery__thumb {
     width: 72px;
     height: 72px;
-    border-radius: 16px;
+    border-radius: 18px;
   }
 }
 
@@ -1287,7 +1287,7 @@
   z-index: 2;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%);
+  background: linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%);
   padding: 3px;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -1372,7 +1372,7 @@
   z-index: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%);
+  background: linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%);
   padding: 1px;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -1488,7 +1488,7 @@
 .listing-detail-skeleton__avatar {
   width: 52px;
   height: 52px;
-  border-radius: 16px;
+  border-radius: 18px;
 }
 
 .listing-detail-skeleton__owner-meta {

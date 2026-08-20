@@ -27,13 +27,13 @@ export default function Error({
           <button
             type="button"
             onClick={reset}
-            className="inline-flex h-[44px] items-center justify-center rounded-[36px] bg-[#8E8BED] px-8 text-[15px] font-semibold !text-white transition-colors hover:bg-[#7A77E0]"
+            className="inline-flex h-[44px] items-center justify-center rounded-[36px] bg-[#8E8BED] px-8 text-[15px] font-semibold !text-white transition-colors hover:bg-[#7f7cdd]"
           >
             Попробовать снова
           </button>
           <Link
             href="/"
-            className="inline-flex h-[44px] items-center justify-center rounded-[36px] border border-[#CACACA] bg-white px-8 text-[15px] font-semibold text-[#1A1A1A] transition-colors hover:bg-[#F5F5F5]"
+            className="inline-flex h-[44px] items-center justify-center rounded-[36px] border border-[#CACACA] bg-white px-8 text-[15px] font-semibold text-[#1A1A1A] transition-colors hover:bg-[#f2f4f7]"
           >
             На главную
           </Link>

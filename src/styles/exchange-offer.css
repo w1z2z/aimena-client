@@ -54,7 +54,7 @@ a.exchange-offer-profile:hover {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 19px;
+  border-radius: 18px;
   object-fit: cover;
 }
 
@@ -127,7 +127,7 @@ a.exchange-offer-profile:hover {
   padding: 7px 12px;
   border: 0.5px solid #cacaca;
   border-radius: 39px;
-  background: #c8ff00;
+  background: #c8ff02;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
@@ -138,7 +138,7 @@ a.exchange-offer-profile:hover {
   padding: 8px 12px;
   border: 0.5px solid #ff2056;
   border-radius: 31px;
-  background: #ffd4de;
+  background: #fff2f5;
   color: #ff2056;
   font-size: 14px;
   font-weight: 600;
@@ -147,7 +147,7 @@ a.exchange-offer-profile:hover {
 
 .exchange-offer-balance[data-balanced="true"] {
   border-color: #8e8bed;
-  background: #efffc0;
+  background: #e0ffb8;
   color: #1a1a1a;
 }
 
@@ -218,7 +218,7 @@ a.exchange-offer-profile:hover {
   border-color: transparent;
   background:
     linear-gradient(#fff, #fff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
 }
 
 .exchange-offer-own-card__image {
@@ -228,12 +228,12 @@ a.exchange-offer-profile:hover {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 19px;
+  border-radius: 18px;
   object-fit: cover;
 }
 
 .exchange-offer-image-placeholder {
-  background: linear-gradient(135deg, #f0e8ff, #c8ff00);
+  background: linear-gradient(135deg, #f0e8ff, #c8ff02);
   color: #1a1a1a;
   font-size: 24px;
   font-weight: 800;
@@ -292,7 +292,7 @@ a.exchange-offer-profile:hover {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: 19px;
+  border-radius: 18px;
   background: #1a1a1a;
   color: #fff;
   line-height: 0;
@@ -311,7 +311,7 @@ a.exchange-offer-profile:hover {
 }
 
 .exchange-offer-choice.is-free .exchange-offer-title > span {
-  background: #e8e8e8;
+  background: #cacaca;
   border-color: #cacaca;
   color: #626262;
 }
@@ -328,7 +328,7 @@ a.exchange-offer-profile:hover {
   padding: 32px 24px;
   border: 0.5px dashed #cacaca;
   border-radius: 31px;
-  background: #e8e8e8;
+  background: #cacaca;
   text-align: center;
 }
 
@@ -372,7 +372,7 @@ a.exchange-offer-profile:hover {
   justify-content: center;
   border: 0.8px solid #cacaca;
   border-radius: 21px;
-  background: #c8ff00;
+  background: #c8ff02;
 }
 
 .exchange-offer-swap svg {
@@ -439,7 +439,7 @@ a.exchange-offer-profile:hover {
   gap: 12px;
   padding: 20px 24px;
   border-radius: 21px;
-  background: #c8ff00;
+  background: #c8ff02;
   font-size: 14px;
   font-weight: 600;
 }
@@ -507,7 +507,7 @@ a.exchange-offer-profile:hover {
   margin-top: 24px;
   padding: 16px 24px;
   border-radius: 21px;
-  background: #c8ff00;
+  background: #c8ff02;
   font-size: 14px;
   font-weight: 600;
 }

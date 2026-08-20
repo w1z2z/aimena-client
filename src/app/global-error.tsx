@@ -16,7 +16,7 @@ export default function GlobalError({
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "'Manrope', Arial, sans-serif",
-          background: "#f6f8fb",
+          background: "#f8f8f5",
           color: "#1A1A1A",
           textAlign: "center",
           padding: "24px",

@@ -97,7 +97,7 @@ function ChatPanelRow({
     >
       <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
         <span
-          className="relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] bg-[#D9D9D9] text-[14px] font-extrabold text-[#1A1A1A]"
+          className="relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] bg-[#cacaca] text-[14px] font-extrabold text-[#1A1A1A]"
         >
           {item.counterpart.avatarUrl ? (
             // Storage URL is dynamic and configured by the API.
@@ -123,7 +123,7 @@ function ChatPanelRow({
       </span>
 
       <span className="flex shrink-0 flex-col items-end gap-[8px]">
-        <span className="text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#797979]">
+        <span className="text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
           {formatListTime(item.updatedAt)}
         </span>
         {item.unreadCount > 0 ? (
@@ -141,7 +141,7 @@ function PanelDivider({ top }: { top: number }) {
       className="pointer-events-none absolute left-0 z-[2] h-px w-[303px]"
       style={{
         top,
-        background: "linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%)",
+        background: "linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%)",
       }}
     />
   );
@@ -290,7 +290,7 @@ export function FloatingChat() {
             className="absolute left-0 top-[4px] box-border h-[513px] w-[303px] rounded-[31px] border-2 border-solid border-transparent px-[24px] pt-[24px]"
             style={{
               background:
-                "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
+                "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
             }}
           >
             <div className="flex h-[406px] w-[255px] flex-col items-start gap-[48px]">
@@ -352,7 +352,7 @@ export function FloatingChat() {
         className="pointer-events-auto relative box-border flex size-[52px] shrink-0 items-center justify-center overflow-visible rounded-[19px] border-2 border-solid border-transparent p-[12px] transition hover:brightness-95 [-webkit-transform:translateZ(0)] [transform:translateZ(0)]"
         style={{
           background:
-            "linear-gradient(#C8FF00, #C8FF00) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
+            "linear-gradient(#c8ff02, #c8ff02) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
         }}
       >
         {hasUnreadConversations && !isOpen ? (

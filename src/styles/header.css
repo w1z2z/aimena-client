@@ -64,6 +64,8 @@
 }
 
 .header-categories-menu__parents {
+  position: relative;
+  z-index: 1;
   border-radius: 18px;
 }
 
@@ -84,7 +86,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 0;
+  border: 0.3px solid transparent;
   border-radius: 10px;
   background: transparent;
   padding: 10px 12px;
@@ -95,19 +97,36 @@
   line-height: 1.2;
   text-align: left;
   cursor: pointer;
-  transition: background-color 160ms ease;
+  user-select: none;
+  transition: background 160ms ease;
 }
 
 .header-categories-menu__parent:hover,
-.header-categories-menu__parent.is-active,
+.header-categories-menu__parent.is-active {
+  cursor: pointer;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
+}
+
 .header-categories-menu__child:hover {
-  background: #f3f2ff;
+  cursor: pointer;
+  background:
+    linear-gradient(#fafafa, #fafafa) padding-box,
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
+}
+
+.header-categories-menu__parent > span,
+.header-categories-menu__parent svg,
+.header-categories-menu__child svg {
+  cursor: pointer;
 }
 
 .header-categories-menu__parent svg,
 .header-categories-menu__child svg {
   flex-shrink: 0;
   color: #8e8bed;
+  pointer-events: none;
 }
 
 .header-categories-menu__status {

@@ -30,7 +30,7 @@
   z-index: 20;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%);
+  background: linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%);
   padding: 3px;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -118,7 +118,7 @@
   height: 342px;
   overflow: hidden;
   isolation: isolate;
-  background: #f4e2ff;
+  background: #f0e8ff;
 }
 
 .home-listing-card__media-link {
@@ -258,7 +258,7 @@
   justify-content: center;
   width: 294px;
   height: 52px;
-  border-radius: 19px;
+  border-radius: 18px;
   overflow: visible;
 }
 

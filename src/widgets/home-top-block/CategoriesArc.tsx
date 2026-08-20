@@ -221,7 +221,7 @@ function CategoryArcGlass() {
 
         <path
           d={CATEGORY_GLOW_ARC_PATH}
-          stroke="#D9D9D9"
+          stroke="#cacaca"
           strokeWidth={360}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -231,7 +231,7 @@ function CategoryArcGlass() {
 
         <path
           d={CATEGORY_GLOW_ARC_PATH}
-          stroke="#D9D9D9"
+          stroke="#cacaca"
           strokeWidth={72}
           strokeLinecap="round"
           strokeLinejoin="round"

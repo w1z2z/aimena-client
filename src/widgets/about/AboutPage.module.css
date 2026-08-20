@@ -57,7 +57,7 @@
 .heroLead {
   margin: 0;
   max-width: 42ch;
-  color: #3d3d3d;
+  color: #626262;
   font-size: 18px;
   font-weight: 500;
   line-height: 1.45;
@@ -94,7 +94,7 @@
 }
 
 .ctaPrimary {
-  background: #c8ff00;
+  background: #c8ff02;
   color: #1a1a1a;
 }
 
@@ -121,7 +121,7 @@
 }
 
 .ctaGhost:hover {
-  background: #fafaff;
+  background: #f0e8ff;
 }
 
 .heroVisual {
@@ -195,7 +195,7 @@
 
 .sectionHead p {
   margin: 0;
-  color: #3d3d3d;
+  color: #626262;
   font-size: 17px;
   font-weight: 500;
   line-height: 1.45;
@@ -212,7 +212,7 @@
   min-height: 180px;
   padding: 28px 24px;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 21px;
 }
 
 .type h3 {
@@ -236,16 +236,16 @@
   height: 36px;
   margin-bottom: 20px;
   border-radius: 10px;
-  background: linear-gradient(143deg, #8e8bed 33%, #c8ff00 72%);
+  background: linear-gradient(143deg, #8e8bed 33%, #c8ff02 72%);
   transform: rotate(18deg);
 }
 
 .type--lilac {
-  background: #edecfb;
+  background: #f0e8ff;
 }
 
 .type--lime {
-  background: #f3ffb8;
+  background: #e0ffb8;
 }
 
 .type--ink {
@@ -283,7 +283,7 @@
   padding: 6px 12px;
   border-radius: 999px;
   background: #1a1a1a;
-  color: #c8ff00;
+  color: #c8ff02;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -298,7 +298,7 @@
 
 .flowBody p {
   margin: 0;
-  color: #3d3d3d;
+  color: #626262;
   font-size: 15px;
   font-weight: 500;
   line-height: 1.45;
@@ -314,8 +314,8 @@
   margin-top: 40px;
   padding: 28px 8px 32px;
   overflow: visible;
-  border-radius: 24px;
-  background: linear-gradient(120deg, #edecfb 0%, #f8f8f5 45%, #f3ffb8 100%);
+  border-radius: 21px;
+  background: linear-gradient(120deg, #f0e8ff 0%, #f8f8f5 45%, #e0ffb8 100%);
 }
 
 .chartItem {
@@ -358,7 +358,7 @@
 }
 
 .chartDotAccent {
-  background: #c8ff00;
+  background: #c8ff02;
   box-shadow: 0 0 0 6px rgb(200 255 0 / 28%);
 }
 
@@ -370,7 +370,7 @@
   height: 3px;
   margin-top: -1.5px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8e8bed, #c8ff00);
+  background: linear-gradient(90deg, #8e8bed, #c8ff02);
   opacity: 0.7;
   pointer-events: none;
 }
@@ -398,7 +398,7 @@
 
 .splitIntro p {
   margin: 0;
-  color: #3d3d3d;
+  color: #626262;
   font-size: 17px;
   font-weight: 500;
   line-height: 1.45;
@@ -431,7 +431,7 @@
   padding: 14px 16px;
   border-radius: 18px;
   background: #ffffff;
-  box-shadow: inset 0 0 0 1px #e8e8e4;
+  box-shadow: inset 0 0 0 1px #cacaca;
 }
 
 .featureItem strong {
@@ -445,7 +445,7 @@
 
 .featureItem p {
   margin: 0;
-  color: #3d3d3d;
+  color: #626262;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
@@ -465,18 +465,18 @@
 }
 
 .featureIconLilac {
-  background: #edecfb;
+  background: #f0e8ff;
   color: #8e8bed;
 }
 
 .featureIconLime {
-  background: #f3ffb8;
+  background: #e0ffb8;
   color: #1a1a1a;
 }
 
 .featureIconInk {
   background: #1a1a1a;
-  color: #c8ff00;
+  color: #c8ff02;
 }
 
 .splitVisual {
@@ -489,7 +489,7 @@
   padding: 24px;
   overflow: hidden;
   border-radius: 28px;
-  background: #edecfb;
+  background: #f0e8ff;
 }
 
 .splitVisual img:first-child {
@@ -526,13 +526,13 @@
   flex-direction: column;
   gap: 8px;
   padding: 24px;
-  border-radius: 20px;
+  border-radius: 21px;
   background: #fff;
-  box-shadow: inset 0 0 0 1px #e8e8e4;
+  box-shadow: inset 0 0 0 1px #cacaca;
   font-size: 15px;
   font-weight: 500;
   line-height: 1.45;
-  color: #3d3d3d;
+  color: #626262;
 }
 
 .safetyGrid strong {

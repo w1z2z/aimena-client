@@ -9,7 +9,7 @@ import { LogoutIcon } from "@/shared/ui/icons";
 import { HeaderDropdownPanel } from "./HeaderDropdownPanel";
 
 const menuButtonClassName =
-  "box-border flex h-[48px] w-full items-center rounded-[10px] border-[0.5px] border-solid border-[#CACACA] px-[12px] text-left text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition hover:bg-[#FAFAFA]";
+  "box-border flex h-[48px] w-full items-center rounded-[10px] border-[0.5px] border-solid border-[#CACACA] px-[12px] text-left text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition hover:bg-[#f8f8f5]";
 
 type ProfileDropdownProps = {
   onClose?: () => void;
@@ -30,7 +30,7 @@ export function ProfileDropdown({ onClose }: ProfileDropdownProps) {
   return (
     <HeaderDropdownPanel className="box-border flex w-[412px] flex-col items-start justify-center gap-[24px] rounded-[31px] p-[24px] text-[#1A1A1A]">
       <div className="flex min-h-[64px] w-full items-center gap-[12px]">
-        <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-[21px] bg-[#D9D9D9] text-[24px] font-extrabold leading-none text-[#1A1A1A]">
+        <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-[21px] bg-[#cacaca] text-[24px] font-extrabold leading-none text-[#1A1A1A]">
           {user.avatarUrl ? (
             <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
           ) : (

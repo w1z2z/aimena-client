@@ -16,7 +16,7 @@ function HeroRecommendationsEmpty({
       className="box-border flex h-[464px] w-[342px] flex-col items-center justify-center rounded-[31px] border-[3px] border-solid border-transparent px-[24px] py-[32px] text-center"
       style={{
         background:
-          "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #8E8BED 0%, #C8FF00 100%) border-box",
+          "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
       }}
     >
       <p className="text-[18px] font-semibold text-[#1A1A1A]">Нет подходящих вариантов</p>

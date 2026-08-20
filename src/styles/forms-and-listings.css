@@ -21,7 +21,7 @@
 }
 
 .site-select__input::placeholder {
-  color: #3d3d3d;
+  color: #626262;
 }
 
 .site-select__input[readonly] {
@@ -40,7 +40,7 @@
 }
 
 .site-select__input.is-placeholder {
-  color: #3d3d3d;
+  color: #626262;
 }
 
 .site-select--filter .site-select__input {
@@ -60,7 +60,7 @@
 
 .site-select--field .site-select__input {
   height: 48px;
-  border: 0.5px solid #3d3d3d;
+  border: 0.5px solid #626262;
   border-radius: 10px;
   padding: 8px 40px 8px 12px;
   font-size: 16px;
@@ -70,7 +70,7 @@
 }
 
 .site-select--field .site-select__input::placeholder {
-  color: #3d3d3d;
+  color: #626262;
   font-weight: 700;
 }
 
@@ -81,9 +81,9 @@
   min-height: 150px;
   max-height: 480px;
   overflow: hidden;
-  border: 1px solid #e2e6ef;
+  border: 1px solid #cacaca;
   border-radius: 12px;
-  background: #f6f7fb;
+  background: #f2f4f7;
   resize: vertical;
 }
 
@@ -115,7 +115,7 @@
 }
 
 .create-listing-description__input::placeholder {
-  color: #3d3d3d;
+  color: #626262;
   font-size: 14px;
   font-weight: 400;
   line-height: 170%;
@@ -135,7 +135,7 @@
 }
 
 .create-listing-city-select.site-select--field .site-select__input::placeholder {
-  color: #3d3d3d;
+  color: #626262;
   font-size: 14px;
   font-weight: 400;
   line-height: 170%;
@@ -180,7 +180,7 @@
 }
 
 .create-listing-exchange-select.site-select--field .site-select__input::placeholder {
-  color: #3d3d3d;
+  color: #626262;
   font-size: 14px;
   font-weight: 400;
   line-height: 170%;
@@ -264,7 +264,7 @@
 .create-listing-exchange-select.site-select__list .site-select__option.is-selected {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
   color: #1a1a1a;
   font-weight: 400;
 }
@@ -290,7 +290,7 @@
 }
 
 .site-select--hero .site-select__input::placeholder {
-  color: #3d3d3d;
+  color: #626262;
   font-weight: 400;
 }
 
@@ -313,7 +313,7 @@
   border: 0;
   background: transparent;
   padding: 0;
-  color: #3d3d3d;
+  color: #626262;
   transform: translateY(-50%);
 }
 
@@ -329,7 +329,7 @@
   border: 0;
   background: transparent;
   padding: 0;
-  color: #3d3d3d;
+  color: #626262;
   transform: translateY(-50%);
   cursor: pointer;
 }
@@ -423,13 +423,13 @@
 .site-select__group-label--with-divider {
   margin-top: 6px;
   padding-top: 10px;
-  border-top: 1px solid #ececf3;
+  border-top: 1px solid #f0e8ff;
 }
 
 .site-select__option:hover,
 .site-select__option.is-active,
 .site-select__option.is-selected {
-  background: #f3f2ff;
+  background: #f0e8ff;
   color: #1a1a1a;
 }
 
@@ -473,7 +473,7 @@
   border-radius: 31px;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8e8bed 0%, #c8ff00 100%) border-box;
+    linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
   opacity: 0;
   transform: translateY(20px) scale(0.96);
   transition:
@@ -510,7 +510,7 @@
   justify-content: center;
   border: 0;
   border-radius: 10px;
-  background: #f2f2f2;
+  background: #f2f4f7;
   padding: 0;
   color: #1a1a1a;
   cursor: pointer;
@@ -523,7 +523,7 @@
 }
 
 .registration-prompt-modal__close:hover {
-  background: #e8e8e8;
+  background: #cacaca;
   color: #1a1a1a;
 }
 
@@ -991,7 +991,7 @@
 }
 
 .home-recommendations-header__filter.is-active {
-  background: #f2f2f2;
+  background: #f2f4f7;
 }
 
 .home-recommendations-header__title-group {
@@ -1037,7 +1037,7 @@
   height: auto;
   min-height: 20px;
   margin: 0;
-  color: #3d3d3d;
+  color: #626262;
   font-family: var(--font-golos), Arial, sans-serif;
   font-size: 20px;
   font-weight: 400;
@@ -1071,7 +1071,7 @@
 }
 
 .home-recommendations-header__filter:hover {
-  background: #fafafa;
+  background: #f8f8f5;
 }
 
 .home-recommendations-header__filter-icon {
@@ -1204,7 +1204,7 @@
   position: relative;
   margin-top: auto;
   overflow: hidden;
-  background: #c8ff00;
+  background: #c8ff02;
   color: #1a1a1a;
 }
 
@@ -1320,7 +1320,7 @@
 }
 
 .site-footer__title {
-  color: #000;
+  color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
   font-size: 24px;
   font-weight: 800;
@@ -1344,7 +1344,7 @@
 }
 
 .site-footer__body {
-  color: #000;
+  color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
   font-size: 14px;
   font-weight: 400;
