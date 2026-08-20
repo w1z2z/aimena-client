@@ -366,9 +366,9 @@ export function Header() {
                     type="button"
                     aria-label="Поиск"
                     onClick={handleSearchToggle}
-                    className="flex h-[16px] w-[16px] shrink-0 items-center justify-center outline-none focus:outline-none focus-visible:outline-none"
+                    className="flex h-[13px] w-[13px] shrink-0 items-center justify-center outline-none focus:outline-none focus-visible:outline-none"
                   >
-                    <SearchIcon className="h-[16px] w-[16px]" />
+                    <SearchIcon />
                   </button>
                   <input
                     ref={searchInputRef}
@@ -459,7 +459,7 @@ export function Header() {
                   onClick={handleSearchToggle}
                   className="flex h-[32px] w-[32px] items-center justify-center rounded-[31px] border-[0.3px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#f0e8ff]"
                 >
-                  <SearchIcon className="h-[16px] w-[16px]" />
+                  <SearchIcon />
                 </button>
               )}
             </div>
