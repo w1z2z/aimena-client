@@ -324,13 +324,27 @@
   white-space: nowrap;
 }
 
+.listing-detail-gallery__thumbs-wrap {
+  width: 100%;
+}
+
+.listing-detail-gallery__thumbs-viewport {
+  position: relative;
+  width: 100%;
+}
+
 .listing-detail-gallery__thumbs {
   display: flex;
   flex-wrap: nowrap;
   gap: 12px;
   overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Room for active thumb border/ring — overflow otherwise clips edges */
+  padding: 3px;
+  margin: -3px;
 }
 
 .listing-detail-gallery__thumbs::-webkit-scrollbar {
@@ -338,10 +352,12 @@
 }
 
 .listing-detail-gallery__thumb {
-  flex: 0 0 auto;
+  box-sizing: border-box;
+  flex: 0 0 calc((100% - 60px) / 6);
+  width: calc((100% - 60px) / 6);
+  aspect-ratio: 1 / 1;
+  height: auto;
   overflow: hidden;
-  width: 99px;
-  height: 99px;
   padding: 0;
   border: 0.5px solid transparent;
   border-radius: 21px;
@@ -358,7 +374,69 @@
 
 .listing-detail-gallery__thumb--active {
   border-color: #8e8bed;
-  box-shadow: 0 0 0 1px #8e8bed;
+  box-shadow: 0 0 0 1.5px #8e8bed;
+}
+
+.listing-detail-gallery__thumbs-nav {
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 48px;
+  padding: 0;
+  border: 0.5px solid #cacaca;
+  border-radius: 12px;
+  background: #fff;
+  color: #1a1a1a;
+  transform: translateY(-50%);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.listing-detail-gallery__thumbs-nav--prev {
+  left: 8px;
+}
+
+.listing-detail-gallery__thumbs-nav--next {
+  right: 8px;
+}
+
+.listing-detail-gallery__thumbs-nav:disabled {
+  opacity: 0;
+  cursor: default;
+}
+
+.listing-detail-gallery__thumbs-nav-icon {
+  display: block;
+  width: 12px;
+  height: 19px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.listing-detail-gallery__thumbs-nav-icon.is-prev {
+  transform: scaleX(-1);
+}
+
+@media (hover: hover) {
+  .listing-detail-gallery__thumbs-viewport:hover .listing-detail-gallery__thumbs-nav:not(:disabled),
+  .listing-detail-gallery__thumbs-viewport:focus-within .listing-detail-gallery__thumbs-nav:not(:disabled) {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (hover: none) {
+  .listing-detail-gallery__thumbs-nav:not(:disabled) {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .listing-detail-lightbox {
@@ -951,9 +1029,12 @@
   }
 
   .listing-detail-gallery__thumb {
-    width: 72px;
-    height: 72px;
     border-radius: 18px;
+  }
+
+  .listing-detail-gallery__thumbs-nav {
+    width: 32px;
+    height: 42px;
   }
 }
 

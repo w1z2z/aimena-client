@@ -1,7 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState, type Ref } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 import { createPortal } from "react-dom";
 
 import { useAuthGate } from "@/features/auth";
@@ -27,6 +34,34 @@ type ListingGalleryProps = {
   alignTargetRef?: Ref<HTMLDivElement | null>;
 };
 
+const THUMBS_VISIBLE = 6;
+
+function ThumbStripChevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg
+      className={[
+        "listing-detail-gallery__thumbs-nav-icon",
+        direction === "left" ? "is-prev" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      width="16"
+      height="25"
+      viewBox="0 0 16 25"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M2.875 22.5L13.125 12.25L2.875 2"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function ListingGallery({
   listingId,
   title,
@@ -41,12 +76,61 @@ export function ListingGallery({
   const [favoriteOverride, setFavoriteOverride] = useState<boolean | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const thumbsTrackRef = useRef<HTMLDivElement>(null);
+  const [canScrollThumbsLeft, setCanScrollThumbsLeft] = useState(false);
+  const [canScrollThumbsRight, setCanScrollThumbsRight] = useState(false);
 
   const favorite = favoriteOverride ?? isFavorite;
   const slides = images.length > 0 ? images : [{ id: "placeholder", url: LISTING_PLACEHOLDER_IMAGE }];
   const safeIndex = Math.min(activeIndex, slides.length - 1);
   const active = slides[safeIndex] ?? slides[0];
   const canNavigate = slides.length > 1;
+  const showThumbsNav = slides.length > THUMBS_VISIBLE;
+
+  const syncThumbsScrollState = useCallback(() => {
+    const track = thumbsTrackRef.current;
+    if (!track) {
+      setCanScrollThumbsLeft(false);
+      setCanScrollThumbsRight(false);
+      return;
+    }
+
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    setCanScrollThumbsLeft(track.scrollLeft > 2);
+    setCanScrollThumbsRight(maxScroll - track.scrollLeft > 2);
+  }, []);
+
+  const scrollActiveThumbIntoView = useCallback(
+    (behavior: ScrollBehavior = "smooth") => {
+      const track = thumbsTrackRef.current;
+      if (!track) return;
+
+      const activeThumb = track.querySelector<HTMLElement>(
+        `[data-thumb-index="${safeIndex}"]`,
+      );
+      if (!activeThumb) return;
+
+      const trackRect = track.getBoundingClientRect();
+      const thumbRect = activeThumb.getBoundingClientRect();
+      const leftOverflow = thumbRect.left - trackRect.left;
+      const rightOverflow = thumbRect.right - trackRect.right;
+
+      if (leftOverflow < 0) {
+        track.scrollBy({ left: leftOverflow, behavior });
+      } else if (rightOverflow > 0) {
+        track.scrollBy({ left: rightOverflow, behavior });
+      }
+
+      window.requestAnimationFrame(syncThumbsScrollState);
+    },
+    [safeIndex, syncThumbsScrollState],
+  );
+
+  const scrollThumbsByPage = (direction: -1 | 1) => {
+    const track = thumbsTrackRef.current;
+    if (!track) return;
+    track.scrollBy({ left: direction * track.clientWidth, behavior: "smooth" });
+  };
 
   useEffect(() => {
     setActiveIndex(0);
@@ -58,6 +142,26 @@ export function ListingGallery({
       setFavoriteOverride(null);
     }
   }, [favoriteOverride, isFavorite]);
+
+  useLayoutEffect(() => {
+    scrollActiveThumbIntoView(safeIndex === 0 ? "auto" : "smooth");
+  }, [safeIndex, scrollActiveThumbIntoView]);
+
+  useEffect(() => {
+    const track = thumbsTrackRef.current;
+    if (!track) return;
+
+    syncThumbsScrollState();
+    track.addEventListener("scroll", syncThumbsScrollState, { passive: true });
+    window.addEventListener("resize", syncThumbsScrollState);
+
+    const frameId = window.requestAnimationFrame(syncThumbsScrollState);
+    return () => {
+      track.removeEventListener("scroll", syncThumbsScrollState);
+      window.removeEventListener("resize", syncThumbsScrollState);
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [slides.length, syncThumbsScrollState]);
 
   const goPrev = () => {
     setActiveIndex((current) => (current - 1 + slides.length) % slides.length);
@@ -241,29 +345,57 @@ export function ListingGallery({
       </div>
 
       {canNavigate ? (
-        <div
-          ref={alignTargetRef}
-          className="listing-detail-gallery__thumbs"
-          role="list"
-        >
-          {slides.map((slide, index) => (
-            <button
-              key={slide.id}
-              type="button"
-              role="listitem"
-              aria-label={`Фото ${index + 1}`}
-              aria-current={index === safeIndex}
-              className={[
-                "listing-detail-gallery__thumb",
-                index === safeIndex ? "listing-detail-gallery__thumb--active" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={() => setActiveIndex(index)}
+        <div ref={alignTargetRef} className="listing-detail-gallery__thumbs-wrap">
+          <div className="listing-detail-gallery__thumbs-viewport">
+            <div
+              ref={thumbsTrackRef}
+              className="listing-detail-gallery__thumbs"
+              role="list"
             >
-              <img src={slide.url} alt="" />
-            </button>
-          ))}
+              {slides.map((slide, index) => (
+                <button
+                  key={slide.id}
+                  type="button"
+                  role="listitem"
+                  data-thumb-index={index}
+                  aria-label={`Фото ${index + 1}`}
+                  aria-current={index === safeIndex}
+                  className={[
+                    "listing-detail-gallery__thumb",
+                    index === safeIndex ? "listing-detail-gallery__thumb--active" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => setActiveIndex(index)}
+                >
+                  <img src={slide.url} alt="" />
+                </button>
+              ))}
+            </div>
+
+            {showThumbsNav ? (
+              <>
+                <button
+                  type="button"
+                  aria-label="Предыдущие миниатюры"
+                  className="listing-detail-gallery__thumbs-nav listing-detail-gallery__thumbs-nav--prev"
+                  disabled={!canScrollThumbsLeft}
+                  onClick={() => scrollThumbsByPage(-1)}
+                >
+                  <ThumbStripChevron direction="left" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Следующие миниатюры"
+                  className="listing-detail-gallery__thumbs-nav listing-detail-gallery__thumbs-nav--next"
+                  disabled={!canScrollThumbsRight}
+                  onClick={() => scrollThumbsByPage(1)}
+                >
+                  <ThumbStripChevron direction="right" />
+                </button>
+              </>
+            ) : null}
+          </div>
         </div>
       ) : null}
 
