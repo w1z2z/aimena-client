@@ -2,17 +2,20 @@ import type { ReactNode } from "react";
 
 import { Header } from "@/widgets/header/Header";
 
+import { AuthKeyboardScrollFix } from "./AuthKeyboardScrollFix";
+
 type AuthPageLayoutProps = {
   children: ReactNode;
 };
 
 export function AuthPageLayout({ children }: AuthPageLayoutProps) {
   return (
-    <div className="min-h-screen w-full">
+    <div className="auth-page-shell">
+      <AuthKeyboardScrollFix />
       <Header />
-      <div className="pt-[54px]">
-        <main className="flex min-h-[calc(100vh-54px)] items-center justify-center px-[16px] py-[48px]">
-          <div className="w-full max-w-[588px]">{children}</div>
+      <div className="auth-page-shell__body">
+        <main className="auth-page-main">
+          <div className="auth-page-main__inner">{children}</div>
         </main>
       </div>
     </div>

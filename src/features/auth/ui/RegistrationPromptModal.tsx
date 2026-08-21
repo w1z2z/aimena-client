@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
+import { AuthUnionIcon } from "@/shared/ui/icons";
+
 import type { RegistrationPromptReason } from "../registration-prompt";
 import { registrationPromptCopy } from "../registration-prompt";
-import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
-import { AUTH_UNION_ICON_SIZE, AuthUnionIcon } from "@/shared/ui/icons";
 
 type RegistrationPromptModalProps = {
   open: boolean;
@@ -78,10 +79,6 @@ export function RegistrationPromptModal({ open, reason, onClose }: RegistrationP
 
           <AuthUnionIcon
             className="registration-prompt-modal__logo"
-            style={{
-              width: AUTH_UNION_ICON_SIZE.width,
-              height: AUTH_UNION_ICON_SIZE.height,
-            }}
             aria-hidden="true"
           />
 

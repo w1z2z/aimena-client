@@ -1290,6 +1290,46 @@
 }
 
 @media (max-width: 640px) {
+  .listing-action-modal {
+    padding: 16px;
+  }
+
+  .listing-action-modal__card {
+    gap: 24px;
+    max-height: calc(100dvh - 32px);
+    padding: 20px 16px;
+    border-radius: 24px;
+  }
+
+  .listing-action-modal__star {
+    width: 40px;
+    height: 40px;
+  }
+
+  .listing-action-modal__card--report .listing-action-modal__star,
+  .listing-action-modal__icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .listing-action-modal__title {
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  .listing-action-modal__card--report {
+    min-height: 0;
+  }
+
+  .listing-action-modal__card--deal {
+    gap: 24px;
+    padding: 28px 16px;
+  }
+
+  .listing-action-modal__btn {
+    padding: 0 20px;
+  }
+
   .listing-action-modal__actions {
     flex-direction: column;
   }
@@ -1298,6 +1338,16 @@
   .listing-action-modal__btn--secondary {
     width: 100%;
     max-width: none;
+  }
+
+  .listing-report-reasons {
+    gap: 16px;
+  }
+
+  .listing-report-comment__field {
+    height: 72px;
+    padding: 16px;
+    border-radius: 18px;
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 
-import { useAuth, useAuthGate } from "@/features/auth";
+import { isAuthFlowPath, useAuth, useAuthGate } from "@/features/auth";
 import { useChatInbox } from "@/features/chat-inbox";
 import { ChatBubbleIcon, HeartIcon, LoginIcon, SearchIcon } from "@/shared/ui/icons";
 
@@ -39,7 +39,7 @@ export function MobileBottomNav({
   const { hasUnreadConversations } = useChatInbox();
   const { guardAuth } = useAuthGate();
 
-  if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
+  if (isAuthFlowPath(pathname)) {
     return null;
   }
 

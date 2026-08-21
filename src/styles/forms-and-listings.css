@@ -635,6 +635,59 @@
   filter: none;
 }
 
+@media (max-width: 640px) {
+  .registration-prompt-modal {
+    padding: 16px;
+  }
+
+  .registration-prompt-modal__card {
+    border-radius: 24px;
+  }
+
+  .registration-prompt-modal__card-inner {
+    gap: 24px;
+    border-radius: 24px;
+    padding: 28px 16px;
+  }
+
+  .registration-prompt-modal__close {
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .registration-prompt-modal__close svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .registration-prompt-modal__logo {
+    width: 56px;
+    height: 62px;
+  }
+
+  .registration-prompt-modal__title {
+    font-size: 22px;
+    line-height: 26px;
+  }
+
+  .registration-prompt-modal__actions {
+    gap: 16px;
+  }
+
+  .registration-prompt-modal__buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .registration-prompt-modal__button {
+    width: 100%;
+    padding: 0 20px;
+  }
+}
+
 .listing-published-modal {
   position: fixed;
   inset: 0;
@@ -731,6 +784,29 @@
 
 .listing-published-modal__button:active {
   transform: translateY(0.5px);
+}
+
+@media (max-width: 640px) {
+  .listing-published-modal {
+    padding: 16px;
+  }
+
+  .listing-published-modal__card {
+    min-height: 0;
+    gap: 20px;
+    border-radius: 24px;
+    padding: 28px 16px;
+  }
+
+  .listing-published-modal__title {
+    font-size: 18px;
+    line-height: 130%;
+  }
+
+  .listing-published-modal__button {
+    height: 42px;
+    padding: 0 20px;
+  }
 }
 
 .home-filters-panel__right {

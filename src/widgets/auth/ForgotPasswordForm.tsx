@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { forgotPassword } from "@/shared/api/auth";
 import { ApiError } from "@/shared/api/http";
-import { AUTH_UNION_ICON_SIZE, AuthUnionIcon } from "@/shared/ui/icons";
+import { AuthUnionIcon } from "@/shared/ui/icons";
 
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
@@ -41,17 +41,11 @@ export function ForgotPasswordForm() {
 
   return (
     <AuthCard>
-      <AuthUnionIcon
-        style={{
-          width: AUTH_UNION_ICON_SIZE.width,
-          height: AUTH_UNION_ICON_SIZE.height,
-        }}
-        aria-hidden="true"
-      />
+      <AuthUnionIcon className="auth-card__icon auth-card__icon--union" aria-hidden="true" />
 
       <AuthTitle>Забыли пароль?</AuthTitle>
 
-      <form onSubmit={(event) => void handleSubmit(event)} className="flex w-full flex-col items-center gap-[48px]">
+      <form onSubmit={(event) => void handleSubmit(event)} className="auth-form-stack">
         <AuthFormFields subtitle="Введите почту, чтобы сбросить пароль">
           <AuthInput
             label="Email"

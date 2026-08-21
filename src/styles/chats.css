@@ -2020,4 +2020,8 @@
   .chats-actions {
     grid-template-columns: 1fr;
   }
+
+  .listing-action-modal__card.chats-docs-picker {
+    padding: 24px 16px 16px;
+  }
 }
