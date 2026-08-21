@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { getAuthErrorMessage, useAuth } from "@/features/auth";
@@ -15,8 +15,19 @@ import { AuthInput } from "./AuthInput";
 import { AuthLink } from "./AuthLink";
 import { AuthTitle } from "./AuthTypography";
 
+function resolveNextPath(raw: string | null): string | null {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+  // One-shot auth flows — never bounce back here after login.
+  if (raw === "/change-password" || raw.startsWith("/change-password/")) return null;
+  if (raw === "/forgot-password" || raw.startsWith("/forgot-password/")) return null;
+  if (raw === "/reset-password" || raw.startsWith("/reset-password")) return null;
+  return raw;
+}
+
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = resolveNextPath(searchParams.get("next"));
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +42,11 @@ export function LoginForm() {
     setIsSubmitting(true);
     try {
       const { needsOnboarding } = await login(email.trim(), password);
-      router.push(needsOnboarding ? "/onboarding" : "/");
+      if (needsOnboarding) {
+        router.push("/onboarding");
+        return;
+      }
+      router.push(nextPath ?? "/");
     } catch (requestError) {
       if (requestError instanceof ApiError && requestError.status === 403) {
         rememberPendingVerifyEmail(email.trim());

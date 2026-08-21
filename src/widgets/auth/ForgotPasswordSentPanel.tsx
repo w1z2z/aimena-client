@@ -92,7 +92,9 @@ export function ForgotPasswordSentPanel({
               : "Отправить повторно"}
         </AuthButton>
 
-        <AuthLink href="/login">Перейти ко входу</AuthLink>
+        <AuthLink href={variant === "change" ? "/profile/settings" : "/login"}>
+          {variant === "change" ? "Вернуться в настройки" : "Перейти ко входу"}
+        </AuthLink>
       </div>
     </AuthMessage>
   );
