@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { useAuthGate } from "@/features/auth";
 import { useFavoriteToggle } from "@/features/favorites";
 import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
+import { CarouselNavButton } from "@/shared/ui/CarouselNavButton";
 import { ChevronIcon, HeartIcon } from "@/shared/ui/icons";
 
 type GalleryImage = {
@@ -220,22 +221,18 @@ export function ListingGallery({
 
         {canNavigate ? (
           <>
-            <button
-              type="button"
-              aria-label="Предыдущее фото"
-              className="listing-detail-gallery__nav listing-detail-gallery__nav--prev"
+            <CarouselNavButton
+              direction="left"
+              label="Предыдущее фото"
               onClick={goPrev}
-            >
-              <ChevronIcon direction="left" className="text-[#1A1A1A]" />
-            </button>
-            <button
-              type="button"
-              aria-label="Следующее фото"
-              className="listing-detail-gallery__nav listing-detail-gallery__nav--next"
+              className="listing-detail-gallery__nav listing-detail-gallery__nav--prev"
+            />
+            <CarouselNavButton
+              direction="right"
+              label="Следующее фото"
               onClick={goNext}
-            >
-              <ChevronIcon direction="right" className="text-[#1A1A1A]" />
-            </button>
+              className="listing-detail-gallery__nav listing-detail-gallery__nav--next"
+            />
             <span className="listing-detail-gallery__counter">
               {safeIndex + 1}/{slides.length}
             </span>

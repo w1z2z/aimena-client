@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ListingCard, ListingCardSkeleton, mapApiListingToCard, useSimilarListings } from "@/entities/listing";
 import { layout } from "@/shared/config/tokens";
-import { ChevronIcon } from "@/shared/ui/icons";
+import { CarouselNavButton } from "@/shared/ui/CarouselNavButton";
 
 type ListingSimilarSectionProps = {
   listingId: string;
@@ -14,30 +14,6 @@ const CARD_WIDTH = layout.cardWidth;
 const CARD_GAP = layout.cardGap;
 const CARD_STEP = CARD_WIDTH + CARD_GAP;
 const VISIBLE_COUNT = 4;
-
-function CarouselArrowButton({
-  direction,
-  onClick,
-  disabled,
-}: {
-  direction: "left" | "right";
-  onClick: () => void;
-  disabled: boolean;
-}) {
-  const isLeft = direction === "left";
-
-  return (
-    <button
-      type="button"
-      aria-label={isLeft ? "Предыдущее объявление" : "Следующее объявление"}
-      onClick={onClick}
-      disabled={disabled}
-      className={`listing-detail-similar__arrow listing-detail-similar__arrow--${direction}`}
-    >
-      <ChevronIcon direction={direction} className="h-[26px] w-[16px] text-brand" />
-    </button>
-  );
-}
 
 export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps) {
   const { data, isLoading, isError } = useSimilarListings(listingId, 12);
@@ -146,15 +122,19 @@ export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps)
 
           {showArrows ? (
             <>
-              <CarouselArrowButton
+              <CarouselNavButton
                 direction="left"
+                label="Предыдущее объявление"
                 onClick={() => scrollByStep(-1)}
                 disabled={!canScrollLeft}
+                className="absolute left-[14px] top-1/2 z-20 -translate-y-1/2"
               />
-              <CarouselArrowButton
+              <CarouselNavButton
                 direction="right"
+                label="Следующее объявление"
                 onClick={() => scrollByStep(1)}
                 disabled={!canScrollRight}
+                className="absolute right-[14px] top-1/2 z-20 -translate-y-1/2"
               />
             </>
           ) : null}
