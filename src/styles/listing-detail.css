@@ -1326,20 +1326,6 @@
     padding: 28px 16px;
   }
 
-  .listing-action-modal__btn {
-    padding: 0 20px;
-  }
-
-  .listing-action-modal__actions {
-    flex-direction: column;
-  }
-
-  .listing-action-modal__btn--primary,
-  .listing-action-modal__btn--secondary {
-    width: 100%;
-    max-width: none;
-  }
-
   .listing-report-reasons {
     gap: 16px;
   }

@@ -16,19 +16,6 @@ type RegistrationPromptModalProps = {
   onClose: () => void;
 };
 
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path
-        d="M1 1L13 13M13 1L1 13"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 export function RegistrationPromptModal({ open, reason, onClose }: RegistrationPromptModalProps) {
   const { subtitle } = registrationPromptCopy[reason];
   const { isRendered, isVisible } = useOverlayPresence(open);
@@ -68,19 +55,7 @@ export function RegistrationPromptModal({ open, reason, onClose }: RegistrationP
         onClick={(event) => event.stopPropagation()}
       >
         <div className="registration-prompt-modal__card-inner">
-          <button
-            type="button"
-            aria-label="Закрыть"
-            className="registration-prompt-modal__close"
-            onClick={onClose}
-          >
-            <CloseIcon />
-          </button>
-
-          <AuthUnionIcon
-            className="registration-prompt-modal__logo"
-            aria-hidden="true"
-          />
+          <AuthUnionIcon className="registration-prompt-modal__logo" aria-hidden="true" />
 
           <h2 id="registration-prompt-title" className="registration-prompt-modal__title">
             Для продолжения необходимо авторизоваться

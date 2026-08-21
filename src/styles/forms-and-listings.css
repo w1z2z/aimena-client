@@ -512,35 +512,6 @@
   -webkit-transform: translate3d(0, 0, 0);
 }
 
-.registration-prompt-modal__close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
-  display: flex;
-  width: 40px;
-  height: 40px;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 10px;
-  background: #f2f4f7;
-  padding: 0;
-  color: #1a1a1a;
-  cursor: pointer;
-  transition: background-color 150ms ease, color 150ms ease;
-}
-
-.registration-prompt-modal__close svg {
-  width: 16px;
-  height: 16px;
-}
-
-.registration-prompt-modal__close:hover {
-  background: #cacaca;
-  color: #1a1a1a;
-}
-
 .registration-prompt-modal__logo {
   display: block;
   width: 100px;
@@ -650,19 +621,6 @@
     padding: 28px 16px;
   }
 
-  .registration-prompt-modal__close {
-    top: 8px;
-    right: 8px;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-  }
-
-  .registration-prompt-modal__close svg {
-    width: 12px;
-    height: 12px;
-  }
-
   .registration-prompt-modal__logo {
     width: 56px;
     height: 62px;
@@ -675,16 +633,6 @@
 
   .registration-prompt-modal__actions {
     gap: 16px;
-  }
-
-  .registration-prompt-modal__buttons {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .registration-prompt-modal__button {
-    width: 100%;
-    padding: 0 20px;
   }
 }
 
@@ -801,11 +749,6 @@
   .listing-published-modal__title {
     font-size: 18px;
     line-height: 130%;
-  }
-
-  .listing-published-modal__button {
-    height: 42px;
-    padding: 0 20px;
   }
 }
 
