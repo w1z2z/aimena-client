@@ -589,6 +589,7 @@ export function Header() {
 
                 <IconButton
                   label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+                  variant="accent"
                   aria-expanded={isMobileMenuOpen}
                   aria-haspopup="dialog"
                   onClick={() => {
@@ -599,7 +600,7 @@ export function Header() {
                     setIsMobileMenuOpen((current) => !current);
                   }}
                 >
-                  <BurgerIcon className="text-black" />
+                  <BurgerIcon className="text-[#1A1A1A]" />
                 </IconButton>
               </div>
             </div>

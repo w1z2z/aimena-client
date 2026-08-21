@@ -1,6 +1,6 @@
 import type { IconProps } from "./types";
 
-export const BURGER_ICON_SIZE = { width: 18, height: 14 } as const;
+export const BURGER_ICON_SIZE = { width: 14, height: 11 } as const;
 
 export function BurgerIcon({ className, ...props }: IconProps) {
   return (
