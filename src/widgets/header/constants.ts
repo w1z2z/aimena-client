@@ -1,5 +1,6 @@
-/** Switch to compact header (burger / flex bar) at this width and below. */
-export const COMPACT_HEADER_MAX_WIDTH_PX = 1500;
+/** Switch to compact header (burger) at this width and below.
+ * Above this, desktop flex layout keeps categories/CTA and shrinks search. */
+export const COMPACT_HEADER_MAX_WIDTH_PX = 1024;
 
 export const COMPACT_HEADER_QUERY = `(max-width: ${COMPACT_HEADER_MAX_WIDTH_PX}px)`;
 

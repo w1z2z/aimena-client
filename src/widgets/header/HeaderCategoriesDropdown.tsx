@@ -99,7 +99,7 @@ export function HeaderCategoriesDropdown({
   };
 
   return (
-    <div ref={containerRef} className="absolute left-[177px] top-[11px] z-[60]">
+    <div ref={containerRef} className="relative z-[60] shrink-0">
       <button
         ref={triggerRef}
         type="button"

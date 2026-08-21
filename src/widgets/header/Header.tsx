@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -41,13 +40,6 @@ type SearchSuggestion = {
   title: string;
 };
 
-const HEADER_CATEGORIES_LEFT = 177;
-const HEADER_ACTIONS_LEFT = 1049;
-/** Gap between categories ↔ search and search ↔ «Разместить объявление». */
-const HEADER_SEARCH_SIDE_GAP = 16;
-const HEADER_SEARCH_ICON_SIZE = 32;
-const HEADER_CATEGORIES_WIDTH_FALLBACK = 178;
-
 function getPageScrollTop() {
   return Math.max(
     window.pageYOffset,
@@ -79,32 +71,16 @@ export function Header() {
   const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [activeSearchSuggestionIndex, setActiveSearchSuggestionIndex] = useState<number>(-1);
-  const [categoriesWidth, setCategoriesWidth] = useState(HEADER_CATEGORIES_WIDTH_FALLBACK);
   const { isRendered: compactSearchRendered, isVisible: compactSearchVisible } = useOverlayPresence(
     isCompact && isSearchExpanded,
   );
-
-  const handleCategoriesWidthChange = useCallback((width: number) => {
-    setCategoriesWidth(width > 0 ? width : HEADER_CATEGORIES_WIDTH_FALLBACK);
-  }, []);
-
-  const expandedSearchBox = useMemo(() => {
-    const left = HEADER_CATEGORIES_LEFT + categoriesWidth + HEADER_SEARCH_SIDE_GAP;
-    const width = Math.max(
-      200,
-      HEADER_ACTIONS_LEFT - HEADER_SEARCH_SIDE_GAP - left,
-    );
-    return { left, width };
-  }, [categoriesWidth]);
-
-  const collapsedSearchLeft =
-    HEADER_ACTIONS_LEFT - HEADER_SEARCH_SIDE_GAP - HEADER_SEARCH_ICON_SIZE;
 
   /** Desktop: expanded on scroll, or after clicking the search icon at top. Compact: overlay presence. */
   const showExpandedSearch =
     (!isCompact && (isScrolled || isSearchExpanded || isSearchClosing)) ||
     (isCompact && (compactSearchRendered || isSearchExpanded || isSearchClosing));
   const logoTone = !isHomePage && !isScrolled ? "dark" : "brand";
+  const desktopSearchExpanded = !isCompact && showExpandedSearch && !isSearchClosing;
 
   const handleCreateListing = useCallback(() => {
     guardAuth("create-listing", () => router.push("/create-listing"));
@@ -654,44 +630,41 @@ export function Header() {
             ) : null}
           </div>
         ) : (
-          <div className="site-header__inner relative mx-auto h-full w-full max-w-[1440px]">
-            <div className="absolute left-0 top-0 flex h-[54px] w-[162px] items-center">
+          <div className="site-header__inner relative mx-auto flex h-full w-full max-w-[1440px] items-center gap-[16px]">
+            <div className="flex h-[54px] w-[162px] shrink-0 items-center">
               <Logo tone={logoTone} />
             </div>
 
-            <HeaderCategoriesDropdown onTriggerWidthChange={handleCategoriesWidthChange} />
+            <HeaderCategoriesDropdown />
 
-            <div
-              ref={searchRef}
-              className={`absolute top-[11px] z-[50] h-[32px] transition-[left,width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-                showExpandedSearch && !isSearchClosing ? "" : "w-[32px]"
-              }`}
-              style={
-                showExpandedSearch && !isSearchClosing
-                  ? { left: expandedSearchBox.left, width: expandedSearchBox.width }
-                  : { left: collapsedSearchLeft }
-              }
-            >
-              <div className="h-full w-full overflow-hidden">
-                {showExpandedSearch ? (
-                  searchField
-                ) : (
-                  <button
-                    type="button"
-                    aria-label="Поиск"
-                    onClick={handleSearchToggle}
-                    className="flex h-[32px] w-[32px] items-center justify-center rounded-[31px] border-[0.3px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#f0e8ff]"
-                  >
-                    <SearchIcon />
-                  </button>
-                )}
+            <div className="flex min-w-0 flex-1 items-center justify-end">
+              <div
+                ref={searchRef}
+                className={`relative z-[50] h-[32px] transition-[width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
+                  desktopSearchExpanded ? "w-full min-w-[160px]" : "w-[32px]"
+                }`}
+              >
+                <div className="h-full w-full overflow-hidden">
+                  {showExpandedSearch ? (
+                    searchField
+                  ) : (
+                    <button
+                      type="button"
+                      aria-label="Поиск"
+                      onClick={handleSearchToggle}
+                      className="flex h-[32px] w-[32px] items-center justify-center rounded-[31px] border-[0.3px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#f0e8ff]"
+                    >
+                      <SearchIcon />
+                    </button>
+                  )}
+                </div>
+
+                {searchSuggestionsDropdown}
               </div>
-
-              {searchSuggestionsDropdown}
             </div>
 
-            <div className="absolute left-[1049px] top-[11px] flex h-[32px] items-center justify-end gap-[16px]">
-              <ButtonPrimary className="w-[243px]" onClick={handleCreateListing}>
+            <div className="flex h-[32px] shrink-0 items-center justify-end gap-[16px]">
+              <ButtonPrimary className="w-[243px] shrink-0" onClick={handleCreateListing}>
                 Разместить объявление
               </ButtonPrimary>
 
