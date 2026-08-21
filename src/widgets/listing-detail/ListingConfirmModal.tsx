@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useId, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { ListingActionStarIcon } from "@/shared/ui/icons";
-
-const TRANSITION_MS = 320;
 
 export type ListingConfirmModalProps = {
   open: boolean;
@@ -32,28 +31,10 @@ export function ListingConfirmModal({
 }: ListingConfirmModalProps) {
   const titleId = useId();
   const descriptionId = useId();
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const frameId = window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setVisible(true));
-      });
-      return () => window.cancelAnimationFrame(frameId);
-    }
-    setVisible(false);
-  }, [open]);
-
-  useEffect(() => {
-    if (!mounted || open) return;
-    const timer = window.setTimeout(() => setMounted(false), TRANSITION_MS);
-    return () => window.clearTimeout(timer);
-  }, [mounted, open]);
-
-  useEffect(() => {
-    if (!mounted) return;
+    if (!isRendered) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -66,13 +47,13 @@ export function ListingConfirmModal({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [mounted, onClose, pending]);
+  }, [isRendered, onClose, pending]);
 
-  if (!mounted || typeof document === "undefined") return null;
+  if (!isRendered || typeof document === "undefined") return null;
 
   return createPortal(
     <div
-      className={`listing-action-modal${visible ? " is-visible" : ""}`}
+      className={`listing-action-modal${isVisible ? " is-visible" : ""}`}
       role="presentation"
       onClick={() => {
         if (!pending) onClose();

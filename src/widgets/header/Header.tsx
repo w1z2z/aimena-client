@@ -79,6 +79,12 @@ export function Header() {
   const showExpandedSearch =
     (!isCompact && (isScrolled || isSearchExpanded || isSearchClosing)) ||
     (isCompact && (compactSearchRendered || isSearchExpanded || isSearchClosing));
+  const showSearchSuggestions =
+    showExpandedSearch &&
+    !isSearchClosing &&
+    (isSearchLoading || searchQuery.trim().length >= 2);
+  const { isRendered: suggestionsRendered, isVisible: suggestionsVisible } =
+    useOverlayPresence(Boolean(showSearchSuggestions));
   const logoTone = !isHomePage && !isScrolled ? "dark" : "brand";
   const desktopSearchExpanded = !isCompact && showExpandedSearch && !isSearchClosing;
 
@@ -438,39 +444,39 @@ export function Header() {
     </div>
   );
 
-  const searchSuggestionsDropdown =
-    showExpandedSearch &&
-    !isSearchClosing &&
-    (isSearchLoading || searchQuery.trim().length >= 2) ? (
-      <div className="site-header-search site-header-search-dropdown absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
-        {isSearchLoading ? (
-          <p className="px-[12px] py-[10px] text-[14px] text-[#626262]">Ищем...</p>
-        ) : searchSuggestions.length > 0 ? (
-          <ul className="max-h-[260px] overflow-y-auto">
-            {searchSuggestions.map((suggestion, index) => (
-              <li key={suggestion.id}>
-                <button
-                  type="button"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onMouseEnter={() => setActiveSearchSuggestionIndex(index)}
-                  onClick={() => {
-                    setSearchQuery(suggestion.title);
-                    applyHomeFeedSearch(suggestion.title);
-                  }}
-                  className={`block w-full px-[12px] py-[10px] text-left text-[14px] text-[#626262] outline-none transition hover:bg-[#1A1A1A]/6 focus:outline-none focus-visible:outline-none ${
-                    index === activeSearchSuggestionIndex ? "bg-[#1A1A1A]/6" : ""
-                  }`}
-                >
-                  {suggestion.title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : searchQuery.trim().length >= 2 ? (
-          <p className="px-[12px] py-[10px] text-[14px] text-[#626262]">Ничего не найдено</p>
-        ) : null}
-      </div>
-    ) : null;
+  const searchSuggestionsDropdown = suggestionsRendered ? (
+    <div
+      className={`site-header-search site-header-search-dropdown overlay-pop absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.28)]${suggestionsVisible ? " is-open" : ""}`}
+      aria-hidden={!suggestionsVisible}
+    >
+      {isSearchLoading ? (
+        <p className="px-[12px] py-[10px] text-[14px] text-[#626262]">Ищем...</p>
+      ) : searchSuggestions.length > 0 ? (
+        <ul className="max-h-[260px] overflow-y-auto">
+          {searchSuggestions.map((suggestion, index) => (
+            <li key={suggestion.id}>
+              <button
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onMouseEnter={() => setActiveSearchSuggestionIndex(index)}
+                onClick={() => {
+                  setSearchQuery(suggestion.title);
+                  applyHomeFeedSearch(suggestion.title);
+                }}
+                className={`block w-full px-[12px] py-[10px] text-left text-[14px] text-[#626262] outline-none transition hover:bg-[#1A1A1A]/6 focus:outline-none focus-visible:outline-none ${
+                  index === activeSearchSuggestionIndex ? "bg-[#1A1A1A]/6" : ""
+                }`}
+              >
+                {suggestion.title}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : searchQuery.trim().length >= 2 ? (
+        <p className="px-[12px] py-[10px] text-[14px] text-[#626262]">Ничего не найдено</p>
+      ) : null}
+    </div>
+  ) : null;
 
   const authActions = (
     <>

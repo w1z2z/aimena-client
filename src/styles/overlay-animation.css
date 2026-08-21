@@ -1,0 +1,52 @@
+/* Shared open/close motion — match header overlays (no scale for Safari). */
+
+.overlay-pop {
+  opacity: 0;
+  transform: translate3d(0, -8px, 0);
+  -webkit-transform: translate3d(0, -8px, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: opacity, transform;
+  pointer-events: none;
+  transition:
+    opacity 260ms cubic-bezier(0.33, 1, 0.68, 1),
+    transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.overlay-pop.is-open {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+
+.overlay-pop--origin-left {
+  transform-origin: top left;
+}
+
+.overlay-pop--origin-right {
+  transform-origin: top right;
+}
+
+.overlay-backdrop {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.overlay-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay-pop,
+  .overlay-backdrop {
+    transition: none;
+    transform: none;
+  }
+
+  .overlay-pop:not(.is-open) {
+    display: none;
+  }
+}

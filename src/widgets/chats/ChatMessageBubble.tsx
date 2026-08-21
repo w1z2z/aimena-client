@@ -180,13 +180,12 @@ export function ChatMessageBubble({
         meta
       ) : null}
 
-      {lightboxIndex !== null ? (
-        <ChatImageLightbox
-          images={images}
-          startIndex={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-        />
-      ) : null}
+      <ChatImageLightbox
+        open={lightboxIndex !== null}
+        images={images}
+        startIndex={lightboxIndex ?? 0}
+        onClose={() => setLightboxIndex(null)}
+      />
     </div>
   );
 }

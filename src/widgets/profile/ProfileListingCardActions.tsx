@@ -12,6 +12,7 @@ import {
   type ApiListingCard,
 } from "@/shared/api/listings";
 import { ApiError } from "@/shared/api/http";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { MoreDotsIcon } from "@/shared/ui/icons";
 import { ListingConfirmModal } from "@/widgets/listing-detail/ListingConfirmModal";
 
@@ -22,7 +23,6 @@ type ProfileListingCardActionsProps = {
   status: ApiListingCard["status"];
 };
 
-const PANEL_CLOSE_MS = 220;
 const PROFILE_LISTINGS_QUERY_KEY = ["profile-listings-me"] as const;
 
 async function invalidateListingCaches(
@@ -45,25 +45,12 @@ export function ProfileListingCardActions({
   const containerRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
   const [modal, setModal] = useState<ConfirmKind | null>(null);
   const [pendingAction, setPendingAction] = useState<ConfirmKind | "publish" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const canRepublish = status === "draft" || status === "archived";
   const canEdit = status !== "completed";
-
-  useEffect(() => {
-    if (open) {
-      setIsMounted(true);
-      const frameId = window.requestAnimationFrame(() => setIsVisible(true));
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setIsVisible(false);
-    const timeoutId = window.setTimeout(() => setIsMounted(false), PANEL_CLOSE_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -177,7 +164,7 @@ export function ProfileListingCardActions({
       ref={containerRef}
       className={[
         "profile-listing-menu",
-        open || isMounted ? "profile-listing-menu--open" : "",
+        open || isRendered ? "profile-listing-menu--open" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -188,7 +175,7 @@ export function ProfileListingCardActions({
         aria-label="Действия с объявлением"
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-controls={isMounted ? panelId : undefined}
+        aria-controls={isRendered ? panelId : undefined}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -199,7 +186,7 @@ export function ProfileListingCardActions({
         <MoreDotsIcon className="text-[#1A1A1A]" />
       </button>
 
-      {isMounted ? (
+      {isRendered ? (
         <div
           id={panelId}
           role="dialog"

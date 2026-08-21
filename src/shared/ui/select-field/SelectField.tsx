@@ -14,6 +14,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
+
 export type SelectOption = {
   value: string;
   label: string;
@@ -108,6 +110,7 @@ export function SelectField({
   const safeValue = value ?? "";
   const isDisabled = Boolean(disabled);
   const [isOpen, setIsOpen] = useState(false);
+  const { isRendered: isListRendered, isVisible: isListVisible } = useOverlayPresence(isOpen);
   const [mounted, setMounted] = useState(false);
   const [inputValue, setInputValue] = useState(() => getLabelForValue(options, safeValue));
   const [activeOptionValue, setActiveOptionValue] = useState<string | null>(null);
@@ -199,7 +202,7 @@ export function SelectField({
   }, []);
 
   useLayoutEffect(() => {
-    if (!isOpen) return;
+    if (!isListRendered) return;
     updateListPosition();
 
     const handleReposition = () => updateListPosition();
@@ -210,7 +213,7 @@ export function SelectField({
       window.removeEventListener("resize", handleReposition);
       window.removeEventListener("scroll", handleReposition, true);
     };
-  }, [isOpen, updateListPosition, visibleOptions.length]);
+  }, [isListRendered, updateListPosition, visibleOptions.length]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -404,11 +407,12 @@ export function SelectField({
     }
   };
 
-  const list = isOpen ? (
+  const list = isListRendered ? (
     <div
       ref={listRootRef}
-      className={`site-select__list${className ? ` ${className}` : ""}`}
+      className={`site-select__list overlay-pop${isListVisible ? " is-open" : ""}${className ? ` ${className}` : ""}`}
       style={listStyle}
+      aria-hidden={!isListVisible}
       onWheel={(event) => event.stopPropagation()}
     >
       <ul

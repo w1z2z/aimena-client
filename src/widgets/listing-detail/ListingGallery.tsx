@@ -14,6 +14,7 @@ import { createPortal } from "react-dom";
 import { useAuthGate } from "@/features/auth";
 import { useFavoriteToggle } from "@/features/favorites";
 import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { CarouselNavButton } from "@/shared/ui/CarouselNavButton";
 import { ChevronIcon, HeartIcon } from "@/shared/ui/icons";
 
@@ -76,6 +77,8 @@ export function ListingGallery({
   const [favoriteOverride, setFavoriteOverride] = useState<boolean | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const { isRendered: lightboxRendered, isVisible: lightboxVisible } =
+    useOverlayPresence(lightboxOpen);
   const thumbsTrackRef = useRef<HTMLDivElement>(null);
   const [canScrollThumbsLeft, setCanScrollThumbsLeft] = useState(false);
   const [canScrollThumbsRight, setCanScrollThumbsRight] = useState(false);
@@ -172,7 +175,7 @@ export function ListingGallery({
   };
 
   useEffect(() => {
-    if (!lightboxOpen) return;
+    if (!lightboxRendered) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -200,7 +203,7 @@ export function ListingGallery({
     };
     // Navigation helpers only depend on slides.length via setActiveIndex functional updates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lightboxOpen, canNavigate, slides.length]);
+  }, [lightboxRendered, canNavigate, slides.length]);
 
   const handleFavoriteClick = () => {
     if (hideFavorite || favoriteMutation.isPending || favoriteOverride !== null) return;
@@ -218,12 +221,13 @@ export function ListingGallery({
   };
 
   const lightbox =
-    lightboxOpen && typeof document !== "undefined"
+    lightboxRendered && typeof document !== "undefined"
       ? createPortal(
           <div
-            className="listing-detail-lightbox"
+            className={`listing-detail-lightbox overlay-backdrop${lightboxVisible ? " is-open" : ""}`}
             role="dialog"
             aria-modal="true"
+            aria-hidden={!lightboxVisible}
             aria-label={`${title}: фото ${safeIndex + 1} из ${slides.length}`}
             onClick={() => setLightboxOpen(false)}
           >
@@ -274,7 +278,7 @@ export function ListingGallery({
             ) : null}
 
             <div
-              className="listing-detail-lightbox__stage"
+              className={`listing-detail-lightbox__stage overlay-pop${lightboxVisible ? " is-open" : ""}`}
               onClick={(event) => event.stopPropagation()}
             >
               <img

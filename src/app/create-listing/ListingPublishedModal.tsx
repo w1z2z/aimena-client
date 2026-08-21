@@ -1,42 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
-const TRANSITION_MS = 320;
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 type ListingPublishedModalProps = {
   open: boolean;
 };
 
 export function ListingPublishedModal({ open }: ListingPublishedModalProps) {
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-
-      const frameId = window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setVisible(true));
-      });
-
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setVisible(false);
-  }, [open]);
-
-  useEffect(() => {
-    if (!mounted || open) return;
-
-    const timer = window.setTimeout(() => setMounted(false), TRANSITION_MS);
-    return () => window.clearTimeout(timer);
-  }, [mounted, open]);
-
-  useEffect(() => {
-    if (!mounted) return;
+    if (!isRendered) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -44,13 +22,13 @@ export function ListingPublishedModal({ open }: ListingPublishedModalProps) {
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [mounted]);
+  }, [isRendered]);
 
-  if (!mounted || typeof document === "undefined") return null;
+  if (!isRendered || typeof document === "undefined") return null;
 
   return createPortal(
     <div
-      className={`listing-published-modal${visible ? " is-visible" : ""}`}
+      className={`listing-published-modal${isVisible ? " is-visible" : ""}`}
       role="presentation"
     >
       <div

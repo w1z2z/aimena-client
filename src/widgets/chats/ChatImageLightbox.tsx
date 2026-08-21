@@ -4,15 +4,18 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { ChatMessageAttachment } from "@/shared/api/chats";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 type Props = {
+  open: boolean;
   images: ChatMessageAttachment[];
   startIndex: number;
   onClose: () => void;
 };
 
-export function ChatImageLightbox({ images, startIndex, onClose }: Props) {
+export function ChatImageLightbox({ images, startIndex, open, onClose }: Props) {
   const [index, setIndex] = useState(startIndex);
+  const { isRendered, isVisible } = useOverlayPresence(open);
   const canNavigate = images.length > 1;
   const active = images[index] ?? images[0];
 
@@ -21,6 +24,7 @@ export function ChatImageLightbox({ images, startIndex, onClose }: Props) {
   }, [startIndex]);
 
   useEffect(() => {
+    if (!isRendered) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -40,15 +44,16 @@ export function ChatImageLightbox({ images, startIndex, onClose }: Props) {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [canNavigate, images.length, onClose]);
+  }, [canNavigate, images.length, isRendered, onClose]);
 
-  if (!active || typeof document === "undefined") return null;
+  if (!isRendered || !active || typeof document === "undefined") return null;
 
   return createPortal(
     <div
-      className="listing-detail-lightbox"
+      className={`listing-detail-lightbox overlay-backdrop${isVisible ? " is-open" : ""}`}
       role="dialog"
       aria-modal="true"
+      aria-hidden={!isVisible}
       aria-label={`Фото ${index + 1} из ${images.length}`}
       onClick={onClose}
     >
@@ -99,7 +104,7 @@ export function ChatImageLightbox({ images, startIndex, onClose }: Props) {
       ) : null}
 
       <div
-        className="listing-detail-lightbox__stage"
+        className={`listing-detail-lightbox__stage overlay-pop${isVisible ? " is-open" : ""}`}
         onClick={(event) => event.stopPropagation()}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

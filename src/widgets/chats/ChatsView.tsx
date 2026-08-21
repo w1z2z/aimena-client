@@ -48,6 +48,7 @@ import {
 import { acceptExchangeOffer, rejectExchangeOffer } from "@/shared/api/deals";
 import { ApiError } from "@/shared/api/http";
 import { uploadChatFileViaBackend } from "@/shared/api/media";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { LocationPinIcon, MenuSquareIcon, RatingStarIcon } from "@/shared/ui/icons";
 import { Header } from "@/widgets/header/Header";
 import { pluralRu } from "@/widgets/profile/constants";
@@ -64,8 +65,6 @@ type SendMessagePayload = {
 };
 
 type ChatFilter = "all" | "chats" | "unread" | "offers";
-
-const PANEL_CLOSE_MS = 220;
 
 function filterChatSummaries(items: ChatSummary[], filter: ChatFilter) {
   if (filter === "chats") {
@@ -674,20 +673,7 @@ function ChatSupportMenu({
   const containerRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      setIsMounted(true);
-      const frameId = window.requestAnimationFrame(() => setIsVisible(true));
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setIsVisible(false);
-    const timeoutId = window.setTimeout(() => setIsMounted(false), PANEL_CLOSE_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, [open]);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   useEffect(() => {
     if (!open) return;
@@ -718,13 +704,13 @@ function ChatSupportMenu({
         aria-label="Меню чата"
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-controls={isMounted ? panelId : undefined}
+        aria-controls={isRendered ? panelId : undefined}
         onClick={() => setOpen((value) => !value)}
       >
         <MenuSquareIcon className="text-[#1A1A1A]" />
       </button>
 
-      {isMounted ? (
+      {isRendered ? (
         <div
           id={panelId}
           role="dialog"
@@ -958,6 +944,8 @@ function ActiveChatPanel({
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
+  const { isRendered: attachmentsRendered, isVisible: attachmentsVisible } =
+    useOverlayPresence(attachmentsOpen);
   const [docsPickerOpen, setDocsPickerOpen] = useState(false);
   const [attachableDocs, setAttachableDocs] = useState<AttachableListingDocuments[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
@@ -1232,8 +1220,12 @@ function ActiveChatPanel({
           {attachError ? <p className="chats-attach-error">{attachError}</p> : null}
           <div className="chats-footer-bar">
             <div ref={attachmentsRef} className="chats-composer-wrap">
-              {attachmentsOpen ? (
-                <div className="chats-attachments-menu" role="menu">
+              {attachmentsRendered ? (
+                <div
+                  className={`chats-attachments-menu overlay-pop overlay-pop--origin-left${attachmentsVisible ? " is-open" : ""}`}
+                  role="menu"
+                  aria-hidden={!attachmentsVisible}
+                >
                   <button
                     type="button"
                     role="menuitem"

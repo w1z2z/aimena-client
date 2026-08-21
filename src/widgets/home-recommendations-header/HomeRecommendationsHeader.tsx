@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 
 import { useHomeSearch } from "@/features/home-search";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 import { FilterIcon } from "@/shared/ui/icons";
 
@@ -27,6 +28,7 @@ function formatOffersCount(count: number) {
 
 export function HomeRecommendationsHeader() {
   const { isFiltersOpen, setIsFiltersOpen, listingsCount } = useHomeSearch();
+  const { isRendered, isVisible } = useOverlayPresence(isFiltersOpen);
 
   const toggleFilters = useCallback(() => {
     setIsFiltersOpen((current) => !current);
@@ -59,11 +61,13 @@ export function HomeRecommendationsHeader() {
 
           <div
             id="home-recommendations-filters-panel"
-            className={`home-recommendations-filters-panel${isFiltersOpen ? " is-open" : ""}`}
-            aria-hidden={!isFiltersOpen}
+            className={`home-recommendations-filters-panel${isRendered ? " is-open" : ""}`}
+            aria-hidden={!isVisible}
           >
             <div className="home-recommendations-filters-panel__inner">
-              <div className="home-recommendations-filters-panel__surface">
+              <div
+                className={`home-recommendations-filters-panel__surface${isVisible ? " is-open" : ""}`}
+              >
                 <HomeRecommendationsFiltersPanelContent />
               </div>
             </div>

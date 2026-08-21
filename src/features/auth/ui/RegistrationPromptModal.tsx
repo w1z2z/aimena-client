@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import type { RegistrationPromptReason } from "../registration-prompt";
 import { registrationPromptCopy } from "../registration-prompt";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { AUTH_UNION_ICON_SIZE, AuthUnionIcon } from "@/shared/ui/icons";
-
-const TRANSITION_MS = 320;
 
 type RegistrationPromptModalProps = {
   open: boolean;
@@ -31,32 +30,10 @@ function CloseIcon() {
 
 export function RegistrationPromptModal({ open, reason, onClose }: RegistrationPromptModalProps) {
   const { subtitle } = registrationPromptCopy[reason];
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-
-      const frameId = window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setVisible(true));
-      });
-
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setVisible(false);
-  }, [open]);
-
-  useEffect(() => {
-    if (!mounted || open) return;
-
-    const timer = window.setTimeout(() => setMounted(false), TRANSITION_MS);
-    return () => window.clearTimeout(timer);
-  }, [mounted, open]);
-
-  useEffect(() => {
-    if (!mounted) return;
+    if (!isRendered) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -71,13 +48,13 @@ export function RegistrationPromptModal({ open, reason, onClose }: RegistrationP
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [mounted, onClose]);
+  }, [isRendered, onClose]);
 
-  if (!mounted || typeof document === "undefined") return null;
+  if (!isRendered || typeof document === "undefined") return null;
 
   return createPortal(
     <div
-      className={`registration-prompt-modal${visible ? " is-visible" : ""}`}
+      className={`registration-prompt-modal${isVisible ? " is-visible" : ""}`}
       role="presentation"
       onClick={onClose}
     >

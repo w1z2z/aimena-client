@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
+
 export type ProfileListingStatusFilter = "all" | "active" | "archived" | "completed";
 
 const OWN_STATUS_OPTIONS: Array<{ value: ProfileListingStatusFilter; label: string }> = [
@@ -51,6 +53,7 @@ export function ProfileStatusFilter({
 }: ProfileStatusFilterProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const { isRendered, isVisible } = useOverlayPresence(open);
   const statusOptions = options === "public" ? PUBLIC_STATUS_OPTIONS : OWN_STATUS_OPTIONS;
   const currentLabel =
     statusOptions.find((option) => option.value === value)?.label ?? "Все";
@@ -91,7 +94,7 @@ export function ProfileStatusFilter({
         <StatusChevron open={open} />
       </button>
 
-      {open ? (
+      {isRendered ? (
         <div
           className="absolute right-0 top-full z-50 pt-2"
           onMouseDown={(event) => event.stopPropagation()}
@@ -100,7 +103,8 @@ export function ProfileStatusFilter({
           <div
             role="listbox"
             aria-label="Статус объявлений"
-            className="box-border flex w-[220px] flex-col gap-1 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white p-2 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+            aria-hidden={!isVisible}
+            className={`overlay-pop overlay-pop--origin-right box-border flex w-[220px] flex-col gap-1 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white p-2 shadow-[0_8px_24px_rgba(0,0,0,0.08)]${isVisible ? " is-open" : ""}`}
           >
             {statusOptions.map((option) => {
               const isActive = option.value === value;

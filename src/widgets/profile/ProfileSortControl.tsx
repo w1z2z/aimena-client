@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
+
 export type ProfileSortOrder = "newest" | "oldest";
 
 /** Own-profile listing type filter (no «Удаленные», no drafts). */
@@ -87,6 +89,7 @@ export function ProfileSortControl<T extends string = string>({
 }: ProfileSortControlProps<T>) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const { isRendered, isVisible } = useOverlayPresence(open);
   const activeSortIndex = sort === "oldest" ? 1 : 0;
   const showTypeSection =
     typeFilter !== undefined && Boolean(onTypeChange) && Boolean(typeOptions?.length);
@@ -132,7 +135,7 @@ export function ProfileSortControl<T extends string = string>({
         <SortChevron open={open} />
       </button>
 
-      {open ? (
+      {isRendered ? (
         <div
           className="absolute right-0 top-full z-50 pt-2"
           onMouseDown={(event) => event.stopPropagation()}
@@ -141,7 +144,8 @@ export function ProfileSortControl<T extends string = string>({
           <div
             role="dialog"
             aria-label={dialogLabel}
-            className="profile-sort-popup box-border flex w-[326px] flex-col items-start justify-center gap-3 rounded-[31px] border-[0.5px] border-solid border-[#8E8BED] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+            aria-hidden={!isVisible}
+            className={`profile-sort-popup overlay-pop overlay-pop--origin-right box-border flex w-[326px] flex-col items-start justify-center gap-3 rounded-[31px] border-[0.5px] border-solid border-[#8E8BED] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]${isVisible ? " is-open" : ""}`}
           >
             <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">По порядку:</p>
             <div
