@@ -266,6 +266,11 @@
   max-width: 588px;
 }
 
+.auth-page-main--start {
+  justify-content: flex-start;
+  padding-top: 16px;
+}
+
 .auth-title {
   display: flex;
   margin: 0;

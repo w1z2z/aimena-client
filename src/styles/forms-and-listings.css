@@ -3,8 +3,13 @@
   width: 100%;
 }
 
+.site-select.is-open {
+  z-index: 40;
+}
+
 .site-select__control {
   position: relative;
+  z-index: 1;
   width: 100%;
 }
 
@@ -369,6 +374,10 @@
 }
 
 .site-select__list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
   z-index: 3000;
   box-sizing: border-box;
   margin: 0;
@@ -382,8 +391,9 @@
 
 .site-select__list.overlay-pop {
   opacity: 0;
-  transform: translate3d(0, -8px, 0);
-  -webkit-transform: translate3d(0, -8px, 0);
+  /* Drop down from under the field — never animate in from above the input */
+  transform: translate3d(0, 8px, 0);
+  -webkit-transform: translate3d(0, 8px, 0);
 }
 
 .site-select__list.overlay-pop.is-open {

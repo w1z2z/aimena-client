@@ -4,15 +4,12 @@ import {
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from "react";
-import { createPortal } from "react-dom";
 
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
@@ -41,9 +38,7 @@ type SelectFieldProps = {
   "aria-label"?: string;
 };
 
-const LIST_GAP = 4;
 const LIST_MAX_HEIGHT = 280;
-const VIEWPORT_PADDING = 8;
 
 function getLabelForValue(options: readonly SelectOption[], value: string) {
   const normalizedValue = value ?? "";
@@ -111,10 +106,8 @@ export function SelectField({
   const isDisabled = Boolean(disabled);
   const [isOpen, setIsOpen] = useState(false);
   const { isRendered: isListRendered, isVisible: isListVisible } = useOverlayPresence(isOpen);
-  const [mounted, setMounted] = useState(false);
   const [inputValue, setInputValue] = useState(() => getLabelForValue(options, safeValue));
   const [activeOptionValue, setActiveOptionValue] = useState<string | null>(null);
-  const [listStyle, setListStyle] = useState<CSSProperties>({ visibility: "hidden" });
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRootRef = useRef<HTMLDivElement>(null);
@@ -135,10 +128,6 @@ export function SelectField({
     () => visibleOptions.filter((option) => !option.disabled),
     [visibleOptions],
   );
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     setInputValue(getLabelForValue(options, safeValue));
@@ -177,56 +166,29 @@ export function SelectField({
 
   const close = useCallback(() => setIsOpen(false), []);
 
-  const updateListPosition = useCallback(() => {
-    const trigger = rootRef.current;
-    if (!trigger) return;
-
-    const rect = trigger.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - rect.bottom - VIEWPORT_PADDING;
-    const spaceAbove = rect.top - VIEWPORT_PADDING;
-    const openUpward = spaceBelow < 160 && spaceAbove > spaceBelow;
-    const maxHeight = Math.min(
-      LIST_MAX_HEIGHT,
-      Math.max(120, openUpward ? spaceAbove - LIST_GAP : spaceBelow - LIST_GAP),
-    );
-
-    setListStyle({
-      position: "fixed",
-      left: rect.left,
-      width: rect.width,
-      top: openUpward ? undefined : rect.bottom + LIST_GAP,
-      bottom: openUpward ? window.innerHeight - rect.top + LIST_GAP : undefined,
-      maxHeight,
-      visibility: "visible",
-    });
-  }, []);
-
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!isListRendered) return;
-    updateListPosition();
 
-    const handleReposition = () => updateListPosition();
-    window.addEventListener("resize", handleReposition);
-    window.addEventListener("scroll", handleReposition, true);
-
-    return () => {
-      window.removeEventListener("resize", handleReposition);
-      window.removeEventListener("scroll", handleReposition, true);
+    const handleScrollClose = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Node && listRootRef.current?.contains(target)) {
+        return;
+      }
+      close();
     };
-  }, [isListRendered, updateListPosition, visibleOptions.length]);
+
+    window.addEventListener("scroll", handleScrollClose, true);
+    return () => {
+      window.removeEventListener("scroll", handleScrollClose, true);
+    };
+  }, [close, isListRendered]);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const handlePointerDown = (event: globalThis.MouseEvent) => {
+    const handlePointerDown = (event: globalThis.MouseEvent | TouchEvent) => {
       const target = event.target as Node;
-      if (
-        rootRef.current?.contains(target) ||
-        listRootRef.current?.contains(target) ||
-        listRef.current?.contains(target)
-      ) {
-        return;
-      }
+      if (rootRef.current?.contains(target)) return;
       close();
     };
 
@@ -235,9 +197,11 @@ export function SelectField({
     };
 
     document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown, { passive: true });
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [close, isOpen]);
@@ -256,8 +220,6 @@ export function SelectField({
 
   const handleOptionPick = (option: SelectOption) => {
     if (option.disabled) return;
-    // Safari can jump the page when a portaled list closes or layout shifts
-    // after selection (e.g. subcategory panel opening on create-listing).
     const scrollY = window.scrollY;
     const restoreScroll = () => {
       if (Math.abs(window.scrollY - scrollY) > 1) {
@@ -272,8 +234,6 @@ export function SelectField({
     window.requestAnimationFrame(() => {
       restoreScroll();
       if (!searchable) {
-        // Parent may accept the pick without storing it (value stays "").
-        // Sync label from the controlled value after React commits.
         setInputValue(getLabelForValue(optionsRef.current, safeValueRef.current));
       }
       window.requestAnimationFrame(restoreScroll);
@@ -363,8 +323,6 @@ export function SelectField({
     );
     if (!activeNode) return;
 
-    // Avoid Element.scrollIntoView — in Safari it can scroll the document
-    // (including to the top) when the list is portaled with position:fixed.
     const optionTop = activeNode.offsetTop;
     const optionBottom = optionTop + activeNode.offsetHeight;
     if (optionTop < list.scrollTop) {
@@ -406,55 +364,6 @@ export function SelectField({
       onListEndReached();
     }
   };
-
-  const list = isListRendered ? (
-    <div
-      ref={listRootRef}
-      className={`site-select__list overlay-pop${isListVisible ? " is-open" : ""}${className ? ` ${className}` : ""}`}
-      style={listStyle}
-      aria-hidden={!isListVisible}
-      onWheel={(event) => event.stopPropagation()}
-    >
-      <ul
-        ref={listRef}
-        id={listId}
-        role="listbox"
-        className="site-select__list-inner"
-        onScroll={handleListScroll}
-      >
-        {visibleOptions.length > 0 ? (
-          visibleOptions.map((option, index) => (
-            <li key={option.value} role="presentation">
-              {option.disabled ? (
-                <span
-                  className={`site-select__group-label${index > 0 ? " site-select__group-label--with-divider" : ""}`}
-                >
-                  {option.label}
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={option.value === safeValue}
-                  className={`site-select__option${option.value === safeValue ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
-                  data-option-value={option.value}
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => handleOptionPick(option)}
-                  onMouseEnter={() => setActiveOptionValue(option.value)}
-                >
-                  {option.label}
-                </button>
-              )}
-            </li>
-          ))
-        ) : (
-          <li className="site-select__empty" role="presentation">
-            Ничего не найдено
-          </li>
-        )}
-      </ul>
-    </div>
-  ) : null;
 
   return (
     <div
@@ -512,7 +421,54 @@ export function SelectField({
         )}
       </div>
 
-      {mounted && list ? createPortal(list, document.body) : null}
+      {isListRendered ? (
+        <div
+          ref={listRootRef}
+          className={`site-select__list overlay-pop${isListVisible ? " is-open" : ""}${className ? ` ${className}` : ""}`}
+          style={{ maxHeight: LIST_MAX_HEIGHT }}
+          aria-hidden={!isListVisible}
+          onWheel={(event) => event.stopPropagation()}
+        >
+          <ul
+            ref={listRef}
+            id={listId}
+            role="listbox"
+            className="site-select__list-inner"
+            onScroll={handleListScroll}
+          >
+            {visibleOptions.length > 0 ? (
+              visibleOptions.map((option, index) => (
+                <li key={option.value} role="presentation">
+                  {option.disabled ? (
+                    <span
+                      className={`site-select__group-label${index > 0 ? " site-select__group-label--with-divider" : ""}`}
+                    >
+                      {option.label}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={option.value === safeValue}
+                      className={`site-select__option${option.value === safeValue ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
+                      data-option-value={option.value}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => handleOptionPick(option)}
+                      onMouseEnter={() => setActiveOptionValue(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  )}
+                </li>
+              ))
+            ) : (
+              <li className="site-select__empty" role="presentation">
+                Ничего не найдено
+              </li>
+            )}
+          </ul>
+        </div>
+      ) : null}
     </div>
   );
 }

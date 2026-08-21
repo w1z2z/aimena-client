@@ -2,6 +2,17 @@
 
 import { useEffect } from "react";
 
+function isFormField(el: EventTarget | null): el is HTMLElement {
+  return (
+    el instanceof HTMLElement &&
+    (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT")
+  );
+}
+
+function isCitySelectField(el: HTMLElement): boolean {
+  return Boolean(el.closest(".site-select, .auth-city-select"));
+}
+
 function scrollPageToTop() {
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
@@ -9,41 +20,69 @@ function scrollPageToTop() {
 }
 
 /**
- * iOS Safari often leaves a stale window scroll offset after the soft keyboard
- * closes on auth forms. Snap the page back to the top when the keyboard dismisses.
+ * Auth forms on iOS:
+ * - focus → scroll the field into view (above keyboard)
+ * - keyboard close → snap page back to top
+ * - city/combobox select → no page auto-scroll (dropdown tracks the field itself)
  */
 export function AuthKeyboardScrollFix() {
   useEffect(() => {
     let lastViewportHeight = window.visualViewport?.height ?? window.innerHeight;
     let resetTimer: number | undefined;
+    let focusScrollTimer: number | undefined;
 
-    const scheduleReset = () => {
+    const cancelReset = () => {
       window.clearTimeout(resetTimer);
-      resetTimer = window.setTimeout(scrollPageToTop, 80);
+      resetTimer = undefined;
+    };
+
+    const scheduleResetToTop = () => {
+      cancelReset();
+      resetTimer = window.setTimeout(scrollPageToTop, 120);
+    };
+
+    const scrollFieldIntoView = (field: HTMLElement) => {
+      window.clearTimeout(focusScrollTimer);
+      focusScrollTimer = window.setTimeout(() => {
+        field.scrollIntoView({
+          block: "center",
+          inline: "nearest",
+          behavior: "smooth",
+        });
+      }, 280);
+    };
+
+    const onFocusIn = (event: FocusEvent) => {
+      if (!isFormField(event.target)) return;
+      cancelReset();
+      // Combobox opens a portaled list that follows the trigger — don't yank the page
+      if (isCitySelectField(event.target)) return;
+      scrollFieldIntoView(event.target);
     };
 
     const onFocusOut = (event: FocusEvent) => {
-      const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
-      const tag = target.tagName;
-      if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") return;
-      scheduleReset();
+      if (!isFormField(event.target)) return;
+      if (isCitySelectField(event.target)) return;
+      if (isFormField(event.relatedTarget)) return;
+      scheduleResetToTop();
     };
 
     const onViewportResize = () => {
       const nextHeight = window.visualViewport?.height ?? window.innerHeight;
-      // Viewport grew → keyboard (or chrome) closed; undo the jump.
-      if (nextHeight > lastViewportHeight + 40) {
-        scheduleReset();
+      if (nextHeight > lastViewportHeight + 40 && !isFormField(document.activeElement)) {
+        scheduleResetToTop();
       }
       lastViewportHeight = nextHeight;
     };
 
+    document.addEventListener("focusin", onFocusIn);
     document.addEventListener("focusout", onFocusOut);
     window.visualViewport?.addEventListener("resize", onViewportResize);
 
     return () => {
-      window.clearTimeout(resetTimer);
+      cancelReset();
+      window.clearTimeout(focusScrollTimer);
+      document.removeEventListener("focusin", onFocusIn);
       document.removeEventListener("focusout", onFocusOut);
       window.visualViewport?.removeEventListener("resize", onViewportResize);
     };
