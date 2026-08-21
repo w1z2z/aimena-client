@@ -70,7 +70,11 @@ export default function FavoritesPage() {
   const hasInactive = listings.some((listing) => !listing.isAvailable);
 
   let body = (
-    <ListingCardSkeletonGrid count={CATALOG_PAGE_SIZE} className="favorites-page__grid" />
+    <ListingCardSkeletonGrid
+      count={CATALOG_PAGE_SIZE}
+      className="favorites-page__grid"
+      itemClassName="favorites-page__card"
+    />
   );
 
   if (!authLoading && !isAuthenticated) {
@@ -129,21 +133,22 @@ export default function FavoritesPage() {
         ) : null}
         <div className="favorites-page__grid" aria-label="Избранные объявления">
           {listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listingId={listing.id}
-              variant={listing.isFree ? "free" : "exchange"}
-              title={listing.title}
-              city={listing.city}
-              condition={listing.condition}
-              coverImageUrl={listing.coverImageUrl}
-              wants={listing.wants}
-              wantCategories={listing.wantCategories}
-              isFree={listing.isFree}
-              isFavorite={listing.isFavorite}
-              ownerId={listing.ownerId}
-              unavailable={!listing.isAvailable}
-            />
+            <div key={listing.id} className="favorites-page__card">
+              <ListingCard
+                listingId={listing.id}
+                variant={listing.isFree ? "free" : "exchange"}
+                title={listing.title}
+                city={listing.city}
+                condition={listing.condition}
+                coverImageUrl={listing.coverImageUrl}
+                wants={listing.wants}
+                wantCategories={listing.wantCategories}
+                isFree={listing.isFree}
+                isFavorite={listing.isFavorite}
+                ownerId={listing.ownerId}
+                unavailable={!listing.isAvailable}
+              />
+            </div>
           ))}
         </div>
         <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />

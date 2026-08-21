@@ -95,11 +95,16 @@
 .favorites-page__grid {
   display: grid;
   grid-template-columns: repeat(4, 342px);
-  justify-content: start;
+  justify-content: center;
   gap: 48px 24px;
   width: 100%;
   max-width: 1440px;
   margin-top: 0;
+  margin-inline: auto;
+}
+
+.favorites-page__card {
+  min-width: 0;
 }
 
 .favorites-page__sentinel {
@@ -117,6 +122,7 @@
   text-align: center;
 }
 
+/* 4 full cards (342×4 + gaps) no longer fit → keep 3 full-size, centered */
 @media (max-width: 1480px) {
   .favorites-page__grid {
     grid-template-columns: repeat(3, 342px);
@@ -124,18 +130,77 @@
   }
 }
 
+/*
+ * 3 full cards + page padding no longer fit
+ * (342×3 + 24×2 + 24×2 ≈ 1122) → 2 columns, max 342px each (never grow),
+ * scale down only when the cell is narrower than the design width
+ */
 @media (max-width: 1120px) {
+  .favorites-page__main {
+    padding: 80px 16px 40px;
+  }
+
+  .favorites-page__title {
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+
+  .favorites-page__count {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .favorites-page__list {
+    margin-top: 20px;
+  }
+
   .favorites-page__grid {
-    grid-template-columns: repeat(2, 342px);
-    width: calc(342px * 2 + 24px);
+    grid-template-columns: repeat(2, minmax(0, 342px));
+    width: 100%;
+    max-width: none;
+    gap: 20px 12px;
+  }
+
+  .favorites-page__card {
+    container-type: inline-size;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 342 / 464;
+  }
+
+  .favorites-page__card .home-listing-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 342px;
+    height: 464px;
+    transform: scale(calc(100cqw / 342px));
+    transform-origin: top left;
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 480px) {
+  .favorites-page__main {
+    padding: 72px 12px 32px;
+  }
+
+  .favorites-page__title {
+    font-size: 24px;
+  }
+
+  .favorites-page__count {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  .favorites-page__list {
+    margin-top: 16px;
+  }
+
   .favorites-page__grid {
-    grid-template-columns: 342px;
-    width: 342px;
-    margin-inline: auto;
+    gap: 16px 10px;
   }
 }
 

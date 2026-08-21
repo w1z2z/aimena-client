@@ -399,7 +399,8 @@
   align-self: stretch;
   gap: 8px;
   width: 294px;
-  height: 24px;
+  min-height: 26px;
+  padding-block: 1px;
   overflow: visible;
 }
 
@@ -414,8 +415,8 @@
   justify-content: center;
   gap: 8px;
   max-width: 100%;
-  height: 24px;
-  overflow: hidden;
+  min-height: 24px;
+  overflow: visible;
 }
 
 .home-listing-card__wants-measure {
