@@ -93,7 +93,7 @@ function ChatPanelRow({
       href={href}
       tabIndex={tabIndex}
       onClick={(event) => onNavigate(href, event)}
-      className="flex h-[49px] w-[255px] shrink-0 items-end justify-between appearance-none [-webkit-appearance:none] transition hover:opacity-80"
+      className="flex h-[49px] w-full min-w-0 shrink-0 items-end justify-between gap-[8px] appearance-none [-webkit-appearance:none] transition hover:opacity-80"
     >
       <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
         <span
@@ -112,11 +112,11 @@ function ChatPanelRow({
           )}
         </span>
 
-        <span className="flex w-[164px] min-w-0 flex-col items-start text-[#1A1A1A]">
-          <span className="w-[153px] truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em]">
+        <span className="flex min-w-0 flex-1 flex-col items-start text-[#1A1A1A]">
+          <span className="w-full truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em]">
             {item.counterpart.displayName}
           </span>
-          <span className="mt-[6px] w-[153px] truncate text-[14px] font-normal leading-[1.2]">
+          <span className="mt-[6px] w-full truncate text-[14px] font-normal leading-[1.2]">
             {preview}
           </span>
         </span>
@@ -138,7 +138,7 @@ function PanelDivider({ top }: { top: number }) {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute left-0 z-[2] h-px w-[303px]"
+      className="pointer-events-none absolute inset-x-0 z-[2] h-px"
       style={{
         top,
         background: "linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%)",
@@ -273,7 +273,7 @@ export function FloatingChat() {
   return (
     <div
       ref={rootRef}
-      className="pointer-events-none fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3"
+      className="floating-chat pointer-events-none fixed z-[100] flex flex-col items-end gap-3"
     >
       <div
         className="origin-bottom-right will-change-[opacity,transform]"
@@ -285,16 +285,16 @@ export function FloatingChat() {
         }}
         aria-hidden={!isOpen}
       >
-        <div className="relative h-[517px] w-[303px]">
+        <div className="floating-chat__panel relative h-[517px]">
           <div
-            className="absolute left-0 top-[4px] box-border h-[513px] w-[303px] rounded-[31px] border-2 border-solid border-transparent px-[24px] pt-[24px]"
+            className="floating-chat__card absolute left-0 top-[4px] box-border h-[513px] rounded-[31px] border-2 border-solid border-transparent px-[24px] pt-[24px]"
             style={{
               background:
                 "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
             }}
           >
-            <div className="flex h-[406px] w-[255px] flex-col items-start gap-[48px]">
-              <div className="flex h-[17px] w-[255px] shrink-0 items-center justify-between">
+            <div className="flex h-[406px] w-full flex-col items-start gap-[48px]">
+              <div className="flex h-[17px] w-full shrink-0 items-center justify-between gap-[12px]">
                 <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
                   Чаты
                 </h2>
@@ -306,7 +306,7 @@ export function FloatingChat() {
                 />
               </div>
 
-              <div className="flex h-[341px] w-[255px] shrink-0 flex-col items-start gap-[24px] overflow-y-auto overflow-x-hidden">
+              <div className="flex h-[341px] w-full shrink-0 flex-col items-start gap-[24px] overflow-y-auto overflow-x-hidden">
                 {loading ? (
                   <p className="m-0 text-[14px] text-[#626262]">Загружаем…</p>
                 ) : null}

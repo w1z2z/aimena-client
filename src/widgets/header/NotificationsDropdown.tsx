@@ -179,12 +179,12 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
 
   const listContent = (
     <>
-      {loading ? <p className="m-0 w-[364px] text-[14px] text-[#626262]">Загружаем…</p> : null}
+      {loading ? <p className="m-0 w-full text-[14px] text-[#626262]">Загружаем…</p> : null}
       {!loading && error ? (
-        <p className="m-0 w-[364px] text-[14px] text-[#FF2056]">{error}</p>
+        <p className="m-0 w-full text-[14px] text-[#FF2056]">{error}</p>
       ) : null}
       {!loading && !error && visibleItems.length === 0 ? (
-        <p className="m-0 w-[364px] text-[14px] text-[#626262]">Пока нет уведомлений.</p>
+        <p className="m-0 w-full text-[14px] text-[#626262]">Пока нет уведомлений.</p>
       ) : null}
       {!loading && !error ? (
         <NotificationList
@@ -195,14 +195,14 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
         />
       ) : null}
       {expanded && loadingMore ? (
-        <p className="m-0 w-[364px] text-center text-[14px] text-[#626262]">Загружаем ещё…</p>
+        <p className="m-0 w-full text-center text-[14px] text-[#626262]">Загружаем ещё…</p>
       ) : null}
     </>
   );
 
   return (
-    <HeaderDropdownPanel className="box-border flex w-[412px] flex-col items-center justify-center overflow-visible rounded-[31px] p-[24px] text-[#1A1A1A]">
-      <div className="flex w-[364px] flex-col items-start gap-[24px]">
+    <HeaderDropdownPanel className="notifications-dropdown-panel box-border flex w-[412px] max-w-full flex-col items-center justify-center overflow-hidden rounded-[31px] p-[24px] text-[#1A1A1A]">
+      <div className="flex w-full max-w-[364px] flex-col items-start gap-[24px]">
         {expanded ? (
           <div
             ref={scrollRef}
@@ -211,17 +211,17 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
             onMouseLeave={onMouseLeave}
             className="notifications-dropdown-scroll"
           >
-            <div className="flex w-[364px] flex-col items-start gap-[24px]">{listContent}</div>
+            <div className="flex w-full flex-col items-start gap-[24px]">{listContent}</div>
           </div>
         ) : (
-          <div className="flex w-[364px] flex-col items-start gap-[24px]">{listContent}</div>
+          <div className="flex w-full flex-col items-start gap-[24px]">{listContent}</div>
         )}
 
         {showExpandButton ? (
           <button
             type="button"
             onClick={handleShowAll}
-            className="flex w-[364px] flex-col items-center justify-center gap-[12px] text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A] transition hover:opacity-70"
+            className="flex w-full flex-col items-center justify-center gap-[12px] text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A] transition hover:opacity-70"
           >
             Показать все уведомления
             <svg width="12" height="6" viewBox="0 0 12 6" fill="none" aria-hidden className="block">

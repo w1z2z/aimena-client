@@ -11,6 +11,7 @@ export { EyeIcon } from "./EyeIcon";
 export { EyeOffIcon } from "./EyeOffIcon";
 export { LoginIcon } from "./LoginIcon";
 export { BoltIcon } from "./BoltIcon";
+export { BurgerIcon } from "./BurgerIcon";
 export { RatingStarIcon, RATING_STAR_ICON_SIZE } from "./RatingStarIcon";
 export { ChatBubbleIcon } from "./ChatBubbleIcon";
 export { ChevronIcon } from "./ChevronIcon";

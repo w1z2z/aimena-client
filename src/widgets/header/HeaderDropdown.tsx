@@ -2,6 +2,11 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
+import { useMediaQuery } from "@/shared/lib/use-media-query";
+import { useScrollLock } from "@/shared/lib/use-scroll-lock";
+
+import { COMPACT_HEADER_QUERY } from "./constants";
+
 const PANEL_CLOSE_MS = 220;
 
 type HeaderDropdownProps = {
@@ -15,8 +20,11 @@ type HeaderDropdownProps = {
 export function HeaderDropdown({ open, onOpenChange, trigger, children, panelLabel }: HeaderDropdownProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
+  const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
   const [isMounted, setIsMounted] = useState(open);
   const [isVisible, setIsVisible] = useState(open);
+
+  useScrollLock(open && isCompact, containerRef);
 
   useEffect(() => {
     if (open) {
@@ -63,15 +71,30 @@ export function HeaderDropdown({ open, onOpenChange, trigger, children, panelLab
     <div ref={containerRef} className="relative flex h-[32px] items-center overflow-visible">
       {trigger}
       {isMounted ? (
-        <div
-          id={panelId}
-          role="dialog"
-          aria-label={panelLabel}
-          aria-hidden={!isVisible}
-          className={`header-dropdown-panel absolute right-0 top-[calc(100%+6px)] z-[60] ${isVisible ? "is-open" : ""}`}
-        >
-          {children}
-        </div>
+        <>
+          {isCompact ? (
+            <button
+              type="button"
+              aria-label={`Закрыть: ${panelLabel}`}
+              tabIndex={isVisible ? 0 : -1}
+              className={`header-dropdown-sheet-backdrop ${isVisible ? "is-open" : ""}`}
+              onClick={() => onOpenChange(false)}
+            />
+          ) : null}
+          <div
+            id={panelId}
+            role="dialog"
+            aria-label={panelLabel}
+            aria-hidden={!isVisible}
+            className={
+              isCompact
+                ? `header-dropdown-panel header-dropdown-panel--sheet ${isVisible ? "is-open" : ""}`
+                : `header-dropdown-panel absolute right-0 top-[calc(100%+6px)] z-[60] ${isVisible ? "is-open" : ""}`
+            }
+          >
+            {children}
+          </div>
+        </>
       ) : null}
     </div>
   );

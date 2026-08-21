@@ -12,6 +12,7 @@
 @import "../styles/favorites.css";
 @import "../styles/chat-badges.css";
 @import "../styles/notifications-dropdown.css";
+@import "../styles/floating-chat.css";
 
 @theme {
   --color-brand: #1a1a1a;
@@ -71,6 +72,12 @@ body {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
+}
+
+html.is-scroll-locked,
+html.is-scroll-locked body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
 body {
