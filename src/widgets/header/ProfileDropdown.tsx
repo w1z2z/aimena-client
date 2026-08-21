@@ -9,7 +9,7 @@ import { LogoutIcon } from "@/shared/ui/icons";
 import { HeaderDropdownPanel } from "./HeaderDropdownPanel";
 
 const menuButtonClassName =
-  "box-border flex h-[48px] w-full items-center rounded-[10px] border-[0.5px] border-solid border-[#CACACA] px-[12px] text-left text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition hover:bg-[#f8f8f5]";
+  "box-border flex h-[48px] w-full items-center rounded-[18px] border-[0.5px] border-solid border-[#CACACA] px-[12px] text-left text-[14px] font-semibold leading-[1.2] tracking-[0.014px] transition hover:bg-[#f8f8f5]";
 
 type ProfileDropdownProps = {
   onClose?: () => void;
@@ -54,15 +54,16 @@ export function ProfileDropdown({ onClose }: ProfileDropdownProps) {
         <Link href="/profile/settings" className={`${menuButtonClassName} text-[#1A1A1A]`} onClick={onClose}>
           Настройки профиля
         </Link>
-        <button
-          type="button"
-          className={`${menuButtonClassName} gap-[12px] text-[#FF2056]`}
-          onClick={handleLogout}
-        >
-          <LogoutIcon className="h-[18px] w-[18px] shrink-0 text-[#FF2056]" />
-          Выйти из аккаунта
-        </button>
       </div>
+
+      <button
+        type="button"
+        className={`${menuButtonClassName} gap-[12px] text-[#FF2056]`}
+        onClick={handleLogout}
+      >
+        <LogoutIcon className="h-[18px] w-[18px] shrink-0 text-[#FF2056]" />
+        Выйти из аккаунта
+      </button>
     </HeaderDropdownPanel>
   );
 }
