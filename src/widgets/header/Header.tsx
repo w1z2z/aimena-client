@@ -563,7 +563,7 @@ export function Header() {
         {isCompact ? (
           <div className="site-header__inner relative mx-auto h-full w-full max-w-[1440px]">
             <div className="site-header-compact-inset flex h-full items-center gap-[8px]">
-              <div className="min-w-0 shrink [&_a]:h-[40px] [&_a]:w-[120px] sm:[&_a]:h-[54px] sm:[&_a]:w-[162px]">
+              <div className="flex h-[54px] w-[162px] shrink-0 items-center">
                 <Logo tone={logoTone} />
               </div>
 
