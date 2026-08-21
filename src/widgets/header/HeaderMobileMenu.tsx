@@ -7,11 +7,10 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { getCategories, type ApiCategoryNode } from "@/shared/api/catalog";
 import { requestOpenHomeFilters } from "@/shared/lib/home-open-filters";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { useScrollLock } from "@/shared/lib/use-scroll-lock";
 
 import { ButtonPrimary } from "./ButtonPrimary";
-
-const PANEL_CLOSE_MS = 260;
 
 type HeaderMobileMenuProps = {
   open: boolean;
@@ -26,9 +25,8 @@ export function HeaderMobileMenu({ open, onClose, onCreateListing }: HeaderMobil
   const titleId = useId();
   const scrollRegionRef = useRef<HTMLDivElement>(null);
   const [portalReady, setPortalReady] = useState(false);
-  const [isRendered, setIsRendered] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const [expandedParentId, setExpandedParentId] = useState<string | null>(null);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   useScrollLock(isRendered, scrollRegionRef);
 
@@ -46,21 +44,10 @@ export function HeaderMobileMenu({ open, onClose, onCreateListing }: HeaderMobil
   }, []);
 
   useEffect(() => {
-    if (open) {
-      setIsRendered(true);
-      const frameId = window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setIsVisible(true));
-      });
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setIsVisible(false);
-    const timeoutId = window.setTimeout(() => {
-      setIsRendered(false);
+    if (!isRendered) {
       setExpandedParentId(null);
-    }, PANEL_CLOSE_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, [open]);
+    }
+  }, [isRendered]);
 
   useEffect(() => {
     if (!isVisible) return;

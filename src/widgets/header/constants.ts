@@ -8,3 +8,8 @@ export const HEADER_DROPDOWN_WIDTH_PX = 412;
 
 /** Compact search field max width (desktop expanded search is ~660px; keep under that). */
 export const HEADER_COMPACT_SEARCH_MAX_WIDTH_PX = 560;
+
+export {
+  OVERLAY_ANIMATION_MS,
+  OVERLAY_ANIMATION_EASE,
+} from "@/shared/lib/overlay-animation";

@@ -15,11 +15,16 @@ import { useChatInbox } from "@/features/chat-inbox";
 import { getListings } from "@/shared/api/listings";
 import { requestHomeTitleSearch } from "@/shared/lib/home-title-search";
 import { useMediaQuery } from "@/shared/lib/use-media-query";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { BellIcon, BurgerIcon, HeartIcon, SearchIcon } from "@/shared/ui/icons";
 
 import { Avatar } from "./Avatar";
 import { ButtonPrimary } from "./ButtonPrimary";
-import { COMPACT_HEADER_QUERY, HEADER_COMPACT_SEARCH_MAX_WIDTH_PX } from "./constants";
+import {
+  COMPACT_HEADER_QUERY,
+  HEADER_COMPACT_SEARCH_MAX_WIDTH_PX,
+  OVERLAY_ANIMATION_MS,
+} from "./constants";
 import { HeaderCategoriesDropdown } from "./HeaderCategoriesDropdown";
 import { HeaderDropdown } from "./HeaderDropdown";
 import { HeaderMobileMenu } from "./HeaderMobileMenu";
@@ -75,6 +80,9 @@ export function Header() {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [activeSearchSuggestionIndex, setActiveSearchSuggestionIndex] = useState<number>(-1);
   const [categoriesWidth, setCategoriesWidth] = useState(HEADER_CATEGORIES_WIDTH_FALLBACK);
+  const { isRendered: compactSearchRendered, isVisible: compactSearchVisible } = useOverlayPresence(
+    isCompact && isSearchExpanded,
+  );
 
   const handleCategoriesWidthChange = useCallback((width: number) => {
     setCategoriesWidth(width > 0 ? width : HEADER_CATEGORIES_WIDTH_FALLBACK);
@@ -92,10 +100,10 @@ export function Header() {
   const collapsedSearchLeft =
     HEADER_ACTIONS_LEFT - HEADER_SEARCH_SIDE_GAP - HEADER_SEARCH_ICON_SIZE;
 
-  /** Desktop: expanded on scroll, or after clicking the search icon at top. Compact: only after click. */
+  /** Desktop: expanded on scroll, or after clicking the search icon at top. Compact: overlay presence. */
   const showExpandedSearch =
     (!isCompact && (isScrolled || isSearchExpanded || isSearchClosing)) ||
-    (isCompact && (isSearchExpanded || isSearchClosing));
+    (isCompact && (compactSearchRendered || isSearchExpanded || isSearchClosing));
   const logoTone = !isHomePage && !isScrolled ? "dark" : "brand";
 
   const handleCreateListing = useCallback(() => {
@@ -294,7 +302,7 @@ export function Header() {
     searchCloseTimerRef.current = window.setTimeout(() => {
       setIsSearchClosing(false);
       searchCloseTimerRef.current = null;
-    }, 300);
+    }, OVERLAY_ANIMATION_MS);
   };
 
   const applyHomeFeedSearch = (query: string) => {
@@ -393,11 +401,7 @@ export function Header() {
 
   const searchField = (
     <div
-      className={`site-header-search flex h-full w-full items-center gap-[9px] border-solid px-[8px] transition-[border-color,background-color,color,border-radius] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
-        isCompact
-          ? "rounded-[23px] border-[0.5px]"
-          : "rounded-[31px] border-[0.3px]"
-      } ${
+      className={`site-header-search flex h-full w-full items-center gap-[9px] rounded-[31px] border-[0.3px] border-solid px-[8px] transition-[border-color,background-color,color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] ${
         isSearchClosing
           ? "border-[#8E8BED] bg-white text-[#1A1A1A]"
           : "site-header-search-field border-[#CACACA]"
@@ -425,9 +429,7 @@ export function Header() {
         className={
           isSearchClosing
             ? "pointer-events-none absolute h-0 w-0 opacity-0"
-            : `min-w-0 flex-1 bg-transparent text-[14px] font-normal text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none ${
-                isCompact ? "h-[10px] leading-[1.7]" : "h-[16px] leading-none"
-              }`
+            : "h-[16px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-none text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
         }
       />
       <button
@@ -442,15 +444,15 @@ export function Header() {
         }
       >
         <svg
-          viewBox="0 0 16 16"
-          width="16"
-          height="16"
+          viewBox="0 0 12 12"
+          width="12"
+          height="12"
           fill="none"
           aria-hidden
-          className="block h-[16px] w-[16px]"
+          className="block h-[12px] w-[12px]"
         >
           <path
-            d="M4 4L12 12M12 4L4 12"
+            d="M1 1L11 11M11 1L1 11"
             stroke="currentColor"
             strokeWidth="1.2"
             strokeLinecap="round"
@@ -464,11 +466,8 @@ export function Header() {
     showExpandedSearch &&
     !isSearchClosing &&
     (isSearchLoading || searchQuery.trim().length >= 2) ? (
-      <div
-        className={`site-header-search site-header-search-dropdown absolute left-0 z-[70] w-full overflow-hidden rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.28)] ${
-          isCompact ? "top-[40px]" : "top-[36px]"
-        }`}
-      >        {isSearchLoading ? (
+      <div className="site-header-search site-header-search-dropdown absolute left-0 top-[36px] z-[70] w-full overflow-hidden rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
+        {isSearchLoading ? (
           <p className="px-[12px] py-[10px] text-[14px] text-[#626262]">Ищем...</p>
         ) : searchSuggestions.length > 0 ? (
           <ul className="max-h-[260px] overflow-y-auto">
@@ -629,8 +628,10 @@ export function Header() {
               </div>
             </div>
 
-            {showExpandedSearch ? (
-              <div className="site-header-compact-search">
+            {compactSearchRendered ? (
+              <div
+                className={`site-header-compact-search ${compactSearchVisible ? "is-open" : ""}`}
+              >
                 <button
                   type="button"
                   aria-label="Закрыть поиск"
@@ -643,7 +644,9 @@ export function Header() {
                     className="relative w-full"
                     style={{ maxWidth: HEADER_COMPACT_SEARCH_MAX_WIDTH_PX }}
                   >
-                    <div className="site-header-compact-search__field">{searchField}</div>
+                    <div className="site-header-compact-search__field h-[32px] w-full overflow-hidden">
+                      {searchField}
+                    </div>
                     {searchSuggestionsDropdown}
                   </div>
                 </div>

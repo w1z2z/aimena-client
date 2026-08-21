@@ -13,10 +13,10 @@ import {
 } from "@/shared/api/chat-socket";
 import { getChatConversations, openSupportChat, type ChatSummary } from "@/shared/api/chats";
 import { ChatBubbleIcon } from "@/shared/ui/icons";
+import { OVERLAY_ANIMATION_MS } from "@/shared/lib/overlay-animation";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 const LINK_CHEVRON_SRC = "/images/chat/link-chevron.svg";
-const PANEL_EASE = "cubic-bezier(0.33, 1, 0.68, 1)";
-const PANEL_DURATION_MS = 300;
 
 function formatListTime(value: string) {
   const date = new Date(value);
@@ -155,12 +155,13 @@ export function FloatingChat() {
   const { guardAuth } = useAuthGate();
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { isRendered: isPanelRendered, isVisible: isPanelVisible } = useOverlayPresence(isOpen);
   const [items, setItems] = useState<ChatSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isPanelVisible) return;
 
     const handlePointerDown = (event: PointerEvent) => {
       const root = rootRef.current;
@@ -172,7 +173,7 @@ export function FloatingChat() {
 
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen]);
+  }, [isPanelVisible]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -267,89 +268,84 @@ export function FloatingChat() {
     setIsOpen((open) => !open);
   };
 
-  const fadeTransition = `opacity ${PANEL_DURATION_MS}ms ${PANEL_EASE}, transform ${PANEL_DURATION_MS}ms ${PANEL_EASE}`;
-  const iconFadeTransition = `opacity ${PANEL_DURATION_MS}ms ${PANEL_EASE}`;
+  const iconFadeTransition = `opacity ${OVERLAY_ANIMATION_MS}ms cubic-bezier(0.33, 1, 0.68, 1)`;
 
   return (
     <div
       ref={rootRef}
-      className="floating-chat pointer-events-none fixed z-[100] flex flex-col items-end gap-3"
+      className="floating-chat pointer-events-none fixed z-[100]"
     >
-      <div
-        className="origin-bottom-right will-change-[opacity,transform]"
-        style={{
-          opacity: isOpen ? 1 : 0,
-          transform: isOpen ? "translateY(0) scale(1)" : "translateY(12px) scale(0.96)",
-          transition: fadeTransition,
-          pointerEvents: isOpen ? "auto" : "none",
-        }}
-        aria-hidden={!isOpen}
-      >
-        <div className="floating-chat__panel relative h-[517px]">
-          <div
-            className="floating-chat__card absolute left-0 top-[4px] box-border h-[513px] rounded-[31px] border-2 border-solid border-transparent px-[24px] pt-[24px]"
-            style={{
-              background:
-                "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
-            }}
-          >
-            <div className="flex h-[406px] w-full flex-col items-start gap-[48px]">
-              <div className="flex h-[17px] w-full shrink-0 items-center justify-between gap-[12px]">
-                <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
-                  Чаты
-                </h2>
+      {isPanelRendered ? (
+        <div
+          className={`floating-chat__overlay ${isPanelVisible ? "is-open" : ""}`}
+          aria-hidden={!isPanelVisible}
+        >
+          <div className="floating-chat__panel relative h-[517px]">
+            <div
+              className="floating-chat__card absolute left-0 top-[4px] box-border h-[513px] rounded-[31px] border-2 border-solid border-transparent px-[24px] pt-[24px]"
+              style={{
+                background:
+                  "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
+              }}
+            >
+              <div className="flex h-[406px] w-full flex-col items-start gap-[48px]">
+                <div className="flex h-[17px] w-full shrink-0 items-center justify-between gap-[12px]">
+                  <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
+                    Чаты
+                  </h2>
+                  <TextLink
+                    href="/chats"
+                    label="Все чаты"
+                    tabIndex={isPanelVisible ? 0 : -1}
+                    onNavigate={handleChatNavigate}
+                  />
+                </div>
+
+                <div className="flex h-[341px] w-full shrink-0 flex-col items-start gap-[24px] overflow-y-auto overflow-x-hidden">
+                  {loading ? (
+                    <p className="m-0 text-[14px] text-[#626262]">Загружаем…</p>
+                  ) : null}
+                  {!loading && error ? (
+                    <p className="m-0 text-[14px] text-[#FF2056]">{error}</p>
+                  ) : null}
+                  {!loading && !error && items.length === 0 ? (
+                    <p className="m-0 text-[14px] text-[#626262]">Пока нет чатов.</p>
+                  ) : null}
+                  {!loading && !error
+                    ? items.map((item) => (
+                        <ChatPanelRow
+                          key={item.id}
+                          item={item}
+                          tabIndex={isPanelVisible ? 0 : -1}
+                          onNavigate={handleChatNavigate}
+                        />
+                      ))
+                    : null}
+                </div>
+              </div>
+
+              <div className="absolute inset-x-0 bottom-0 top-[454px] flex items-center justify-end px-[24px]">
                 <TextLink
-                  href="/chats"
-                  label="Все чаты"
-                  tabIndex={isOpen ? 0 : -1}
-                  onNavigate={handleChatNavigate}
+                  href="/chats?support=1"
+                  label="Поддержка"
+                  tabIndex={isPanelVisible ? 0 : -1}
+                  onNavigate={handleOpenSupport}
                 />
               </div>
 
-              <div className="flex h-[341px] w-full shrink-0 flex-col items-start gap-[24px] overflow-y-auto overflow-x-hidden">
-                {loading ? (
-                  <p className="m-0 text-[14px] text-[#626262]">Загружаем…</p>
-                ) : null}
-                {!loading && error ? (
-                  <p className="m-0 text-[14px] text-[#FF2056]">{error}</p>
-                ) : null}
-                {!loading && !error && items.length === 0 ? (
-                  <p className="m-0 text-[14px] text-[#626262]">Пока нет чатов.</p>
-                ) : null}
-                {!loading && !error
-                  ? items.map((item) => (
-                      <ChatPanelRow
-                        key={item.id}
-                        item={item}
-                        tabIndex={isOpen ? 0 : -1}
-                        onNavigate={handleChatNavigate}
-                      />
-                    ))
-                  : null}
-              </div>
+              <PanelDivider top={62} />
+              <PanelDivider top={454} />
             </div>
-
-            <div className="absolute inset-x-0 bottom-0 top-[454px] flex items-center justify-end px-[24px]">
-              <TextLink
-                href="/chats?support=1"
-                label="Поддержка"
-                tabIndex={isOpen ? 0 : -1}
-                onNavigate={handleOpenSupport}
-              />
-            </div>
-
-            <PanelDivider top={62} />
-            <PanelDivider top={454} />
           </div>
         </div>
-      </div>
+      ) : null}
 
       <button
         type="button"
         aria-label={isOpen ? "Закрыть чат" : "Открыть чат"}
         aria-expanded={isOpen}
         onClick={handleToggle}
-        className="pointer-events-auto relative box-border flex size-[52px] shrink-0 items-center justify-center overflow-visible rounded-[19px] border-2 border-solid border-transparent p-[12px] transition hover:brightness-95 [-webkit-transform:translateZ(0)] [transform:translateZ(0)]"
+        className="floating-chat__fab pointer-events-auto relative box-border flex size-[52px] shrink-0 items-center justify-center overflow-visible rounded-[19px] border-2 border-solid border-transparent p-[12px] transition hover:brightness-95 [-webkit-transform:translateZ(0)] [transform:translateZ(0)]"
         style={{
           background:
             "linear-gradient(#c8ff02, #c8ff02) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
