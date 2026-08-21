@@ -47,7 +47,8 @@ export function Logo({ tone = "brand" }: LogoProps) {
       aria-label="На главную"
     >
       <LogoIcon
-        className={`block h-full w-full object-contain ${tone === "dark" ? "brightness-0" : ""}`}
+        src={tone === "dark" ? "/logo2.svg" : "/logo.svg"}
+        className="block h-full w-full object-contain"
       />
     </Link>
   );
