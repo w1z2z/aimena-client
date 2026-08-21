@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Ref } from "react";
 import { createPortal } from "react-dom";
 
 import { useAuthGate } from "@/features/auth";
@@ -22,6 +22,8 @@ type ListingGalleryProps = {
   isFavorite: boolean;
   hideFavorite?: boolean;
   imageMuted?: boolean;
+  /** Bottom edge used to align the collapsed description on the right. */
+  alignTargetRef?: Ref<HTMLDivElement | null>;
 };
 
 export function ListingGallery({
@@ -31,6 +33,7 @@ export function ListingGallery({
   isFavorite,
   hideFavorite = false,
   imageMuted = false,
+  alignTargetRef,
 }: ListingGalleryProps) {
   const { guardAuth } = useAuthGate();
   const favoriteMutation = useFavoriteToggle();
@@ -223,7 +226,7 @@ export function ListingGallery({
               className="listing-detail-gallery__nav listing-detail-gallery__nav--prev"
               onClick={goPrev}
             >
-              <ChevronIcon direction="left" className="h-[25px] w-[15px] text-brand" />
+              <ChevronIcon direction="left" className="text-[#1A1A1A]" />
             </button>
             <button
               type="button"
@@ -231,7 +234,7 @@ export function ListingGallery({
               className="listing-detail-gallery__nav listing-detail-gallery__nav--next"
               onClick={goNext}
             >
-              <ChevronIcon direction="right" className="h-[25px] w-[15px] text-brand" />
+              <ChevronIcon direction="right" className="text-[#1A1A1A]" />
             </button>
             <span className="listing-detail-gallery__counter">
               {safeIndex + 1}/{slides.length}
@@ -241,7 +244,11 @@ export function ListingGallery({
       </div>
 
       {canNavigate ? (
-        <div className="listing-detail-gallery__thumbs" role="list">
+        <div
+          ref={alignTargetRef}
+          className="listing-detail-gallery__thumbs"
+          role="list"
+        >
           {slides.map((slide, index) => (
             <button
               key={slide.id}

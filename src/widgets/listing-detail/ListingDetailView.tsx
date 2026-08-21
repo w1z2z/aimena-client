@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import {
   EXTRA_PAY_LABELS,
@@ -25,8 +25,9 @@ import { ListingGallery } from "./ListingGallery";
 import { ListingOwnerCard } from "./ListingOwnerCard";
 import { ListingSimilarSection, formatEstimatedPrice } from "./ListingSimilarSection";
 
-/** ~7 lines at 14px / 1.7 */
-const DESCRIPTION_COLLAPSED_HEIGHT = 166;
+/** Fallback when thumbs are missing or layout is stacked. ~7 lines at 14px / 1.7 */
+const DESCRIPTION_COLLAPSED_FALLBACK = 166;
+const DESCRIPTION_COLLAPSED_MIN = 96;
 
 /** Collapse runs of blank lines so sparse Enter spam doesn't explode layout. */
 function normalizeDescriptionWhitespace(value: string) {
@@ -45,46 +46,6 @@ function getCategoryIcon(...values: Array<string | null | undefined>) {
   return "";
 }
 
-function truncateDescriptionAtWord(
-  node: HTMLElement,
-  fullText: string,
-  maxHeight: number,
-): string {
-  node.textContent = fullText;
-  if (node.scrollHeight <= maxHeight) {
-    return fullText;
-  }
-
-  let low = 0;
-  let high = fullText.length;
-  let best = "";
-
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    let slice = fullText.slice(0, mid);
-    const breakAt = Math.max(
-      slice.lastIndexOf(" "),
-      slice.lastIndexOf("\n"),
-      slice.lastIndexOf("\t"),
-    );
-    if (breakAt > 0) {
-      slice = slice.slice(0, breakAt);
-    }
-
-    const candidate = `${slice.trimEnd()}…`;
-    node.textContent = candidate;
-
-    if (node.scrollHeight <= maxHeight) {
-      best = candidate;
-      low = mid + 1;
-    } else {
-      high = mid - 1;
-    }
-  }
-
-  return best || "…";
-}
-
 export function ListingDetailView() {
   const params = useParams<{ listingId: string }>();
   const router = useRouter();
@@ -94,8 +55,13 @@ export function ListingDetailView() {
   const { data, isLoading, isError, error } = useListing(listingId);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const descriptionTextRef = useRef<HTMLParagraphElement>(null);
+  const descriptionCardRef = useRef<HTMLDivElement>(null);
+  const descriptionMoreRef = useRef<HTMLButtonElement>(null);
+  const galleryThumbsRef = useRef<HTMLDivElement | null>(null);
   const [descriptionFullHeight, setDescriptionFullHeight] = useState(0);
-  const [collapsedDescription, setCollapsedDescription] = useState<string | null>(null);
+  const [descriptionCollapsedHeight, setDescriptionCollapsedHeight] = useState(
+    DESCRIPTION_COLLAPSED_FALLBACK,
+  );
 
   const listing = data?.listing;
   const isOwner = Boolean(user?.id && listing?.owner?.id && user.id === listing.owner.id);
@@ -179,42 +145,82 @@ export function ListingDetailView() {
   const hasWantsContent = wantsCategories.length > 0 || wantsThings.length > 0;
 
   const description = normalizeDescriptionWhitespace(listing?.description ?? "");
+  const descriptionText = description || "Описание не указано.";
   const canCollapseDescription =
-    descriptionFullHeight > DESCRIPTION_COLLAPSED_HEIGHT + 4;
-  const visibleDescription =
-    !canCollapseDescription || descriptionExpanded || !collapsedDescription
-      ? description || "Описание не указано."
-      : collapsedDescription;
+    descriptionFullHeight > descriptionCollapsedHeight + 4;
+
+  const measureDescriptionHeights = useCallback(() => {
+    const textNode = descriptionTextRef.current;
+    if (!textNode) {
+      setDescriptionFullHeight(0);
+      return;
+    }
+
+    const fullHeight = textNode.scrollHeight;
+    setDescriptionFullHeight(fullHeight);
+
+    const thumbs = galleryThumbsRef.current;
+    const card = descriptionCardRef.current;
+    if (!thumbs || !card) {
+      setDescriptionCollapsedHeight(DESCRIPTION_COLLAPSED_FALLBACK);
+      return;
+    }
+
+    const thumbsBottom = thumbs.getBoundingClientRect().bottom;
+    const cardTop = card.getBoundingClientRect().top;
+    if (cardTop >= thumbsBottom - 8) {
+      setDescriptionCollapsedHeight(DESCRIPTION_COLLAPSED_FALLBACK);
+      return;
+    }
+
+    const styles = getComputedStyle(card);
+    const paddingY =
+      (Number.parseFloat(styles.paddingTop) || 0) +
+      (Number.parseFloat(styles.paddingBottom) || 0);
+    const gap = Number.parseFloat(styles.rowGap || styles.gap) || 12;
+    const moreHeight =
+      descriptionMoreRef.current?.getBoundingClientRect().height ||
+      17;
+
+    const availableInner = thumbsBottom - cardTop - paddingY;
+    const nextCollapsed = Math.max(
+      DESCRIPTION_COLLAPSED_MIN,
+      Math.floor(availableInner - gap - moreHeight),
+    );
+    setDescriptionCollapsedHeight(nextCollapsed);
+  }, []);
 
   useLayoutEffect(() => {
     setDescriptionExpanded(false);
-    const node = descriptionTextRef.current;
-    if (!node) {
-      setDescriptionFullHeight(0);
-      setCollapsedDescription(null);
-      return;
-    }
+    measureDescriptionHeights();
+  }, [description, listing?.id, measureDescriptionHeights]);
 
-    const fullText = description || "Описание не указано.";
-    node.textContent = fullText;
-    const fullHeight = node.scrollHeight;
-    setDescriptionFullHeight(fullHeight);
+  useLayoutEffect(() => {
+    measureDescriptionHeights();
 
-    if (fullHeight <= DESCRIPTION_COLLAPSED_HEIGHT + 4) {
-      setCollapsedDescription(null);
-      return;
-    }
+    const thumbs = galleryThumbsRef.current;
+    const card = descriptionCardRef.current;
+    const observer = new ResizeObserver(() => {
+      measureDescriptionHeights();
+    });
 
-    setCollapsedDescription(
-      truncateDescriptionAtWord(node, fullText, DESCRIPTION_COLLAPSED_HEIGHT),
-    );
-    node.textContent = fullText;
-  }, [description, listing?.id]);
+    if (thumbs) observer.observe(thumbs);
+    if (card) observer.observe(card);
+    window.addEventListener("resize", measureDescriptionHeights);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measureDescriptionHeights);
+    };
+  }, [listing?.id, itemImages.length, measureDescriptionHeights]);
 
   const descriptionClipHeight =
     !canCollapseDescription || descriptionExpanded
       ? descriptionFullHeight
-      : Math.min(DESCRIPTION_COLLAPSED_HEIGHT, descriptionFullHeight || DESCRIPTION_COLLAPSED_HEIGHT);
+      : Math.min(
+          descriptionCollapsedHeight,
+          descriptionFullHeight || descriptionCollapsedHeight,
+        );
 
   const handleProposeExchange = () => {
     if (!listing) return;
@@ -268,6 +274,7 @@ export function ListingDetailView() {
                 isFavorite={listing.isFavorite}
                 hideFavorite={isOwner}
                 imageMuted={listing.status === "archived" || listing.status === "completed"}
+                alignTargetRef={galleryThumbsRef}
               />
               {listing.owner ? <ListingOwnerCard owner={listing.owner} /> : null}
             </div>
@@ -454,7 +461,7 @@ export function ListingDetailView() {
 
               <section className="listing-detail-description" aria-label="Описание">
                 <h2 className="listing-detail-description__title">Описание</h2>
-                <div className="listing-detail-description__card">
+                <div ref={descriptionCardRef} className="listing-detail-description__card">
                   <div
                     className="listing-detail-description__clip"
                     style={{ maxHeight: descriptionClipHeight || undefined }}
@@ -463,17 +470,36 @@ export function ListingDetailView() {
                       ref={descriptionTextRef}
                       className="listing-detail-description__text whitespace-pre-wrap"
                     >
-                      {visibleDescription}
+                      {descriptionText}
                     </p>
                   </div>
                   {canCollapseDescription ? (
                     <button
+                      ref={descriptionMoreRef}
                       type="button"
                       className="listing-detail-description__more"
                       onClick={() => setDescriptionExpanded((value) => !value)}
                       aria-expanded={descriptionExpanded}
                     >
                       {descriptionExpanded ? "Свернуть" : "Дальше"}
+                      <svg
+                        width="10"
+                        height="6"
+                        viewBox="0 0 10 6"
+                        fill="none"
+                        aria-hidden
+                        className={`listing-detail-description__more-icon${
+                          descriptionExpanded ? " is-expanded" : ""
+                        }`}
+                      >
+                        <path
+                          d="M1 1L5 5L9 1"
+                          stroke="currentColor"
+                          strokeWidth="1.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </button>
                   ) : null}
                 </div>

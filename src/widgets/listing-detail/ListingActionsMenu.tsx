@@ -7,7 +7,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { listingQueryKeys } from "@/entities/listing";
 import { useAuthGate } from "@/features/auth";
 import {
-  completeListing,
   deleteListing,
   pauseListing,
   publishListing,
@@ -26,7 +25,7 @@ type ListingActionsMenuProps = {
   status?: ApiListingDetail["status"];
 };
 
-type ConfirmKind = "pause" | "complete" | "delete";
+type ConfirmKind = "pause" | "delete";
 type ModalKind = ConfirmKind | "report" | null;
 type PendingKind = ConfirmKind | "publish" | "report" | null;
 
@@ -112,17 +111,6 @@ export function ListingActionsMenu({
         description: "Объявление можно будет снова опубликовать через профиль",
       };
     }
-    if (modal === "complete") {
-      return {
-        title: (
-          <>
-            Вы уверены, что хотите{" "}
-            <span className="listing-action-modal__accent">завершить</span> объявление?
-          </>
-        ),
-        description: "Завершённое объявление нельзя опубликовать снова",
-      };
-    }
     if (modal === "delete") {
       return {
         title: (
@@ -150,24 +138,6 @@ export function ListingActionsMenu({
     } catch (error) {
       setActionError(
         error instanceof ApiError ? error.message : "Не удалось снять с публикации",
-      );
-    } finally {
-      setPendingAction(null);
-    }
-  };
-
-  const handleComplete = async () => {
-    if (pendingAction) return;
-    setActionError(null);
-    setPendingAction("complete");
-    try {
-      await completeListing(listingId);
-      await invalidateListingCaches(queryClient, listingId);
-      setModal(null);
-      closeMenu();
-    } catch (error) {
-      setActionError(
-        error instanceof ApiError ? error.message : "Не удалось завершить объявление",
       );
     } finally {
       setPendingAction(null);
@@ -234,7 +204,6 @@ export function ListingActionsMenu({
   };
 
   const canRepublish = status === "draft" || status === "archived";
-  const canComplete = status === "active" || status === "archived";
   const canEdit = status !== "completed";
 
   return (
@@ -295,20 +264,6 @@ export function ListingActionsMenu({
                   {status === "draft" ? "Опубликовать" : "Опубликовать снова"}
                 </button>
               ) : null}
-              {canComplete ? (
-                <button
-                  type="button"
-                  className="listing-detail-actions__item"
-                  disabled={pendingAction !== null}
-                  onClick={() => {
-                    closeMenu();
-                    setActionError(null);
-                    setModal("complete");
-                  }}
-                >
-                  Завершить объявление
-                </button>
-              ) : null}
               {canEdit ? (
                 <button
                   type="button"
@@ -356,14 +311,13 @@ export function ListingActionsMenu({
       ) : null}
 
       <ListingConfirmModal
-        open={modal === "pause" || modal === "complete" || modal === "delete"}
+        open={modal === "pause" || modal === "delete"}
         pending={pendingAction !== null}
         error={actionError}
         title={confirmConfig?.title ?? ""}
         description={confirmConfig?.description ?? ""}
         onConfirm={() => {
           if (modal === "pause") void handlePause();
-          if (modal === "complete") void handleComplete();
           if (modal === "delete") void handleDelete();
         }}
         onClose={closeModal}
