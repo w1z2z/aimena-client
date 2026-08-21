@@ -237,6 +237,12 @@
   scroll-margin-top: 72px;
 }
 
+/* Compact categories arc — scaled in JS; keep hit area / glow from clipping oddly */
+.categories-arc--compact {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 @media (max-width: 1024px) {
   #home-recommendations {
     scroll-margin-top: 64px;
