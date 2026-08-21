@@ -64,7 +64,11 @@ export default function FreeGiveawaysPage() {
     listingsQuery.data?.pageCount ?? getProfilePageCount(total, CATALOG_PAGE_SIZE);
 
   let body = (
-    <ListingCardSkeletonGrid count={CATALOG_PAGE_SIZE} className="favorites-page__grid" />
+    <ListingCardSkeletonGrid
+      count={CATALOG_PAGE_SIZE}
+      className="favorites-page__grid"
+      itemClassName="favorites-page__card"
+    />
   );
 
   if (listingsQuery.isError) {
@@ -96,19 +100,20 @@ export default function FreeGiveawaysPage() {
       <div className="favorites-page__list">
         <div className="favorites-page__grid" aria-label="Объявления даром">
           {listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listingId={listing.id}
-              variant="free"
-              title={listing.title}
-              city={listing.city}
-              condition={listing.condition}
-              coverImageUrl={listing.coverImageUrl}
-              wantCategories={listing.wantCategories}
-              isFree
-              isFavorite={listing.isFavorite}
-              ownerId={listing.ownerId}
-            />
+            <div key={listing.id} className="favorites-page__card">
+              <ListingCard
+                listingId={listing.id}
+                variant="free"
+                title={listing.title}
+                city={listing.city}
+                condition={listing.condition}
+                coverImageUrl={listing.coverImageUrl}
+                wantCategories={listing.wantCategories}
+                isFree
+                isFavorite={listing.isFavorite}
+                ownerId={listing.ownerId}
+              />
+            </div>
           ))}
         </div>
         <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
