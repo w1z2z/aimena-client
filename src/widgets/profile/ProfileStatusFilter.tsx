@@ -1,9 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-
-import { PROFILE_ASSETS } from "./constants";
 
 export type ProfileListingStatusFilter = "all" | "active" | "archived" | "completed";
 
@@ -25,6 +22,27 @@ type ProfileStatusFilterProps = {
   onChange: (next: ProfileListingStatusFilter) => void;
   options?: "own" | "public";
 };
+
+function StatusChevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="12"
+      height="8"
+      viewBox="0 0 10 6"
+      fill="none"
+      aria-hidden
+      className={`shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+    >
+      <path
+        d="M1 1L5 5L9 1"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 export function ProfileStatusFilter({
   value,
@@ -65,18 +83,12 @@ export function ProfileStatusFilter({
           event.stopPropagation();
           setOpen((current) => !current);
         }}
-        className="flex h-7 items-center justify-center gap-2 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white px-3 py-2"
+        className="flex h-7 items-center justify-center gap-2 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white px-3 py-2 text-[#1A1A1A]"
       >
-        <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
+        <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.001em]">
           {currentLabel}
         </span>
-        <img
-          src={PROFILE_ASSETS.sortChevron}
-          alt=""
-          className={`h-1 w-2 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            open ? "rotate-180" : ""
-          }`}
-        />
+        <StatusChevron open={open} />
       </button>
 
       {open ? (

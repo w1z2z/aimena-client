@@ -1,9 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-
-import { PROFILE_ASSETS } from "./constants";
 
 export type ProfileSortOrder = "newest" | "oldest";
 
@@ -48,6 +45,27 @@ const SORT_OPTIONS = [
   { id: "newest" as const, label: "Сначала новые" },
   { id: "oldest" as const, label: "Сначала старые" },
 ];
+
+function SortChevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="12"
+      height="8"
+      viewBox="0 0 10 6"
+      fill="none"
+      aria-hidden
+      className={`shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+    >
+      <path
+        d="M1 1L5 5L9 1"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 type ProfileSortControlProps<T extends string = string> = {
   sort: ProfileSortOrder;
@@ -111,11 +129,7 @@ export function ProfileSortControl<T extends string = string>({
         className="profile-sort-btn"
       >
         Сортировка
-        <img
-          src={PROFILE_ASSETS.sortChevron}
-          alt=""
-          className={`profile-sort-btn__chevron${open ? " is-open" : ""}`}
-        />
+        <SortChevron open={open} />
       </button>
 
       {open ? (

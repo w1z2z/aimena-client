@@ -3,7 +3,6 @@ export const PROFILE_ASSETS = {
   pin: "/profile/icon-pin.svg",
   bolt: "/profile/icon-bolt.svg",
   pointsBolt: "/profile/icon-points-bolt.svg",
-  sortChevron: "/profile/icon-sort-chevron.svg",
   upload: "/profile/icon-upload.svg",
   settings: "/profile/icon-settings.svg",
   listings: "/profile/icon-listings.svg",
