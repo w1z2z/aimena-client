@@ -573,44 +573,53 @@ export function Header() {
             />
           </HeaderDropdown>
 
-          <IconButton
-            label="Избранное"
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              if (showExpandedSearch) {
-                closeSearchWithAnimation({ clear: true });
-              }
-              router.push("/favorites");
-            }}
-          >
-            <HeartIcon className="h-[14px] w-[16px] text-black" />
-          </IconButton>
+          {/* Compact: favorites are in the bottom nav — uncomment / remove `hidden` to restore in header */}
+          <div className={isCompact ? "hidden" : "contents"}>
+            <IconButton
+              label="Избранное"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                if (showExpandedSearch) {
+                  closeSearchWithAnimation({ clear: true });
+                }
+                router.push("/favorites");
+              }}
+            >
+              <HeartIcon className="h-[14px] w-[16px] text-black" />
+            </IconButton>
+          </div>
 
           <HeaderDropdown
             open={openPanel === "profile"}
             onOpenChange={(open) => setOpenPanel(open ? "profile" : null)}
             panelLabel="Профиль"
             trigger={
-              <Avatar
-                initial={user.avatarInitial}
-                src={user.avatarUrl}
-                aria-expanded={openPanel === "profile"}
-                aria-haspopup="dialog"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  if (showExpandedSearch) {
-                    closeSearchWithAnimation({ clear: true });
-                  }
-                  togglePanel("profile");
-                }}
-              />
+              // Compact: profile is in the bottom nav; keep dropdown mounted for the sheet.
+              <span className={isCompact ? "hidden" : "contents"}>
+                <Avatar
+                  initial={user.avatarInitial}
+                  src={user.avatarUrl}
+                  aria-expanded={openPanel === "profile"}
+                  aria-haspopup="dialog"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    if (showExpandedSearch) {
+                      closeSearchWithAnimation({ clear: true });
+                    }
+                    togglePanel("profile");
+                  }}
+                />
+              </span>
             }
           >
             <ProfileDropdown onClose={() => setOpenPanel(null)} />
           </HeaderDropdown>
         </>
       ) : (
-        <LoginButton />
+        // Compact: login is in the bottom nav — remove `hidden` to restore in header
+        <span className={isCompact ? "hidden" : "contents"}>
+          <LoginButton />
+        </span>
       )}
     </>
   );
@@ -634,7 +643,8 @@ export function Header() {
               </div>
 
               <div className="ml-auto flex shrink-0 items-center gap-[8px] sm:gap-[12px]">
-                <div className="relative z-[50]">
+                {/* Compact: search is in the bottom nav — remove `hidden` to restore in header */}
+                <div className="relative z-[50] hidden">
                   <button
                     ref={searchToggleRef}
                     type="button"
