@@ -186,11 +186,17 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     setAppliedFilters((current) => ({ ...current, titleQuery: trimmed }));
     setIsFiltersOpen(true);
 
-    window.requestAnimationFrame(() => {
+    const scrollToResults = () => {
       document.getElementById("home-recommendations")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
+    };
+
+    // Wait a frame (filters expand) then scroll; second pass for late layout.
+    window.requestAnimationFrame(() => {
+      scrollToResults();
+      window.setTimeout(scrollToResults, 120);
     });
   }, []);
 

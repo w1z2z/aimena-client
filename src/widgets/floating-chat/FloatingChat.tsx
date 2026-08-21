@@ -15,6 +15,8 @@ import { getChatConversations, openSupportChat, type ChatSummary } from "@/share
 import { ChatBubbleIcon } from "@/shared/ui/icons";
 import { OVERLAY_ANIMATION_MS } from "@/shared/lib/overlay-animation";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
+import { useMediaQuery } from "@/shared/lib/use-media-query";
+import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
 
 const LINK_CHEVRON_SRC = "/images/chat/link-chevron.svg";
 
@@ -150,6 +152,7 @@ function PanelDivider({ top }: { top: number }) {
 export function FloatingChat() {
   const router = useRouter();
   const pathname = usePathname();
+  const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
   const { isAuthenticated } = useAuth();
   const { hasUnreadConversations } = useChatInbox();
   const { guardAuth } = useAuthGate();
@@ -235,7 +238,7 @@ export function FloatingChat() {
     return () => controller.abort();
   }, [isAuthenticated, isOpen]);
 
-  if (pathname.startsWith("/chats")) {
+  if (isCompact || pathname.startsWith("/chats")) {
     return null;
   }
 

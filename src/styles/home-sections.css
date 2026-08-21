@@ -233,6 +233,16 @@
   width: 100%;
 }
 
+#home-recommendations {
+  scroll-margin-top: 72px;
+}
+
+@media (max-width: 1024px) {
+  #home-recommendations {
+    scroll-margin-top: 64px;
+  }
+}
+
 .home-recommendations-filters-panel {
   display: grid;
   grid-template-rows: 0fr;

@@ -74,3 +74,8 @@
   right: 0;
   top: 0;
 }
+
+.unread-dot--nav {
+  right: -1px;
+  top: -1px;
+}

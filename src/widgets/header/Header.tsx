@@ -7,6 +7,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
+import { createPortal, flushSync } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useAuth, useAuthGate } from "@/features/auth";
@@ -15,13 +16,13 @@ import { getListings } from "@/shared/api/listings";
 import { requestHomeTitleSearch } from "@/shared/lib/home-title-search";
 import { useMediaQuery } from "@/shared/lib/use-media-query";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
+import { useScrollLock } from "@/shared/lib/use-scroll-lock";
 import { BellIcon, BurgerIcon, HeartIcon, SearchIcon } from "@/shared/ui/icons";
 
 import { Avatar } from "./Avatar";
 import { ButtonPrimary } from "./ButtonPrimary";
 import {
   COMPACT_HEADER_QUERY,
-  HEADER_COMPACT_SEARCH_MAX_WIDTH_PX,
   OVERLAY_ANIMATION_MS,
 } from "./constants";
 import { HeaderCategoriesDropdown } from "./HeaderCategoriesDropdown";
@@ -31,6 +32,7 @@ import { IconButton } from "./IconButton";
 import { Logo } from "./Logo";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { LoginButton } from "./LoginButton";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { ProfileDropdown } from "./ProfileDropdown";
 
 type OpenPanel = "notifications" | "profile" | null;
@@ -59,6 +61,7 @@ export function Header() {
   const { guardAuth } = useAuthGate();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const searchResultsRef = useRef<HTMLDivElement>(null);
   const searchToggleRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchCloseTimerRef = useRef<number | null>(null);
@@ -74,11 +77,17 @@ export function Header() {
   const { isRendered: compactSearchRendered, isVisible: compactSearchVisible } = useOverlayPresence(
     isCompact && isSearchExpanded,
   );
+  useScrollLock(
+    isCompact && (isSearchExpanded || compactSearchRendered),
+    searchResultsRef,
+  );
 
   /** Desktop: expanded on scroll, or after clicking the search icon at top. Compact: overlay presence. */
   const showExpandedSearch =
     (!isCompact && (isScrolled || isSearchExpanded || isSearchClosing)) ||
-    (isCompact && (compactSearchRendered || isSearchExpanded || isSearchClosing));
+    (isCompact && (isSearchExpanded || isSearchClosing || compactSearchRendered));
+  const mountCompactSearch =
+    isCompact && (isSearchExpanded || isSearchClosing || compactSearchRendered);
   const showSearchSuggestions =
     showExpandedSearch &&
     !isSearchClosing &&
@@ -291,11 +300,24 @@ export function Header() {
     const trimmed = query.trim();
     if (!trimmed) return;
 
+    if (isCompact) {
+      // Unlock/close first — scroll-lock cleanup restores scrollY and would
+      // undo scrollIntoView if we search while the overlay is still locking.
+      closeSearchWithAnimation({ clear: true });
+      window.setTimeout(() => {
+        requestHomeTitleSearch(trimmed);
+        if (pathname !== "/") {
+          router.push("/");
+        }
+      }, OVERLAY_ANIMATION_MS + 32);
+      return;
+    }
+
     requestHomeTitleSearch(trimmed);
     if (pathname !== "/") {
       router.push("/");
     }
-    if (isCompact || !isScrolled) {
+    if (!isScrolled) {
       closeSearchWithAnimation();
     } else {
       setSearchQuery("");
@@ -311,14 +333,15 @@ export function Header() {
         window.clearTimeout(searchCloseTimerRef.current);
         searchCloseTimerRef.current = null;
       }
-      setIsSearchClosing(false);
-      setIsSearchExpanded(true);
-      setIsMobileMenuOpen(false);
-      setOpenPanel(null);
-      setActiveSearchSuggestionIndex(-1);
-      window.requestAnimationFrame(() => {
-        searchInputRef.current?.focus({ preventScroll: true });
+      // flushSync: mount input in this tap so iOS allows the keyboard.
+      flushSync(() => {
+        setIsSearchClosing(false);
+        setIsSearchExpanded(true);
+        setIsMobileMenuOpen(false);
+        setOpenPanel(null);
+        setActiveSearchSuggestionIndex(-1);
       });
+      searchInputRef.current?.focus();
       return;
     }
 
@@ -411,7 +434,9 @@ export function Header() {
         className={
           isSearchClosing
             ? "pointer-events-none absolute h-0 w-0 opacity-0"
-            : "h-[16px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-none text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
+            : isCompact
+              ? "h-auto min-w-0 flex-1 bg-transparent text-[16px] font-normal leading-[1.3] text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
+              : "h-[16px] min-w-0 flex-1 bg-transparent text-[14px] font-normal leading-none text-[#1A1A1A] outline-none ring-0 placeholder:text-[#1A1A1A]/60 focus:outline-none focus:ring-0 focus-visible:outline-none"
         }
       />
       <button
@@ -442,6 +467,41 @@ export function Header() {
         </svg>
       </button>
     </div>
+  );
+
+  const searchSuggestionsList = (
+    <>
+      {isSearchLoading ? (
+        <p className="px-[16px] py-[14px] text-[16px] text-[#626262]">Ищем...</p>
+      ) : searchSuggestions.length > 0 ? (
+        <ul className="overflow-y-auto">
+          {searchSuggestions.map((suggestion, index) => (
+            <li key={suggestion.id}>
+              <button
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onMouseEnter={() => setActiveSearchSuggestionIndex(index)}
+                onClick={() => {
+                  setSearchQuery(suggestion.title);
+                  applyHomeFeedSearch(suggestion.title);
+                }}
+                className={`block w-full px-[16px] py-[14px] text-left text-[16px] text-[#626262] outline-none transition hover:bg-[#1A1A1A]/6 focus:outline-none focus-visible:outline-none ${
+                  index === activeSearchSuggestionIndex ? "bg-[#1A1A1A]/6" : ""
+                }`}
+              >
+                {suggestion.title}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : searchQuery.trim().length >= 2 ? (
+        <p className="px-[16px] py-[14px] text-[16px] text-[#626262]">Ничего не найдено</p>
+      ) : (
+        <p className="px-[16px] py-[14px] text-[16px] text-[#626262]">
+          Начните вводить название объявления
+        </p>
+      )}
+    </>
   );
 
   const searchSuggestionsDropdown = suggestionsRendered ? (
@@ -611,30 +671,27 @@ export function Header() {
               </div>
             </div>
 
-            {compactSearchRendered ? (
-              <div
-                className={`site-header-compact-search ${compactSearchVisible ? "is-open" : ""}`}
-              >
-                <button
-                  type="button"
-                  aria-label="Закрыть поиск"
-                  className="site-header-compact-search__backdrop"
-                  onClick={() => closeSearchWithAnimation({ clear: true })}
-                />
-                <div className="site-header-compact-search__panel site-header-compact-inset relative z-[71] mx-auto flex w-full max-w-[1440px] justify-end">
+            {mountCompactSearch && typeof document !== "undefined"
+              ? createPortal(
                   <div
-                    ref={searchRef}
-                    className="relative w-full"
-                    style={{ maxWidth: HEADER_COMPACT_SEARCH_MAX_WIDTH_PX }}
+                    className={`site-header-compact-search ${compactSearchVisible || (isSearchExpanded && !isSearchClosing) ? "is-open" : ""}`}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Поиск"
                   >
-                    <div className="site-header-compact-search__field h-[32px] w-full overflow-hidden">
-                      {searchField}
+                    <div ref={searchRef} className="site-header-compact-search__sheet">
+                      <div className="site-header-compact-search__field">{searchField}</div>
+                      <div
+                        ref={searchResultsRef}
+                        className="site-header-compact-search__results"
+                      >
+                        {searchSuggestionsList}
+                      </div>
                     </div>
-                    {searchSuggestionsDropdown}
-                  </div>
-                </div>
-              </div>
-            ) : null}
+                  </div>,
+                  document.body,
+                )
+              : null}
           </div>
         ) : (
           <div className="site-header__inner relative mx-auto flex h-full w-full max-w-[1440px] items-center gap-[16px]">
@@ -686,6 +743,24 @@ export function Header() {
           open={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
           onCreateListing={handleCreateListing}
+        />
+      ) : null}
+
+      {isCompact ? (
+        <MobileBottomNav
+          searchActive={Boolean(showExpandedSearch && !isSearchClosing)}
+          onSearchClick={() => {
+            setOpenPanel(null);
+            setIsMobileMenuOpen(false);
+            handleSearchToggle();
+          }}
+          onProfileClick={() => {
+            setIsMobileMenuOpen(false);
+            if (showExpandedSearch) {
+              closeSearchWithAnimation({ clear: true });
+            }
+            togglePanel("profile");
+          }}
         />
       ) : null}
     </>
