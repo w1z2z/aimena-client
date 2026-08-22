@@ -220,12 +220,33 @@ export function SelectField({
 
   const handleOptionPick = (option: SelectOption) => {
     if (option.disabled) return;
-    const scrollY = window.scrollY;
+
+    const windowScrollY = window.scrollY;
+    const nestedScrolls: { el: HTMLElement; top: number }[] = [];
+    let node: HTMLElement | null = rootRef.current;
+    while (node) {
+      const style = window.getComputedStyle(node);
+      const overflowY = style.overflowY;
+      if (
+        (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+        node.scrollHeight > node.clientHeight + 1
+      ) {
+        nestedScrolls.push({ el: node, top: node.scrollTop });
+      }
+      node = node.parentElement;
+    }
+
     const restoreScroll = () => {
-      if (Math.abs(window.scrollY - scrollY) > 1) {
-        window.scrollTo(window.scrollX, scrollY);
+      if (Math.abs(window.scrollY - windowScrollY) > 1) {
+        window.scrollTo(window.scrollX, windowScrollY);
+      }
+      for (const { el, top } of nestedScrolls) {
+        if (Math.abs(el.scrollTop - top) > 1) {
+          el.scrollTop = top;
+        }
       }
     };
+
     if (searchable) {
       setInputValue(option.label);
     }
@@ -238,6 +259,8 @@ export function SelectField({
       }
       window.requestAnimationFrame(restoreScroll);
     });
+    window.setTimeout(restoreScroll, 0);
+    window.setTimeout(restoreScroll, 50);
   };
 
   const handleBlur = () => {

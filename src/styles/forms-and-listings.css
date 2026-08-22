@@ -851,7 +851,7 @@
 .home-filters-panel__mode-swap--toggle {
   flex: none;
   width: max-content;
-  min-width: 153px;
+  min-width: 0;
   overflow: visible;
 }
 
@@ -899,7 +899,7 @@
 }
 
 .home-filters-panel__pills--date {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -946,8 +946,9 @@
 .home-filters-panel__toggles-row {
   display: flex;
   flex: none;
-  align-items: center;
-  gap: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .home-filters-panel__toggle {
