@@ -4,9 +4,7 @@ import { useCallback } from "react";
 
 import { useHomeSearch } from "@/features/home-search";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
-
 import { FilterIcon } from "@/shared/ui/icons";
-
 import { HomeListingsGrid } from "@/widgets/home-listings-grid/HomeListingsGrid";
 
 import { HomeRecommendationsFiltersPanelContent } from "./HomeRecommendationsFiltersPanelContent";
@@ -74,7 +72,9 @@ export function HomeRecommendationsHeader() {
           </div>
         </div>
 
-        <HomeListingsGrid />
+        <div id="home-recommendations-feed" className="home-recommendations-feed">
+          <HomeListingsGrid />
+        </div>
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { HERO_CONDITION_OPTIONS } from "@/entities/listing";
 import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
@@ -134,7 +134,7 @@ function TopModeToggle({ mode, setMode }: Pick<ModeFormFieldsProps, "mode" | "se
   ];
 
   return (
-    <div className="relative box-border flex h-[70px] w-[346px] items-center gap-[4px] rounded-[21px] border-[0.5px] border-[#CACACA] bg-white p-[8px]">
+    <div className="home-hero-mode-toggle relative box-border flex h-[70px] w-[346px] items-center gap-[4px] rounded-[21px] border-[0.5px] border-[#CACACA] bg-white p-[8px]">
       <span
         aria-hidden="true"
         className={`pointer-events-none absolute bottom-[8px] left-[8px] top-[8px] w-[calc(50%-10px)] rounded-[17px] bg-[#8E8BED] ${HERO_TRANSFORM_TRANSITION} ${
@@ -207,7 +207,7 @@ function HeroPriceInput({
   }, [formattedPrice]);
 
   return (
-    <div className="w-[250px] flex-1">
+    <div className="home-hero-field home-hero-field--price w-[250px] flex-1">
       <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Примерная стоимость</p>
       <div className="relative">
         <span className="pointer-events-none absolute left-[12px] top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]">
@@ -264,18 +264,18 @@ function TopFields({
   | "onCityListEndReached"
 >) {
   return (
-    <div className="flex h-[69px] gap-[12px]">
+    <div className="home-hero-fields flex h-[69px] gap-[12px]">
       <LabeledInput
         label="Название"
         value={title}
         onChange={setTitle}
         placeholder={titlePlaceholder}
-        className="w-[379px]"
+        className="home-hero-field home-hero-field--title w-[379px]"
       />
 
       <HeroPriceInput priceDigits={price} setPrice={setPrice} />
 
-      <div className="w-[250px] flex-1">
+      <div className="home-hero-field home-hero-field--city w-[250px] flex-1">
         <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Город</p>
         <SelectField
           value={city}
@@ -338,9 +338,9 @@ function HeroExchangeFilters({
   };
 
   return (
-    <div className="relative flex h-[264px] w-[464px] flex-col items-start gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+    <div className="home-hero-panel relative flex h-[264px] w-[464px] flex-col items-start gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
       <HeroBackgroundStar
-        className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
+        className={`home-hero-panel__star pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
         gradientId="hero-left-filters-star"
       />
 
@@ -453,9 +453,9 @@ function HeroExchangeFilters({
 
 function HeroAddPanel({ onAddListingClick }: { onAddListingClick: () => void }) {
   return (
-    <div className="relative h-[264px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+    <div className="home-hero-panel relative h-[264px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
       <HeroBackgroundStar
-        className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
+        className={`home-hero-panel__star pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
         gradientId="hero-left-add-star"
       />
 
@@ -479,9 +479,9 @@ function HeroAddPanel({ onAddListingClick }: { onAddListingClick: () => void }) 
 
 function HeroAllVariantsPanel({ onViewAllClick }: { onViewAllClick: () => void }) {
   return (
-    <div className="relative h-[264px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+    <div className="home-hero-panel home-hero-panel--all relative h-[264px] w-[464px] overflow-hidden rounded-[31px] bg-white p-[24px]">
       <HeroBackgroundStar
-        className={`pointer-events-none absolute z-0 ${HERO_PANEL_STAR_RIGHT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
+        className={`home-hero-panel__star pointer-events-none absolute z-0 ${HERO_PANEL_STAR_RIGHT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
         gradientId="hero-all-variants-star"
       />
 
@@ -492,16 +492,16 @@ function HeroAllVariantsPanel({ onViewAllClick }: { onViewAllClick: () => void }
       <button
         type="button"
         onClick={onViewAllClick}
-        className="absolute left-[55.17%] right-[9.7%] top-[17.81%] bottom-[18.4%] rounded-full bg-[#8E8BED] p-0 text-white transition-colors duration-200 ease-out hover:bg-[#9E9EF0] active:bg-[#7E7EDD]"
+        className="home-hero-all-cta absolute left-[55.17%] right-[9.7%] top-[17.81%] bottom-[18.4%] rounded-full bg-[#8E8BED] p-0 text-white transition-colors duration-200 ease-out hover:bg-[#9E9EF0] active:bg-[#7E7EDD]"
       >
-        <span className="pointer-events-none absolute inset-[6.13%_6.44%_6.75%_6.44%] rounded-full border border-white" />
-        <span className="pointer-events-none absolute left-[53px] top-[31px] h-[48.44px] w-[58.45px]">
+        <span className="home-hero-all-cta__ring pointer-events-none absolute inset-[6.13%_6.44%_6.75%_6.44%] rounded-full border border-white" />
+        <span className="home-hero-all-cta__glyph pointer-events-none absolute left-[53px] top-[31px] h-[48.44px] w-[58.45px]">
           <HeroViewAllGlyph />
         </span>
-        <span className="pointer-events-none absolute inset-[58.9%_21.47%_24.54%_22.09%] flex items-center justify-center text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em]">
+        <span className="home-hero-all-cta__label pointer-events-none absolute inset-[58.9%_21.47%_24.54%_22.09%] flex items-center justify-center text-center text-[14px] font-semibold leading-[120%] tracking-[0.001em]">
           Все варианты
         </span>
-        <span className="pointer-events-none absolute left-[-170px] top-[50px] z-[3] h-[90.27px] w-[160.69px]">
+        <span className="home-hero-all-cta__arrow pointer-events-none absolute left-[-170px] top-[50px] z-[3] h-[90.27px] w-[160.69px]">
           <HeroViewAllArrow />
         </span>
       </button>
@@ -525,59 +525,86 @@ export function ModeFormColumn({
   setCondition,
   onAddListingClick,
   onViewAllClick,
-}: ModeFormFieldsProps & { onAddListingClick: () => void }) {
+  midSlot,
+  compactLayout = false,
+}: ModeFormFieldsProps & {
+  onAddListingClick: () => void;
+  midSlot?: ReactNode;
+  compactLayout?: boolean;
+}) {
   const isExchange = mode === "exchange";
+  const showCompactBrowseFilters = compactLayout && !isExchange;
+
+  const lime = (
+    <div className="home-hero-form__lime h-[264px] w-full rounded-[31px] bg-[#c8ff02] p-[24px]">
+      <div className="home-hero-form__lime-head mb-[48px] flex items-center justify-between">
+        <div>
+          <ModeHeading isExchange={isExchange} />
+          <p className="mt-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Можно ввести не все поля</p>
+        </div>
+        <TopModeToggle mode={mode} setMode={setMode} />
+      </div>
+
+      <TopFields
+        title={title}
+        setTitle={setTitle}
+        price={price}
+        setPrice={setPrice}
+        city={city}
+        setCity={setCity}
+        cityOptions={cityOptions}
+        onCityInputChange={onCityInputChange}
+        onCityListEndReached={onCityListEndReached}
+      />
+    </div>
+  );
 
   return (
-    <div className="flex h-[552px] w-[952px] flex-col gap-[24px]">
-      <div className="h-[264px] w-full rounded-[31px] bg-[#c8ff02] p-[24px]">
-        <div className="mb-[48px] flex items-center justify-between">
-          <div>
-            <ModeHeading isExchange={isExchange} />
-            <p className="mt-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Можно ввести не все поля</p>
-          </div>
-          <TopModeToggle mode={mode} setMode={setMode} />
-        </div>
-
-        <TopFields
-          title={title}
-          setTitle={setTitle}
-          price={price}
-          setPrice={setPrice}
-          city={city}
-          setCity={setCity}
-          cityOptions={cityOptions}
-          onCityInputChange={onCityInputChange}
-          onCityListEndReached={onCityListEndReached}
-        />
-      </div>
-
-      <div className="relative flex h-[264px] gap-[24px]">
-        <div className="relative grid h-[264px] w-[464px] shrink-0 overflow-hidden rounded-[31px]">
-          <div
-            className={`col-start-1 row-start-1 ${HERO_SWAP_TRANSITION} ${
-              isExchange
-                ? "translate-y-0 opacity-100"
-                : "pointer-events-none translate-y-1.5 opacity-0"
-            }`}
-            aria-hidden={!isExchange}
-          >
-            <HeroAddPanel onAddListingClick={onAddListingClick} />
-          </div>
-          <div
-            className={`col-start-1 row-start-1 ${HERO_SWAP_TRANSITION} ${
-              !isExchange
-                ? "translate-y-0 opacity-100"
-                : "pointer-events-none -translate-y-1.5 opacity-0"
-            }`}
-            aria-hidden={isExchange}
-          >
+    <div
+      className={`home-hero-form flex flex-col gap-[24px] ${
+        compactLayout ? "h-auto w-full" : "h-[552px] w-[952px]"
+      }`}
+    >
+      {midSlot ? (
+        <div className="home-hero-form__search-pair">
+          {lime}
+          {showCompactBrowseFilters ? (
             <HeroExchangeFilters condition={condition} setCondition={setCondition} />
-          </div>
+          ) : null}
+          {midSlot}
         </div>
+      ) : (
+        lime
+      )}
 
-        <HeroAllVariantsPanel onViewAllClick={onViewAllClick} />
-      </div>
+      {!compactLayout ? (
+        <div className="home-hero-form__lower relative flex h-[264px] gap-[24px]">
+          <div className="home-hero-form__side relative grid h-[264px] w-[464px] shrink-0 overflow-hidden rounded-[31px]">
+            <div
+              className={`col-start-1 row-start-1 ${HERO_SWAP_TRANSITION} ${
+                isExchange
+                  ? "translate-y-0 opacity-100"
+                  : "pointer-events-none translate-y-1.5 opacity-0"
+              }`}
+              aria-hidden={!isExchange}
+            >
+              <HeroAddPanel onAddListingClick={onAddListingClick} />
+            </div>
+            <div
+              className={`col-start-1 row-start-1 ${HERO_SWAP_TRANSITION} ${
+                !isExchange
+                  ? "translate-y-0 opacity-100"
+                  : "pointer-events-none -translate-y-1.5 opacity-0"
+              }`}
+              aria-hidden={isExchange}
+            >
+              <HeroExchangeFilters condition={condition} setCondition={setCondition} />
+            </div>
+          </div>
+
+          <HeroAllVariantsPanel onViewAllClick={onViewAllClick} />
+        </div>
+      ) : null}
     </div>
   );
 }

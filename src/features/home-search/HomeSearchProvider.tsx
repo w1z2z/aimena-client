@@ -16,6 +16,7 @@ import { useAuth } from "@/features/auth";
 import { writeHeroListingDraft } from "@/shared/lib/hero-listing-draft";
 import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
 import type { SelectOption } from "@/shared/ui/select-field";
+import { COMPACT_HEADER_MAX_WIDTH_PX } from "@/widgets/header/constants";
 
 import { useCatalogData, type HomeCategoryTreeNode } from "./hooks/useCatalogData";
 import { useFilteredListings, useHeroRecommendations } from "./hooks/useHomeListingsData";
@@ -218,9 +219,29 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       setAppliedFilters(nextFilters);
       setIsFiltersOpen(true);
 
-      document.getElementById("home-recommendations")?.scrollIntoView({
-        behavior: "auto",
-        block: "start",
+      const isCompact =
+        typeof window !== "undefined" &&
+        window.matchMedia(`(max-width: ${COMPACT_HEADER_MAX_WIDTH_PX}px)`).matches;
+
+      if (!isCompact) {
+        document.getElementById("home-recommendations")?.scrollIntoView({
+          behavior: "auto",
+          block: "start",
+        });
+        return;
+      }
+
+      // Compact: open filters, but scroll to the feed (not the filter panel).
+      const scrollToFeed = () => {
+        document.getElementById("home-recommendations-feed")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      };
+
+      window.requestAnimationFrame(() => {
+        scrollToFeed();
+        window.setTimeout(scrollToFeed, 280);
       });
     },
     [categoryUiKeyToBackendId, hero],

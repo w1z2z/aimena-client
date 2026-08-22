@@ -23,22 +23,30 @@ function TickerPin({ label }: { label: string }) {
   );
 }
 
-export function TickerCarousel() {
+export function TickerCarousel({ compact = false }: { compact?: boolean }) {
   const loopItems = useMemo(() => [...tickerItems, ...tickerItems], []);
 
   return (
     <div
-      className="home-ticker-carousel pointer-events-none absolute left-0 z-20 h-[34px] w-full overflow-hidden"
-      style={{
-        top: "1040px",
-        transform: "translateZ(0)",
-      }}
+      className={
+        compact
+          ? "home-ticker-carousel home-ticker-carousel--compact pointer-events-none z-20 h-[34px] w-full overflow-hidden"
+          : "home-ticker-carousel pointer-events-none absolute left-0 z-20 h-[34px] w-full overflow-hidden"
+      }
+      style={
+        compact
+          ? { transform: "translateZ(0)" }
+          : {
+              top: "1040px",
+              transform: "translateZ(0)",
+            }
+      }
     >
       <div className="home-ticker-track flex w-max items-center gap-[12px]">
         {loopItems.map((item, idx) => (
           <div key={`${item}-${idx}`} className="flex shrink-0 items-center gap-[12px]">
             <TickerPin label={item} />
-            <TickerStarIcon gradientId={`ticker-star-grad-${idx}`} />
+            <TickerStarIcon gradientId={`ticker-star-grad-${idx}${compact ? "-c" : ""}`} />
           </div>
         ))}
       </div>

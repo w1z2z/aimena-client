@@ -1,0 +1,379 @@
+/* Desktop title / why — absolute on the Figma scene */
+.home-hero-title {
+  margin: 0;
+  width: max-content;
+  max-width: 100%;
+  color: #fff;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 40px;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
+
+.home-hero-desktop-title {
+  position: absolute;
+  left: 685px;
+  top: 289px;
+  z-index: 10;
+}
+
+.home-hero-why {
+  margin: 0;
+  width: max-content;
+  max-width: 100%;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 32px;
+  letter-spacing: -0.072px;
+  text-align: center;
+}
+
+.home-hero-desktop-why {
+  position: absolute;
+  left: 50%;
+  top: 981px;
+  z-index: 20;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.home-ticker-carousel--compact {
+  position: relative;
+  top: auto;
+  left: auto;
+  margin-top: 12px;
+}
+
+/* Compact hero — CategoriesArc unchanged; soft fade instead of hard clip */
+.home-hero-compact {
+  box-sizing: border-box;
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+.home-hero-compact__arc {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 58%,
+    rgb(0 0 0 / 55%) 78%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 58%,
+    rgb(0 0 0 / 55%) 78%,
+    transparent 100%
+  );
+}
+
+.home-hero-compact__arc-stage {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 1920px;
+  height: 480px;
+  transform: translateX(-50%);
+}
+
+.home-hero-compact__inner {
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 920px;
+  margin: -36px auto 0;
+  padding: 0 16px;
+}
+
+.home-hero-compact .home-hero-title {
+  width: 100%;
+  margin: 0 0 16px;
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  white-space: normal;
+  text-align: center;
+}
+
+.home-hero-compact .home-hero-form {
+  width: 100%;
+  height: auto;
+  gap: 12px;
+}
+
+.home-hero-compact .home-hero-form__search-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.home-hero-compact__results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.home-hero-view-all-btn {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 21px;
+  background: #8e8bed;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  cursor: pointer;
+  transition: background-color 200ms ease-out;
+}
+
+.home-hero-view-all-btn:hover {
+  background: #9e9ef0;
+}
+
+.home-hero-view-all-btn:active {
+  background: #7e7edd;
+}
+
+.home-hero-compact .home-hero-form__lime {
+  height: auto;
+  padding: 20px 16px;
+  border-radius: 24px;
+}
+
+.home-hero-compact .home-hero-form__lime-head {
+  margin-bottom: 20px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.home-hero-compact .home-hero-form__lime-head h2 {
+  white-space: normal;
+  font-size: 20px;
+}
+
+.home-hero-compact .home-hero-mode-toggle {
+  width: 100%;
+  max-width: 100%;
+}
+
+.home-hero-compact .home-hero-fields {
+  height: auto;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home-hero-compact .home-hero-field {
+  width: 100% !important;
+  flex: none;
+}
+
+.home-hero-compact .home-hero-form__lower {
+  height: auto;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home-hero-compact .home-hero-form__lower > .home-hero-panel {
+  width: 100%;
+}
+
+.home-hero-compact .home-hero-panel {
+  width: 100%;
+  height: auto;
+  min-height: 180px;
+  border-radius: 24px;
+}
+
+.home-hero-compact .home-hero-panel__star {
+  display: none;
+}
+
+.home-hero-compact .home-hero-panel .flex.flex-nowrap {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+/* Compact recommendations — 1 card like «даром» */
+.home-hero-recs--compact {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  padding: 16px;
+  overflow: visible;
+  border-radius: 24px;
+  background: #fff;
+}
+
+.home-hero-recs__heading {
+  width: 100%;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+.home-hero-recs__heading-text {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.003em;
+}
+
+.home-hero-recs__rail {
+  container-type: inline-size;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.home-hero-recs__viewport {
+  position: relative;
+  width: 100%;
+}
+
+.home-hero-recs__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 30;
+  width: 50px;
+  height: 66px;
+  transform: translateY(-50%);
+  border-radius: 12px;
+}
+
+.home-hero-recs__nav .carousel-nav-btn__icon {
+  width: 16px;
+  height: 26px;
+}
+
+.home-hero-recs__nav--prev {
+  left: 8px;
+}
+
+.home-hero-recs__nav--next {
+  right: 8px;
+}
+
+.home-hero-recs__rail::-webkit-scrollbar {
+  display: none;
+}
+
+.home-hero-recs__rail.is-scroll-settling {
+  scroll-snap-type: none;
+}
+
+.home-hero-recs__rail-track {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  width: max-content;
+  min-width: 100%;
+  padding: 2px 0 4px;
+}
+
+.home-hero-recs--compact .home-hero-recs__card {
+  container-type: inline-size;
+  position: relative;
+  flex: 0 0 100cqi;
+  width: 100cqi;
+  height: auto;
+  aspect-ratio: 342 / 464;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.home-hero-recs--compact .home-hero-recs__card .home-listing-card,
+.home-hero-recs--compact .home-hero-recs__card .home-hero-recs__empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 342px;
+  height: 464px;
+  transform: scale(calc(100cqw / 342px));
+  transform-origin: top left;
+}
+
+/* Tablet: cap card size — full-bleed 100cqi is huge on iPad */
+@media (min-width: 640px) {
+  .home-hero-recs__viewport {
+    max-width: 320px;
+    margin-inline: auto;
+  }
+
+  .home-hero-recs--compact .home-hero-recs__card {
+    flex: 0 0 100cqi;
+    width: 100cqi;
+  }
+
+  .home-hero-recs__nav--prev {
+    left: -4px;
+  }
+
+  .home-hero-recs__nav--next {
+    right: -4px;
+  }
+}
+
+@media (min-width: 900px) {
+  .home-hero-recs__viewport {
+    max-width: 300px;
+  }
+}
+
+.home-hero-compact .home-hero-why {
+  width: 100%;
+  margin: 28px 0 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+@media (max-width: 480px) {
+  .home-hero-compact__inner {
+    padding-inline: 12px;
+    margin-top: -28px;
+  }
+
+  .home-hero-compact .home-hero-title {
+    font-size: 24px;
+  }
+
+  .home-hero-compact .home-hero-why {
+    font-size: 18px;
+  }
+
+  .home-hero-compact__arc {
+    height: 240px;
+  }
+
+  .home-hero-recs--compact {
+    padding: 12px;
+    border-radius: 20px;
+  }
+}

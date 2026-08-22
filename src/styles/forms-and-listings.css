@@ -1222,7 +1222,23 @@
 }
 
 .home-listings-grid {
+  margin-top: 0;
+}
+
+.home-recommendations-feed {
   margin-top: 36px;
+  scroll-margin-top: 72px;
+}
+
+.home-recommendations-header-wrap:has(.home-recommendations-filters-panel.is-open)
+  + .home-recommendations-feed {
+  margin-top: 76px;
+}
+
+@media (max-width: 1024px) {
+  .home-recommendations-feed {
+    scroll-margin-top: 64px;
+  }
 }
 
 .home-listings-grid-wrap {

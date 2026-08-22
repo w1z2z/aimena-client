@@ -11,6 +11,7 @@ const SCROLL_LOCK_CLASS = "is-scroll-locked";
  */
 export function useScrollLock(locked: boolean, allowScrollRef?: RefObject<HTMLElement | null>) {
   const scrollYRef = useRef(0);
+  const lockedUrlRef = useRef("");
 
   useEffect(() => {
     if (!locked) return;
@@ -18,6 +19,7 @@ export function useScrollLock(locked: boolean, allowScrollRef?: RefObject<HTMLEl
     const html = document.documentElement;
     const { body } = document;
     scrollYRef.current = window.scrollY;
+    lockedUrlRef.current = `${window.location.pathname}${window.location.search}`;
 
     html.classList.add(SCROLL_LOCK_CLASS);
     body.classList.add(SCROLL_LOCK_CLASS);
@@ -78,7 +80,12 @@ export function useScrollLock(locked: boolean, allowScrollRef?: RefObject<HTMLEl
       document.removeEventListener("touchstart", onTouchStart);
       document.removeEventListener("wheel", preventIfOutside);
       document.removeEventListener("touchmove", preventIfOutside);
-      window.scrollTo(0, scrollYRef.current);
+
+      // Don't restore mid-page scroll onto a different route (e.g. sheet → /profile).
+      const currentUrl = `${window.location.pathname}${window.location.search}`;
+      if (currentUrl === lockedUrlRef.current) {
+        window.scrollTo(0, scrollYRef.current);
+      }
     };
   }, [locked, allowScrollRef]);
 }
