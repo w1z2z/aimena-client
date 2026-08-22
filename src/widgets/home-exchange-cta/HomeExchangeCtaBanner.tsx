@@ -15,7 +15,7 @@ export function HomeExchangeCtaBanner() {
 
   return (
     <section className="bg-[#F8F8F5] pb-[68px] text-[#1A1A1A]">
-      <div className="mx-auto w-full max-w-[1441px]">
+      <div className="home-recommendations__inner">
         <div className="home-exchange-cta">
           <div className="home-exchange-cta__title">
             <p>Выгодный обмен без лишних слов</p>

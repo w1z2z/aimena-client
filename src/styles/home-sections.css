@@ -212,6 +212,69 @@
   white-space: nowrap;
 }
 
+@media (max-width: 1120px) {
+  .home-exchange-cta {
+    height: auto;
+    min-height: 0;
+    padding: 20px 16px;
+    padding-right: 252px;
+    gap: 10px;
+    border-radius: 24px;
+  }
+
+  .home-exchange-cta__title,
+  .home-exchange-cta__subtitle {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .home-exchange-cta__title {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .home-exchange-cta__subtitle {
+    white-space: normal;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .home-exchange-cta__subtitle p {
+    line-height: 1.45;
+  }
+
+  .home-exchange-cta__button {
+    right: 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .home-exchange-cta {
+    padding: 16px 14px;
+    padding-right: 14px;
+    gap: 8px;
+    border-radius: 20px;
+  }
+
+  .home-exchange-cta__title {
+    font-size: 18px;
+  }
+
+  .home-exchange-cta__subtitle {
+    font-size: 12px;
+  }
+
+  .home-exchange-cta__button {
+    position: static;
+    top: auto;
+    right: auto;
+    align-self: center;
+    margin-top: 6px;
+    transform: none;
+  }
+}
+
 
 .home-recommendations-header {
   position: relative;
