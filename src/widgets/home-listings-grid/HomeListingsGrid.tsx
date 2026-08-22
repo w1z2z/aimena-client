@@ -59,8 +59,8 @@ export function HomeListingsGrid() {
     return (
       <ListingCardSkeletonGrid
         count={8}
-        className="favorites-page__grid home-listings-grid"
-        itemClassName="favorites-page__card"
+        className="listings-grid home-listings-grid"
+        itemClassName="listings-grid__card"
       />
     );
   }
@@ -77,9 +77,9 @@ export function HomeListingsGrid() {
 
   return (
     <div className="home-listings-grid-wrap">
-      <div className="favorites-page__grid home-listings-grid" aria-label="Лента объявлений">
+      <div className="listings-grid home-listings-grid" aria-label="Лента объявлений">
         {filteredListings.map((listing) => (
-          <div key={listing.id} className="favorites-page__card">
+          <div key={listing.id} className="listings-grid__card">
             <ListingCard
               listingId={listing.id}
               variant={listing.isFree ? "free" : "exchange"}
@@ -97,7 +97,7 @@ export function HomeListingsGrid() {
         ))}
         {isFetchingNextFilteredPage
           ? Array.from({ length: 4 }, (_, index) => (
-              <div key={`more-${index}`} className="favorites-page__card">
+              <div key={`more-${index}`} className="listings-grid__card">
                 <ListingCardSkeleton />
               </div>
             ))

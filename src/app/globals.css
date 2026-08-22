@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "../styles/overlay-animation.css";
 @import "../styles/listing-card.css";
+@import "../styles/listings-grid.css";
+@import "../styles/listings-page.css";
 @import "../styles/home-ticker.css";
 @import "../styles/home-hero.css";
 @import "../styles/header.css";

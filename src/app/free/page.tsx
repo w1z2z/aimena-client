@@ -66,8 +66,8 @@ export default function FreeGiveawaysPage() {
   let body = (
     <ListingCardSkeletonGrid
       count={CATALOG_PAGE_SIZE}
-      className="favorites-page__grid"
-      itemClassName="favorites-page__card"
+      className="listings-grid"
+      itemClassName="listings-grid__card"
     />
   );
 
@@ -80,27 +80,27 @@ export default function FreeGiveawaysPage() {
     );
   } else if (!listingsQuery.isLoading && listings.length === 0) {
     body = (
-      <div className="favorites-page__empty">
+      <div className="listings-page__empty">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/favorites-empty-star.svg"
           alt=""
-          className="favorites-page__empty-star"
+          className="listings-page__empty-star"
         />
-        <p className="favorites-page__empty-text">
+        <p className="listings-page__empty-text">
           Пока нет объявлений в разделе «Даром»
         </p>
-        <Link href="/" className="favorites-page__empty-cta">
+        <Link href="/" className="listings-page__empty-cta">
           Перейти в ленту
         </Link>
       </div>
     );
   } else if (listings.length > 0) {
     body = (
-      <div className="favorites-page__list">
-        <div className="favorites-page__grid" aria-label="Объявления даром">
+      <div className="listings-page__list">
+        <div className="listings-grid" aria-label="Объявления даром">
           {listings.map((listing) => (
-            <div key={listing.id} className="favorites-page__card">
+            <div key={listing.id} className="listings-grid__card">
               <ListingCard
                 listingId={listing.id}
                 variant="free"
@@ -122,14 +122,14 @@ export default function FreeGiveawaysPage() {
   }
 
   return (
-    <div className="favorites-page">
+    <div className="listings-page">
       <Header />
-      <main className="favorites-page__main">
-        <h1 className="favorites-page__title">
+      <main className="listings-page__main">
+        <h1 className="listings-page__title">
           Отдают <span className="text-[#8E8BED]">даром</span>
         </h1>
         {listingsQuery.isSuccess || listings.length > 0 ? (
-          <p className="favorites-page__count">
+          <p className="listings-page__count">
             {total} {pluralListings(total)}
           </p>
         ) : null}
