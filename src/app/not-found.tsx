@@ -1,11 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
 
 import { Header } from "@/widgets/header/Header";
 
 export default function NotFound() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <>
-      <Header />
+      <Header logoTone="dark" />
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
         <p className="text-[120px] font-extrabold leading-none tracking-tight text-[#8E8BED]">
           404

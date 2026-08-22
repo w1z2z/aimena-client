@@ -18,7 +18,7 @@ function forcePageScrollTop() {
 }
 
 type LogoProps = {
-  /** Dark logo for light page backgrounds (non-home at top). */
+  /** `dark` = purple logo2 for light surfaces; `brand` = white logo for dark/hero. */
   tone?: "brand" | "dark";
 };
 

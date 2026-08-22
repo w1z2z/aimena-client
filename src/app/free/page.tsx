@@ -126,7 +126,7 @@ export default function FreeGiveawaysPage() {
       <Header />
       <main className="favorites-page__main">
         <h1 className="favorites-page__title">
-          Отдаю <span className="text-[#8E8BED]">даром</span>
+          Отдают <span className="text-[#8E8BED]">даром</span>
         </h1>
         {listingsQuery.isSuccess || listings.length > 0 ? (
           <p className="favorites-page__count">

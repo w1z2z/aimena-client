@@ -1779,7 +1779,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                   isFree ? "text-[#1A1A1A]" : "text-[#626262]"
                 }`}
               >
-                Отдаю даром
+                Отдают даром
               </h3>
               <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
                 Включите, если отдаёте {listingTypeName} без обмена — взамен вы ничего не получите

@@ -3,17 +3,20 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import {
   CARD_STEP,
   CAROUSEL_AUTO_ADVANCE_MS,
-  CAROUSEL_SCROLL_END_FALLBACK_MS,
 } from "./constants";
+
+/** Clear stuck "auto scrolling" if scrollend never fires (some WebKit builds). */
+const AUTO_SCROLL_UNLOCK_MS = 700;
 
 export function useInfiniteCarousel(itemCount: number) {
   const carouselRef = useRef<HTMLDivElement>(null);
-  const scrollEndTimerRef = useRef<number | null>(null);
-  const isProgrammaticScrollRef = useRef(false);
   const isSettlingRef = useRef(false);
-  const isAutoAdvancePausedRef = useRef(false);
+  const isAutoScrollingRef = useRef(false);
+  const autoScrollUnlockTimerRef = useRef<number | null>(null);
+  /** After a user gesture, wait one full interval before the next auto step. */
+  const nextAutoAdvanceAtRef = useRef(0);
 
-  const getStep = useCallback(() => {
+  const getCardStep = useCallback(() => {
     const carousel = carouselRef.current;
     if (!carousel || carousel.children.length < 2) return CARD_STEP;
     const first = carousel.children[0] as HTMLElement;
@@ -22,169 +25,243 @@ export function useInfiniteCarousel(itemCount: number) {
     return measured > 0 ? measured : CARD_STEP;
   }, []);
 
-  /** Instant seamless loop only — never round-snap (that jerks cards mid-scroll). */
-  const wrapLoopIfNeeded = useCallback(() => {
+  const getPageSize = useCallback(() => {
+    const carousel = carouselRef.current;
+    const cardStep = getCardStep();
+    if (!carousel || cardStep <= 0) return 1;
+
+    const styles = window.getComputedStyle(carousel);
+    const padL = Number.parseFloat(styles.paddingLeft) || 0;
+    const padR = Number.parseFloat(styles.paddingRight) || 0;
+    const contentWidth = Math.max(0, carousel.clientWidth - padL - padR);
+    return Math.max(1, Math.round(contentWidth / cardStep));
+  }, [getCardStep]);
+
+  const usesCssSnap = useCallback(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return false;
+    const snapType = window.getComputedStyle(carousel).scrollSnapType;
+    return snapType.includes("mandatory") || snapType.includes("proximity");
+  }, []);
+
+  const instantSetScrollLeft = useCallback((carousel: HTMLDivElement, left: number) => {
+    const prevSnap = carousel.style.scrollSnapType;
+    carousel.style.scrollSnapType = "none";
+    carousel.scrollLeft = left;
+    void carousel.offsetWidth;
+    carousel.style.scrollSnapType = prevSnap;
+  }, []);
+
+  const normalizeScrollToMiddle = useCallback((scrollLeft: number, loopWidth: number) => {
+    let next = scrollLeft;
+    while (next >= loopWidth * 2) next -= loopWidth;
+    while (next < loopWidth) next += loopWidth;
+    return next;
+  }, []);
+
+  const normalizeToMiddleCopy = useCallback(() => {
     const carousel = carouselRef.current;
     if (!carousel || itemCount <= 0) return;
 
-    const step = getStep();
+    const step = getCardStep();
     const loopWidth = step * itemCount;
     if (loopWidth <= 0) return;
 
     const current = carousel.scrollLeft;
-    let next = current;
-
-    if (current >= loopWidth * 2) {
-      next = current - loopWidth;
-    } else if (current < loopWidth) {
-      next = current + loopWidth;
-    }
-
+    const next = normalizeScrollToMiddle(current, loopWidth);
     if (Math.abs(next - current) < 0.5) return;
 
     isSettlingRef.current = true;
-    carousel.scrollLeft = next;
+    instantSetScrollLeft(carousel, next);
     requestAnimationFrame(() => {
       isSettlingRef.current = false;
     });
-  }, [getStep, itemCount]);
+  }, [getCardStep, instantSetScrollLeft, itemCount, normalizeScrollToMiddle]);
 
-  const snapToNearestStep = useCallback(() => {
+  const snapToNearestPage = useCallback(() => {
     const carousel = carouselRef.current;
     if (!carousel || itemCount <= 0) return;
 
-    const step = getStep();
-    const loopWidth = step * itemCount;
-    const current = carousel.scrollLeft;
-    let target = Math.round(current / step) * step;
-
-    if (target >= loopWidth * 2) target -= loopWidth;
-    else if (target < loopWidth) target += loopWidth;
-
-    if (Math.abs(target - current) < 1) {
-      wrapLoopIfNeeded();
+    if (usesCssSnap()) {
+      normalizeToMiddleCopy();
       return;
     }
 
-    isProgrammaticScrollRef.current = true;
-    carousel.scrollTo({ left: target, behavior: "smooth" });
-  }, [getStep, itemCount, wrapLoopIfNeeded]);
+    const step = getCardStep();
+    const pageStep = step * getPageSize();
+    const loopWidth = step * itemCount;
+    if (pageStep <= 0 || loopWidth <= 0) return;
 
-  const settleScroll = useCallback(() => {
-    if (scrollEndTimerRef.current !== null) {
-      window.clearTimeout(scrollEndTimerRef.current);
-      scrollEndTimerRef.current = null;
+    const current = carousel.scrollLeft;
+    let target = Math.round(current / pageStep) * pageStep;
+    target = normalizeScrollToMiddle(target, loopWidth);
+
+    if (Math.abs(target - current) < 1) {
+      normalizeToMiddleCopy();
+      return;
     }
-    isProgrammaticScrollRef.current = false;
-    snapToNearestStep();
-  }, [snapToNearestStep]);
+
+    isSettlingRef.current = true;
+    instantSetScrollLeft(carousel, target);
+    requestAnimationFrame(() => {
+      isSettlingRef.current = false;
+    });
+  }, [
+    getCardStep,
+    getPageSize,
+    instantSetScrollLeft,
+    itemCount,
+    normalizeScrollToMiddle,
+    normalizeToMiddleCopy,
+    usesCssSnap,
+  ]);
+
+  const unlockAutoScroll = useCallback(() => {
+    isAutoScrollingRef.current = false;
+    if (autoScrollUnlockTimerRef.current !== null) {
+      window.clearTimeout(autoScrollUnlockTimerRef.current);
+      autoScrollUnlockTimerRef.current = null;
+    }
+  }, []);
+
+  const armAutoScrollLock = useCallback(() => {
+    isAutoScrollingRef.current = true;
+    if (autoScrollUnlockTimerRef.current !== null) {
+      window.clearTimeout(autoScrollUnlockTimerRef.current);
+    }
+    autoScrollUnlockTimerRef.current = window.setTimeout(() => {
+      autoScrollUnlockTimerRef.current = null;
+      isAutoScrollingRef.current = false;
+    }, AUTO_SCROLL_UNLOCK_MS);
+  }, []);
 
   useLayoutEffect(() => {
     const carousel = carouselRef.current;
     if (!carousel || itemCount <= 0) return;
 
-    const step = getStep();
+    const step = getCardStep();
     isSettlingRef.current = true;
-    carousel.scrollLeft = step * itemCount;
+    instantSetScrollLeft(carousel, step * itemCount);
     requestAnimationFrame(() => {
       isSettlingRef.current = false;
     });
-  }, [getStep, itemCount]);
+  }, [getCardStep, instantSetScrollLeft, itemCount]);
 
   useEffect(() => {
     const carousel = carouselRef.current;
     if (!carousel) return;
 
-    const scheduleSettle = () => {
-      if (scrollEndTimerRef.current !== null) {
-        window.clearTimeout(scrollEndTimerRef.current);
-      }
-      scrollEndTimerRef.current = window.setTimeout(() => {
-        scrollEndTimerRef.current = null;
-        settleScroll();
-      }, CAROUSEL_SCROLL_END_FALLBACK_MS);
+    const markUserInteraction = () => {
+      if (isAutoScrollingRef.current || isSettlingRef.current) return;
+      nextAutoAdvanceAtRef.current = performance.now() + CAROUSEL_AUTO_ADVANCE_MS;
     };
 
     const handleScrollEnd = () => {
       if (isSettlingRef.current) return;
-      if (scrollEndTimerRef.current !== null) {
-        window.clearTimeout(scrollEndTimerRef.current);
-        scrollEndTimerRef.current = null;
-      }
-      // After programmatic smooth snap finishes — only wrap, don't snap again.
-      if (isProgrammaticScrollRef.current) {
-        isProgrammaticScrollRef.current = false;
-        wrapLoopIfNeeded();
+      const wasProgrammatic = isAutoScrollingRef.current;
+      unlockAutoScroll();
+      // After arrow/autoplay: only wrap the loop (invisible). Don't re-snap — that fights the tween.
+      if (wasProgrammatic) {
+        normalizeToMiddleCopy();
         return;
       }
-      settleScroll();
+      snapToNearestPage();
     };
 
+    let fallbackTimer: number | null = null;
     const handleScroll = () => {
       if (isSettlingRef.current) return;
-      if (isProgrammaticScrollRef.current) return;
-      scheduleSettle();
+      // Ignore scroll noise from programmatic arrow/autoplay (including seam tweens).
+      if (isAutoScrollingRef.current) return;
+      markUserInteraction();
+      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
+      fallbackTimer = window.setTimeout(() => {
+        fallbackTimer = null;
+        if (isSettlingRef.current || isAutoScrollingRef.current) return;
+        snapToNearestPage();
+      }, 80);
     };
 
     carousel.addEventListener("scrollend", handleScrollEnd);
     carousel.addEventListener("scroll", handleScroll, { passive: true });
+    carousel.addEventListener("pointerdown", markUserInteraction, { passive: true });
 
     return () => {
       carousel.removeEventListener("scrollend", handleScrollEnd);
       carousel.removeEventListener("scroll", handleScroll);
-      if (scrollEndTimerRef.current !== null) {
-        window.clearTimeout(scrollEndTimerRef.current);
-      }
+      carousel.removeEventListener("pointerdown", markUserInteraction);
+      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
     };
-  }, [settleScroll, wrapLoopIfNeeded]);
+  }, [normalizeToMiddleCopy, snapToNearestPage, unlockAutoScroll]);
 
+  /**
+   * Move one page. May briefly enter the previous/next copy — that's a short
+   * smooth step (last→first / first→last). Loop is re-centered on scrollend.
+   */
   const scrollByStep = useCallback(
     (direction: 1 | -1) => {
       const carousel = carouselRef.current;
       if (!carousel || itemCount <= 0) return;
 
-      if (scrollEndTimerRef.current !== null) {
-        window.clearTimeout(scrollEndTimerRef.current);
-        scrollEndTimerRef.current = null;
+      const step = getCardStep();
+      const pageStep = step * getPageSize();
+      const loopWidth = step * itemCount;
+      if (loopWidth <= 0 || pageStep <= 0) return;
+
+      let from = normalizeScrollToMiddle(carousel.scrollLeft, loopWidth);
+      from = Math.round(from / pageStep) * pageStep;
+      if (from >= loopWidth * 2) from -= loopWidth;
+      if (from < loopWidth) from += loopWidth;
+
+      const target = from + direction * pageStep;
+
+      armAutoScrollLock();
+
+      if (Math.abs(carousel.scrollLeft - from) > 0.5) {
+        instantSetScrollLeft(carousel, from);
       }
 
-      wrapLoopIfNeeded();
-      isProgrammaticScrollRef.current = true;
+      if (Math.abs(target - carousel.scrollLeft) < 0.5) {
+        unlockAutoScroll();
+        return;
+      }
 
-      const step = getStep();
-      const currentIndex = Math.round(carousel.scrollLeft / step);
-      carousel.scrollTo({
-        left: (currentIndex + direction) * step,
-        behavior: "smooth",
-      });
+      carousel.scrollTo({ left: target, behavior: "smooth" });
     },
-    [getStep, itemCount, wrapLoopIfNeeded],
+    [
+      armAutoScrollLock,
+      getCardStep,
+      getPageSize,
+      instantSetScrollLeft,
+      itemCount,
+      normalizeScrollToMiddle,
+      unlockAutoScroll,
+    ],
   );
 
   useEffect(() => {
     if (itemCount <= 1) return;
     const intervalId = window.setInterval(() => {
-      if (isAutoAdvancePausedRef.current) return;
+      if (isAutoScrollingRef.current || isSettlingRef.current) return;
+      if (performance.now() < nextAutoAdvanceAtRef.current) return;
       scrollByStep(1);
     }, CAROUSEL_AUTO_ADVANCE_MS);
     return () => window.clearInterval(intervalId);
   }, [itemCount, scrollByStep]);
 
-  const pauseAutoAdvance = useCallback(() => {
-    isAutoAdvancePausedRef.current = true;
-  }, []);
-
-  const resumeAutoAdvance = useCallback(() => {
-    isAutoAdvancePausedRef.current = false;
+  useEffect(() => {
+    return () => {
+      if (autoScrollUnlockTimerRef.current !== null) {
+        window.clearTimeout(autoScrollUnlockTimerRef.current);
+      }
+    };
   }, []);
 
   return useMemo(
     () => ({
       carouselRef,
       scrollByStep,
-      pauseAutoAdvance,
-      resumeAutoAdvance,
     }),
-    [pauseAutoAdvance, resumeAutoAdvance, scrollByStep],
+    [scrollByStep],
   );
 }

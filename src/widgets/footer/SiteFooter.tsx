@@ -4,7 +4,7 @@ import Link from "next/link";
 const serviceLinks = [
   { label: "Создать объявление", href: "/create-listing" },
   { label: "Чаты", href: "/chats" },
-  { label: "Отдаю даром", href: "/free" },
+  { label: "Отдают даром", href: "/free" },
   { label: "Избранное", href: "/favorites" },
   { label: "Ваши объявления", href: "/profile" },
 ] as const;
