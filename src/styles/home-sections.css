@@ -242,6 +242,22 @@
   right: 0;
 }
 
+/* Desktop carousel nav — inset from 756px viewport gutters */
+.home-free-carousel__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 30;
+  transform: translateY(-50%);
+}
+
+.home-free-carousel__nav--prev {
+  left: 14px;
+}
+
+.home-free-carousel__nav--next {
+  right: 14px;
+}
+
 @media (max-width: 1120px) {
   .home-free-section__inner {
     padding-inline: 16px;
@@ -318,16 +334,23 @@
     display: none;
   }
 
-  /* 2× the previous compact size (25×33); desktop keeps default 49×65 */
-  .home-free-carousel-viewport .carousel-nav-btn {
+  .home-free-carousel__nav {
     width: 50px;
     height: 66px;
     border-radius: 12px;
   }
 
-  .home-free-carousel-viewport .carousel-nav-btn__icon {
+  .home-free-carousel__nav .carousel-nav-btn__icon {
     width: 16px;
     height: 26px;
+  }
+
+  .home-free-carousel__nav--prev {
+    left: 8px;
+  }
+
+  .home-free-carousel__nav--next {
+    right: 8px;
   }
 
   .home-free-section__carousel-slot,

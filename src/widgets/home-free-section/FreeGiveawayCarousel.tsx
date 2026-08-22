@@ -52,13 +52,13 @@ export function FreeGiveawayCarousel({ listings }: { listings: ListingCardPrevie
             direction="left"
             label="Предыдущие объявления"
             onClick={() => scrollByStep(-1)}
-            className="absolute left-[14px] top-1/2 z-30 -translate-y-1/2"
+            className="home-free-carousel__nav home-free-carousel__nav--prev"
           />
           <CarouselNavButton
             direction="right"
             label="Следующие объявления"
             onClick={() => scrollByStep(1)}
-            className="absolute right-[14px] top-1/2 z-30 -translate-y-1/2"
+            className="home-free-carousel__nav home-free-carousel__nav--next"
           />
         </>
       ) : null}
