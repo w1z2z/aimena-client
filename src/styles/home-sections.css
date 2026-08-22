@@ -376,7 +376,9 @@
   }
 
   .home-free-carousel-viewport {
-    margin: 0;
+    width: min(100%, calc(342px * 2 + 12px));
+    margin: 0 auto;
+    overflow: hidden;
   }
 
   .home-free-carousel {
@@ -437,6 +439,13 @@
 
   .home-free-carousel {
     gap: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .home-free-carousel-viewport {
+    width: min(100%, 342px);
+    margin-inline: auto;
   }
 
   .home-free-carousel__item {
