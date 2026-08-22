@@ -36,7 +36,7 @@ export function HomeRecommendationsHeader() {
 
   return (
     <section id="home-recommendations" className="bg-[#F8F8F5] pb-[68px] text-[#1A1A1A]">
-      <div className="mx-auto w-full max-w-[1441px]">
+      <div className="home-recommendations__inner">
         <div className="home-recommendations-header-wrap">
           <div className="home-recommendations-header">
             <div className="home-recommendations-header__title-group">

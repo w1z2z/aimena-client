@@ -1091,13 +1091,52 @@
   letter-spacing: -0.022em;
 }
 
+@media (max-width: 1120px) {
+  .home-recommendations-header__title-group {
+    width: min(816px, 100%);
+    height: auto;
+    gap: 0;
+  }
+
+  .home-recommendations-header__heading {
+    min-height: 0;
+    font-family: var(--font-manrope), sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+
+  .home-recommendations-header__count {
+    display: block;
+    width: auto;
+    min-height: 0;
+    margin-top: 6px;
+    font-family: var(--font-manrope), sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    letter-spacing: normal;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-recommendations-header__heading {
+    font-size: 24px;
+  }
+
+  .home-recommendations-header__count {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+}
+
 .home-recommendations-header__filter {
   box-sizing: border-box;
   position: absolute;
   z-index: 1;
-  top: auto;
+  top: 0;
   right: 0;
-  bottom: 0;
+  bottom: auto;
   left: auto;
   display: flex;
   flex: none;
@@ -1142,6 +1181,25 @@
   white-space: nowrap;
 }
 
+@media (max-width: 1120px) {
+  .home-recommendations-header__title-group {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .home-recommendations-header__heading {
+    width: 100%;
+  }
+
+  .home-recommendations-header__filter {
+    position: static;
+    top: auto;
+    right: auto;
+    align-self: flex-end;
+    flex-shrink: 0;
+  }
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   .home-recommendations-filters-panel {
@@ -1164,11 +1222,6 @@
 }
 
 .home-listings-grid {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 48px 24px;
-  width: 100%;
   margin-top: 36px;
 }
 
@@ -1207,6 +1260,27 @@
   font-weight: 500;
   line-height: 1.45;
   text-align: center;
+}
+
+/* Same horizontal inset as favorites feed */
+.home-recommendations__inner {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(1440px + 48px);
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+@media (max-width: 1120px) {
+  .home-recommendations__inner {
+    padding-inline: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-recommendations__inner {
+    padding-inline: 12px;
+  }
 }
 
 
