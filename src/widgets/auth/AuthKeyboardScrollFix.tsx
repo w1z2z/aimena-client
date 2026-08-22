@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
+
 function isFormField(el: EventTarget | null): el is HTMLElement {
   return (
     el instanceof HTMLElement &&
@@ -19,11 +21,20 @@ function scrollPageToTop() {
   document.body.scrollTop = 0;
 }
 
+function needsKeyboardScrollAssist(): boolean {
+  // Desktop mouse: focus must not yank the page. iOS / compact: keep field above keyboard.
+  return (
+    window.matchMedia(COMPACT_HEADER_QUERY).matches ||
+    window.matchMedia("(pointer: coarse)").matches
+  );
+}
+
 /**
- * Auth forms on iOS:
+ * Auth forms on iOS / compact:
  * - focus → scroll the field into view (above keyboard)
  * - keyboard close → snap page back to top
  * - city/combobox select → no page auto-scroll (dropdown tracks the field itself)
+ * Desktop: no-op (avoids scroll jump on input click).
  */
 export function AuthKeyboardScrollFix() {
   useEffect(() => {
@@ -37,11 +48,13 @@ export function AuthKeyboardScrollFix() {
     };
 
     const scheduleResetToTop = () => {
+      if (!needsKeyboardScrollAssist()) return;
       cancelReset();
       resetTimer = window.setTimeout(scrollPageToTop, 120);
     };
 
     const scrollFieldIntoView = (field: HTMLElement) => {
+      if (!needsKeyboardScrollAssist()) return;
       window.clearTimeout(focusScrollTimer);
       focusScrollTimer = window.setTimeout(() => {
         field.scrollIntoView({

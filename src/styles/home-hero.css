@@ -255,6 +255,8 @@
 .home-hero-recs__viewport {
   position: relative;
   width: 100%;
+  max-width: 342px;
+  margin-inline: auto;
 }
 
 .home-hero-recs__nav {
@@ -301,8 +303,9 @@
 .home-hero-recs--compact .home-hero-recs__card {
   container-type: inline-size;
   position: relative;
-  flex: 0 0 100cqi;
-  width: 100cqi;
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 342px;
   height: auto;
   aspect-ratio: 342 / 464;
   scroll-snap-align: start;
@@ -320,30 +323,13 @@
   transform-origin: top left;
 }
 
-/* Tablet: cap card size — full-bleed 100cqi is huge on iPad */
 @media (min-width: 640px) {
-  .home-hero-recs__viewport {
-    max-width: 320px;
-    margin-inline: auto;
-  }
-
-  .home-hero-recs--compact .home-hero-recs__card {
-    flex: 0 0 100cqi;
-    width: 100cqi;
-  }
-
   .home-hero-recs__nav--prev {
     left: -4px;
   }
 
   .home-hero-recs__nav--next {
     right: -4px;
-  }
-}
-
-@media (min-width: 900px) {
-  .home-hero-recs__viewport {
-    max-width: 300px;
   }
 }
 

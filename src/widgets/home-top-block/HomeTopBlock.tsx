@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, type ReactNode } from "react";
+import { useCallback, useSyncExternalStore, type ReactNode } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -19,6 +19,19 @@ import { TickerCarousel } from "./TickerCarousel";
 
 const HERO_BACKGROUND =
   "linear-gradient(180deg, #141131 29.69%, #322F60 47.6%, #545193 67.22%, #8E8BED 100%)";
+
+function subscribeViewportWidth(onStoreChange: () => void) {
+  window.addEventListener("resize", onStoreChange, { passive: true });
+  return () => window.removeEventListener("resize", onStoreChange);
+}
+
+function useViewportWidth(): number {
+  return useSyncExternalStore(
+    subscribeViewportWidth,
+    () => window.innerWidth,
+    () => BASE_SCENE_WIDTH,
+  );
+}
 
 function HeroTitle() {
   return (
@@ -84,6 +97,9 @@ export function HomeTopBlock() {
   const router = useRouter();
   const { guardAuth } = useAuthGate();
   const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
+  const viewportWidth = useViewportWidth();
+  /** Desktop Figma scene: shrink to viewport so forms/title aren't cropped (arc keeps its own compact logic). */
+  const sceneScale = isCompact ? 1 : Math.min(1, viewportWidth / BASE_SCENE_WIDTH);
   const {
     hero,
     setMode,
@@ -192,13 +208,17 @@ export function HomeTopBlock() {
           </div>
         </div>
       ) : (
-        <div className="relative w-full overflow-hidden" style={{ height: `${BASE_SCENE_HEIGHT}px` }}>
+        <div
+          className="relative w-full overflow-hidden"
+          style={{ height: `${BASE_SCENE_HEIGHT * sceneScale}px` }}
+        >
           <div
             className="relative left-1/2 origin-top"
             style={{
               height: `${BASE_SCENE_HEIGHT}px`,
               width: `${BASE_SCENE_WIDTH}px`,
-              transform: "translateX(-50%)",
+              transform: `translateX(-50%) scale(${sceneScale})`,
+              transformOrigin: "top center",
             }}
           >
             <div className="absolute left-[240px] top-0 z-20 w-[1440px]">

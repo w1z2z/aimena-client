@@ -629,7 +629,7 @@
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   .home-exchange-cta {
     padding: 16px 14px;
     padding-right: 14px;
@@ -1058,7 +1058,7 @@
 }
 
 /* Filters panel — below Figma canvas width: no fixed height / rigid left rail */
-@media (max-width: 1440px) {
+@media (max-width: 1480px) {
   .home-recommendations-filters-panel__surface {
     height: auto;
     min-height: 0;

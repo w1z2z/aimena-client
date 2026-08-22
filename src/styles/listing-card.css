@@ -39,11 +39,15 @@
   mask-composite: exclude;
 }
 
-.home-listing-card:not(.home-listing-card--hero):hover {
-  box-shadow:
-    -4px 0 14px rgba(142, 139, 237, 0.4),
-    4px 0 14px rgba(200, 255, 0, 0.35),
-    0 6px 16px rgba(142, 139, 237, 0.18);
+/* Hover glow only on devices that actually hover — touch gets sticky
+ * hover + shadows clipped square by carousel overflow. */
+@media (hover: hover) and (pointer: fine) {
+  .home-listing-card:not(.home-listing-card--hero):hover {
+    box-shadow:
+      -4px 0 14px rgba(142, 139, 237, 0.4),
+      4px 0 14px rgba(200, 255, 0, 0.35),
+      0 6px 16px rgba(142, 139, 237, 0.18);
+  }
 }
 
 .home-listing-card--has-title-accessory {

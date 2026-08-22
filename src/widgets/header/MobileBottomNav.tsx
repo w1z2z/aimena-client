@@ -152,9 +152,7 @@ export function MobileBottomNav({
               )}
             </span>
           ) : (
-            <span className="mobile-bottom-nav__login-icon">
-              <LoginIcon className="h-[16px] w-[16px]" />
-            </span>
+            <LoginIcon className="h-[18px] w-[18px]" />
           )}
           <span className="mobile-bottom-nav__label">
             {isAuthenticated ? "Профиль" : "Войти"}

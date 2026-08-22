@@ -54,32 +54,32 @@
 }
 
 /* Match compact header / profile sheet: up to 412px, nearly full-bleed on phones. */
-@media (max-width: 1500px) {
+@media (max-width: 1480px) {
   .floating-chat {
     --floating-chat-inset: 16px;
     --floating-chat-panel-width: min(412px, calc(100vw - (2 * var(--floating-chat-inset))));
   }
 }
 
-@media (max-width: 1500px) and (min-width: 640px) {
+@media (max-width: 1480px) and (min-width: 640px) {
   .floating-chat {
     --floating-chat-inset: 28px;
   }
 }
 
-@media (max-width: 1500px) and (min-width: 768px) {
+@media (max-width: 1480px) and (min-width: 768px) {
   .floating-chat {
     --floating-chat-inset: 40px;
   }
 }
 
-@media (max-width: 1500px) and (min-width: 1024px) {
+@media (max-width: 1480px) and (min-width: 1024px) {
   .floating-chat {
     --floating-chat-inset: 56px;
   }
 }
 
-@media (max-width: 1500px) and (min-width: 1280px) {
+@media (max-width: 1480px) and (min-width: 1280px) {
   .floating-chat {
     --floating-chat-inset: 72px;
   }

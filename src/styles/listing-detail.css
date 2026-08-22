@@ -990,7 +990,7 @@
   scroll-snap-align: start;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1120px) {
   .listing-detail-layout {
     grid-template-columns: 1fr 1fr;
   }

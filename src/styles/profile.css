@@ -677,7 +677,7 @@ a.profile-deal-card__partner-name:hover {
   white-space: nowrap;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1120px) {
   .profile-deal-card__exchange {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;

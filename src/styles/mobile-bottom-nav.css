@@ -121,18 +121,6 @@
   justify-content: center;
 }
 
-.mobile-bottom-nav__login-icon {
-  display: flex;
-  width: 28px;
-  height: 28px;
-  align-items: center;
-  justify-content: center;
-  border: 0.3px solid #8e8bed;
-  border-radius: 50%;
-  background: #ffffff;
-  color: #1a1a1a;
-}
-
 .mobile-bottom-nav__avatar {
   box-sizing: border-box;
   display: flex;

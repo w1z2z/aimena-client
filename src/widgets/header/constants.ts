@@ -1,8 +1,9 @@
-/** Switch to compact header (burger) at this width and below.
- * Above this, desktop flex layout keeps categories/CTA and shrinks search. */
-export const COMPACT_HEADER_MAX_WIDTH_PX = 1024;
-
-export const COMPACT_HEADER_QUERY = `(max-width: ${COMPACT_HEADER_MAX_WIDTH_PX}px)`;
+export {
+  BP,
+  MQ,
+  COMPACT_HEADER_MAX_WIDTH_PX,
+  COMPACT_HEADER_QUERY,
+} from "@/shared/lib/breakpoints";
 
 /** Desktop profile / notifications panel width — compact sheets must not exceed this. */
 export const HEADER_DROPDOWN_WIDTH_PX = 412;

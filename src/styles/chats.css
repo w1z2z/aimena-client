@@ -1906,7 +1906,7 @@
   height: 24px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1120px) {
   .chats-main {
     grid-template-columns: 300px minmax(0, 1fr);
   }
@@ -1979,7 +1979,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 640px) {
   .chats-main {
     width: calc(100% - 24px);
     grid-template-columns: 1fr;
