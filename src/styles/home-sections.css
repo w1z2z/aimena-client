@@ -43,16 +43,30 @@
   letter-spacing: -0.2px;
 }
 
+.home-free-section__panel-host {
+  width: 100%;
+}
+
+.home-free-section__panel-scale {
+  width: 100%;
+}
+
 .home-free-section__panel {
   box-sizing: border-box;
   position: relative;
   overflow: visible;
   width: 1440px;
-  max-width: 100%;
+  /* Desktop never squeezes via max-width — whole panel is JS-scaled instead */
+  max-width: none;
   height: 506px;
+  margin-inline: auto;
   padding: 24px;
   border-radius: 31px;
   background: var(--color-surface-muted);
+}
+
+.home-free-section__panel.is-scaled {
+  margin-inline: 0;
 }
 
 .home-free-section__row {
@@ -243,11 +257,19 @@
     letter-spacing: -0.3px;
   }
 
-  .home-free-section__panel {
+  .home-free-section__panel-scale {
     width: 100%;
     height: auto;
+  }
+
+  .home-free-section__panel,
+  .home-free-section__panel.is-scaled {
+    width: 100%;
+    height: auto;
+    margin-inline: 0;
     padding: 16px;
     border-radius: 24px;
+    transform: none !important;
   }
 
   .home-free-section__row {
