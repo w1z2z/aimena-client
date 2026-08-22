@@ -74,6 +74,26 @@ export function Header() {
   const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [activeSearchSuggestionIndex, setActiveSearchSuggestionIndex] = useState<number>(-1);
+  const [compactMode, setCompactMode] = useState(isCompact);
+
+  // Reset before paint when crossing into compact — avoids a one-frame open + close animation flash.
+  if (isCompact !== compactMode) {
+    setCompactMode(isCompact);
+    if (isCompact) {
+      if (searchCloseTimerRef.current !== null) {
+        window.clearTimeout(searchCloseTimerRef.current);
+        searchCloseTimerRef.current = null;
+      }
+      setIsSearchExpanded(false);
+      setIsSearchClosing(false);
+      setSearchQuery("");
+      setSearchSuggestions([]);
+      setActiveSearchSuggestionIndex(-1);
+    } else {
+      setIsMobileMenuOpen(false);
+    }
+  }
+
   const { isRendered: compactSearchRendered, isVisible: compactSearchVisible } = useOverlayPresence(
     isCompact && isSearchExpanded,
   );
@@ -110,12 +130,6 @@ export function Header() {
       setOpenPanel(null);
     }
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!isCompact) {
-      setIsMobileMenuOpen(false);
-    }
-  }, [isCompact]);
 
   useEffect(() => {
     if (!isSearchExpanded || (!isCompact && isScrolled)) return;
@@ -256,7 +270,8 @@ export function Header() {
     };
   }, []);
 
-  // Desktop only: on scroll open search; back at top collapse unless manually kept open.
+  // Desktop only: search bar follows scroll; do not mirror into isSearchExpanded
+  // (that flag is for manual open and must not open the compact overlay on resize).
   useEffect(() => {
     if (isCompact) return;
 
@@ -266,7 +281,6 @@ export function Header() {
         searchCloseTimerRef.current = null;
       }
       setIsSearchClosing(false);
-      setIsSearchExpanded(true);
       return;
     }
 
