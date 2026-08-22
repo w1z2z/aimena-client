@@ -506,10 +506,13 @@
 
 .registration-prompt-modal__card-inner {
   position: relative;
-  display: flex;
+  display: grid;
+  box-sizing: border-box;
   width: 100%;
-  flex-direction: column;
-  align-items: center;
+  height: 472px;
+  min-height: 472px;
+  align-content: center;
+  justify-items: center;
   gap: 48px;
   border-radius: 31px;
   background: transparent;

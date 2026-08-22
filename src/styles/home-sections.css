@@ -302,8 +302,9 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    gap: 14px;
-    padding: 16px 18px;
+    gap: 10px;
+    padding: 20px 16px;
+    padding-right: 252px;
     border-radius: 20px;
   }
 
@@ -327,7 +328,10 @@
   }
 
   .home-free-promo__button {
-    align-self: center;
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
   }
 
   .home-free-promo__star {
@@ -385,8 +389,10 @@
   .home-free-carousel__item {
     container-type: inline-size;
     position: relative;
-    width: calc((100% - 12px) / 2);
-    flex: 0 0 calc((100% - 12px) / 2);
+    /* Scale only shrinks — never larger than desktop 342×464 */
+    width: min(342px, calc((100% - 12px) / 2));
+    flex: 0 0 min(342px, calc((100% - 12px) / 2));
+    max-width: 342px;
     aspect-ratio: 342 / 464;
     scroll-snap-align: start;
     scroll-snap-stop: always;
@@ -398,7 +404,7 @@
     left: 0;
     width: 342px;
     height: 464px;
-    transform: scale(calc(100cqw / 342px));
+    transform: scale(calc(min(100cqw, 342px) / 342px));
     transform-origin: top left;
   }
 
@@ -421,11 +427,6 @@
     border-radius: 20px;
   }
 
-  .home-free-promo {
-    padding: 14px 14px;
-    gap: 12px;
-  }
-
   .home-free-promo__title {
     font-size: 20px;
   }
@@ -441,6 +442,23 @@
   .home-free-carousel__item {
     width: 100%;
     flex: 0 0 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-free-promo {
+    padding: 16px 14px;
+    padding-right: 14px;
+    gap: 8px;
+  }
+
+  .home-free-promo__button {
+    position: static;
+    top: auto;
+    right: auto;
+    align-self: center;
+    margin-top: 6px;
+    transform: none;
   }
 }
 
