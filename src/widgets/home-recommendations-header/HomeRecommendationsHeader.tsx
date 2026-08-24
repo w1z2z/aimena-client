@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { useHomeSearch } from "@/features/home-search";
 import { useMediaQuery } from "@/shared/lib/use-media-query";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
-import { useScrollLock } from "@/shared/lib/use-scroll-lock";
+import { useOverlayScrollLock } from "@/shared/lib/use-overlay-scroll-lock";
 import { FilterIcon } from "@/shared/ui/icons";
 import { HomeListingsGrid } from "@/widgets/home-listings-grid/HomeListingsGrid";
 import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
@@ -36,7 +36,7 @@ export function HomeRecommendationsHeader() {
   const { isRendered, isVisible } = useOverlayPresence(isFiltersOpen);
   const modalScrollRef = useRef<HTMLDivElement>(null);
 
-  useScrollLock(useModal && isRendered, modalScrollRef);
+  useOverlayScrollLock(useModal && isRendered, isVisible, modalScrollRef);
 
   const toggleFilters = useCallback(() => {
     setIsFiltersOpen((current) => !current);
@@ -129,7 +129,7 @@ export function HomeRecommendationsHeader() {
                 aria-modal="true"
                 aria-label="Фильтры"
                 aria-hidden={!isVisible}
-                className={`home-filters-modal__sheet${isVisible ? " is-open" : ""}`}
+                className={`home-filters-modal__sheet overlay-sheet${isVisible ? " is-open" : ""}`}
               >
                 <div className="home-filters-modal__header">
                   <h3 className="home-filters-modal__title">Фильтры</h3>

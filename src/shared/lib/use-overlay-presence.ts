@@ -6,8 +6,8 @@ import { OVERLAY_ANIMATION_MS } from "@/shared/lib/overlay-animation";
 
 /**
  * Keeps overlay mounted through the close animation.
- * Open: wait one paint in the closed state, then flip to visible
- * (Safari often skips the enter transition without this).
+ * Open: wait for painted closed frames, then flip to visible
+ * (Safari/iOS often skips the enter transition without this).
  */
 export function useOverlayPresence(open: boolean, durationMs = OVERLAY_ANIMATION_MS) {
   const [isRendered, setIsRendered] = useState(open);
@@ -19,15 +19,20 @@ export function useOverlayPresence(open: boolean, durationMs = OVERLAY_ANIMATION
       setIsVisible(false);
 
       let timeoutId = 0;
-      const frameId = window.requestAnimationFrame(() => {
-        // Second tick: Safari needs a painted closed frame before transitioning.
-        timeoutId = window.setTimeout(() => {
-          setIsVisible(true);
-        }, 16);
+      let frameId2 = 0;
+      // Double rAF: first schedules layout/paint, second runs after that paint.
+      // Extra 32ms helps iOS Safari when portal + scroll-lock also mutate the tree.
+      const frameId1 = window.requestAnimationFrame(() => {
+        frameId2 = window.requestAnimationFrame(() => {
+          timeoutId = window.setTimeout(() => {
+            setIsVisible(true);
+          }, 32);
+        });
       });
 
       return () => {
-        window.cancelAnimationFrame(frameId);
+        window.cancelAnimationFrame(frameId1);
+        window.cancelAnimationFrame(frameId2);
         window.clearTimeout(timeoutId);
       };
     }

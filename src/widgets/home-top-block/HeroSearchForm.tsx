@@ -1,10 +1,13 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import { HERO_CONDITION_OPTIONS } from "@/entities/listing";
 import { extractPriceDigits, formatPriceWithSpaces } from "@/shared/lib/format-price";
-import { StarMiniIcon } from "@/shared/ui/icons";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
+import { useOverlayScrollLock } from "@/shared/lib/use-overlay-scroll-lock";
+import { FilterIcon, StarMiniIcon } from "@/shared/ui/icons";
 import viewAllArrow from "@/shared/ui/icons/view-all-arrow.svg";
 import type { SelectOption } from "@/shared/ui/select-field";
 import { SelectField } from "@/shared/ui/select-field";
@@ -321,7 +324,7 @@ function FilterChip({
   );
 }
 
-function HeroExchangeFilters({
+function HeroExchangeFiltersContent({
   condition,
   setCondition,
 }: Pick<ModeFormFieldsProps, "condition" | "setCondition">) {
@@ -338,15 +341,10 @@ function HeroExchangeFilters({
   };
 
   return (
-    <div className="home-hero-panel relative flex h-[264px] w-[464px] flex-col items-start gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
-      <HeroBackgroundStar
-        className={`home-hero-panel__star pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
-        gradientId="hero-left-filters-star"
-      />
-
-      <div className="relative z-[1] flex w-[212px] flex-col items-start gap-[12px]">
+    <>
+      <div className="relative z-[1] flex w-[212px] max-w-full flex-col items-start gap-[12px]">
         <p className="flex h-[10px] items-center text-[14px] font-normal leading-none text-[#1A1A1A]">Тип объявления</p>
-        <div className="relative box-border flex h-[42px] w-[212px] items-center gap-[4px] rounded-[15px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] p-[4px]">
+        <div className="relative box-border flex h-[42px] w-[212px] max-w-full items-center gap-[4px] rounded-[15px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] p-[4px]">
           <span
             aria-hidden="true"
             className={`pointer-events-none absolute bottom-[4px] left-[4px] top-[4px] w-[calc(50%-6px)] rounded-[13px] bg-[#8E8BED] ${HERO_TRANSFORM_TRANSITION} ${
@@ -447,7 +445,108 @@ function HeroExchangeFilters({
           </div>
         </div>
       </div>
+    </>
+  );
+}
+
+function HeroExchangeFilters({
+  condition,
+  setCondition,
+}: Pick<ModeFormFieldsProps, "condition" | "setCondition">) {
+  return (
+    <div className="home-hero-panel relative flex h-[264px] w-[464px] flex-col items-start gap-[24px] overflow-hidden rounded-[31px] bg-white p-[24px]">
+      <HeroBackgroundStar
+        className={`home-hero-panel__star pointer-events-none absolute z-0 ${HERO_PANEL_STAR_LEFT} ${HERO_PANEL_STAR_TOP} ${HERO_PANEL_STAR_SIZE}`}
+        gradientId="hero-left-filters-star"
+      />
+      <HeroExchangeFiltersContent condition={condition} setCondition={setCondition} />
     </div>
+  );
+}
+
+function HeroBrowseFiltersModal({
+  open,
+  onClose,
+  condition,
+  setCondition,
+}: {
+  open: boolean;
+  onClose: () => void;
+  condition: string;
+  setCondition: (value: string) => void;
+}) {
+  const { isRendered, isVisible } = useOverlayPresence(open);
+  const modalScrollRef = useRef<HTMLDivElement>(null);
+  const [filtersKey, setFiltersKey] = useState(0);
+
+  useOverlayScrollLock(isRendered, isVisible, modalScrollRef);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isVisible, onClose]);
+
+  const handleReset = useCallback(() => {
+    setCondition("");
+    setFiltersKey((current) => current + 1);
+  }, [setCondition]);
+
+  if (!isRendered) return null;
+
+  return createPortal(
+    <div className="home-filters-modal" data-open={isVisible ? "true" : undefined}>
+      <button
+        type="button"
+        className={`home-filters-modal__backdrop overlay-backdrop${isVisible ? " is-open" : ""}`}
+        aria-label="Закрыть фильтры"
+        tabIndex={isVisible ? 0 : -1}
+        onClick={onClose}
+      />
+      <div
+        id="home-hero-browse-filters-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Фильтры"
+        aria-hidden={!isVisible}
+        className={`home-filters-modal__sheet overlay-sheet${isVisible ? " is-open" : ""}`}
+      >
+        <div className="home-filters-modal__header">
+          <h3 className="home-filters-modal__title">Фильтры</h3>
+          <button
+            type="button"
+            className="home-filters-modal__close"
+            aria-label="Закрыть"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+        <div ref={modalScrollRef} className="home-filters-modal__body">
+          <div className="home-hero-browse-filters-modal__content">
+            <HeroExchangeFiltersContent
+              key={filtersKey}
+              condition={condition}
+              setCondition={setCondition}
+            />
+          </div>
+        </div>
+        <div className="home-filters-modal__footer">
+          <button type="button" onClick={handleReset} className="home-filters-panel__reset">
+            Сбросить
+          </button>
+          <button type="button" onClick={onClose} className="home-filters-panel__apply">
+            Готово
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -534,13 +633,24 @@ export function ModeFormColumn({
 }) {
   const isExchange = mode === "exchange";
   const showCompactBrowseFilters = compactLayout && !isExchange;
+  const [isBrowseFiltersOpen, setIsBrowseFiltersOpen] = useState(false);
+
+  const closeBrowseFilters = useCallback(() => {
+    setIsBrowseFiltersOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!showCompactBrowseFilters) setIsBrowseFiltersOpen(false);
+  }, [showCompactBrowseFilters]);
 
   const lime = (
     <div className="home-hero-form__lime h-[264px] w-full rounded-[31px] bg-[#c8ff02] p-[24px]">
       <div className="home-hero-form__lime-head mb-[48px] flex items-center justify-between">
         <div>
           <ModeHeading isExchange={isExchange} />
-          <p className="mt-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Можно ввести не все поля</p>
+          <p className="home-hero-form__lime-hint mt-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">
+            Можно ввести не все поля
+          </p>
         </div>
         <TopModeToggle mode={mode} setMode={setMode} />
       </div>
@@ -556,6 +666,19 @@ export function ModeFormColumn({
         onCityInputChange={onCityInputChange}
         onCityListEndReached={onCityListEndReached}
       />
+
+      {showCompactBrowseFilters ? (
+        <button
+          type="button"
+          className={`home-hero-compact-filters-btn${condition ? " is-active" : ""}`}
+          aria-expanded={isBrowseFiltersOpen}
+          aria-controls="home-hero-browse-filters-modal"
+          onClick={() => setIsBrowseFiltersOpen(true)}
+        >
+          <FilterIcon className="home-hero-compact-filters-btn__icon" />
+          <span>Фильтры</span>
+        </button>
+      ) : null}
     </div>
   );
 
@@ -568,14 +691,20 @@ export function ModeFormColumn({
       {midSlot ? (
         <div className="home-hero-form__search-pair">
           {lime}
-          {showCompactBrowseFilters ? (
-            <HeroExchangeFilters condition={condition} setCondition={setCondition} />
-          ) : null}
           {midSlot}
         </div>
       ) : (
         lime
       )}
+
+      {showCompactBrowseFilters ? (
+        <HeroBrowseFiltersModal
+          open={isBrowseFiltersOpen}
+          onClose={closeBrowseFilters}
+          condition={condition}
+          setCondition={setCondition}
+        />
+      ) : null}
 
       {!compactLayout ? (
         <div className="home-hero-form__lower relative flex h-[264px] gap-[24px]">
