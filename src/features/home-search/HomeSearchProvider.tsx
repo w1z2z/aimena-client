@@ -57,7 +57,10 @@ type HomeSearchContextValue = {
   applyFilters: () => void;
   applyHeroToFilters: () => void;
   applyTitleSearch: (title: string) => void;
-  openFiltersAndScroll: (payload?: OpenHomeFiltersPayload) => void;
+  openFiltersAndScroll: (
+    payload?: OpenHomeFiltersPayload,
+    options?: { openPanel?: boolean },
+  ) => void;
   isFiltersOpen: boolean;
   setIsFiltersOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
   heroRecommendations: ListingCardData[];
@@ -202,7 +205,7 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openFiltersAndScroll = useCallback(
-    (payload?: OpenHomeFiltersPayload) => {
+    (payload?: OpenHomeFiltersPayload, options?: { openPanel?: boolean }) => {
       const base = heroToFilters(hero, categoryUiKeyToBackendId);
       const nextFilters = {
         ...base,
@@ -217,11 +220,15 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       };
       setFilters(nextFilters);
       setAppliedFilters(nextFilters);
-      setIsFiltersOpen(true);
 
       const isCompact =
         typeof window !== "undefined" &&
         window.matchMedia(`(max-width: ${COMPACT_HEADER_MAX_WIDTH_PX}px)`).matches;
+
+      const shouldOpenPanel = options?.openPanel ?? true;
+      if (shouldOpenPanel) {
+        setIsFiltersOpen(true);
+      }
 
       if (!isCompact) {
         document.getElementById("home-recommendations")?.scrollIntoView({
@@ -231,7 +238,6 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Compact: open filters, but scroll to the feed (not the filter panel).
       const scrollToFeed = () => {
         document.getElementById("home-recommendations-feed")?.scrollIntoView({
           behavior: "smooth",

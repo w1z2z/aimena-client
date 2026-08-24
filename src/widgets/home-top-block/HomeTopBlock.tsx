@@ -146,11 +146,17 @@ export function HomeTopBlock() {
     [setCategoryId, setCondition, setMode],
   );
 
+  const handleViewAllClick = useCallback(() => {
+    // Mobile: jump to feed with hero params, do not auto-open filters panel.
+    // Desktop: open filters + scroll (existing behavior).
+    openFiltersAndScroll(undefined, { openPanel: !isCompact });
+  }, [isCompact, openFiltersAndScroll]);
+
   const formProps: FormProps = {
     mode,
     setMode,
     onAddListingClick: handleCreateListing,
-    onViewAllClick: openFiltersAndScroll,
+    onViewAllClick: handleViewAllClick,
     title,
     setTitle,
     price,
@@ -180,7 +186,7 @@ export function HomeTopBlock() {
       <button
         type="button"
         className="home-hero-view-all-btn"
-        onClick={openFiltersAndScroll}
+        onClick={handleViewAllClick}
       >
         Посмотрите все варианты
       </button>
