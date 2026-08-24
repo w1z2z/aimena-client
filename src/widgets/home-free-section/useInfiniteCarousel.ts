@@ -6,12 +6,14 @@ import {
 } from "./constants";
 
 /** Clear stuck "auto scrolling" if scrollend never fires (some WebKit builds). */
-const AUTO_SCROLL_UNLOCK_MS = 700;
+const AUTO_SCROLL_UNLOCK_MS = 1400;
 
 export function useInfiniteCarousel(itemCount: number) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const isSettlingRef = useRef(false);
   const isAutoScrollingRef = useRef(false);
+  /** Ignore scrollend from instant teleports (they must not re-normalize mid-step). */
+  const suppressScrollEndRef = useRef(0);
   const autoScrollUnlockTimerRef = useRef<number | null>(null);
   /** After a user gesture, wait one full interval before the next auto step. */
   const nextAutoAdvanceAtRef = useRef(0);
@@ -24,6 +26,19 @@ export function useInfiniteCarousel(itemCount: number) {
     const measured = second.offsetLeft - first.offsetLeft;
     return measured > 0 ? measured : CARD_STEP;
   }, []);
+
+  /** Exact pixel width of one listings copy (more accurate than step * count). */
+  const getLoopWidth = useCallback(() => {
+    const carousel = carouselRef.current;
+    if (!carousel || itemCount <= 0) return 0;
+    if (carousel.children.length < itemCount + 1) {
+      return getCardStep() * itemCount;
+    }
+    const first = carousel.children[0] as HTMLElement;
+    const middle = carousel.children[itemCount] as HTMLElement;
+    const measured = middle.offsetLeft - first.offsetLeft;
+    return measured > 0 ? measured : getCardStep() * itemCount;
+  }, [getCardStep, itemCount]);
 
   const getPageSize = useCallback(() => {
     const carousel = carouselRef.current;
@@ -53,6 +68,7 @@ export function useInfiniteCarousel(itemCount: number) {
   }, []);
 
   const normalizeScrollToMiddle = useCallback((scrollLeft: number, loopWidth: number) => {
+    if (loopWidth <= 0) return scrollLeft;
     let next = scrollLeft;
     while (next >= loopWidth * 2) next -= loopWidth;
     while (next < loopWidth) next += loopWidth;
@@ -63,20 +79,21 @@ export function useInfiniteCarousel(itemCount: number) {
     const carousel = carouselRef.current;
     if (!carousel || itemCount <= 0) return;
 
-    const step = getCardStep();
-    const loopWidth = step * itemCount;
+    const loopWidth = getLoopWidth();
     if (loopWidth <= 0) return;
 
     const current = carousel.scrollLeft;
     const next = normalizeScrollToMiddle(current, loopWidth);
     if (Math.abs(next - current) < 0.5) return;
 
+    suppressScrollEndRef.current += 1;
     isSettlingRef.current = true;
     instantSetScrollLeft(carousel, next);
     requestAnimationFrame(() => {
       isSettlingRef.current = false;
+      suppressScrollEndRef.current = Math.max(0, suppressScrollEndRef.current - 1);
     });
-  }, [getCardStep, instantSetScrollLeft, itemCount, normalizeScrollToMiddle]);
+  }, [getLoopWidth, instantSetScrollLeft, itemCount, normalizeScrollToMiddle]);
 
   const snapToNearestPage = useCallback(() => {
     const carousel = carouselRef.current;
@@ -89,7 +106,7 @@ export function useInfiniteCarousel(itemCount: number) {
 
     const step = getCardStep();
     const pageStep = step * getPageSize();
-    const loopWidth = step * itemCount;
+    const loopWidth = getLoopWidth();
     if (pageStep <= 0 || loopWidth <= 0) return;
 
     const current = carousel.scrollLeft;
@@ -101,13 +118,16 @@ export function useInfiniteCarousel(itemCount: number) {
       return;
     }
 
+    suppressScrollEndRef.current += 1;
     isSettlingRef.current = true;
     instantSetScrollLeft(carousel, target);
     requestAnimationFrame(() => {
       isSettlingRef.current = false;
+      suppressScrollEndRef.current = Math.max(0, suppressScrollEndRef.current - 1);
     });
   }, [
     getCardStep,
+    getLoopWidth,
     getPageSize,
     instantSetScrollLeft,
     itemCount,
@@ -139,13 +159,15 @@ export function useInfiniteCarousel(itemCount: number) {
     const carousel = carouselRef.current;
     if (!carousel || itemCount <= 0) return;
 
-    const step = getCardStep();
+    const loopWidth = getLoopWidth();
+    suppressScrollEndRef.current += 1;
     isSettlingRef.current = true;
-    instantSetScrollLeft(carousel, step * itemCount);
+    instantSetScrollLeft(carousel, loopWidth > 0 ? loopWidth : getCardStep() * itemCount);
     requestAnimationFrame(() => {
       isSettlingRef.current = false;
+      suppressScrollEndRef.current = Math.max(0, suppressScrollEndRef.current - 1);
     });
-  }, [getCardStep, instantSetScrollLeft, itemCount]);
+  }, [getCardStep, getLoopWidth, instantSetScrollLeft, itemCount]);
 
   useEffect(() => {
     const carousel = carouselRef.current;
@@ -157,7 +179,7 @@ export function useInfiniteCarousel(itemCount: number) {
     };
 
     const handleScrollEnd = () => {
-      if (isSettlingRef.current) return;
+      if (isSettlingRef.current || suppressScrollEndRef.current > 0) return;
       const wasProgrammatic = isAutoScrollingRef.current;
       unlockAutoScroll();
       // After arrow/autoplay: only wrap the loop (invisible). Don't re-snap — that fights the tween.
@@ -170,14 +192,16 @@ export function useInfiniteCarousel(itemCount: number) {
 
     let fallbackTimer: number | null = null;
     const handleScroll = () => {
-      if (isSettlingRef.current) return;
+      if (isSettlingRef.current || suppressScrollEndRef.current > 0) return;
       // Ignore scroll noise from programmatic arrow/autoplay (including seam tweens).
       if (isAutoScrollingRef.current) return;
       markUserInteraction();
       if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
       fallbackTimer = window.setTimeout(() => {
         fallbackTimer = null;
-        if (isSettlingRef.current || isAutoScrollingRef.current) return;
+        if (isSettlingRef.current || isAutoScrollingRef.current || suppressScrollEndRef.current > 0) {
+          return;
+        }
         snapToNearestPage();
       }, 80);
     };
@@ -195,8 +219,9 @@ export function useInfiniteCarousel(itemCount: number) {
   }, [normalizeToMiddleCopy, snapToNearestPage, unlockAutoScroll]);
 
   /**
-   * Move one page. May briefly enter the previous/next copy — that's a short
-   * smooth step (last→first / first→last). Loop is re-centered on scrollend.
+   * Move one page. If the next step would cross a copy seam, teleport to the
+   * equivalent offset first (identical cards), then smooth-scroll — so the
+   * loop never hard-stops on the last page and never visibly jumps after.
    */
   const scrollByStep = useCallback(
     (direction: 1 | -1) => {
@@ -205,32 +230,56 @@ export function useInfiniteCarousel(itemCount: number) {
 
       const step = getCardStep();
       const pageStep = step * getPageSize();
-      const loopWidth = step * itemCount;
+      const loopWidth = getLoopWidth();
       if (loopWidth <= 0 || pageStep <= 0) return;
 
       let from = normalizeScrollToMiddle(carousel.scrollLeft, loopWidth);
       from = Math.round(from / pageStep) * pageStep;
-      if (from >= loopWidth * 2) from -= loopWidth;
-      if (from < loopWidth) from += loopWidth;
+      while (from >= loopWidth * 2) from -= loopWidth;
+      while (from < loopWidth) from += loopWidth;
 
-      const target = from + direction * pageStep;
+      let target = from + direction * pageStep;
+
+      if (target >= loopWidth * 2) {
+        from -= loopWidth;
+        target -= loopWidth;
+      } else if (target < loopWidth) {
+        from += loopWidth;
+        target += loopWidth;
+      }
 
       armAutoScrollLock();
 
-      if (Math.abs(carousel.scrollLeft - from) > 0.5) {
-        instantSetScrollLeft(carousel, from);
-      }
+      const runSmooth = () => {
+        if (Math.abs(target - carousel.scrollLeft) < 0.5) {
+          unlockAutoScroll();
+          return;
+        }
+        carousel.scrollTo({ left: target, behavior: "smooth" });
+      };
 
-      if (Math.abs(target - carousel.scrollLeft) < 0.5) {
-        unlockAutoScroll();
+      if (Math.abs(carousel.scrollLeft - from) > 0.5) {
+        // Teleport must not be treated as "scroll ended" or normalize snaps
+        // back to the last page and kills the infinite loop.
+        suppressScrollEndRef.current += 1;
+        isSettlingRef.current = true;
+        instantSetScrollLeft(carousel, from);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            isSettlingRef.current = false;
+            suppressScrollEndRef.current = Math.max(0, suppressScrollEndRef.current - 1);
+            runSmooth();
+          });
+        });
         return;
       }
 
-      carousel.scrollTo({ left: target, behavior: "smooth" });
+      runSmooth();
     },
     [
       armAutoScrollLock,
       getCardStep,
+      getLoopWidth,
       getPageSize,
       instantSetScrollLeft,
       itemCount,
