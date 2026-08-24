@@ -189,6 +189,29 @@ textarea:disabled {
   cursor: not-allowed;
 }
 
+/*
+ * iOS Safari zooms any focused form control under 16px.
+ * Force 16px on compact (mobile chrome) for inputs / textareas / selects
+ * site-wide — same fix as auth login/register.
+ */
+@media (max-width: 1024px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  textarea,
+  select,
+  .site-select__input,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  textarea::placeholder,
+  select::placeholder,
+  .site-select__input::placeholder,
+  .site-select__input.is-placeholder {
+    font-size: 16px !important;
+  }
+}
+
 @keyframes home-ticker-scroll {
   from {
     transform: translate3d(0, 0, 0);

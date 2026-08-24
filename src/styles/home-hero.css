@@ -219,10 +219,11 @@
 }
 
 .home-hero-compact .home-hero-field input,
-.home-hero-compact .home-hero-field .site-select--hero .site-select__input {
+.home-hero-compact .home-hero-field .site-select--hero .site-select__input,
+.home-hero-compact .home-hero-field .site-select--field .site-select__input {
   height: 42px;
   border-radius: 14px;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .home-hero-compact .home-hero-field--price > div > span {
@@ -230,8 +231,14 @@
 }
 
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input::placeholder,
-.home-hero-compact .home-hero-field .site-select--hero .site-select__input.is-placeholder {
-  font-size: 13px;
+.home-hero-compact .home-hero-field .site-select--hero .site-select__input.is-placeholder,
+.home-hero-compact .home-hero-field .site-select--field .site-select__input::placeholder,
+.home-hero-compact .home-hero-field .site-select--field .site-select__input.is-placeholder {
+  font-size: 16px;
+}
+
+.home-hero-city-select.site-select--field {
+  width: 100%;
 }
 
 .home-hero-compact-filters-btn {

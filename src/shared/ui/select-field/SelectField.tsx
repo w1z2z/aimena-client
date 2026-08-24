@@ -66,6 +66,51 @@ function filterOptions(options: readonly SelectOption[], query: string) {
   return options.filter((option) => option.label.toLowerCase().includes(normalized));
 }
 
+/** iOS keyboard moves the visual viewport; fixed UI must follow offsetTop/Left. */
+function measureListPosition(control: HTMLElement): ListPosition {
+  const rect = control.getBoundingClientRect();
+  const vv = window.visualViewport;
+  const viewTop = vv?.offsetTop ?? 0;
+  const viewLeft = vv?.offsetLeft ?? 0;
+  const viewHeight = vv?.height ?? window.innerHeight;
+  const viewBottom = viewTop + viewHeight;
+
+  // rect is visual-viewport-relative; position:fixed is layout-viewport-relative.
+  const controlTop = rect.top + viewTop;
+  const controlBottom = rect.bottom + viewTop;
+  const controlLeft = rect.left + viewLeft;
+
+  const spaceBelow = viewBottom - controlBottom - LIST_GAP;
+  const spaceAbove = controlTop - viewTop - LIST_GAP;
+  const placeAbove = spaceBelow < Math.min(LIST_MAX_HEIGHT, 160) && spaceAbove > spaceBelow;
+  const available = placeAbove ? spaceAbove : spaceBelow;
+  const maxHeight = Math.max(120, Math.min(LIST_MAX_HEIGHT, available));
+
+  if (placeAbove) {
+    return {
+      top: Math.max(viewTop + LIST_GAP, controlTop - LIST_GAP - maxHeight),
+      left: controlLeft,
+      width: rect.width,
+      maxHeight,
+      placement: "above",
+    };
+  }
+
+  return {
+    top: controlBottom + LIST_GAP,
+    left: controlLeft,
+    width: rect.width,
+    maxHeight,
+    placement: "below",
+  };
+}
+
+function pinWindowScroll(scrollX: number, scrollY: number) {
+  if (Math.abs(window.scrollX - scrollX) > 0.5 || Math.abs(window.scrollY - scrollY) > 0.5) {
+    window.scrollTo(scrollX, scrollY);
+  }
+}
+
 function ClearIcon() {
   return (
     <svg
@@ -94,37 +139,17 @@ function ChevronIcon({ open }: { open: boolean }) {
       className={`site-select__chevron-icon${open ? " is-open" : ""}`}
       aria-hidden="true"
     >
-      <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M1 1.5L6 6.5L11 1.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-function measureListPosition(control: HTMLElement): ListPosition {
-  const rect = control.getBoundingClientRect();
-  const spaceBelow = window.innerHeight - rect.bottom - LIST_GAP;
-  const spaceAbove = rect.top - LIST_GAP;
-  const placeAbove = spaceBelow < Math.min(LIST_MAX_HEIGHT, 160) && spaceAbove > spaceBelow;
-  const available = placeAbove ? spaceAbove : spaceBelow;
-  const maxHeight = Math.max(120, Math.min(LIST_MAX_HEIGHT, available));
-
-  if (placeAbove) {
-    return {
-      top: Math.max(LIST_GAP, rect.top - LIST_GAP - maxHeight),
-      left: rect.left,
-      width: rect.width,
-      maxHeight,
-      placement: "above",
-    };
-  }
-
-  return {
-    top: rect.bottom + LIST_GAP,
-    left: rect.left,
-    width: rect.width,
-    maxHeight,
-    placement: "below",
-  };
-}
 
 export function SelectField({
   value,
@@ -230,11 +255,33 @@ export function SelectField({
     window.addEventListener("resize", handleReposition);
     // Keep list glued to the field while nested containers (filters modal) scroll.
     window.addEventListener("scroll", handleReposition, true);
+    window.visualViewport?.addEventListener("resize", handleReposition);
+    window.visualViewport?.addEventListener("scroll", handleReposition);
     return () => {
       window.removeEventListener("resize", handleReposition);
       window.removeEventListener("scroll", handleReposition, true);
+      window.visualViewport?.removeEventListener("resize", handleReposition);
+      window.visualViewport?.removeEventListener("scroll", handleReposition);
     };
   }, [isListRendered, updateListPosition]);
+
+  /** Same as onboarding: don't let iOS yank the page — list is portaled to the field. */
+  const pinScrollAroundFocus = useCallback(() => {
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const pin = () => {
+      pinWindowScroll(scrollX, scrollY);
+      updateListPosition();
+    };
+    pin();
+    window.requestAnimationFrame(() => {
+      pin();
+      window.requestAnimationFrame(pin);
+    });
+    for (const delay of [50, 100, 200, 280, 360]) {
+      window.setTimeout(pin, delay);
+    }
+  }, [updateListPosition]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -423,6 +470,7 @@ export function SelectField({
     setIsOpen(true);
     window.requestAnimationFrame(() => {
       inputRef.current?.focus({ preventScroll: true });
+      pinScrollAroundFocus();
     });
   };
 
@@ -434,7 +482,14 @@ export function SelectField({
     setIsOpen(true);
     window.requestAnimationFrame(() => {
       inputRef.current?.focus({ preventScroll: true });
+      pinScrollAroundFocus();
     });
+  };
+
+  const handleInputFocus = () => {
+    if (isDisabled) return;
+    setIsOpen(true);
+    pinScrollAroundFocus();
   };
 
   const handleListScroll = () => {
@@ -525,7 +580,7 @@ export function SelectField({
           disabled={isDisabled || undefined}
           onChange={(event) => handleInputChange(event.target.value)}
           onKeyDown={handleInputKeyDown}
-          onFocus={() => !isDisabled && setIsOpen(true)}
+          onFocus={handleInputFocus}
           onBlur={handleBlur}
           onMouseDown={(event) => {
             if (!searchable) {

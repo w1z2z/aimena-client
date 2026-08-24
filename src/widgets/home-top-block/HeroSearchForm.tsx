@@ -254,6 +254,7 @@ function TopFields({
   cityOptions,
   onCityInputChange,
   onCityListEndReached,
+  compactLayout = false,
 }: Pick<
   ModeFormFieldsProps,
   | "title"
@@ -265,7 +266,7 @@ function TopFields({
   | "cityOptions"
   | "onCityInputChange"
   | "onCityListEndReached"
->) {
+> & { compactLayout?: boolean }) {
   return (
     <div className="home-hero-fields flex h-[69px] gap-[12px]">
       <LabeledInput
@@ -287,9 +288,11 @@ function TopFields({
           onListEndReached={onCityListEndReached}
           options={cityOptions}
           placeholder={cityPlaceholder}
-          variant="hero"
+          variant={compactLayout ? "field" : "hero"}
+          searchable
           allowCustomValue={false}
           clearable
+          className={compactLayout ? "home-hero-city-select" : undefined}
           aria-label="Город"
         />
       </div>
@@ -665,6 +668,7 @@ export function ModeFormColumn({
         cityOptions={cityOptions}
         onCityInputChange={onCityInputChange}
         onCityListEndReached={onCityListEndReached}
+        compactLayout={compactLayout}
       />
 
       {showCompactBrowseFilters ? (
