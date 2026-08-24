@@ -68,7 +68,7 @@
   --hero-pair-gap: 12px;
   box-sizing: border-box;
   width: 100%;
-  padding-bottom: 40px;
+  padding-bottom: 28px;
 }
 
 .home-hero-compact[data-density="cozy"] {
@@ -833,7 +833,7 @@
 
 .home-hero-compact .home-hero-why {
   width: 100%;
-  margin: 28px 0 0;
+  margin: 32px 0 0;
   font-size: 20px;
   line-height: 1.2;
 }

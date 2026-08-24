@@ -14,7 +14,7 @@ export function HomeExchangeCtaBanner() {
   };
 
   return (
-    <section className="bg-[#F8F8F5] pb-[68px] text-[#1A1A1A]">
+    <section className="home-exchange-cta-section bg-[#F8F8F5] text-[#1A1A1A]">
       <div className="home-recommendations__inner">
         <div className="home-exchange-cta">
           <div className="home-exchange-cta__title">

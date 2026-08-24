@@ -64,7 +64,7 @@ export function HomeFreeGiveawaySection() {
   );
 
   return (
-    <section className="home-free-section bg-surface pb-[68px] pt-[68px] text-brand">
+    <section className="home-free-section bg-surface text-brand">
       <div className="home-free-section__inner">
         <div className="home-free-section__stack">
           <h2 className="home-free-section__heading">
