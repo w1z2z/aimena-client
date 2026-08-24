@@ -344,7 +344,7 @@ function getDocPhotoGridLayout(photoCount: number) {
 }
 
 const EXCHANGE_FIELD_INPUT_CLASS =
-  "box-border h-[50px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] px-3 py-[11px] text-[14px] font-normal leading-[140%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[140%] placeholder:text-[#626262]";
+  "box-border h-[50px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white px-3 py-[11px] text-[14px] font-normal leading-[140%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[140%] placeholder:text-[#626262]";
 
 const SECTION_TITLE_CLASS =
   "m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#626262]";
@@ -1722,7 +1722,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     setPriceDigits(nextDigits);
                   }}
                   placeholder="0"
-                  className="h-11 w-full rounded-[12px] border border-[#cacaca] bg-[#f2f4f7] pl-6 pr-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#626262]"
+                  className="h-12 w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white pl-6 pr-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#626262] focus:border-[#8E8BED]"
                 />
                 <span
                   ref={priceMeasureRef}

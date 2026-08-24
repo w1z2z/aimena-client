@@ -95,15 +95,15 @@
   min-height: 150px;
   max-height: 480px;
   overflow: hidden;
-  border: 1px solid #cacaca;
-  border-radius: 12px;
-  background: #f2f4f7;
+  border: 0.5px solid #cacaca;
+  border-radius: 18px;
+  background: #ffffff;
   resize: vertical;
 }
 
 .create-listing-description:focus-within {
   border-color: #8e8bed;
-  box-shadow: 0 0 0 1px rgb(142 139 237 / 35%);
+  box-shadow: none;
 }
 
 .create-listing-description__input {
@@ -138,6 +138,12 @@
 /* Profile settings: muted fill like sibling inputs, otherwise same control */
 .profile-settings-city.site-select--field .site-select__input {
   background: #f2f4f7;
+}
+
+/* Create-listing selects stay white (incl. exchange subcategory) */
+.create-listing-city-select.site-select--field .site-select__input,
+.create-listing-exchange-select.site-select--field .site-select__input {
+  background: #ffffff;
 }
 
 .site-select__chevron {
