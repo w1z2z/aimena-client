@@ -255,6 +255,7 @@ function TopFields({
   onCityInputChange,
   onCityListEndReached,
   compactLayout = false,
+  cityAction,
 }: Pick<
   ModeFormFieldsProps,
   | "title"
@@ -266,7 +267,7 @@ function TopFields({
   | "cityOptions"
   | "onCityInputChange"
   | "onCityListEndReached"
-> & { compactLayout?: boolean }) {
+> & { compactLayout?: boolean; cityAction?: ReactNode }) {
   return (
     <div className="home-hero-fields flex h-[69px] gap-[12px]">
       <LabeledInput
@@ -281,20 +282,23 @@ function TopFields({
 
       <div className="home-hero-field home-hero-field--city w-[250px] flex-1">
         <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Город</p>
-        <SelectField
-          value={city}
-          onChange={setCity}
-          onInputChange={onCityInputChange}
-          onListEndReached={onCityListEndReached}
-          options={cityOptions}
-          placeholder={cityPlaceholder}
-          variant={compactLayout ? "field" : "hero"}
-          searchable
-          allowCustomValue={false}
-          clearable
-          className={compactLayout ? "home-hero-city-select" : undefined}
-          aria-label="Город"
-        />
+        <div className={cityAction ? "home-hero-city-row" : undefined}>
+          <SelectField
+            value={city}
+            onChange={setCity}
+            onInputChange={onCityInputChange}
+            onListEndReached={onCityListEndReached}
+            options={cityOptions}
+            placeholder={cityPlaceholder}
+            variant={compactLayout ? "field" : "hero"}
+            searchable
+            allowCustomValue={false}
+            clearable
+            className={compactLayout ? "home-hero-city-select" : undefined}
+            aria-label="Город"
+          />
+          {cityAction}
+        </div>
       </div>
     </div>
   );
@@ -646,6 +650,19 @@ export function ModeFormColumn({
     if (!showCompactBrowseFilters) setIsBrowseFiltersOpen(false);
   }, [showCompactBrowseFilters]);
 
+  const cityFiltersAction = showCompactBrowseFilters ? (
+    <button
+      type="button"
+      className={`home-hero-compact-filters-btn${condition ? " is-active" : ""}`}
+      aria-label="Фильтры"
+      aria-expanded={isBrowseFiltersOpen}
+      aria-controls="home-hero-browse-filters-modal"
+      onClick={() => setIsBrowseFiltersOpen(true)}
+    >
+      <FilterIcon className="home-hero-compact-filters-btn__icon" />
+    </button>
+  ) : null;
+
   const lime = (
     <div className="home-hero-form__lime h-[264px] w-full rounded-[31px] bg-[#c8ff02] p-[24px]">
       <div className="home-hero-form__lime-head mb-[48px] flex items-center justify-between">
@@ -669,20 +686,8 @@ export function ModeFormColumn({
         onCityInputChange={onCityInputChange}
         onCityListEndReached={onCityListEndReached}
         compactLayout={compactLayout}
+        cityAction={cityFiltersAction}
       />
-
-      {showCompactBrowseFilters ? (
-        <button
-          type="button"
-          className={`home-hero-compact-filters-btn${condition ? " is-active" : ""}`}
-          aria-expanded={isBrowseFiltersOpen}
-          aria-controls="home-hero-browse-filters-modal"
-          onClick={() => setIsBrowseFiltersOpen(true)}
-        >
-          <FilterIcon className="home-hero-compact-filters-btn__icon" />
-          <span>Фильтры</span>
-        </button>
-      ) : null}
     </div>
   );
 

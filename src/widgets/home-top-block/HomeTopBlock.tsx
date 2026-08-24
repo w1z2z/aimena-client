@@ -8,6 +8,7 @@ import { useAuthGate } from "@/features/auth";
 import { useHomeSearch } from "@/features/home-search";
 import { writeHeroListingDraft } from "@/shared/lib/hero-listing-draft";
 import { useMediaQuery } from "@/shared/lib/use-media-query";
+import { useViewportHeightDensity } from "@/shared/lib/use-viewport-height-density";
 import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
 import { Header } from "@/widgets/header/Header";
 
@@ -97,6 +98,7 @@ export function HomeTopBlock() {
   const router = useRouter();
   const { guardAuth } = useAuthGate();
   const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
+  const heroDensity = useViewportHeightDensity();
   const viewportWidth = useViewportWidth();
   /** Desktop Figma scene: shrink to viewport so forms/title aren't cropped (arc keeps its own compact logic). */
   const sceneScale = isCompact ? 1 : Math.min(1, viewportWidth / BASE_SCENE_WIDTH);
@@ -199,7 +201,7 @@ export function HomeTopBlock() {
       <Header />
 
       {isCompact ? (
-        <div className="home-hero-compact">
+        <div className="home-hero-compact" data-density={heroDensity}>
           <div className="home-hero-compact__arc" aria-label="Категории">
             <div className="home-hero-compact__arc-stage">
               <CategoriesArc categories={categories} onCategoryChange={handleCategoryChange} />
