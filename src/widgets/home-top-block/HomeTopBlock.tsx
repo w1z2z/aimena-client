@@ -183,6 +183,7 @@ export function HomeTopBlock() {
 
   const compactMidSlot = (
     <div className="home-hero-compact__results">
+      {recommendations}
       <button
         type="button"
         className="home-hero-view-all-btn"
@@ -190,7 +191,6 @@ export function HomeTopBlock() {
       >
         Посмотрите все варианты
       </button>
-      {recommendations}
     </div>
   );
 
