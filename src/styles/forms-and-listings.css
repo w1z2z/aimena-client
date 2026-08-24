@@ -379,6 +379,8 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 588px;
+  min-width: 0;
+  overflow: hidden;
   border: 0.3px solid transparent;
   border-radius: 31px;
   background:
@@ -397,6 +399,7 @@
   display: grid;
   box-sizing: border-box;
   width: 100%;
+  min-width: 0;
   height: 472px;
   min-height: 472px;
   align-content: center;
@@ -405,6 +408,7 @@
   border-radius: 31px;
   background: transparent;
   padding: 48px 24px;
+  overflow: hidden;
 }
 
 .registration-prompt-modal.is-visible .registration-prompt-modal__card {
@@ -421,8 +425,11 @@
 }
 
 .registration-prompt-modal__title {
+  box-sizing: border-box;
   margin: 0;
+  width: 100%;
   max-width: 508px;
+  min-width: 0;
   color: #1a1a1a !important;
   font-family: var(--font-manrope), sans-serif;
   font-size: 40px;
@@ -430,31 +437,41 @@
   line-height: 40px;
   letter-spacing: -0.005em;
   text-align: center;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .registration-prompt-modal__actions {
   display: flex;
+  box-sizing: border-box;
   width: 100%;
   max-width: 540px;
+  min-width: 0;
   flex-direction: column;
   align-items: center;
   gap: 24px;
 }
 
 .registration-prompt-modal__subtitle {
+  box-sizing: border-box;
   margin: 0;
+  width: 100%;
   max-width: 476px;
+  min-width: 0;
   color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 170%;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .registration-prompt-modal__buttons {
   display: flex;
+  box-sizing: border-box;
   width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 12px;
 }
@@ -470,7 +487,7 @@
   border: 1px solid transparent;
   border-radius: 21px;
   background: #8e8bed;
-  padding: 0 74px;
+  padding: 0 16px;
   color: #ffffff;
   font-family: var(--font-manrope), sans-serif;
   font-size: 14px;
@@ -479,6 +496,9 @@
   letter-spacing: 0.001em;
   text-align: center;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition:
     filter 150ms ease,
     transform 100ms ease,
@@ -535,6 +555,17 @@
   .registration-prompt-modal__actions {
     gap: 16px;
   }
+
+  .registration-prompt-modal__buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .registration-prompt-modal__button {
+    width: 100%;
+    flex: none;
+    padding: 0 16px;
+  }
 }
 
 .listing-published-modal {
@@ -563,6 +594,7 @@
   display: flex;
   width: 100%;
   max-width: 600px;
+  min-width: 0;
   min-height: 308px;
   flex-direction: column;
   align-items: center;
@@ -571,6 +603,7 @@
   border-radius: 31px;
   background: #ffffff;
   padding: 48px;
+  overflow: hidden;
   opacity: 0;
   transform: translate3d(0, 12px, 0);
   -webkit-transform: translate3d(0, 12px, 0);
@@ -589,35 +622,41 @@
   margin: 0;
   width: 100%;
   max-width: 504px;
+  min-width: 0;
   color: #1a1a1a;
   font-size: 24px;
   font-weight: 800;
   line-height: 110%;
   letter-spacing: -0.003em;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .listing-published-modal__subtitle {
   margin: 0;
   width: 100%;
   max-width: 504px;
+  min-width: 0;
   color: #1a1a1a;
   font-size: 14px;
   font-weight: 400;
   line-height: 170%;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .listing-published-modal__button {
   display: flex;
+  box-sizing: border-box;
   width: 100%;
   max-width: 504px;
+  min-width: 0;
   height: 63px;
   align-items: center;
   justify-content: center;
   border-radius: 21px;
   background: #8e8bed;
-  padding: 16px 74px;
+  padding: 16px;
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
