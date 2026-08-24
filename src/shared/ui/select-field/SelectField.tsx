@@ -276,6 +276,7 @@ export function SelectField({
     if (option.disabled) return;
 
     const windowScrollY = window.scrollY;
+    const windowScrollX = window.scrollX;
     const nestedScrolls: { el: HTMLElement; top: number }[] = [];
     let node: HTMLElement | null = rootRef.current;
     while (node) {
@@ -291,30 +292,33 @@ export function SelectField({
     }
 
     const restoreScroll = () => {
-      if (Math.abs(window.scrollY - windowScrollY) > 1) {
-        window.scrollTo(window.scrollX, windowScrollY);
+      if (Math.abs(window.scrollY - windowScrollY) > 0.5) {
+        window.scrollTo(windowScrollX, windowScrollY);
       }
       for (const { el, top } of nestedScrolls) {
-        if (Math.abs(el.scrollTop - top) > 1) {
+        if (Math.abs(el.scrollTop - top) > 0.5) {
           el.scrollTop = top;
         }
       }
     };
 
-    if (searchable) {
-      setInputValue(option.label);
-    }
+    setInputValue(option.label);
     onChange(option.value);
     close();
+
+    // Safari scrolls focused controls into view when layout changes
+    // (e.g. subcategory panel open). Blur first, then keep scroll pinned.
+    inputRef.current?.blur();
+
+    restoreScroll();
     window.requestAnimationFrame(() => {
       restoreScroll();
-      if (!searchable) {
-        setInputValue(getLabelForValue(optionsRef.current, safeValueRef.current));
-      }
       window.requestAnimationFrame(restoreScroll);
     });
-    window.setTimeout(restoreScroll, 0);
-    window.setTimeout(restoreScroll, 50);
+    // Cover delayed Safari focus-scroll + panel open animation (~260ms)
+    for (const delay of [0, 16, 50, 100, 200, 280, 360]) {
+      window.setTimeout(restoreScroll, delay);
+    }
   };
 
   const handleBlur = () => {

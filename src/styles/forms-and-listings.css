@@ -343,6 +343,10 @@
   font-weight: 400;
 }
 
+.site-select__option.is-create {
+  font-weight: 600;
+}
+
 .site-select__empty {
   padding: 10px 12px;
   color: #626262;
