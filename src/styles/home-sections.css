@@ -376,7 +376,8 @@
   }
 
   .home-free-carousel-viewport {
-    width: min(100%, calc(342px * 2 + 12px));
+    width: min(100%, 342px);
+    max-width: 342px;
     margin: 0 auto;
     overflow: hidden;
   }
@@ -391,9 +392,9 @@
   .home-free-carousel__item {
     container-type: inline-size;
     position: relative;
-    /* Scale only shrinks — never larger than desktop 342×464 */
-    width: min(342px, calc((100% - 12px) / 2));
-    flex: 0 0 min(342px, calc((100% - 12px) / 2));
+    /* One card — same as compact hero recommendations */
+    width: 100%;
+    flex: 0 0 100%;
     max-width: 342px;
     aspect-ratio: 342 / 464;
     scroll-snap-align: start;
@@ -439,18 +440,6 @@
 
   .home-free-carousel {
     gap: 10px;
-  }
-}
-
-@media (max-width: 520px) {
-  .home-free-carousel-viewport {
-    width: min(100%, 342px);
-    margin-inline: auto;
-  }
-
-  .home-free-carousel__item {
-    width: 100%;
-    flex: 0 0 100%;
   }
 }
 
