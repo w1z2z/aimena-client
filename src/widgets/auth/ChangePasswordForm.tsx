@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/features/auth";
 import { forgotPassword } from "@/shared/api/auth";
 import { ApiError } from "@/shared/api/http";
-import { AUTH_UNION_ICON_SIZE, AuthUnionIcon } from "@/shared/ui/icons";
+import { AuthUnionIcon } from "@/shared/ui/icons";
 
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
@@ -57,17 +57,11 @@ export function ChangePasswordForm() {
 
   return (
     <AuthCard>
-      <AuthUnionIcon
-        style={{
-          width: AUTH_UNION_ICON_SIZE.width,
-          height: AUTH_UNION_ICON_SIZE.height,
-        }}
-        aria-hidden="true"
-      />
+      <AuthUnionIcon className="auth-card__icon auth-card__icon--union" aria-hidden="true" />
 
       <AuthTitle>Сменить пароль</AuthTitle>
 
-      <form onSubmit={(event) => void handleSubmit(event)} className="flex w-full flex-col items-center gap-[48px]">
+      <form onSubmit={(event) => void handleSubmit(event)} className="auth-form-stack">
         <AuthFormFields subtitle="Отправим ссылку для смены пароля на вашу почту">
           <p className="w-full break-all text-center text-[16px] font-semibold leading-[1.4] text-[#8E8BED]">
             {user.email}

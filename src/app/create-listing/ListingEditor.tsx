@@ -8,9 +8,11 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type CSSProperties,
   type DragEvent,
   type KeyboardEvent,
 } from "react";
+import { createPortal } from "react-dom";
 
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useAuthGate } from "@/features/auth";
@@ -344,7 +346,7 @@ function getDocPhotoGridLayout(photoCount: number) {
 }
 
 const EXCHANGE_FIELD_INPUT_CLASS =
-  "box-border h-[50px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-[#F2F4F7] px-3 py-[11px] text-[14px] font-normal leading-[140%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[140%] placeholder:text-[#626262]";
+  "box-border h-[50px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white px-3 py-[11px] text-[14px] font-normal leading-[140%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[140%] placeholder:text-[#626262]";
 
 const SECTION_TITLE_CLASS =
   "m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#626262]";
@@ -509,6 +511,13 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const itemPhotosInputRef = useRef<HTMLInputElement>(null);
   const docPhotosInputRef = useRef<HTMLInputElement>(null);
   const priceMeasureRef = useRef<HTMLSpanElement>(null);
+  const wantsTagFieldRef = useRef<HTMLDivElement>(null);
+  const [wantsTagListPosition, setWantsTagListPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+  } | null>(null);
   const [listingKind, setListingKind] = useState<ListingKind>("item");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -647,6 +656,43 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       ...existingMatches,
     ];
   }, [suggestedTags, wantsTagInput, wantsTags]);
+
+  const showWantsTagSuggestions =
+    tagSuggestions.length > 0 &&
+    wantsTags.length < WANTS_TAGS_LIMIT &&
+    wantsTagInput.trim().length > 0;
+
+  useLayoutEffect(() => {
+    if (!showWantsTagSuggestions) {
+      setWantsTagListPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const field = wantsTagFieldRef.current;
+      if (!field) return;
+      const rect = field.getBoundingClientRect();
+      const gap = 4;
+      const maxHeight = 280;
+      const spaceBelow = window.innerHeight - rect.bottom - gap;
+      const height = Math.max(120, Math.min(maxHeight, spaceBelow));
+      setWantsTagListPosition({
+        top: rect.bottom + gap,
+        left: rect.left,
+        width: rect.width,
+        maxHeight: height,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [showWantsTagSuggestions, tagSuggestions.length]);
+
   const cityOptions = useMemo(() => {
     const options = buildCitySelectOptions({
       featured: featuredCities,
@@ -1722,7 +1768,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     setPriceDigits(nextDigits);
                   }}
                   placeholder="0"
-                  className="h-11 w-full rounded-[12px] border border-[#cacaca] bg-[#f2f4f7] pl-6 pr-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#626262]"
+                  className="h-12 w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white pl-6 pr-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#626262] focus:border-[#8E8BED]"
                 />
                 <span
                   ref={priceMeasureRef}
@@ -1779,7 +1825,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                   isFree ? "text-[#1A1A1A]" : "text-[#626262]"
                 }`}
               >
-                Отдаю даром
+                Отдают даром
               </h3>
               <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
                 Включите, если отдаёте {listingTypeName} без обмена — взамен вы ничего не получите
@@ -1906,7 +1952,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                         ))}
                       </div>
                     ) : null}
-                    <div>
+                    <div ref={wantsTagFieldRef} className="relative w-full">
                       <input
                         type="text"
                         value={wantsTagInput}
@@ -1923,29 +1969,45 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                             : "Например: iPhone, MacBook, ремонт ноутбука"
                         }
                         disabled={wantsTags.length >= WANTS_TAGS_LIMIT}
-                        className={`${EXCHANGE_FIELD_INPUT_CLASS} mb-2`}
+                        className={EXCHANGE_FIELD_INPUT_CLASS}
                       />
-                      {tagSuggestions.length > 0 &&
-                      wantsTags.length < WANTS_TAGS_LIMIT &&
-                      wantsTagInput.trim().length > 0 ? (
-                        <div className="mt-2 max-h-44 overflow-y-auto rounded-[12px] border border-[#CACACA] bg-white p-1 shadow-[0_8px_24px_rgba(15,23,42,0.14)]">
-                          {tagSuggestions.map((item) => (
-                            <button
-                              key={`${item.value.toLowerCase()}-${item.isCreateAction ? "create" : "existing"}`}
-                              type="button"
-                              onMouseDown={(event) => event.preventDefault()}
-                              onClick={() => addWantsTag(item.value)}
-                              className={`block w-full rounded-[8px] px-3 py-2 text-left text-[13px] leading-[120%] ${
-                                item.isCreateAction
-                                  ? "bg-[#f0e8ff] text-[#1A1A1A]"
-                                  : "text-[#1A1A1A] hover:bg-[#F8F8F5]"
-                              }`}
+                      {showWantsTagSuggestions && wantsTagListPosition && typeof document !== "undefined"
+                        ? createPortal(
+                            <div
+                              className="site-select__list site-select__list--portal create-listing-tag-suggestions"
+                              style={
+                                {
+                                  top: wantsTagListPosition.top,
+                                  left: wantsTagListPosition.left,
+                                  width: wantsTagListPosition.width,
+                                  maxHeight: wantsTagListPosition.maxHeight,
+                                } satisfies CSSProperties
+                              }
+                              onWheel={(event) => event.stopPropagation()}
                             >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      ) : null}
+                              <ul className="site-select__list-inner" role="listbox">
+                                {tagSuggestions.map((item) => (
+                                  <li
+                                    key={`${item.value.toLowerCase()}-${item.isCreateAction ? "create" : "existing"}`}
+                                    role="presentation"
+                                  >
+                                    <button
+                                      type="button"
+                                      role="option"
+                                      aria-selected={false}
+                                      className={`site-select__option${item.isCreateAction ? " is-create" : ""}`}
+                                      onMouseDown={(event) => event.preventDefault()}
+                                      onClick={() => addWantsTag(item.value)}
+                                    >
+                                      {item.label}
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>,
+                            document.body,
+                          )
+                        : null}
                     </div>
                   </div>
                 </div>

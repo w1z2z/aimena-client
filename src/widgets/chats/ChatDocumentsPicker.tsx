@@ -4,9 +4,8 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { AttachableListingDocuments } from "@/shared/api/chats";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { ListingActionStarIcon } from "@/shared/ui/icons";
-
-const TRANSITION_MS = 320;
 
 type Props = {
   open: boolean;
@@ -40,32 +39,14 @@ export function ChatDocumentsPicker({
     [listings],
   );
   const [selected, setSelected] = useState<Set<string>>(() => new Set(allIds));
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   useEffect(() => {
     setSelected(new Set(allIds));
   }, [allIds]);
 
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const frameId = window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setVisible(true));
-      });
-      return () => window.cancelAnimationFrame(frameId);
-    }
-    setVisible(false);
-  }, [open]);
-
-  useEffect(() => {
-    if (!mounted || open) return;
-    const timer = window.setTimeout(() => setMounted(false), TRANSITION_MS);
-    return () => window.clearTimeout(timer);
-  }, [mounted, open]);
-
-  useEffect(() => {
-    if (!mounted) return;
+    if (!isRendered) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -76,9 +57,9 @@ export function ChatDocumentsPicker({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [busy, mounted, onClose]);
+  }, [busy, isRendered, onClose]);
 
-  if (!mounted || typeof document === "undefined") return null;
+  if (!isRendered || typeof document === "undefined") return null;
 
   const toggle = (id: string) => {
     setSelected((current) => {
@@ -91,7 +72,7 @@ export function ChatDocumentsPicker({
 
   return createPortal(
     <div
-      className={`listing-action-modal${visible ? " is-visible" : ""}`}
+      className={`listing-action-modal${isVisible ? " is-visible" : ""}`}
       role="presentation"
       onMouseDown={(event) => event.stopPropagation()}
       onPointerDown={(event) => event.stopPropagation()}

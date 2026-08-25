@@ -6,8 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { getCategories, type ApiCategoryNode } from "@/shared/api/catalog";
 import { requestOpenHomeFilters } from "@/shared/lib/home-open-filters";
-
-const PANEL_CLOSE_MS = 220;
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 type HeaderCategoriesDropdownProps = {
   onTriggerWidthChange?: (width: number) => void;
@@ -23,15 +22,14 @@ export function HeaderCategoriesDropdown({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const [hoveredParentId, setHoveredParentId] = useState<string | null>(null);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   const categoriesQuery = useQuery({
     queryKey: ["catalog", "categories", "tree", "item", "header"],
     queryFn: () => getCategories({ parentsOnly: false, homeArc: false, forType: "item" }),
     staleTime: 5 * 60_000,
-    enabled: open || isMounted,
+    enabled: open || isRendered,
   });
 
   const parents = (categoriesQuery.data?.data ?? []) as ApiCategoryNode[];
@@ -53,16 +51,7 @@ export function HeaderCategoriesDropdown({
   }, [onTriggerWidthChange]);
 
   useEffect(() => {
-    if (open) {
-      setIsMounted(true);
-      const frameId = window.requestAnimationFrame(() => setIsVisible(true));
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setIsVisible(false);
-    setHoveredParentId(null);
-    const timeoutId = window.setTimeout(() => setIsMounted(false), PANEL_CLOSE_MS);
-    return () => window.clearTimeout(timeoutId);
+    if (!open) setHoveredParentId(null);
   }, [open]);
 
   useEffect(() => {
@@ -99,7 +88,7 @@ export function HeaderCategoriesDropdown({
   };
 
   return (
-    <div ref={containerRef} className="absolute left-[177px] top-[11px] z-[60]">
+    <div ref={containerRef} className="relative z-[60] shrink-0">
       <button
         ref={triggerRef}
         type="button"
@@ -132,7 +121,7 @@ export function HeaderCategoriesDropdown({
         </svg>
       </button>
 
-      {isMounted ? (
+      {isRendered ? (
         <div
           id={panelId}
           role="dialog"

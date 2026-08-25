@@ -1,11 +1,6 @@
 import type { ReactNode } from "react";
 
-import {
-  AUTH_STAR_ICON_SIZE,
-  AUTH_UNION_ICON_SIZE,
-  AuthStarIcon,
-  AuthUnionIcon,
-} from "@/shared/ui/icons";
+import { AuthStarIcon, AuthUnionIcon } from "@/shared/ui/icons";
 
 import { AuthCard } from "./AuthCard";
 import { AuthSubtitle, AuthTitle } from "./AuthTypography";
@@ -21,24 +16,10 @@ export function AuthMessage({ title, children, icon = "union" }: AuthMessageProp
   return (
     <AuthCard>
       {icon === "union" ? (
-        <AuthUnionIcon
-          className="shrink-0"
-          style={{
-            width: AUTH_UNION_ICON_SIZE.width,
-            height: AUTH_UNION_ICON_SIZE.height,
-          }}
-          aria-hidden="true"
-        />
+        <AuthUnionIcon className="auth-card__icon auth-card__icon--union" aria-hidden="true" />
       ) : null}
       {icon === "star" ? (
-        <AuthStarIcon
-          className="shrink-0"
-          style={{
-            width: AUTH_STAR_ICON_SIZE.width,
-            height: AUTH_STAR_ICON_SIZE.height,
-          }}
-          aria-hidden="true"
-        />
+        <AuthStarIcon className="auth-card__icon auth-card__icon--star" aria-hidden="true" />
       ) : null}
       <AuthTitle>{title}</AuthTitle>
       <div className="flex w-full max-w-[494px] flex-col items-center gap-[24px] text-center font-[family-name:var(--font-manrope)] text-[14px] leading-[170%] text-[#1A1A1A]">

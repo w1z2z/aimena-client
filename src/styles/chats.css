@@ -1871,6 +1871,16 @@
   background: #fff;
 }
 
+.chats-attachments-menu.overlay-pop {
+  transform: translate3d(0, 8px, 0);
+  -webkit-transform: translate3d(0, 8px, 0);
+}
+
+.chats-attachments-menu.overlay-pop.is-open {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
 .chats-attachments-menu button {
   display: flex;
   align-items: center;
@@ -1896,7 +1906,7 @@
   height: 24px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1120px) {
   .chats-main {
     grid-template-columns: 300px minmax(0, 1fr);
   }
@@ -1969,7 +1979,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 640px) {
   .chats-main {
     width: calc(100% - 24px);
     grid-template-columns: 1fr;
@@ -2009,5 +2019,9 @@
   .chats-listing-stats,
   .chats-actions {
     grid-template-columns: 1fr;
+  }
+
+  .listing-action-modal__card.chats-docs-picker {
+    padding: 24px 16px 16px;
   }
 }

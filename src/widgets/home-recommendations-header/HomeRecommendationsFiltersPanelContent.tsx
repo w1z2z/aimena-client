@@ -186,7 +186,13 @@ function FilterPills<T extends string>({
   );
 }
 
-export function HomeRecommendationsFiltersPanelContent() {
+export function HomeRecommendationsFiltersPanelContent({
+  onApplied,
+  hideActions = false,
+}: {
+  onApplied?: () => void;
+  hideActions?: boolean;
+} = {}) {
   const {
     filters,
     setFilters,
@@ -283,8 +289,22 @@ export function HomeRecommendationsFiltersPanelContent() {
     resetFilters();
   }, [resetFilters]);
 
+  const handleApply = useCallback(() => {
+    applyFilters();
+    onApplied?.();
+  }, [applyFilters, onApplied]);
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  const modalScrollTopRef = useRef(0);
+
+  useLayoutEffect(() => {
+    const scroller = panelRef.current?.closest(".home-filters-modal__body");
+    if (!(scroller instanceof HTMLElement)) return;
+    scroller.scrollTop = modalScrollTopRef.current;
+  }, [categoryParentId, hasSubcategories]);
+
   return (
-    <div className="home-filters-panel">
+    <div ref={panelRef} className="home-filters-panel">
       <div className="home-filters-panel__body">
         <div className="home-filters-panel__left">
           <div className="home-filters-panel__switches-row">
@@ -359,12 +379,16 @@ export function HomeRecommendationsFiltersPanelContent() {
               <div className="home-filters-panel__category-main">
                 <SelectField
                   value={categoryParentId}
-                  onChange={(next) =>
+                  onChange={(next) => {
+                    const scroller = panelRef.current?.closest(".home-filters-modal__body");
+                    if (scroller instanceof HTMLElement) {
+                      modalScrollTopRef.current = scroller.scrollTop;
+                    }
                     updateFilters({
                       categoryParentId: next,
                       categoryChildId: "",
-                    })
-                  }
+                    });
+                  }}
                   options={parentCategoryOptions}
                   variant="filter"
                   searchable={false}
@@ -373,12 +397,10 @@ export function HomeRecommendationsFiltersPanelContent() {
                   aria-label="Категория"
                 />
               </div>
-              <div
-                className={`home-filters-panel__subcategory${hasSubcategories ? " is-open" : ""}`}
-              >
-                <div className="home-filters-panel__subcategory-inner">
-                  <div className="home-filters-panel__subcategory-content">
-                    {hasSubcategories ? (
+              {hasSubcategories ? (
+                <div className="home-filters-panel__subcategory is-open">
+                  <div className="home-filters-panel__subcategory-inner">
+                    <div className="home-filters-panel__subcategory-content">
                       <SelectField
                         value={categoryChildId}
                         onChange={(next) => updateFilters({ categoryChildId: next })}
@@ -389,22 +411,10 @@ export function HomeRecommendationsFiltersPanelContent() {
                         className="home-filters-panel__select-wrap"
                         aria-label="Подкатегория"
                       />
-                    ) : (
-                      <div
-                        className="site-select site-select--filter home-filters-panel__select-wrap is-disabled"
-                        aria-hidden="true"
-                      >
-                        <div className="site-select__control">
-                          <span className="site-select__input is-placeholder is-readonly-select">
-                            Подкатегория
-                          </span>
-                          <span className="site-select__chevron" aria-hidden="true" />
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </div>
 
@@ -518,14 +528,16 @@ export function HomeRecommendationsFiltersPanelContent() {
         </div>
       </div>
 
-      <div className="home-filters-panel__actions">
-        <button type="button" onClick={handleReset} className="home-filters-panel__reset">
-          Сбросить
-        </button>
-        <button type="button" onClick={applyFilters} className="home-filters-panel__apply">
-          Применить
-        </button>
-      </div>
+      {!hideActions ? (
+        <div className="home-filters-panel__actions">
+          <button type="button" onClick={handleReset} className="home-filters-panel__reset">
+            Сбросить
+          </button>
+          <button type="button" onClick={handleApply} className="home-filters-panel__apply">
+            Применить
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

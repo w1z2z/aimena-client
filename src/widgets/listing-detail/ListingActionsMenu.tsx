@@ -14,6 +14,7 @@ import {
 } from "@/shared/api/listings";
 import { createReport } from "@/shared/api/reports";
 import { ApiError } from "@/shared/api/http";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { MenuSquareIcon } from "@/shared/ui/icons";
 
 import { ListingConfirmModal } from "./ListingConfirmModal";
@@ -29,7 +30,6 @@ type ConfirmKind = "pause" | "delete";
 type ModalKind = ConfirmKind | "report" | null;
 type PendingKind = ConfirmKind | "publish" | "report" | null;
 
-const PANEL_CLOSE_MS = 220;
 const PROFILE_LISTINGS_QUERY_KEY = ["profile-listings-me"] as const;
 
 async function invalidateListingCaches(
@@ -54,23 +54,10 @@ export function ListingActionsMenu({
   const containerRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
   const [modal, setModal] = useState<ModalKind>(null);
   const [pendingAction, setPendingAction] = useState<PendingKind>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (open) {
-      setIsMounted(true);
-      const frameId = window.requestAnimationFrame(() => setIsVisible(true));
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setIsVisible(false);
-    const timeoutId = window.setTimeout(() => setIsMounted(false), PANEL_CLOSE_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -214,7 +201,7 @@ export function ListingActionsMenu({
         aria-label="Действия с объявлением"
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-controls={isMounted ? panelId : undefined}
+        aria-controls={isRendered ? panelId : undefined}
         onClick={() => {
           setActionError(null);
           setOpen((value) => !value);
@@ -223,7 +210,7 @@ export function ListingActionsMenu({
         <MenuSquareIcon className="text-[#1A1A1A]" />
       </button>
 
-      {isMounted ? (
+      {isRendered ? (
         <div
           id={panelId}
           role="dialog"

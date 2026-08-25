@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Golos_Text, Manrope } from "next/font/google";
+import { Suspense } from "react";
 
 import { AuthGateProvider, AuthProvider } from "@/features/auth";
 import { ChatInboxProvider } from "@/features/chat-inbox";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
+import { ScrollToTopOnRouteChange } from "@/shared/ui/ScrollToTopOnRouteChange";
 import { FloatingChat } from "@/widgets/floating-chat/FloatingChat";
 import { SiteFooter } from "@/widgets/footer/SiteFooter";
 
@@ -39,6 +41,9 @@ export default function RootLayout({
           <AuthProvider>
             <ChatInboxProvider>
               <AuthGateProvider>
+                <Suspense fallback={null}>
+                  <ScrollToTopOnRouteChange />
+                </Suspense>
                 <div className="flex min-h-full flex-1 flex-col">{children}</div>
                 <SiteFooter />
                 <FloatingChat />

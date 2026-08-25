@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { getAuthErrorMessage, useAuth } from "@/features/auth";
 import { rememberPendingVerifyEmail } from "@/shared/api/auth";
-import { AUTH_STAR_ICON_SIZE, AuthStarIcon } from "@/shared/ui/icons";
+import { AuthStarIcon } from "@/shared/ui/icons";
 
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
@@ -53,17 +53,11 @@ export function RegisterForm() {
 
   return (
     <AuthCard>
-      <AuthStarIcon
-        style={{
-          width: AUTH_STAR_ICON_SIZE.width,
-          height: AUTH_STAR_ICON_SIZE.height,
-        }}
-        aria-hidden="true"
-      />
+      <AuthStarIcon className="auth-card__icon auth-card__icon--star" aria-hidden="true" />
 
       <AuthTitle>Регистрация</AuthTitle>
 
-      <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-[48px]">
+      <form onSubmit={handleSubmit} className="auth-form-stack">
         <AuthFormFields subtitle="Введите данные для регистрации">
           <AuthInput
             label="Email"

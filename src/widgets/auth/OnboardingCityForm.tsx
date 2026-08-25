@@ -60,8 +60,8 @@ export function OnboardingCityForm() {
   };
 
   return (
-    <AuthCard className="gap-[48px]">
-      <AuthUnionIcon aria-hidden="true" />
+    <AuthCard>
+      <AuthUnionIcon className="auth-card__icon auth-card__icon--union" aria-hidden="true" />
 
       <AuthTitle className="max-w-[396px]">Укажите свой город</AuthTitle>
 

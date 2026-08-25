@@ -2,23 +2,22 @@ import type { IconProps } from "./types";
 
 export const BELL_ICON_SIZE = { width: 14, height: 15 } as const;
 
+/** assets/notice.svg */
 export function BellIcon({ className, ...props }: IconProps) {
   return (
     <svg
       width={BELL_ICON_SIZE.width}
       height={BELL_ICON_SIZE.height}
-      viewBox="0 0 14 15"
+      viewBox="0 0 24 24"
       fill="none"
-      overflow="visible"
       aria-hidden
-      className={`block shrink-0 overflow-visible ${className ?? ""}`}
+      className={`block shrink-0 ${className ?? ""}`}
       {...props}
     >
       <path
-        d="M9.35905 11.7811H4.45163M9.35905 11.7811H12.2954C13.8196 11.7811 13.562 10.2698 12.791 9.50285C10.0139 6.74445 13.9585 0.406243 6.90534 0.406243C-0.147859 0.406243 3.79758 6.74364 1.0205 9.50285C0.278697 10.2406 -0.0373599 11.7811 1.51611 11.7811H4.45163M9.35905 11.7811C9.35905 13.3451 8.83256 15.031 6.90534 15.031C4.97812 15.031 4.45163 13.3451 4.45163 11.7811"
-        transform="translate(0.05, -0.22)"
+        d="M15.4625 17.6726H8.53437M15.4625 17.6726H19.6079C21.7597 17.6726 21.3961 15.5391 20.3076 14.4563C16.387 10.5621 21.9559 1.61401 11.9984 1.61401C2.04097 1.61401 7.611 10.5609 3.69042 14.4563C2.64317 15.4978 2.19697 17.6726 4.39011 17.6726H8.53437M15.4625 17.6726C15.4625 19.8806 14.7192 22.2607 11.9984 22.2607C9.27765 22.2607 8.53437 19.8806 8.53437 17.6726"
         stroke="currentColor"
-        strokeWidth="0.812487"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

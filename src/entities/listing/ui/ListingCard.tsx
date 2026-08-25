@@ -368,7 +368,7 @@ export function ListingCard({
           <button
             type="button"
             className="home-listing-card__swap"
-            aria-label={freeListing ? "Отдаю даром" : "Быстрый обмен"}
+            aria-label={freeListing ? "Отдают даром" : "Быстрый обмен"}
             onClick={handleExchangeClick}
           >
             <SwapIcon className="home-listing-card__swap-icon" />

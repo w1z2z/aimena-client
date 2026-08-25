@@ -524,7 +524,7 @@ a.exchange-offer-profile:hover {
   color: #fff;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1120px) {
   .exchange-offer-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -535,7 +535,7 @@ a.exchange-offer-profile:hover {
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 640px) {
   .exchange-offer-main {
     width: min(100% - 24px, 1440px);
     padding-top: 82px;

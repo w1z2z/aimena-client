@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
+
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
+import { AuthUnionIcon } from "@/shared/ui/icons";
 
 import type { RegistrationPromptReason } from "../registration-prompt";
 import { registrationPromptCopy } from "../registration-prompt";
-import { AUTH_UNION_ICON_SIZE, AuthUnionIcon } from "@/shared/ui/icons";
-
-const TRANSITION_MS = 320;
 
 type RegistrationPromptModalProps = {
   open: boolean;
@@ -16,47 +16,12 @@ type RegistrationPromptModalProps = {
   onClose: () => void;
 };
 
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path
-        d="M1 1L13 13M13 1L1 13"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 export function RegistrationPromptModal({ open, reason, onClose }: RegistrationPromptModalProps) {
   const { subtitle } = registrationPromptCopy[reason];
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-
-      const frameId = window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setVisible(true));
-      });
-
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setVisible(false);
-  }, [open]);
-
-  useEffect(() => {
-    if (!mounted || open) return;
-
-    const timer = window.setTimeout(() => setMounted(false), TRANSITION_MS);
-    return () => window.clearTimeout(timer);
-  }, [mounted, open]);
-
-  useEffect(() => {
-    if (!mounted) return;
+    if (!isRendered) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -71,13 +36,13 @@ export function RegistrationPromptModal({ open, reason, onClose }: RegistrationP
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [mounted, onClose]);
+  }, [isRendered, onClose]);
 
-  if (!mounted || typeof document === "undefined") return null;
+  if (!isRendered || typeof document === "undefined") return null;
 
   return createPortal(
     <div
-      className={`registration-prompt-modal${visible ? " is-visible" : ""}`}
+      className={`registration-prompt-modal${isVisible ? " is-visible" : ""}`}
       role="presentation"
       onClick={onClose}
     >
@@ -90,23 +55,7 @@ export function RegistrationPromptModal({ open, reason, onClose }: RegistrationP
         onClick={(event) => event.stopPropagation()}
       >
         <div className="registration-prompt-modal__card-inner">
-          <button
-            type="button"
-            aria-label="Закрыть"
-            className="registration-prompt-modal__close"
-            onClick={onClose}
-          >
-            <CloseIcon />
-          </button>
-
-          <AuthUnionIcon
-            className="registration-prompt-modal__logo"
-            style={{
-              width: AUTH_UNION_ICON_SIZE.width,
-              height: AUTH_UNION_ICON_SIZE.height,
-            }}
-            aria-hidden="true"
-          />
+          <AuthUnionIcon className="registration-prompt-modal__logo" aria-hidden="true" />
 
           <h2 id="registration-prompt-title" className="registration-prompt-modal__title">
             Для продолжения необходимо авторизоваться

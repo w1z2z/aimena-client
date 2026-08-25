@@ -2,6 +2,7 @@ import type { IconProps } from "./types";
 
 export const CHAT_BUBBLE_ICON_SIZE = { width: 27, height: 27 } as const;
 
+/** Desktop floating-chat FAB — original dual-bubble mark */
 export function ChatBubbleIcon({ className, ...props }: IconProps) {
   return (
     <svg

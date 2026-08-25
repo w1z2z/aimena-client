@@ -94,7 +94,7 @@
   color: #6f6cd6;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 640px) {
   .main {
     padding: 88px 20px 56px;
   }

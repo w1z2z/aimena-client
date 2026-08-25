@@ -10,7 +10,9 @@ import {
 } from "react";
 
 import type { HomeCategoryItem } from "@/features/home-search/types";
+import { useMediaQuery } from "@/shared/lib/use-media-query";
 import { categoryPlaceholderIconSrc } from "@/shared/ui/icons";
+import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
 
 import { useIsSafari } from "./lib/safari";
 
@@ -47,6 +49,8 @@ const ARC_CENTER_X = ARC_CONTAINER_WIDTH / 2;
 const ARC_CONTAINER_TOP = 96;
 const CATEGORY_DRAG_CLICK_THRESHOLD = 6;
 const CATEGORY_DRAG_PIXELS_PER_STEP = 88;
+/** Compact (≤1024): shrink the whole arc so more icons fit on a phone-sized crop. */
+const ARC_COMPACT_SCALE = 0.56;
 
 type CategoryProfileStep = {
   offsetX: number;
@@ -350,6 +354,9 @@ export function CategoriesArc({
   const useSvgIconFilterRef = useRef(false);
   const isAnimatingRef = useRef(false);
   const isSafari = useIsSafari();
+  const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
+  const arcScale = isCompact ? ARC_COMPACT_SCALE : 1;
+  const dragPixelsPerStep = CATEGORY_DRAG_PIXELS_PER_STEP * arcScale;
   const animationRef = useRef<number | null>(null);
   const dragFrameRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
@@ -506,7 +513,7 @@ export function CategoriesArc({
       pendingTapIndexRef.current = null;
       event.preventDefault();
 
-      const nextDisplayIndex = dragStartDisplayIndexRef.current - deltaX / CATEGORY_DRAG_PIXELS_PER_STEP;
+      const nextDisplayIndex = dragStartDisplayIndexRef.current - deltaX / dragPixelsPerStep;
       const rebasedDisplayIndex =
         Math.abs(nextDisplayIndex) > length * 20
           ? rebaseDisplayIndexContinuous(nextDisplayIndex, length)
@@ -525,7 +532,7 @@ export function CategoriesArc({
         applyAllLayouts(displayIndexRef.current, { skipFilters: true, skipAria: true });
       });
     },
-    [applyAllLayouts, length],
+    [applyAllLayouts, dragPixelsPerStep, length],
   );
 
   const endPointerTrack = useCallback(
@@ -590,8 +597,17 @@ export function CategoriesArc({
       onPointerMove={handleTrackedPointerMove}
       onPointerUp={endPointerTrack}
       onPointerCancel={endPointerTrack}
-      className="categories-arc absolute left-[305px] z-10 h-[183px] w-[1311px] cursor-grab overflow-visible select-none active:cursor-grabbing"
-      style={{ top: `${ARC_CONTAINER_TOP}px` }}
+      className={`categories-arc absolute left-[305px] z-10 h-[183px] w-[1311px] cursor-grab overflow-visible select-none active:cursor-grabbing${isCompact ? " categories-arc--compact" : ""}`}
+      style={{
+        top: `${ARC_CONTAINER_TOP}px`,
+        touchAction: "none",
+        ...(isCompact
+          ? {
+              transform: `scale(${ARC_COMPACT_SCALE})`,
+              transformOrigin: "top center",
+            }
+          : null),
+      }}
     >
       <CategoryArcGlass />
 

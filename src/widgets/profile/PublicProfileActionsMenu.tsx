@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useAuthGate } from "@/features/auth";
 import { createReport } from "@/shared/api/reports";
 import { ApiError } from "@/shared/api/http";
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { MenuSquareIcon } from "@/shared/ui/icons";
 import {
   ListingReportModal,
@@ -15,30 +16,15 @@ type PublicProfileActionsMenuProps = {
   userId: string;
 };
 
-const PANEL_CLOSE_MS = 220;
-
 export function PublicProfileActionsMenu({ userId }: PublicProfileActionsMenuProps) {
   const { guardAuth } = useAuthGate();
   const containerRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
   const [reportOpen, setReportOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (open) {
-      setIsMounted(true);
-      const frameId = window.requestAnimationFrame(() => setIsVisible(true));
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    setIsVisible(false);
-    const timeoutId = window.setTimeout(() => setIsMounted(false), PANEL_CLOSE_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -100,7 +86,7 @@ export function PublicProfileActionsMenu({ userId }: PublicProfileActionsMenuPro
         aria-label="Действия с профилем"
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-controls={isMounted ? panelId : undefined}
+        aria-controls={isRendered ? panelId : undefined}
         onClick={() => {
           setError(null);
           setOpen((value) => !value);
@@ -109,7 +95,7 @@ export function PublicProfileActionsMenu({ userId }: PublicProfileActionsMenuPro
         <MenuSquareIcon className="size-6 text-[#1A1A1A]" />
       </button>
 
-      {isMounted ? (
+      {isRendered ? (
         <div
           id={panelId}
           role="dialog"

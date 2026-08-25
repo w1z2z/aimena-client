@@ -70,7 +70,11 @@ export default function FavoritesPage() {
   const hasInactive = listings.some((listing) => !listing.isAvailable);
 
   let body = (
-    <ListingCardSkeletonGrid count={CATALOG_PAGE_SIZE} className="favorites-page__grid" />
+    <ListingCardSkeletonGrid
+      count={CATALOG_PAGE_SIZE}
+      className="listings-grid"
+      itemClassName="listings-grid__card"
+    />
   );
 
   if (!authLoading && !isAuthenticated) {
@@ -97,24 +101,24 @@ export default function FavoritesPage() {
     );
   } else if (isAuthenticated && !favoritesQuery.isLoading && listings.length === 0) {
     body = (
-      <div className="favorites-page__empty">
+      <div className="listings-page__empty">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/favorites-empty-star.svg"
           alt=""
-          className="favorites-page__empty-star"
+          className="listings-page__empty-star"
         />
-        <p className="favorites-page__empty-text">
+        <p className="listings-page__empty-text">
           Сохраняйте объявления, чтобы вернуться к ним позже
         </p>
-        <Link href="/" className="favorites-page__empty-cta">
+        <Link href="/" className="listings-page__empty-cta">
           Смотреть объявления
         </Link>
       </div>
     );
   } else if (isAuthenticated && listings.length > 0) {
     body = (
-      <div className="favorites-page__list">
+      <div className="listings-page__list">
         {hasInactive ? (
           <div className="favorites-page__toolbar">
             <button
@@ -127,23 +131,24 @@ export default function FavoritesPage() {
             </button>
           </div>
         ) : null}
-        <div className="favorites-page__grid" aria-label="Избранные объявления">
+        <div className="listings-grid" aria-label="Избранные объявления">
           {listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listingId={listing.id}
-              variant={listing.isFree ? "free" : "exchange"}
-              title={listing.title}
-              city={listing.city}
-              condition={listing.condition}
-              coverImageUrl={listing.coverImageUrl}
-              wants={listing.wants}
-              wantCategories={listing.wantCategories}
-              isFree={listing.isFree}
-              isFavorite={listing.isFavorite}
-              ownerId={listing.ownerId}
-              unavailable={!listing.isAvailable}
-            />
+            <div key={listing.id} className="listings-grid__card">
+              <ListingCard
+                listingId={listing.id}
+                variant={listing.isFree ? "free" : "exchange"}
+                title={listing.title}
+                city={listing.city}
+                condition={listing.condition}
+                coverImageUrl={listing.coverImageUrl}
+                wants={listing.wants}
+                wantCategories={listing.wantCategories}
+                isFree={listing.isFree}
+                isFavorite={listing.isFavorite}
+                ownerId={listing.ownerId}
+                unavailable={!listing.isAvailable}
+              />
+            </div>
           ))}
         </div>
         <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />
@@ -152,12 +157,12 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="favorites-page">
+    <div className="listings-page">
       <Header />
-      <main className="favorites-page__main">
-        <h1 className="favorites-page__title">Избранное</h1>
+      <main className="listings-page__main">
+        <h1 className="listings-page__title">Избранное</h1>
         {isAuthenticated && listings.length > 0 ? (
-          <p className="favorites-page__count">
+          <p className="listings-page__count">
             {total} {pluralListings(total)}
           </p>
         ) : null}

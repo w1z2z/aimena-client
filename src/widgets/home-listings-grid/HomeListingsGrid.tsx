@@ -57,7 +57,11 @@ export function HomeListingsGrid() {
 
   if (filteredListingsLoading && filteredListings.length === 0) {
     return (
-      <ListingCardSkeletonGrid count={8} className="home-listings-grid" />
+      <ListingCardSkeletonGrid
+        count={8}
+        className="listings-grid home-listings-grid"
+        itemClassName="listings-grid__card"
+      />
     );
   }
 
@@ -73,26 +77,29 @@ export function HomeListingsGrid() {
 
   return (
     <div className="home-listings-grid-wrap">
-      <div className="home-listings-grid" aria-label="Лента объявлений">
+      <div className="listings-grid home-listings-grid" aria-label="Лента объявлений">
         {filteredListings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            listingId={listing.id}
-            variant={listing.isFree ? "free" : "exchange"}
-            title={listing.title}
-            city={listing.city}
-            condition={listing.condition}
-            coverImageUrl={listing.coverImageUrl}
-            wants={listing.wants}
-            wantCategories={listing.wantCategories}
-            isFree={listing.isFree}
-            isFavorite={listing.isFavorite}
-            ownerId={listing.ownerId}
-          />
+          <div key={listing.id} className="listings-grid__card">
+            <ListingCard
+              listingId={listing.id}
+              variant={listing.isFree ? "free" : "exchange"}
+              title={listing.title}
+              city={listing.city}
+              condition={listing.condition}
+              coverImageUrl={listing.coverImageUrl}
+              wants={listing.wants}
+              wantCategories={listing.wantCategories}
+              isFree={listing.isFree}
+              isFavorite={listing.isFavorite}
+              ownerId={listing.ownerId}
+            />
+          </div>
         ))}
         {isFetchingNextFilteredPage
           ? Array.from({ length: 4 }, (_, index) => (
-              <ListingCardSkeleton key={`more-${index}`} />
+              <div key={`more-${index}`} className="listings-grid__card">
+                <ListingCardSkeleton />
+              </div>
             ))
           : null}
       </div>

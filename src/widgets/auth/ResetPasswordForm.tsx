@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { resetPassword } from "@/shared/api/auth";
 import { ApiError } from "@/shared/api/http";
-import { AUTH_UNION_ICON_SIZE, AuthUnionIcon } from "@/shared/ui/icons";
+import { AuthUnionIcon } from "@/shared/ui/icons";
 
 import { AuthButton } from "./AuthButton";
 import { AuthCard } from "./AuthCard";
@@ -53,17 +53,11 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   return (
     <AuthCard>
-      <AuthUnionIcon
-        style={{
-          width: AUTH_UNION_ICON_SIZE.width,
-          height: AUTH_UNION_ICON_SIZE.height,
-        }}
-        aria-hidden="true"
-      />
+      <AuthUnionIcon className="auth-card__icon auth-card__icon--union" aria-hidden="true" />
 
       <AuthTitle>Сброс пароля</AuthTitle>
 
-      <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-[48px]">
+      <form onSubmit={handleSubmit} className="auth-form-stack">
         <AuthFormFields subtitle="Введите новый пароль">
           <AuthInput
             label="Новый пароль"

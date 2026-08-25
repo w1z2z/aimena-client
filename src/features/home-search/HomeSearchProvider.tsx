@@ -16,6 +16,7 @@ import { useAuth } from "@/features/auth";
 import { writeHeroListingDraft } from "@/shared/lib/hero-listing-draft";
 import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
 import type { SelectOption } from "@/shared/ui/select-field";
+import { COMPACT_HEADER_MAX_WIDTH_PX } from "@/widgets/header/constants";
 
 import { useCatalogData, type HomeCategoryTreeNode } from "./hooks/useCatalogData";
 import { useFilteredListings, useHeroRecommendations } from "./hooks/useHomeListingsData";
@@ -56,7 +57,10 @@ type HomeSearchContextValue = {
   applyFilters: () => void;
   applyHeroToFilters: () => void;
   applyTitleSearch: (title: string) => void;
-  openFiltersAndScroll: (payload?: OpenHomeFiltersPayload) => void;
+  openFiltersAndScroll: (
+    payload?: OpenHomeFiltersPayload,
+    options?: { openPanel?: boolean },
+  ) => void;
   isFiltersOpen: boolean;
   setIsFiltersOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
   heroRecommendations: ListingCardData[];
@@ -186,16 +190,22 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
     setAppliedFilters((current) => ({ ...current, titleQuery: trimmed }));
     setIsFiltersOpen(true);
 
-    window.requestAnimationFrame(() => {
+    const scrollToResults = () => {
       document.getElementById("home-recommendations")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
+    };
+
+    // Wait a frame (filters expand) then scroll; second pass for late layout.
+    window.requestAnimationFrame(() => {
+      scrollToResults();
+      window.setTimeout(scrollToResults, 120);
     });
   }, []);
 
   const openFiltersAndScroll = useCallback(
-    (payload?: OpenHomeFiltersPayload) => {
+    (payload?: OpenHomeFiltersPayload, options?: { openPanel?: boolean }) => {
       const base = heroToFilters(hero, categoryUiKeyToBackendId);
       const nextFilters = {
         ...base,
@@ -210,11 +220,34 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
       };
       setFilters(nextFilters);
       setAppliedFilters(nextFilters);
-      setIsFiltersOpen(true);
 
-      document.getElementById("home-recommendations")?.scrollIntoView({
-        behavior: "auto",
-        block: "start",
+      const isCompact =
+        typeof window !== "undefined" &&
+        window.matchMedia(`(max-width: ${COMPACT_HEADER_MAX_WIDTH_PX}px)`).matches;
+
+      const shouldOpenPanel = options?.openPanel ?? true;
+      if (shouldOpenPanel) {
+        setIsFiltersOpen(true);
+      }
+
+      if (!isCompact) {
+        document.getElementById("home-recommendations")?.scrollIntoView({
+          behavior: "auto",
+          block: "start",
+        });
+        return;
+      }
+
+      const scrollToFeed = () => {
+        document.getElementById("home-recommendations-feed")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      };
+
+      window.requestAnimationFrame(() => {
+        scrollToFeed();
+        window.setTimeout(scrollToFeed, 280);
       });
     },
     [categoryUiKeyToBackendId, hero],

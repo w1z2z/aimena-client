@@ -15,8 +15,7 @@ import {
   type DealView,
 } from "@/shared/api/deals";
 import { DealCancelIcon, ListingActionStarIcon } from "@/shared/ui/icons";
-
-const TRANSITION_MS = 320;
+import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 export type DealModalKind =
   | "ready"
@@ -56,28 +55,10 @@ function DealModalShell({
   children,
 }: DealModalShellProps) {
   const titleId = useId();
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(false);
+  const { isRendered, isVisible } = useOverlayPresence(open);
 
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const frameId = window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setVisible(true));
-      });
-      return () => window.cancelAnimationFrame(frameId);
-    }
-    setVisible(false);
-  }, [open]);
-
-  useEffect(() => {
-    if (!mounted || open) return;
-    const timer = window.setTimeout(() => setMounted(false), TRANSITION_MS);
-    return () => window.clearTimeout(timer);
-  }, [mounted, open]);
-
-  useEffect(() => {
-    if (!mounted) return;
+    if (!isRendered) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -88,13 +69,13 @@ function DealModalShell({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [mounted, onClose, pending, dismissible]);
+  }, [isRendered, onClose, pending, dismissible]);
 
-  if (!mounted || typeof document === "undefined") return null;
+  if (!isRendered || typeof document === "undefined") return null;
 
   return createPortal(
     <div
-      className={`listing-action-modal${visible ? " is-visible" : ""}`}
+      className={`listing-action-modal${isVisible ? " is-visible" : ""}`}
       role="presentation"
       onClick={() => {
         if (!pending && dismissible) onClose();

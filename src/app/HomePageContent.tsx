@@ -38,28 +38,12 @@ export function HomePageContent() {
     window.history.scrollRestoration = "manual";
     forcePageScrollTop();
 
-    // Lock to top briefly: Next/scroll-anchoring sometimes nudges after paint.
-    let locked = true;
-    const unlockTimer = window.setTimeout(() => {
-      locked = false;
-    }, 700);
-
-    const keepTop = () => {
-      if (!locked) return;
-      if ((document.scrollingElement?.scrollTop ?? window.scrollY) !== 0) {
-        forcePageScrollTop();
-      }
-    };
-
-    window.addEventListener("scroll", keepTop, { passive: true, capture: true });
-    const intervalId = window.setInterval(keepTop, 50);
+    // One extra frame — Next sometimes nudges scroll after paint; don't fight user scroll.
+    const frameId = window.requestAnimationFrame(forcePageScrollTop);
 
     return () => {
-      locked = false;
+      window.cancelAnimationFrame(frameId);
       window.history.scrollRestoration = previous;
-      window.clearTimeout(unlockTimer);
-      window.clearInterval(intervalId);
-      window.removeEventListener("scroll", keepTop, true);
     };
   }, [pathname]);
 

@@ -1,0 +1,86 @@
+/* Shared open/close motion — match header overlays (no scale for Safari). */
+
+.overlay-pop {
+  opacity: 0;
+  transform: translate3d(0, -8px, 0);
+  -webkit-transform: translate3d(0, -8px, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: opacity, transform;
+  pointer-events: none;
+  transition:
+    opacity 260ms cubic-bezier(0.33, 1, 0.68, 1),
+    transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.overlay-pop.is-open {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+
+.overlay-pop--origin-left {
+  transform-origin: top left;
+}
+
+.overlay-pop--origin-right {
+  transform-origin: top right;
+}
+
+/*
+ * Bottom sheet — slide up.
+ * Use viewport units (not %): iOS Safari often resolves % of auto-height to 0
+ * and skips the enter transition.
+ */
+.overlay-sheet {
+  opacity: 0;
+  transform: translate3d(0, 100vh, 0);
+  -webkit-transform: translate3d(0, 100vh, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: opacity, transform;
+  pointer-events: none;
+  transition:
+    opacity 260ms cubic-bezier(0.33, 1, 0.68, 1),
+    transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@supports (height: 100dvh) {
+  .overlay-sheet {
+    transform: translate3d(0, 100dvh, 0);
+    -webkit-transform: translate3d(0, 100dvh, 0);
+  }
+}
+
+.overlay-sheet.is-open {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+
+.overlay-backdrop {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.overlay-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay-pop,
+  .overlay-sheet,
+  .overlay-backdrop {
+    transition: none;
+    transform: none;
+  }
+
+  .overlay-pop:not(.is-open),
+  .overlay-sheet:not(.is-open) {
+    display: none;
+  }
+}

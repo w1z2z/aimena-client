@@ -148,17 +148,22 @@
   border-radius: 31px;
   background: #fff;
   opacity: 0;
-  transform: translateY(-6px) scale(0.97);
+  transform: translate3d(0, -8px, 0);
+  -webkit-transform: translate3d(0, -8px, 0);
   transform-origin: top right;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: opacity, transform;
   pointer-events: none;
   transition:
-    opacity 220ms cubic-bezier(0.33, 1, 0.68, 1),
-    transform 220ms cubic-bezier(0.33, 1, 0.68, 1);
+    opacity 260ms cubic-bezier(0.33, 1, 0.68, 1),
+    transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .listing-detail-actions__panel--open {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
   pointer-events: auto;
 }
 
@@ -985,7 +990,7 @@
   scroll-snap-align: start;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1120px) {
   .listing-detail-layout {
     grid-template-columns: 1fr 1fr;
   }
@@ -1052,7 +1057,7 @@
   background: rgb(26 26 26 / 48%);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 320ms cubic-bezier(0.33, 1, 0.68, 1);
+  transition: opacity 260ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .listing-action-modal.is-visible {
@@ -1075,12 +1080,14 @@
   border: 0.5px solid #cacaca;
   border-radius: 31px;
   background: #fff;
-  transform: translateY(10px) scale(0.98);
-  transition: transform 320ms cubic-bezier(0.33, 1, 0.68, 1);
+  transform: translate3d(0, 12px, 0);
+  -webkit-transform: translate3d(0, 12px, 0);
+  transition: transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .listing-action-modal.is-visible .listing-action-modal__card {
-  transform: translateY(0) scale(1);
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 .listing-action-modal__star {
@@ -1283,14 +1290,50 @@
 }
 
 @media (max-width: 640px) {
-  .listing-action-modal__actions {
-    flex-direction: column;
+  .listing-action-modal {
+    padding: 16px;
   }
 
-  .listing-action-modal__btn--primary,
-  .listing-action-modal__btn--secondary {
-    width: 100%;
-    max-width: none;
+  .listing-action-modal__card {
+    gap: 24px;
+    max-height: calc(100dvh - 32px);
+    padding: 20px 16px;
+    border-radius: 24px;
+  }
+
+  .listing-action-modal__star {
+    width: 40px;
+    height: 40px;
+  }
+
+  .listing-action-modal__card--report .listing-action-modal__star,
+  .listing-action-modal__icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .listing-action-modal__title {
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  .listing-action-modal__card--report {
+    min-height: 0;
+  }
+
+  .listing-action-modal__card--deal {
+    gap: 24px;
+    padding: 28px 16px;
+  }
+
+  .listing-report-reasons {
+    gap: 16px;
+  }
+
+  .listing-report-comment__field {
+    height: 72px;
+    padding: 16px;
+    border-radius: 18px;
   }
 }
 

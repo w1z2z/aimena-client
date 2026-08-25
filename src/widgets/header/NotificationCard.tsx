@@ -159,14 +159,14 @@ export function NotificationCard({
 }: NotificationCardProps) {
   const content = (
     <>
-      <div className="flex w-[312px] shrink-0 items-start gap-[12px]">
+      <div className="flex min-w-0 flex-1 items-start gap-[12px]">
         <NotificationAvatar
           imageUrl={imageUrl}
           avatarFallback={avatarFallback}
           isSupport={isSupport}
           hasUnread={hasUnread}
         />
-        <div className="flex w-[251px] min-w-0 flex-col items-start">
+        <div className="flex min-w-0 flex-1 flex-col items-start">
           <p className="m-0 w-full text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A]">
             {title}
           </p>
@@ -185,7 +185,7 @@ export function NotificationCard({
   );
 
   const className =
-    "flex w-[364px] shrink-0 items-end justify-between text-left transition hover:opacity-90";
+    "flex w-full min-w-0 items-end justify-between gap-[8px] text-left transition hover:opacity-90";
 
   if (href) {
     return (

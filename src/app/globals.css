@@ -1,7 +1,12 @@
 @import "tailwindcss";
+@import "../styles/overlay-animation.css";
 @import "../styles/listing-card.css";
+@import "../styles/listings-grid.css";
+@import "../styles/listings-page.css";
 @import "../styles/home-ticker.css";
+@import "../styles/home-hero.css";
 @import "../styles/header.css";
+@import "../styles/mobile-bottom-nav.css";
 @import "../styles/home-sections.css";
 @import "../styles/forms-and-listings.css";
 @import "../styles/switch.css";
@@ -12,8 +17,19 @@
 @import "../styles/favorites.css";
 @import "../styles/chat-badges.css";
 @import "../styles/notifications-dropdown.css";
+@import "../styles/floating-chat.css";
 
+/*
+ * Layout breakpoints — keep in sync with shared/lib/breakpoints.ts
+ * phone 480 | sm 640 | compact 1024 | tablet 1120 | wide 1480
+ */
 @theme {
+  --breakpoint-phone: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-compact: 1024px;
+  --breakpoint-tablet: 1120px;
+  --breakpoint-wide: 1480px;
+
   --color-brand: #1a1a1a;
   --color-accent: #8e8bed;
   --color-accent-dark: #7f7cdd;
@@ -71,6 +87,12 @@ body {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
+}
+
+html.is-scroll-locked,
+html.is-scroll-locked body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
 body {
@@ -165,6 +187,41 @@ input:disabled,
 select:disabled,
 textarea:disabled {
   cursor: not-allowed;
+}
+
+/*
+ * iOS Safari zooms any focused form control under 16px.
+ * Force 16px on compact (mobile chrome) for inputs / textareas / selects
+ * site-wide — same fix as auth login/register.
+ */
+@media (max-width: 1024px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  textarea,
+  select,
+  .site-select__input,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  textarea::placeholder,
+  select::placeholder,
+  .site-select__input::placeholder,
+  .site-select__input.is-placeholder {
+    font-size: 16px !important;
+  }
+
+  /* Hero lime fields: slightly smaller than site-wide 16px */
+  .home-hero-compact .home-hero-form__lime .home-hero-field input,
+  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input {
+    font-size: 14px !important;
+  }
+
+  .home-hero-compact .home-hero-form__lime .home-hero-field input::placeholder,
+  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input::placeholder,
+  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input.is-placeholder {
+    font-size: 14px !important;
+  }
 }
 
 @keyframes home-ticker-scroll {

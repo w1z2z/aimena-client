@@ -1,0 +1,64 @@
+/**
+ * Shared listings feed grid — home, favorites, /free, etc.
+ * Page chrome for catalog pages: listings-page.css.
+ * Favorites-only UI: favorites.css.
+ */
+
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 342px);
+  justify-content: center;
+  gap: 48px 24px;
+  width: 100%;
+  max-width: 1440px;
+  margin-top: 0;
+  margin-inline: auto;
+}
+
+.listings-grid__card {
+  min-width: 0;
+}
+
+/* 4 full cards no longer fit → 3 full-size, centered */
+@media (max-width: 1480px) {
+  .listings-grid {
+    grid-template-columns: repeat(3, 342px);
+    width: calc(342px * 3 + 24px * 2);
+  }
+}
+
+/*
+ * 3 full cards + page padding no longer fit
+ * (342×3 + 24×2 + 24×2 ≈ 1122) → 2 columns, scale card to cell width
+ */
+@media (max-width: 1120px) {
+  .listings-grid {
+    grid-template-columns: repeat(2, minmax(0, 342px));
+    width: 100%;
+    max-width: none;
+    gap: 20px 12px;
+  }
+
+  .listings-grid__card {
+    container-type: inline-size;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 342 / 464;
+  }
+
+  .listings-grid__card .home-listing-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 342px;
+    height: 464px;
+    transform: scale(calc(100cqw / 342px));
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 480px) {
+  .listings-grid {
+    gap: 16px 10px;
+  }
+}
