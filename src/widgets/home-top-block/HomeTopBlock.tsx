@@ -13,7 +13,7 @@ import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
 import { Header } from "@/widgets/header/Header";
 
 import { CategoriesArc } from "./CategoriesArc";
-import { BASE_SCENE_HEIGHT, BASE_SCENE_WIDTH, HERO_CONTENT_SHIFT_UP } from "./constants";
+import { BASE_SCENE_HEIGHT, BASE_SCENE_WIDTH, HERO_CONTENT_SHIFT_UP, HERO_SCENE_FULL_WIDTH } from "./constants";
 import { HeroRecommendationsPanel } from "./HeroRecommendations";
 import { ModeFormColumn } from "./HeroSearchForm";
 import { TickerCarousel } from "./TickerCarousel";
@@ -100,8 +100,12 @@ export function HomeTopBlock() {
   const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
   const heroDensity = useViewportHeightDensity();
   const viewportWidth = useViewportWidth();
-  /** Desktop Figma scene: shrink to viewport so forms/title aren't cropped (arc keeps its own compact logic). */
-  const sceneScale = isCompact ? 1 : Math.min(1, viewportWidth / BASE_SCENE_WIDTH);
+  /** Desktop: full scale until HERO_SCENE_FULL_WIDTH, then shrink to fit narrow windows. */
+  const sceneScale = isCompact
+    ? 1
+    : viewportWidth >= HERO_SCENE_FULL_WIDTH
+      ? 1
+      : viewportWidth / HERO_SCENE_FULL_WIDTH;
   const {
     hero,
     setMode,
