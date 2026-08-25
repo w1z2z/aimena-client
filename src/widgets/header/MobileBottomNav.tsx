@@ -85,7 +85,7 @@ export function MobileBottomNav({
           aria-pressed={searchActive}
           onClick={onSearchClick}
         >
-          <SearchIcon />
+          <SearchIcon className="h-5 w-5" />
           <span className="mobile-bottom-nav__label">Поиск</span>
         </button>
 
@@ -96,7 +96,7 @@ export function MobileBottomNav({
           aria-current={favoritesActive ? "page" : undefined}
           onClick={handleFavorites}
         >
-          <HeartIcon className="h-[16px] w-[18px]" />
+          <HeartIcon className="h-5 w-5" />
           <span className="mobile-bottom-nav__label">Избранное</span>
         </button>
 
@@ -121,7 +121,7 @@ export function MobileBottomNav({
           onClick={handleChats}
         >
           <span className="mobile-bottom-nav__icon-wrap">
-            <ChatBubbleIcon className="h-[18px] w-[18px]" />
+            <ChatBubbleIcon className="h-5 w-5" />
             {hasUnreadConversations ? (
               <span aria-hidden className="unread-dot unread-dot--nav" />
             ) : null}
@@ -152,7 +152,7 @@ export function MobileBottomNav({
               )}
             </span>
           ) : (
-            <LoginIcon className="h-[18px] w-[18px]" />
+            <LoginIcon className="h-5 w-5" />
           )}
           <span className="mobile-bottom-nav__label">
             {isAuthenticated ? "Профиль" : "Войти"}
