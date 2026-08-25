@@ -210,6 +210,18 @@ textarea:disabled {
   .site-select__input.is-placeholder {
     font-size: 16px !important;
   }
+
+  /* Hero lime fields: slightly smaller than site-wide 16px */
+  .home-hero-compact .home-hero-form__lime .home-hero-field input,
+  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input {
+    font-size: 14px !important;
+  }
+
+  .home-hero-compact .home-hero-form__lime .home-hero-field input::placeholder,
+  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input::placeholder,
+  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input.is-placeholder {
+    font-size: 14px !important;
+  }
 }
 
 @keyframes home-ticker-scroll {

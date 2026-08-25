@@ -295,18 +295,18 @@
 .home-hero-compact .home-hero-field .site-select--field .site-select__input {
   height: var(--hero-input-h);
   border-radius: var(--hero-input-radius);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .home-hero-compact .home-hero-field--price > div > span {
-  font-size: 13px !important;
+  font-size: 12px !important;
 }
 
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input::placeholder,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input.is-placeholder,
 .home-hero-compact .home-hero-field .site-select--field .site-select__input::placeholder,
 .home-hero-compact .home-hero-field .site-select--field .site-select__input.is-placeholder {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .home-hero-city-row {
