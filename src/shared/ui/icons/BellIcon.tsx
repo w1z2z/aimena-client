@@ -1,8 +1,8 @@
 import type { IconProps } from "./types";
 
-export const BELL_ICON_SIZE = { width: 20, height: 20 } as const;
+export const BELL_ICON_SIZE = { width: 14, height: 15 } as const;
 
-/** Hugeicons-style notification / bell stroke rounded */
+/** assets/notice.svg */
 export function BellIcon({ className, ...props }: IconProps) {
   return (
     <svg
@@ -15,16 +15,9 @@ export function BellIcon({ className, ...props }: IconProps) {
       {...props}
     >
       <path
-        d="M18.75 9.71V9C18.75 5.27208 15.7279 2.25 12 2.25C8.27208 2.25 5.25 5.27208 5.25 9V9.71C5.25 10.615 4.9858 11.5 4.49398 12.2512L3.5951 13.6227C2.40685 15.4362 3.2798 17.8912 5.33186 18.3523C10.2944 19.4699 13.7056 19.4699 18.6681 18.3523C20.7202 17.8912 21.5931 15.4362 20.4049 13.6227L19.506 12.2512C19.0142 11.5 18.75 10.615 18.75 9.71Z"
+        d="M15.4625 17.6726H8.53437M15.4625 17.6726H19.6079C21.7597 17.6726 21.3961 15.5391 20.3076 14.4563C16.387 10.5621 21.9559 1.61401 11.9984 1.61401C2.04097 1.61401 7.611 10.5609 3.69042 14.4563C2.64317 15.4978 2.19697 17.6726 4.39011 17.6726H8.53437M15.4625 17.6726C15.4625 19.8806 14.7192 22.2607 11.9984 22.2607C9.27765 22.2607 8.53437 19.8806 8.53437 17.6726"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 18.75C9.492 20.039 10.644 21 12 21C13.356 21 14.508 20.039 15 18.75"
-        stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

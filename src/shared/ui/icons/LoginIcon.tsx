@@ -1,8 +1,8 @@
 import type { IconProps } from "./types";
 
-export const LOGIN_ICON_SIZE = { width: 20, height: 20 } as const;
+export const LOGIN_ICON_SIZE = { width: 16, height: 16 } as const;
 
-/** Door + arrow out (exit / login trigger) — stroke rounded */
+/** assets/exit.svg — login / enter */
 export function LoginIcon({ className, ...props }: IconProps) {
   return (
     <svg
@@ -15,21 +15,9 @@ export function LoginIcon({ className, ...props }: IconProps) {
       {...props}
     >
       <path
-        d="M15 17.625C14.8776 19.9073 12.9216 21.75 10.5 21.75H7.5C4.60051 21.75 2.25 19.3995 2.25 16.5V7.5C2.25 4.60051 4.60051 2.25 7.5 2.25H10.5C12.9216 2.25 14.8776 4.0927 15 6.375"
+        d="M17 7L22 12L17 17M22 12H10M10 21H6C5.46957 21 4.96086 20.7893 4.58579 20.4142C4.21071 20.0391 4 19.5304 4 19V5C4 4.46957 4.21071 3.96086 4.58579 3.58579C4.96086 3.21071 5.46957 3 6 3H10"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M21 12H9.75"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18 8.25L21.75 12L18 15.75"
-        stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

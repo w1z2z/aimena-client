@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { isAuthFlowPath, useAuth, useAuthGate } from "@/features/auth";
 import { useChatInbox } from "@/features/chat-inbox";
-import { ChatBubbleIcon, HeartIcon, LoginIcon, SearchIcon } from "@/shared/ui/icons";
+import { HeartIcon, LoginIcon, NavChatIcon, SearchIcon } from "@/shared/ui/icons";
 
 type MobileBottomNavProps = {
   searchActive?: boolean;
@@ -121,7 +121,7 @@ export function MobileBottomNav({
           onClick={handleChats}
         >
           <span className="mobile-bottom-nav__icon-wrap">
-            <ChatBubbleIcon className="h-5 w-5" />
+            <NavChatIcon className="h-5 w-5" />
             {hasUnreadConversations ? (
               <span aria-hidden className="unread-dot unread-dot--nav" />
             ) : null}

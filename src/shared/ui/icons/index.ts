@@ -14,6 +14,7 @@ export { BoltIcon } from "./BoltIcon";
 export { BurgerIcon } from "./BurgerIcon";
 export { RatingStarIcon, RATING_STAR_ICON_SIZE } from "./RatingStarIcon";
 export { ChatBubbleIcon } from "./ChatBubbleIcon";
+export { NavChatIcon } from "./NavChatIcon";
 export { ChevronIcon } from "./ChevronIcon";
 export { DeleteIcon } from "./DeleteIcon";
 export { FilterIcon } from "./FilterIcon";

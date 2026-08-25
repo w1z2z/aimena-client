@@ -430,9 +430,9 @@ export function Header() {
         type="button"
         aria-label="Поиск"
         onClick={handleSearchToggle}
-        className="flex h-5 w-5 shrink-0 items-center justify-center outline-none focus:outline-none focus-visible:outline-none"
+        className="flex h-[13px] w-[13px] shrink-0 items-center justify-center outline-none focus:outline-none focus-visible:outline-none"
       >
-        <SearchIcon className="h-full w-full" />
+        <SearchIcon />
       </button>
       <input
         ref={searchInputRef}
@@ -574,7 +574,7 @@ export function Header() {
                 }}
                 className="relative"
               >
-                <BellIcon className="h-5 w-5" />
+                <BellIcon className="h-[15px] w-[14px] text-black" />
                 {hasUnreadNotifications ? (
                   <span aria-hidden className="unread-dot unread-dot--bell" />
                 ) : null}
@@ -599,7 +599,7 @@ export function Header() {
                 router.push("/favorites");
               }}
             >
-              <HeartIcon className="h-5 w-5" />
+              <HeartIcon className="h-[14px] w-[16px] text-black" />
             </IconButton>
           </div>
 
@@ -629,14 +629,16 @@ export function Header() {
             <ProfileDropdown onClose={() => setOpenPanel(null)} />
           </HeaderDropdown>
         </>
-      ) : (
-        // Compact: login is in the bottom nav — remove `hidden` to restore in header
-        <span className={isCompact ? "hidden" : "contents"}>
-          <LoginButton />
-        </span>
-      )}
+      ) : null}
     </>
   );
+
+  const desktopAuthActions =
+    isAuthenticated && user ? (
+      authActions
+    ) : (
+      <LoginButton />
+    );
 
   return (
     <>
@@ -671,7 +673,7 @@ export function Header() {
                         : "border-[#8E8BED]"
                     }`}
                   >
-                    <SearchIcon className="h-5 w-5" />
+                    <SearchIcon />
                   </button>
                 </div>
 
@@ -742,7 +744,7 @@ export function Header() {
                       onClick={handleSearchToggle}
                       className="flex h-[32px] w-[32px] items-center justify-center rounded-[31px] border-[0.3px] border-solid border-[#8E8BED] bg-white text-[#1A1A1A] transition-colors hover:bg-[#f0e8ff]"
                     >
-                      <SearchIcon className="h-5 w-5" />
+                      <SearchIcon />
                     </button>
                   )}
                 </div>
@@ -756,7 +758,7 @@ export function Header() {
                 Разместить объявление
               </ButtonPrimary>
 
-              {authActions}
+              {desktopAuthActions}
             </div>
           </div>
         )}

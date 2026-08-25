@@ -1,8 +1,8 @@
 import type { IconProps } from "./types";
 
-export const SEARCH_ICON_SIZE = { width: 20, height: 20 } as const;
+export const SEARCH_ICON_SIZE = { width: 13, height: 13 } as const;
 
-/** Hugeicons-style search-01 stroke rounded */
+/** assets/search.svg */
 export function SearchIcon({ className, ...props }: IconProps) {
   return (
     <svg
@@ -14,19 +14,17 @@ export function SearchIcon({ className, ...props }: IconProps) {
       className={`block shrink-0 ${className ?? ""}`}
       {...props}
     >
-      <circle
-        cx="11"
-        cy="11"
-        r="8"
+      <path
+        d="M18 18L22 22"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M16.5 16.5L21 21"
+        d="M20 11C20 6.02943 15.9706 2 11 2C6.02943 2 2 6.02943 2 11C2 15.9706 6.02943 20 11 20C15.9706 20 20 15.9706 20 11Z"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
