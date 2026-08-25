@@ -17,7 +17,7 @@ export default function Error({
 
   return (
     <>
-      <Header logoTone="dark" />
+      <Header />
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
         <p className="text-[120px] font-extrabold leading-none tracking-tight text-[#8E8BED]">
           500
