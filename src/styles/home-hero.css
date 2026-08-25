@@ -608,31 +608,20 @@
   white-space: nowrap;
 }
 
-.home-hero-rec-row__pills {
+/* Reuse .home-listing-card__want-pill — pills + "+N" stay grouped on the left */
+.home-hero-rec-row__wants-group {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
-  overflow: hidden;
+  justify-content: flex-start;
 }
 
-.home-hero-rec-row__pill {
-  box-sizing: border-box;
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  height: 20px;
-  padding: 0 8px;
-  overflow: hidden;
-  border: 0.5px solid #cacaca;
-  border-radius: 999px;
-  background: #f8f8f5;
-  color: #1a1a1a;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.home-hero-rec-row__wants-pills {
+  flex: none;
+  justify-content: flex-start;
+  min-width: 0;
 }
 
 .home-hero-rec-row__swap {

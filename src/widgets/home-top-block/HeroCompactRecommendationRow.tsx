@@ -8,16 +8,18 @@ import { useAuth, useAuthGate } from "@/features/auth";
 import { LISTING_PLACEHOLDER_IMAGE } from "@/shared/lib/home-image-placeholders";
 import { LocationPinIcon, SwapIcon } from "@/shared/ui/icons";
 
-const WANT_MAX_CHARS = 22;
+const WANT_MAX_CHARS = 18;
+const WANT_PINS_MAX = 2;
 
 function truncateWantLabel(label: string) {
   const normalized = label.trim();
   if (normalized.length <= WANT_MAX_CHARS) return normalized;
-  return `${normalized.slice(0, WANT_MAX_CHARS).trimEnd()}…`;
+  return `${normalized.slice(0, WANT_MAX_CHARS).trimEnd()}...`;
 }
 
-/** One chip: tag → subcategory → category. */
-function resolveExchangeChip({
+type ExchangeChip = { full: string; label: string };
+
+function buildExchangeChips({
   isFree,
   wants,
   wantCategories,
@@ -25,31 +27,33 @@ function resolveExchangeChip({
   isFree: boolean;
   wants: string[];
   wantCategories: ListingWantCategory[];
-}): { label: string; title?: string } {
-  if (isFree) return { label: "Даром" };
+}): ExchangeChip[] {
+  if (isFree) return [];
 
-  const tag = wants.find((item) => item.trim())?.trim();
-  if (tag) {
-    return { label: truncateWantLabel(tag), title: tag.length > WANT_MAX_CHARS ? tag : undefined };
+  const chips: ExchangeChip[] = [];
+  const seen = new Set<string>();
+
+  const push = (raw: string) => {
+    const full = raw.trim();
+    if (!full) return;
+    const key = full.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    chips.push({
+      full,
+      label: truncateWantLabel(full),
+    });
+  };
+
+  for (const tag of wants) push(tag);
+  for (const item of wantCategories.filter((c) => c.parentId)) push(item.name);
+  for (const item of wantCategories.filter((c) => !c.parentId)) push(item.name);
+
+  if (chips.length === 0) {
+    return [{ full: "Любые варианты", label: "Любые варианты" }];
   }
 
-  const subcategory = wantCategories.find((item) => item.parentId);
-  if (subcategory) {
-    return {
-      label: truncateWantLabel(subcategory.name),
-      title: subcategory.name.length > WANT_MAX_CHARS ? subcategory.name : undefined,
-    };
-  }
-
-  const category = wantCategories.find((item) => !item.parentId) ?? wantCategories[0];
-  if (category) {
-    return {
-      label: truncateWantLabel(category.name),
-      title: category.name.length > WANT_MAX_CHARS ? category.name : undefined,
-    };
-  }
-
-  return { label: "Любые варианты" };
+  return chips;
 }
 
 type HeroCompactRecommendationRowProps = {
@@ -79,7 +83,9 @@ export function HeroCompactRecommendationRow({
   const listingHref = `/listings/${listingId}`;
   const isOwnListing = Boolean(user?.id && ownerId && user.id === ownerId);
   const showSwap = !isOwnListing;
-  const exchangeChip = resolveExchangeChip({ isFree, wants, wantCategories });
+  const allExchangeChips = buildExchangeChips({ isFree, wants, wantCategories });
+  const visibleExchangeChips = allExchangeChips.slice(0, WANT_PINS_MAX);
+  const exchangeWantsMore = Math.max(0, allExchangeChips.length - WANT_PINS_MAX);
 
   const handleExchangeClick = () => {
     guardAuth("propose-exchange", () => {
@@ -110,9 +116,26 @@ export function HeroCompactRecommendationRow({
 
         <div className="home-hero-rec-row__exchange">
           <span className="home-hero-rec-row__exchange-label">Обмен на:</span>
-          <span className="home-hero-rec-row__pill" title={exchangeChip.title}>
-            {exchangeChip.label}
-          </span>
+          {isFree ? (
+            <span className="home-listing-card__free-pill">Отдается даром</span>
+          ) : (
+            <div className="home-hero-rec-row__wants-group">
+              <div className="home-listing-card__wants-pills home-hero-rec-row__wants-pills">
+                {visibleExchangeChips.map((chip) => (
+                  <span
+                    key={chip.full}
+                    className="home-listing-card__want-pill"
+                    title={chip.full !== chip.label ? chip.full : undefined}
+                  >
+                    <span className="home-listing-card__want-pill-text">{chip.label}</span>
+                  </span>
+                ))}
+              </div>
+              {exchangeWantsMore > 0 ? (
+                <span className="home-listing-card__wants-more">+{exchangeWantsMore}</span>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
 
