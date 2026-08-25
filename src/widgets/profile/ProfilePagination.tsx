@@ -1,5 +1,9 @@
 "use client";
 
+import { useLayoutEffect, useRef } from "react";
+
+import { forcePageScrollTop } from "@/shared/ui/ScrollToTopOnRouteChange";
+
 export const PROFILE_PAGE_SIZE = 9;
 /** Favorites / free catalog pages */
 export const CATALOG_PAGE_SIZE = 12;
@@ -56,6 +60,16 @@ type ProfilePaginationProps = {
 };
 
 export function ProfilePagination({ page, pageCount, onChange }: ProfilePaginationProps) {
+  const skipScrollRef = useRef(true);
+
+  useLayoutEffect(() => {
+    if (skipScrollRef.current) {
+      skipScrollRef.current = false;
+      return;
+    }
+    forcePageScrollTop();
+  }, [page]);
+
   if (pageCount <= 1) return null;
 
   const items = buildPageItems(page, pageCount);

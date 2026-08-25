@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -959,6 +960,24 @@ function ActiveChatPanel({
   const lastMessageId = lastMessage?.id;
   const lastMessageSenderId = lastMessage?.senderId;
 
+  const scrollMessagesToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    const root = messagesRef.current;
+    if (!root) return;
+    root.scrollTo({ top: root.scrollHeight, behavior });
+  }, []);
+
+  useLayoutEffect(() => {
+    stickToBottomRef.current = true;
+    scrollMessagesToBottom("auto");
+    const frameId = window.requestAnimationFrame(() => scrollMessagesToBottom("auto"));
+    return () => window.cancelAnimationFrame(frameId);
+  }, [thread.id, scrollMessagesToBottom]);
+
+  useLayoutEffect(() => {
+    if (!stickToBottomRef.current || thread.messages.length === 0) return;
+    scrollMessagesToBottom("auto");
+  }, [thread.messages.length, scrollMessagesToBottom]);
+
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const body = message.trim();
@@ -1000,7 +1019,6 @@ function ActiveChatPanel({
       stickToBottomRef.current = distanceFromBottom < 80;
     };
 
-    syncStickiness();
     root.addEventListener("scroll", syncStickiness, { passive: true });
     return () => root.removeEventListener("scroll", syncStickiness);
   }, [thread.id]);
