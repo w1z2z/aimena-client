@@ -102,9 +102,17 @@ function ModeHeading({ isExchange }: { isExchange: boolean }) {
   const [wordWidth, setWordWidth] = useState<number | null>(null);
 
   useLayoutEffect(() => {
-    const activeNode = isExchange ? exchangeWordRef.current : browseWordRef.current;
-    if (!activeNode) return;
-    setWordWidth(activeNode.getBoundingClientRect().width);
+    const measure = () => {
+      const activeNode = isExchange ? exchangeWordRef.current : browseWordRef.current;
+      if (!activeNode) return;
+      // offsetWidth = layout px (before ancestor scale). getBoundingClientRect
+      // returns post-scale visual size and clips the word when hero shrinks.
+      setWordWidth(activeNode.offsetWidth);
+    };
+
+    measure();
+    window.addEventListener("resize", measure, { passive: true });
+    return () => window.removeEventListener("resize", measure);
   }, [isExchange]);
 
   return (
@@ -206,7 +214,8 @@ function HeroPriceInput({
   useLayoutEffect(() => {
     const node = priceMeasureRef.current;
     if (!node) return;
-    setPriceTextWidth(node.getBoundingClientRect().width);
+    // Layout width — not getBoundingClientRect (that shrinks under hero scale).
+    setPriceTextWidth(node.offsetWidth);
   }, [formattedPrice]);
 
   return (
@@ -320,7 +329,7 @@ function FilterChip({
       type="button"
       tabIndex={tabIndex}
       onClick={onClick}
-      className={`flex h-[25px] shrink-0 items-center justify-center whitespace-nowrap rounded-[18px] border-[0.5px] px-[12px] text-[12px] font-medium leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
+      className={`flex h-[25px] shrink-0 items-center justify-center whitespace-nowrap rounded-[21px] border-[0.5px] px-[12px] text-[12px] font-medium leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
         active
           ? "border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
           : "border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"

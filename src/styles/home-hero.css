@@ -372,6 +372,11 @@
   row-gap: 8px;
 }
 
+/* Chip pills — same radius as .home-hero-view-all-btn */
+.home-hero-browse-filters-modal__content .flex.flex-nowrap > button {
+  border-radius: 21px;
+}
+
 .home-hero-compact .home-hero-form__lower {
   height: auto;
   flex-direction: column;
