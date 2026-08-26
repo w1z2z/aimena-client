@@ -13,7 +13,7 @@ import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
 import { Header } from "@/widgets/header/Header";
 
 import { CategoriesArc } from "./CategoriesArc";
-import { BASE_SCENE_HEIGHT, BASE_SCENE_WIDTH, HERO_CONTENT_SHIFT_UP, HERO_SCENE_FULL_WIDTH } from "./constants";
+import { BASE_SCENE_HEIGHT, BASE_SCENE_WIDTH, computeDesktopSceneScale, HERO_CONTENT_SHIFT_UP } from "./constants";
 import { HeroRecommendationsPanel } from "./HeroRecommendations";
 import { ModeFormColumn } from "./HeroSearchForm";
 import { TickerCarousel } from "./TickerCarousel";
@@ -21,16 +21,24 @@ import { TickerCarousel } from "./TickerCarousel";
 const HERO_BACKGROUND =
   "linear-gradient(180deg, #141131 29.69%, #322F60 47.6%, #545193 67.22%, #8E8BED 100%)";
 
-function subscribeViewportWidth(onStoreChange: () => void) {
+function subscribeViewport(onStoreChange: () => void) {
   window.addEventListener("resize", onStoreChange, { passive: true });
   return () => window.removeEventListener("resize", onStoreChange);
 }
 
 function useViewportWidth(): number {
   return useSyncExternalStore(
-    subscribeViewportWidth,
+    subscribeViewport,
     () => window.innerWidth,
     () => BASE_SCENE_WIDTH,
+  );
+}
+
+function useViewportHeight(): number {
+  return useSyncExternalStore(
+    subscribeViewport,
+    () => window.innerHeight,
+    () => BASE_SCENE_HEIGHT,
   );
 }
 
@@ -100,12 +108,10 @@ export function HomeTopBlock() {
   const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
   const heroDensity = useViewportHeightDensity();
   const viewportWidth = useViewportWidth();
-  /** Desktop: full scale until HERO_SCENE_FULL_WIDTH, then shrink to fit narrow windows. */
-  const sceneScale = isCompact
-    ? 1
-    : viewportWidth >= HERO_SCENE_FULL_WIDTH
-      ? 1
-      : viewportWidth / HERO_SCENE_FULL_WIDTH;
+  const viewportHeight = useViewportHeight();
+  /** Desktop: fit full scene (ticker included); scale by 1440 content width + viewport height. */
+  const sceneScale = isCompact ? 1 : computeDesktopSceneScale(viewportWidth, viewportHeight);
+  const sceneFrameHeight = BASE_SCENE_HEIGHT * sceneScale;
   const {
     hero,
     setMode,
@@ -222,7 +228,7 @@ export function HomeTopBlock() {
       ) : (
         <div
           className="relative w-full overflow-hidden"
-          style={{ height: `${BASE_SCENE_HEIGHT * sceneScale}px` }}
+          style={{ height: `${Math.max(viewportHeight, sceneFrameHeight)}px` }}
         >
           <div
             className="relative left-1/2 origin-top"
@@ -231,6 +237,7 @@ export function HomeTopBlock() {
               width: `${BASE_SCENE_WIDTH}px`,
               transform: `translateX(-50%) scale(${sceneScale})`,
               transformOrigin: "top center",
+              marginBottom: `${sceneFrameHeight - BASE_SCENE_HEIGHT}px`,
             }}
           >
             <div className="absolute left-[240px] top-0 z-20 w-[1440px]">

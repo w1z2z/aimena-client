@@ -211,16 +211,20 @@ textarea:disabled {
     font-size: 16px !important;
   }
 
-  /* Hero lime fields: slightly smaller than site-wide 16px */
-  .home-hero-compact .home-hero-form__lime .home-hero-field input,
-  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input {
-    font-size: 14px !important;
+  /* Hero lime fields: match mode toggle («Хочу обменять») — 12px.
+   * Tradeoff: iOS may zoom on focus (<16px). User prefers visual match. */
+  .home-hero-form__lime .home-hero-field input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  .home-hero-form__lime .home-hero-field .site-select__input,
+  .home-hero-form__lime .home-hero-field--price > div > span {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
   }
 
-  .home-hero-compact .home-hero-form__lime .home-hero-field input::placeholder,
-  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input::placeholder,
-  .home-hero-compact .home-hero-form__lime .home-hero-field .site-select__input.is-placeholder {
-    font-size: 14px !important;
+  .home-hero-form__lime .home-hero-field input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  .home-hero-form__lime .home-hero-field .site-select__input::placeholder,
+  .home-hero-form__lime .home-hero-field .site-select__input.is-placeholder {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
   }
 }
 

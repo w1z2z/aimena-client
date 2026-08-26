@@ -1515,3 +1515,27 @@
     height: 143px;
   }
 }
+
+/* Hero compact: city select text matches mode toggle (12px). Must follow base select rules above. */
+.home-hero-compact .home-hero-field .site-select--field .site-select__input,
+.home-hero-compact .home-hero-field .site-select--hero .site-select__input {
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.home-hero-compact .home-hero-field .site-select--field .site-select__input::placeholder,
+.home-hero-compact .home-hero-field .site-select--field .site-select__input.is-placeholder,
+.home-hero-compact .home-hero-field .site-select--hero .site-select__input::placeholder,
+.home-hero-compact .home-hero-field .site-select--hero .site-select__input.is-placeholder {
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input::placeholder,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input.is-placeholder,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input::placeholder,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input.is-placeholder {
+  font-size: 11px !important;
+}

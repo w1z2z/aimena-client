@@ -295,18 +295,34 @@
 .home-hero-compact .home-hero-field .site-select--field .site-select__input {
   height: var(--hero-input-h);
   border-radius: var(--hero-input-radius);
-  font-size: 14px;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
 }
 
 .home-hero-compact .home-hero-field--price > div > span {
   font-size: 12px !important;
+  line-height: 1.35 !important;
 }
 
+.home-hero-compact .home-hero-field input::placeholder,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input::placeholder,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input.is-placeholder,
 .home-hero-compact .home-hero-field .site-select--field .site-select__input::placeholder,
 .home-hero-compact .home-hero-field .site-select--field .site-select__input.is-placeholder {
-  font-size: 14px;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.home-hero-compact[data-density="dense"] .home-hero-field input,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input,
+.home-hero-compact[data-density="dense"] .home-hero-field--price > div > span,
+.home-hero-compact[data-density="dense"] .home-hero-field input::placeholder,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input::placeholder,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input.is-placeholder,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input::placeholder,
+.home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input.is-placeholder {
+  font-size: 11px !important;
 }
 
 .home-hero-city-row {
@@ -844,5 +860,43 @@
   .home-hero-recs--compact {
     padding: 12px;
     border-radius: 20px;
+  }
+}
+
+/* Mobile safety net: if the hero fold still renders the "desktop" layout on iOS,
+ * keep input typography inside the green block consistent with the mode toggle. */
+@media (max-width: 1024px) {
+  .home-hero-form__lime .home-hero-field > p {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-hero-form__lime input {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-hero-form__lime input::placeholder {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-hero-form__lime .site-select--hero .site-select__input,
+  .home-hero-form__lime .site-select--field .site-select__input {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-hero-form__lime .site-select--hero .site-select__input::placeholder,
+  .home-hero-form__lime .site-select--field .site-select__input::placeholder,
+  .home-hero-form__lime .site-select--hero .site-select__input.is-placeholder,
+  .home-hero-form__lime .site-select--field .site-select__input.is-placeholder {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-hero-form__lime .home-hero-field--price > div > span {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
   }
 }

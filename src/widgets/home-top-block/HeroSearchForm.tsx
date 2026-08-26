@@ -180,21 +180,26 @@ function LabeledInput({
   onChange,
   placeholder,
   className,
+  compact = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   className: string;
+  compact?: boolean;
 }) {
+  const textClass = compact ? "text-[12px] leading-[135%]" : "text-[14px] leading-[170%]";
   return (
     <div className={className}>
-      <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">{label}</p>
+      <p className={`mb-[12px] font-normal text-[#1A1A1A] ${compact ? "text-[12px] leading-[135%]" : "text-[14px] leading-[170%]"}`}>
+        {label}
+      </p>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white px-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[#626262]"
+        className={`h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white px-[12px] font-normal text-[#1A1A1A] outline-none placeholder:text-[#626262] ${textClass}`}
       />
     </div>
   );
@@ -203,26 +208,33 @@ function LabeledInput({
 function HeroPriceInput({
   priceDigits,
   setPrice,
+  compact = false,
 }: {
   priceDigits: string;
   setPrice: (value: string) => void;
+  compact?: boolean;
 }) {
   const priceMeasureRef = useRef<HTMLSpanElement>(null);
   const [priceTextWidth, setPriceTextWidth] = useState(0);
   const formattedPrice = formatPriceWithSpaces(priceDigits);
+  const textClass = compact ? "text-[12px] leading-[135%]" : "text-[14px] leading-[170%]";
 
   useLayoutEffect(() => {
     const node = priceMeasureRef.current;
     if (!node) return;
     // Layout width — not getBoundingClientRect (that shrinks under hero scale).
     setPriceTextWidth(node.offsetWidth);
-  }, [formattedPrice]);
+  }, [formattedPrice, compact]);
 
   return (
     <div className="home-hero-field home-hero-field--price w-[250px] flex-1">
-      <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Примерная стоимость</p>
+      <p className={`mb-[12px] font-normal text-[#1A1A1A] ${compact ? "text-[12px] leading-[135%]" : "text-[14px] leading-[170%]"}`}>
+        Примерная стоимость
+      </p>
       <div className="relative">
-        <span className="pointer-events-none absolute left-[12px] top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]">
+        <span
+          className={`pointer-events-none absolute left-[12px] top-1/2 -translate-y-1/2 font-normal text-[#626262] ${textClass}`}
+        >
           ~
         </span>
         <input
@@ -232,18 +244,18 @@ function HeroPriceInput({
           value={formattedPrice}
           onChange={(event) => setPrice(extractPriceDigits(event.target.value))}
           placeholder="0"
-          className="h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white pl-[28px] pr-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[#626262]"
+          className={`h-[48px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white pl-[28px] pr-[12px] font-normal text-[#1A1A1A] outline-none placeholder:text-[#626262] ${textClass}`}
           aria-label="Примерная стоимость"
         />
         <span
           ref={priceMeasureRef}
           aria-hidden="true"
-          className="pointer-events-none invisible absolute left-[28px] top-1/2 -translate-y-1/2 whitespace-pre text-[14px] font-normal leading-[170%]"
+          className={`pointer-events-none invisible absolute left-[28px] top-1/2 -translate-y-1/2 whitespace-pre font-normal ${textClass}`}
         >
           {formattedPrice || "0"}
         </span>
         <span
-          className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]"
+          className={`pointer-events-none absolute top-1/2 -translate-y-1/2 font-normal text-[#626262] ${textClass}`}
           style={{ left: `calc(28px + ${priceTextWidth}px + 4px)` }}
         >
           руб.
@@ -285,12 +297,19 @@ function TopFields({
         onChange={setTitle}
         placeholder={titlePlaceholder}
         className="home-hero-field home-hero-field--title w-[379px]"
+        compact={compactLayout}
       />
 
-      <HeroPriceInput priceDigits={price} setPrice={setPrice} />
+      <HeroPriceInput priceDigits={price} setPrice={setPrice} compact={compactLayout} />
 
       <div className="home-hero-field home-hero-field--city w-[250px] flex-1">
-        <p className="mb-[12px] text-[14px] font-normal leading-[170%] text-[#1A1A1A]">Город</p>
+        <p
+          className={`mb-[12px] font-normal text-[#1A1A1A] ${
+            compactLayout ? "text-[12px] leading-[135%]" : "text-[14px] leading-[170%]"
+          }`}
+        >
+          Город
+        </p>
         <div className={cityAction ? "home-hero-city-row" : undefined}>
           <SelectField
             value={city}
