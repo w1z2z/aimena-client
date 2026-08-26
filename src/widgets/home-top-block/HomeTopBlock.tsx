@@ -112,6 +112,9 @@ export function HomeTopBlock() {
   /** Desktop: fit full scene (ticker included); scale by 1440 content width + viewport height. */
   const sceneScale = isCompact ? 1 : computeDesktopSceneScale(viewportWidth, viewportHeight);
   const sceneFrameHeight = BASE_SCENE_HEIGHT * sceneScale;
+  const sceneVerticalGap = isCompact ? 0 : Math.max(viewportHeight - sceneFrameHeight, 0) / sceneScale;
+  const sceneMainOffset = sceneVerticalGap / 2;
+  const sceneFooterOffset = sceneVerticalGap;
   const {
     hero,
     setMode,
@@ -253,20 +256,30 @@ export function HomeTopBlock() {
                 >
                   <CategoriesArc categories={categories} onCategoryChange={handleCategoryChange} />
 
-                  <div className="home-hero-desktop-title">
-                    <HeroTitle />
+                  <div
+                    className="absolute inset-0"
+                    style={{ transform: `translateY(${sceneMainOffset}px)` }}
+                  >
+                    <div className="home-hero-desktop-title">
+                      <HeroTitle />
+                    </div>
+
+                    <div className="absolute left-[241px] top-[386px] z-10 flex h-[560px] w-[1440px] gap-[24px]">
+                      <HeroForm {...formProps} />
+                      {recommendations}
+                    </div>
                   </div>
 
-                  <div className="absolute left-[241px] top-[386px] z-10 flex h-[560px] w-[1440px] gap-[24px]">
-                    <HeroForm {...formProps} />
-                    {recommendations}
-                  </div>
+                  <div
+                    className="absolute inset-0"
+                    style={{ transform: `translateY(${sceneFooterOffset}px)` }}
+                  >
+                    <div className="home-hero-desktop-why">
+                      <HeroWhyAimena />
+                    </div>
 
-                  <div className="home-hero-desktop-why">
-                    <HeroWhyAimena />
+                    <TickerCarousel />
                   </div>
-
-                  <TickerCarousel />
                 </div>
               </section>
             </div>
