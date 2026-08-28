@@ -6,11 +6,15 @@ import { createPortal } from "react-dom";
 import {
   abortDeal,
   acceptDealCancel,
+  acceptDealFailure,
   completeDeal,
   confirmDealTerms,
   createDealReview,
   rejectDealCancel,
+  rejectDealFailure,
+  reportDealFailure,
   requestDealCancel,
+  uncompleteDeal,
   unconfirmDealTerms,
   type DealView,
 } from "@/shared/api/deals";
@@ -24,10 +28,13 @@ export type DealModalKind =
   | "refuse"
   | "mutual"
   | "incoming-cancel"
+  | "failure"
+  | "incoming-failure"
   | null;
 
 export function dealModalFromQuery(value: string | null): DealModalKind {
   if (value === "cancel_request") return "incoming-cancel";
+  if (value === "failure_request") return "incoming-failure";
   if (value === "review") return "review";
   if (value === "complete") return "complete";
   return null;
@@ -128,7 +135,13 @@ export function dealSideStatus(
     return { label: "Ждём готовности владельца", active: false };
   }
   if (deal.status === "cancelled") {
-    return { label: "Обмен отменён", active: false };
+    return {
+      label:
+        deal.cancelKind === "not_completed"
+          ? "Обмен не состоялся"
+          : "Обмен отменён",
+      active: false,
+    };
   }
   if (
     deal.status === "awaiting_reviews" ||
@@ -136,6 +149,16 @@ export function dealSideStatus(
     deal.status === "reviewed"
   ) {
     return { label: "Обмен состоялся", active: false };
+  }
+  if (deal.status === "failure_pending") {
+    const iReported = deal.failureReportedByMe;
+    const thisSideReported = side === "mine" ? iReported : !iReported;
+    return {
+      label: thisSideReported
+        ? "Вы сообщили, что обмен не состоялся"
+        : "Ждём решения партнёра",
+      active: false,
+    };
   }
   if (deal.status === "cancellation_pending") {
     const iRequested = deal.cancellationRequestedByMe;
@@ -189,12 +212,17 @@ export function DealFlow({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reviewBody, setReviewBody] = useState("");
+  const [failureReason, setFailureReason] = useState("");
   const autoOpenedFor = useRef<string | null>(null);
 
   useEffect(() => {
     if (!deal) return;
     if (deal.canAcceptCancel) {
       setModal("incoming-cancel");
+      return;
+    }
+    if (deal.canAcceptFailure) {
+      setModal("incoming-failure");
       return;
     }
     const autoKey = `${deal.id}:${deal.status}:${initialModal ?? ""}`;
@@ -204,9 +232,9 @@ export function DealFlow({
       setModal("review");
       return;
     }
-    if (initialModal === "complete" && deal.canComplete) {
+    if (initialModal === "incoming-failure" && deal.canAcceptFailure) {
       autoOpenedFor.current = autoKey;
-      setModal("complete");
+      setModal("incoming-failure");
       return;
     }
     if (deal.canReview && deal.status === "awaiting_reviews") {
@@ -227,6 +255,7 @@ export function DealFlow({
       const response = await action();
       onDealUpdated(response.deal);
       setModal(response.deal.canReview ? "review" : null);
+      setFailureReason("");
     } catch {
       setError("Не удалось выполнить действие. Попробуйте ещё раз.");
     } finally {
@@ -242,16 +271,28 @@ export function DealFlow({
 
   const showReady = deal.canConfirmTerms || deal.canUnconfirmTerms;
   const readyPressed = deal.termsConfirmedByMe && deal.canUnconfirmTerms;
-  const showComplete = deal.canComplete;
-  const showRefuse =
+  const showComplete = deal.canComplete || deal.canUncomplete;
+  const completePressed = deal.completedByMe && deal.canUncomplete;
+  const showReportFailure = deal.canReportFailure;
+  const showRefuseEarly =
     (deal.canAbort || deal.canRequestCancel) &&
     !(deal.status === "cancellation_pending" && deal.cancellationRequestedByMe);
   const showReviewButton = deal.canReview && modal !== "review";
 
+  const actionCount = [
+    showReady,
+    showComplete,
+    showReportFailure,
+    showRefuseEarly,
+    showReviewButton,
+  ].filter(Boolean).length;
+
   return (
     <>
-      {showReady || showComplete || showRefuse || showReviewButton ? (
-        <div className="chats-actions">
+      {actionCount > 0 ? (
+        <div
+          className={`chats-actions${actionCount === 1 ? " chats-actions--single" : ""}`}
+        >
           {showReady ? (
             <button
               type="button"
@@ -270,8 +311,20 @@ export function DealFlow({
             </button>
           ) : null}
           {showComplete ? (
-            <button type="button" onClick={() => setModal("complete")}>
-              Обмен состоялся
+            <button
+              type="button"
+              className={completePressed ? "is-pressed" : undefined}
+              aria-pressed={completePressed}
+              disabled={pending}
+              onClick={() => {
+                if (completePressed) {
+                  void run(() => uncompleteDeal(deal.id));
+                  return;
+                }
+                setModal("complete");
+              }}
+            >
+              {completePressed ? "Отменить подтверждение" : "Обмен состоялся"}
             </button>
           ) : null}
           {showReviewButton ? (
@@ -279,8 +332,21 @@ export function DealFlow({
               Оставить отзыв
             </button>
           ) : null}
-          {showRefuse ? (
-            <button type="button" onClick={() => setModal("refuse")}>
+          {showReportFailure ? (
+            <button
+              type="button"
+              className="chats-actions__danger"
+              onClick={() => setModal("failure")}
+            >
+              Обмен не состоялся
+            </button>
+          ) : null}
+          {showRefuseEarly ? (
+            <button
+              type="button"
+              className="chats-actions__danger"
+              onClick={() => setModal("refuse")}
+            >
               Отказаться от обмена
             </button>
           ) : null}
@@ -371,7 +437,7 @@ export function DealFlow({
         error={error}
         onClose={close}
       >
-        <div className="listing-action-modal__steps">
+        <div className="listing-action-modal__steps listing-action-modal__steps--textarea">
           <p className="listing-action-modal__description listing-action-modal__description--left">
             Оставьте отзыв о прошедшем обмене:
           </p>
@@ -391,6 +457,75 @@ export function DealFlow({
         >
           {pending ? "Подождите…" : "Отправить"}
         </button>
+      </DealModalShell>
+
+      <DealModalShell
+        open={modal === "failure"}
+        title="Обмен не состоялся?"
+        icon="cancel"
+        pending={pending}
+        error={error}
+        onClose={close}
+      >
+        <div className="listing-action-modal__steps listing-action-modal__steps--textarea">
+          <p className="listing-action-modal__description listing-action-modal__description--left">
+            Опишите, почему обмен не состоялся:
+          </p>
+          <textarea
+            className="listing-action-modal__textarea"
+            placeholder="Введите текст..."
+            value={failureReason}
+            maxLength={2000}
+            onChange={(event) => setFailureReason(event.target.value)}
+          />
+        </div>
+        <button
+          type="button"
+          className="listing-action-modal__btn listing-action-modal__btn--primary listing-action-modal__btn--full"
+          disabled={pending || !failureReason.trim()}
+          onClick={() =>
+            void run(() => reportDealFailure(deal.id, failureReason.trim()))
+          }
+        >
+          {pending ? "Подождите…" : "Отправить"}
+        </button>
+      </DealModalShell>
+
+      <DealModalShell
+        open={modal === "incoming-failure"}
+        title="Партнёр считает, что обмен не состоялся"
+        icon="cancel"
+        pending={pending}
+        error={error}
+        dismissible={false}
+        onClose={close}
+      >
+        {deal.failureReason ? (
+          <div className="listing-action-modal__steps listing-action-modal__steps--textarea">
+            <p className="listing-action-modal__description listing-action-modal__description--left">
+              Причина:
+            </p>
+            <div className="listing-action-modal__reason">{deal.failureReason}</div>
+          </div>
+        ) : null}
+        <div className="listing-action-modal__actions listing-action-modal__actions--deal">
+          <button
+            type="button"
+            className="listing-action-modal__btn listing-action-modal__btn--danger"
+            disabled={pending}
+            onClick={() => void run(() => acceptDealFailure(deal.id))}
+          >
+            {pending ? "Подождите…" : "Согласен"}
+          </button>
+          <button
+            type="button"
+            className="listing-action-modal__btn listing-action-modal__btn--secondary"
+            disabled={pending}
+            onClick={() => void run(() => rejectDealFailure(deal.id))}
+          >
+            Не согласен
+          </button>
+        </div>
       </DealModalShell>
 
       <DealModalShell

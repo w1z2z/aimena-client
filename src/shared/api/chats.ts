@@ -46,9 +46,11 @@ export type NotificationKind =
   | "cancel_rejected"
   | "deal_aborted"
   | "deal_cancelled"
+  | "deal_not_completed"
   | "partner_ready"
   | "both_ready"
   | "complete_requested"
+  | "failure_requested"
   | "review_needed";
 
 export type ChatSummary = {

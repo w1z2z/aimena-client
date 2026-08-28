@@ -53,6 +53,7 @@ export type DealStatus =
   | "cancellation_pending"
   | "cancelled"
   | "completion_pending"
+  | "failure_pending"
   | "awaiting_reviews"
   | "partially_reviewed"
   | "reviewed";
@@ -62,19 +63,25 @@ export type DealView = {
   offerId: string;
   threadId: string | null;
   status: DealStatus;
-  cancelKind: "none" | "mutual" | "abort";
+  cancelKind: "none" | "mutual" | "abort" | "not_completed";
   iAmSender: boolean;
   termsConfirmedByMe: boolean;
   termsConfirmedByOther: boolean;
   completedByMe: boolean;
   completedByOther: boolean;
   cancellationRequestedByMe: boolean;
+  failureReportedByMe: boolean;
+  failureReason: string | null;
   myReviewId: string | null;
   canConfirmTerms: boolean;
   canUnconfirmTerms: boolean;
   canComplete: boolean;
+  canUncomplete: boolean;
+  canReportFailure: boolean;
   canAbort: boolean;
   canRequestCancel: boolean;
+  canAcceptFailure: boolean;
+  canRejectFailure: boolean;
   canAcceptCancel: boolean;
   canRejectCancel: boolean;
   canReview: boolean;
@@ -123,6 +130,31 @@ export function abortDeal(dealId: string) {
 
 export function completeDeal(dealId: string) {
   return httpRequest<DealActionResponse>(`/deals/${dealId}/complete`, {
+    method: "POST",
+  });
+}
+
+export function uncompleteDeal(dealId: string) {
+  return httpRequest<DealActionResponse>(`/deals/${dealId}/uncomplete`, {
+    method: "POST",
+  });
+}
+
+export function reportDealFailure(dealId: string, reason: string) {
+  return httpRequest<DealActionResponse>(`/deals/${dealId}/report-failure`, {
+    method: "POST",
+    body: { reason },
+  });
+}
+
+export function acceptDealFailure(dealId: string) {
+  return httpRequest<DealActionResponse>(`/deals/${dealId}/accept-failure`, {
+    method: "POST",
+  });
+}
+
+export function rejectDealFailure(dealId: string) {
+  return httpRequest<DealActionResponse>(`/deals/${dealId}/reject-failure`, {
     method: "POST",
   });
 }

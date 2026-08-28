@@ -10,8 +10,10 @@ export function notificationHasUnread(item: ChatSummary) {
     item.notificationKind === "cancel_rejected" ||
     item.notificationKind === "deal_aborted" ||
     item.notificationKind === "deal_cancelled" ||
+    item.notificationKind === "deal_not_completed" ||
     item.notificationKind === "partner_ready" ||
     item.notificationKind === "complete_requested" ||
+    item.notificationKind === "failure_requested" ||
     item.notificationKind === "review_needed"
   ) {
     return item.unreadCount > 0;
@@ -36,10 +38,10 @@ export function chatSummaryToHref(item: ChatSummary) {
   const params = new URLSearchParams({ selected });
   if (item.notificationKind === "cancel_requested") {
     params.set("dealModal", "cancel_request");
+  } else if (item.notificationKind === "failure_requested") {
+    params.set("dealModal", "failure_request");
   } else if (item.notificationKind === "review_needed") {
     params.set("dealModal", "review");
-  } else if (item.notificationKind === "complete_requested") {
-    params.set("dealModal", "complete");
   }
   return `/chats?${params.toString()}`;
 }
@@ -94,12 +96,16 @@ export function getNotificationTitle(item: ChatSummary) {
       return "Сделка отменена";
     case "deal_cancelled":
       return "Обоюдный отказ от обмена";
+    case "deal_not_completed":
+      return "Обмен не состоялся";
     case "partner_ready":
       return "Партнёр готов к обмену";
     case "both_ready":
       return "Оба готовы к обмену";
     case "complete_requested":
       return "Обмен состоялся?";
+    case "failure_requested":
+      return "Обмен не состоялся?";
     case "review_needed":
       return "Оставьте отзыв";
     case "support":
@@ -150,12 +156,16 @@ export function getNotificationSubtitle(item: ChatSummary) {
       return "Партнёр отменил обмен";
     case "deal_cancelled":
       return "Сделка отменена по обоюдному согласию";
+    case "deal_not_completed":
+      return "Сделка закрыта: обмен не состоялся";
     case "partner_ready":
       return "Подтвердите готовность в чате";
     case "both_ready":
       return "Можно встречаться и завершать обмен";
     case "complete_requested":
       return "Подтвердите, что обмен состоялся";
+    case "failure_requested":
+      return "Партнёр сообщил, что обмен не состоялся";
     case "review_needed":
       return "Оставьте отзыв о проведённом обмене";
     case "support":

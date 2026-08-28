@@ -894,10 +894,15 @@
   color: #8e8bed;
 }
 
-.chats-actions button:last-child {
+.chats-actions button:last-child,
+.chats-actions button.chats-actions__danger {
   border-color: #ff2056;
   background: #fff2f5;
   color: #ff2056;
+}
+
+.chats-actions--single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .chats-actions button:disabled {
