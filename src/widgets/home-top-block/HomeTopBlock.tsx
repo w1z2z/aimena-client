@@ -271,7 +271,7 @@ export function HomeTopBlock() {
                   </div>
 
                   <div
-                    className="absolute inset-0"
+                    className="pointer-events-none absolute inset-0"
                     style={{ transform: `translateY(${sceneFooterOffset}px)` }}
                   >
                     <div className="home-hero-desktop-why">
