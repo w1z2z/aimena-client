@@ -197,7 +197,7 @@ export function HomeTopBlock() {
   );
 
   const compactMidSlot = (
-    <div className="home-hero-compact__results">
+    <section className="home-hero-compact__results-panel" aria-label="Варианты обмена">
       {recommendations}
       <button
         type="button"
@@ -206,7 +206,7 @@ export function HomeTopBlock() {
       >
         Посмотрите все варианты
       </button>
-    </div>
+    </section>
   );
 
   return (
