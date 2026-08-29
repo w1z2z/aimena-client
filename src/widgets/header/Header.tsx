@@ -89,6 +89,7 @@ export function Header() {
       setSearchQuery("");
       setSearchSuggestions([]);
       setActiveSearchSuggestionIndex(-1);
+      setOpenPanel(null);
     } else {
       setIsMobileMenuOpen(false);
     }
@@ -603,13 +604,12 @@ export function Header() {
             </IconButton>
           </div>
 
-          <HeaderDropdown
-            open={openPanel === "profile"}
-            onOpenChange={(open) => setOpenPanel(open ? "profile" : null)}
-            panelLabel="Профиль"
-            trigger={
-              // Compact: profile is in the bottom nav; keep dropdown mounted for the sheet.
-              <span className={isCompact ? "hidden" : "contents"}>
+          {!isCompact ? (
+            <HeaderDropdown
+              open={openPanel === "profile"}
+              onOpenChange={(open) => setOpenPanel(open ? "profile" : null)}
+              panelLabel="Профиль"
+              trigger={
                 <Avatar
                   initial={user.avatarInitial}
                   src={user.avatarUrl}
@@ -623,11 +623,11 @@ export function Header() {
                     togglePanel("profile");
                   }}
                 />
-              </span>
-            }
-          >
-            <ProfileDropdown onClose={() => setOpenPanel(null)} />
-          </HeaderDropdown>
+              }
+            >
+              <ProfileDropdown onClose={() => setOpenPanel(null)} />
+            </HeaderDropdown>
+          ) : null}
         </>
       ) : null}
     </>
@@ -779,13 +779,6 @@ export function Header() {
             setOpenPanel(null);
             setIsMobileMenuOpen(false);
             handleSearchToggle();
-          }}
-          onProfileClick={() => {
-            setIsMobileMenuOpen(false);
-            if (showExpandedSearch) {
-              closeSearchWithAnimation({ clear: true });
-            }
-            togglePanel("profile");
           }}
         />
       ) : null}

@@ -9,7 +9,6 @@ import { HeartIcon, LoginIcon, NavChatIcon, SearchIcon } from "@/shared/ui/icons
 type MobileBottomNavProps = {
   searchActive?: boolean;
   onSearchClick: () => void;
-  onProfileClick: () => void;
 };
 
 function CreateIcon({ className }: { className?: string }) {
@@ -31,7 +30,6 @@ function CreateIcon({ className }: { className?: string }) {
 export function MobileBottomNav({
   searchActive = false,
   onSearchClick,
-  onProfileClick,
 }: MobileBottomNavProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -72,7 +70,7 @@ export function MobileBottomNav({
       router.push("/login");
       return;
     }
-    onProfileClick();
+    router.push("/profile");
   };
 
   return (
