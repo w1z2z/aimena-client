@@ -1449,7 +1449,7 @@ a.profile-deal-card__partner-name:hover {
 
   .profile-deal-card__date {
     position: static;
-    order: 3;
+    order: 0;
     align-self: flex-end;
     margin: 0;
     font-size: 10px;
@@ -1466,6 +1466,8 @@ a.profile-deal-card__partner-name:hover {
 
   .profile-deal-card__footer {
     order: 2;
+    gap: 12px;
+    justify-content: stretch;
   }
 
   .profile-deal-card__badge {
@@ -1534,10 +1536,6 @@ a.profile-deal-card__partner-name:hover {
     font-size: 9px;
   }
 
-  .profile-deal-card__footer {
-    gap: 12px;
-  }
-
   .profile-deal-card__partner {
     display: grid;
     grid-template-columns: auto auto minmax(0, 1fr);
@@ -1583,13 +1581,16 @@ a.profile-deal-card__partner-name:hover {
   }
 
   .profile-deal-card__actions {
-    gap: 8px;
+    width: 100%;
+    gap: 10px;
   }
 
   .profile-deal-card__action {
-    padding: 10px 12px;
-    font-size: 12px;
-    border-radius: 28px;
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 14px;
+    border-radius: 30px;
   }
 }
 
@@ -1644,8 +1645,9 @@ a.profile-deal-card__partner-name:hover {
   }
 
   .profile-deal-card__action {
-    padding: 8px 10px;
-    font-size: 11px;
+    min-height: 42px;
+    padding: 11px 14px;
+    font-size: 13px;
   }
 }
 
