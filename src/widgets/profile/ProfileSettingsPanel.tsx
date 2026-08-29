@@ -20,10 +20,10 @@ const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const CREDENTIALS_FIELD_CLASS =
-  "box-border flex h-12 min-w-0 w-full items-center rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-[#F2F4F7] px-3 py-2 text-[14px] font-normal leading-[1.7] text-[#1A1A1A]";
+  "profile-settings__email-box box-border flex h-12 min-w-0 w-full items-center rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-[#F2F4F7] px-3 py-2";
 
 const CREDENTIALS_BUTTON_CLASS =
-  "box-border flex h-12 w-[218px] shrink-0 items-center justify-center rounded-[18px] bg-[#8E8BED] px-4 text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-white transition hover:brightness-[0.98]";
+  "profile-settings__btn box-border flex h-12 w-[218px] shrink-0 items-center justify-center rounded-[18px] bg-[#8E8BED] px-4 text-white transition hover:brightness-[0.98]";
 
 export function ProfileSettingsPanel() {
   const router = useRouter();
@@ -247,17 +247,13 @@ export function ProfileSettingsPanel() {
       <div className="flex flex-col gap-6">
         <form className="flex flex-col gap-6" onSubmit={handleSave}>
         <div className="flex flex-col gap-6 rounded-[31px] bg-[#c8ff02] p-6">
-          <h2 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#626262]">
-            Учётные данные
-          </h2>
+          <h2 className="profile-settings__section-title">Учётные данные</h2>
 
           <div className="flex flex-col gap-2">
-            <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
-              Электронная почта
-            </p>
+            <p className="profile-settings__label">Электронная почта</p>
             <div className="profile-settings__credentials-row">
               <div className={CREDENTIALS_FIELD_CLASS}>
-                <p className="break-all">{user.email}</p>
+                <p className="profile-settings__email-value break-all">{user.email}</p>
               </div>
               <button
                 type="button"
@@ -271,22 +267,20 @@ export function ProfileSettingsPanel() {
         </div>
 
         <div className="flex flex-col gap-6 rounded-[31px] bg-white p-6">
-          <h2 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#626262]">
-            Основная информация
-          </h2>
+          <h2 className="profile-settings__section-title">Основная информация</h2>
 
           <label className="flex flex-col gap-2">
-            <span className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">Имя</span>
+            <span className="profile-settings__label">Имя</span>
             <input
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
               maxLength={64}
-              className="h-12 w-full rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-[#F2F4F7] px-3 text-[14px] font-normal leading-[1.7] text-[#1A1A1A] outline-none focus:border-[#8E8BED]"
+              className="profile-settings__field h-12 w-full rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-[#F2F4F7] px-3 outline-none focus:border-[#8E8BED]"
             />
           </label>
 
           <label className="flex flex-col gap-2">
-            <span className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">Город</span>
+            <span className="profile-settings__label">Город</span>
             <SelectField
               value={cityId}
               onChange={(next) => {
@@ -312,7 +306,7 @@ export function ProfileSettingsPanel() {
           </label>
 
           <div className="flex flex-col gap-2">
-            <span className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">Аватар</span>
+            <span className="profile-settings__label">Аватар</span>
             <div className="relative flex h-[124px] w-full items-center gap-3 overflow-hidden rounded-[18px] border-[0.5px] border-dashed border-[#CACACA] bg-white px-3">
               <div className="group relative size-[98px] shrink-0">
                 <button
@@ -345,12 +339,10 @@ export function ProfileSettingsPanel() {
                 disabled={isRemovingAvatar}
                 className="flex min-w-0 flex-1 flex-col gap-1 text-left disabled:opacity-60"
               >
-                <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
+                <span className="profile-settings__text-semibold">
                   {isUploadingAvatar ? "Загрузка…" : "Загрузить фото"}
                 </span>
-                <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#626262]">
-                  JPEG, PNG, WebP до 2 МБ
-                </span>
+                <span className="profile-settings__text-muted">JPEG, PNG, WebP до 2 МБ</span>
               </button>
             </div>
             <input
@@ -366,7 +358,7 @@ export function ProfileSettingsPanel() {
             <button
               type="submit"
               disabled={isSaving}
-              className="profile-settings__submit flex h-12 items-center justify-center rounded-[21px] bg-[#8E8BED] px-6 text-[14px] font-semibold text-white disabled:opacity-60"
+              className="profile-settings__btn profile-settings__submit flex h-12 items-center justify-center rounded-[21px] bg-[#8E8BED] px-6 text-white disabled:opacity-60"
             >
               {isSaving ? "Сохраняем…" : "Сохранить изменения"}
             </button>
@@ -374,7 +366,7 @@ export function ProfileSettingsPanel() {
               type="button"
               disabled={isSaving}
               onClick={resetForm}
-              className="flex h-12 items-center justify-center rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white px-6 text-[14px] font-semibold text-[#1A1A1A] disabled:opacity-60"
+              className="profile-settings__btn flex h-12 items-center justify-center rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white px-6 text-[#1A1A1A] disabled:opacity-60"
             >
               Отмена
             </button>
@@ -383,16 +375,12 @@ export function ProfileSettingsPanel() {
       </form>
 
       <div className="flex flex-col gap-6 rounded-[31px] bg-white p-6">
-        <h2 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#626262]">
-          Приватность
-        </h2>
+        <h2 className="profile-settings__section-title">Приватность</h2>
 
         <div className="profile-settings__privacy-row">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-              Показывать завершённые объявления
-            </p>
-            <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
+            <p className="profile-settings__text-semibold">Показывать завершённые объявления</p>
+            <p className="profile-settings__body-text">
               Другие пользователи смогут видеть вашу историю обменов
             </p>
           </div>
@@ -406,10 +394,8 @@ export function ProfileSettingsPanel() {
 
         <div className="profile-settings__privacy-row">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-              Не отображать личные данные на странице
-            </p>
-            <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
+            <p className="profile-settings__text-semibold">Не отображать личные данные на странице</p>
+            <p className="profile-settings__body-text">
               Если вы снимаете видео или стримите, ваши личные данные будут под защитой
             </p>
           </div>
@@ -422,13 +408,13 @@ export function ProfileSettingsPanel() {
         </div>
       </div>
 
-      {error ? <p className="text-[14px] font-semibold text-[#FF2056]">{error}</p> : null}
-      {message ? <p className="text-[14px] font-semibold text-[#1A1A1A]">{message}</p> : null}
+      {error ? <p className="profile-settings__feedback text-[#FF2056]">{error}</p> : null}
+      {message ? <p className="profile-settings__feedback text-[#1A1A1A]">{message}</p> : null}
 
       <button
         type="button"
         onClick={() => void handleLogout()}
-        className="flex h-[67px] w-full items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white text-[14px] font-semibold tracking-[0.014px] text-[#FF2056] transition hover:bg-[#fff2f5]"
+        className="profile-settings__logout flex h-[67px] w-full items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#CACACA] bg-white text-[#FF2056] transition hover:bg-[#fff2f5]"
       >
         <LogoutIcon className="h-[18px] w-[18px] text-[#FF2056]" />
         Выйти из аккаунта

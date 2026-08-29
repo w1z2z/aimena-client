@@ -399,6 +399,98 @@
   gap: 24px;
 }
 
+.profile-settings__section-title {
+  margin: 0;
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.003em;
+}
+
+.profile-settings__label {
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.profile-settings__field,
+.profile-settings__email-box,
+.profile-settings__email-value {
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.profile-settings__field::placeholder {
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.profile-settings__text-semibold {
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.014px;
+}
+
+.profile-settings__text-muted {
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.014px;
+}
+
+.profile-settings__body-text {
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.profile-settings__btn {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.014px;
+}
+
+.profile-settings__feedback {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.profile-settings__logout {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.014px;
+}
+
+.profile-settings-city.site-select--field .site-select__input,
+.profile-settings-city.site-select--field .site-select__input::placeholder,
+.profile-settings-city.site-select--field .site-select__input.is-placeholder {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
 @media (max-width: 1120px) {
   .profile-page__main {
     padding: 80px 16px 40px;
@@ -1831,6 +1923,53 @@ a.profile-deal-card__partner-name:hover {
     padding: 0 11px;
     font-size: 13px;
   }
+
+  /* Settings — same mobile type scale as hero compact (12px labels, 16px fields). */
+  .profile-settings {
+    gap: 32px;
+  }
+
+  .profile-settings__intro {
+    gap: 8px;
+  }
+
+  .profile-settings__section-title {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+
+  .profile-settings__label,
+  .profile-settings__body-text {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .profile-settings__field,
+  .profile-settings__email-box,
+  .profile-settings__email-value,
+  .profile-settings input.profile-settings__field,
+  .profile-settings__field::placeholder,
+  .profile-settings-city.site-select--field .site-select__input,
+  .profile-settings-city.site-select--field .site-select__input::placeholder,
+  .profile-settings-city.site-select--field .site-select__input.is-placeholder {
+    font-size: 16px !important;
+    line-height: 1.35 !important;
+  }
+
+  .profile-settings__text-semibold,
+  .profile-settings__text-muted,
+  .profile-settings__btn,
+  .profile-settings__feedback,
+  .profile-settings__logout {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.001em;
+  }
+
+  .profile-settings .site-select__option {
+    font-size: 16px !important;
+    line-height: 1.35 !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1947,6 +2086,18 @@ a.profile-deal-card__partner-name:hover {
     border-radius: 11px;
     padding: 0 10px;
     font-size: 12px;
+  }
+
+  .profile-settings__section-title {
+    font-size: 16px;
+  }
+
+  .profile-settings__text-semibold,
+  .profile-settings__text-muted,
+  .profile-settings__btn,
+  .profile-settings__feedback,
+  .profile-settings__logout {
+    font-size: 12px !important;
   }
 }
 
