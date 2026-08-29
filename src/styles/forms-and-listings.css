@@ -1,10 +1,11 @@
 .site-select {
   position: relative;
   width: 100%;
+  overflow: visible;
 }
 
 .site-select.is-open {
-  z-index: 40;
+  z-index: 50;
 }
 
 .site-select__control {
@@ -213,52 +214,36 @@
   pointer-events: none;
 }
 
-/* Dropdown list — Figma dropdown-list-category (create-listing city) */
+/* Dropdown list — anchored under the field (profile sort pattern) */
+.site-select__list-anchor {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding-top: 8px;
+}
+
+.site-select__list-anchor--right {
+  left: auto;
+  right: 0;
+  width: max-content;
+  min-width: 100%;
+}
+
 .site-select__list {
   box-sizing: border-box;
   display: flex;
+  width: 100%;
+  max-height: 280px;
   flex-direction: column;
   margin: 0;
   padding: 0;
   border: 0.5px solid #cacaca;
   border-radius: 18px;
   background: #ffffff;
-  box-shadow: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-}
-
-/* In-flow fallback (unused when portaled) */
-.site-select__list:not(.site-select__list--portal) {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  z-index: 3000;
-}
-
-/* Portaled list — escapes overflow:hidden parents (filters panel, modals) */
-.site-select__list--portal {
-  position: fixed;
-  z-index: 5000;
-  right: auto;
-}
-
-.site-select__list.overlay-pop {
-  opacity: 0;
-  /* Drop down from under the field — never animate in from above the input */
-  transform: translate3d(0, 8px, 0);
-  -webkit-transform: translate3d(0, 8px, 0);
-}
-
-.site-select__list.overlay-pop.is-above {
-  transform: translate3d(0, -8px, 0);
-  -webkit-transform: translate3d(0, -8px, 0);
-}
-
-.site-select__list.overlay-pop.is-open {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
 }
 
 .site-select__list-inner {

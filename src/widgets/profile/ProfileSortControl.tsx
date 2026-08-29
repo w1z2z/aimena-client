@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 
+import { useDropdownDismiss } from "@/shared/lib/dropdown-anchor";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 export type ProfileSortOrder = "newest" | "oldest";
@@ -94,26 +95,9 @@ export function ProfileSortControl<T extends string = string>({
   const showTypeSection =
     typeFilter !== undefined && Boolean(onTypeChange) && Boolean(typeOptions?.length);
 
-  useEffect(() => {
-    if (!open) return;
+  const close = () => setOpen(false);
 
-    const onOutsideClick = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-
-    window.addEventListener("click", onOutsideClick);
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("click", onOutsideClick);
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
+  useDropdownDismiss(open, close, rootRef);
 
   return (
     <div

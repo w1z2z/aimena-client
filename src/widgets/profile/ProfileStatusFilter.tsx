@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 
+import { useDropdownDismiss } from "@/shared/lib/dropdown-anchor";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 export type ProfileListingStatusFilter = "all" | "active" | "archived" | "completed";
@@ -58,25 +59,15 @@ export function ProfileStatusFilter({
   const currentLabel =
     statusOptions.find((option) => option.value === value)?.label ?? "Все";
 
-  useEffect(() => {
-    if (!open) return;
+  const close = () => setOpen(false);
 
-    const onOutsideClick = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    window.addEventListener("click", onOutsideClick);
-    return () => window.removeEventListener("click", onOutsideClick);
-  }, [open]);
+  useDropdownDismiss(open, close, rootRef);
 
   return (
     <div
       ref={rootRef}
       className="profile-status-filter relative overflow-visible"
       style={{ viewTransitionName: "none" } as CSSProperties}
-      onMouseLeave={() => setOpen(false)}
     >
       <button
         type="button"

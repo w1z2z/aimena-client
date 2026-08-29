@@ -12,7 +12,6 @@ import {
   type DragEvent,
   type KeyboardEvent,
 } from "react";
-import { createPortal } from "react-dom";
 
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useAuthGate } from "@/features/auth";
@@ -512,12 +511,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const docPhotosInputRef = useRef<HTMLInputElement>(null);
   const priceMeasureRef = useRef<HTMLSpanElement>(null);
   const wantsTagFieldRef = useRef<HTMLDivElement>(null);
-  const [wantsTagListPosition, setWantsTagListPosition] = useState<{
-    top: number;
-    left: number;
-    width: number;
-    maxHeight: number;
-  } | null>(null);
   const [listingKind, setListingKind] = useState<ListingKind>("item");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -661,37 +654,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     tagSuggestions.length > 0 &&
     wantsTags.length < WANTS_TAGS_LIMIT &&
     wantsTagInput.trim().length > 0;
-
-  useLayoutEffect(() => {
-    if (!showWantsTagSuggestions) {
-      setWantsTagListPosition(null);
-      return;
-    }
-
-    const updatePosition = () => {
-      const field = wantsTagFieldRef.current;
-      if (!field) return;
-      const rect = field.getBoundingClientRect();
-      const gap = 4;
-      const maxHeight = 280;
-      const spaceBelow = window.innerHeight - rect.bottom - gap;
-      const height = Math.max(120, Math.min(maxHeight, spaceBelow));
-      setWantsTagListPosition({
-        top: rect.bottom + gap,
-        left: rect.left,
-        width: rect.width,
-        maxHeight: height,
-      });
-    };
-
-    updatePosition();
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-    return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-    };
-  }, [showWantsTagSuggestions, tagSuggestions.length]);
 
   const cityOptions = useMemo(() => {
     const options = buildCitySelectOptions({
@@ -1971,43 +1933,31 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                         disabled={wantsTags.length >= WANTS_TAGS_LIMIT}
                         className={EXCHANGE_FIELD_INPUT_CLASS}
                       />
-                      {showWantsTagSuggestions && wantsTagListPosition && typeof document !== "undefined"
-                        ? createPortal(
-                            <div
-                              className="site-select__list site-select__list--portal create-listing-tag-suggestions"
-                              style={
-                                {
-                                  top: wantsTagListPosition.top,
-                                  left: wantsTagListPosition.left,
-                                  width: wantsTagListPosition.width,
-                                  maxHeight: wantsTagListPosition.maxHeight,
-                                } satisfies CSSProperties
-                              }
-                              onWheel={(event) => event.stopPropagation()}
-                            >
-                              <ul className="site-select__list-inner" role="listbox">
-                                {tagSuggestions.map((item) => (
-                                  <li
-                                    key={`${item.value.toLowerCase()}-${item.isCreateAction ? "create" : "existing"}`}
-                                    role="presentation"
+                      {showWantsTagSuggestions ? (
+                        <div className="site-select__list-anchor">
+                          <div className="site-select__list create-listing-tag-suggestions overlay-pop overlay-pop--origin-left is-open">
+                            <ul className="site-select__list-inner" role="listbox">
+                              {tagSuggestions.map((item) => (
+                                <li
+                                  key={`${item.value.toLowerCase()}-${item.isCreateAction ? "create" : "existing"}`}
+                                  role="presentation"
+                                >
+                                  <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected={false}
+                                    className={`site-select__option${item.isCreateAction ? " is-create" : ""}`}
+                                    onMouseDown={(event) => event.preventDefault()}
+                                    onClick={() => addWantsTag(item.value)}
                                   >
-                                    <button
-                                      type="button"
-                                      role="option"
-                                      aria-selected={false}
-                                      className={`site-select__option${item.isCreateAction ? " is-create" : ""}`}
-                                      onMouseDown={(event) => event.preventDefault()}
-                                      onClick={() => addWantsTag(item.value)}
-                                    >
-                                      {item.label}
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>,
-                            document.body,
-                          )
-                        : null}
+                                    {item.label}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>

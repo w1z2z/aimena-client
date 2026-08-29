@@ -4,7 +4,6 @@ import {
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -12,8 +11,8 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from "react";
-import { createPortal } from "react-dom";
 
+import { useDropdownDismiss } from "@/shared/lib/dropdown-anchor";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 export type SelectOption = {
@@ -39,17 +38,8 @@ type SelectFieldProps = {
   clearable?: boolean;
   disabled?: boolean;
   "aria-label"?: string;
-};
-
-const LIST_MAX_HEIGHT = 280;
-const LIST_GAP = 4;
-
-type ListPosition = {
-  top: number;
-  left: number;
-  width: number;
-  maxHeight: number;
-  placement: "below" | "above";
+  /** Panel transform origin — `right` for toolbar-aligned triggers. */
+  dropdownAlign?: "left" | "right";
 };
 
 function getLabelForValue(options: readonly SelectOption[], value: string) {
@@ -64,51 +54,6 @@ function filterOptions(options: readonly SelectOption[], query: string) {
   const normalized = (query ?? "").trim().toLowerCase();
   if (!normalized) return options;
   return options.filter((option) => option.label.toLowerCase().includes(normalized));
-}
-
-/** iOS keyboard moves the visual viewport; fixed UI must follow offsetTop/Left. */
-function measureListPosition(control: HTMLElement): ListPosition {
-  const rect = control.getBoundingClientRect();
-  const vv = window.visualViewport;
-  const viewTop = vv?.offsetTop ?? 0;
-  const viewLeft = vv?.offsetLeft ?? 0;
-  const viewHeight = vv?.height ?? window.innerHeight;
-  const viewBottom = viewTop + viewHeight;
-
-  // rect is visual-viewport-relative; position:fixed is layout-viewport-relative.
-  const controlTop = rect.top + viewTop;
-  const controlBottom = rect.bottom + viewTop;
-  const controlLeft = rect.left + viewLeft;
-
-  const spaceBelow = viewBottom - controlBottom - LIST_GAP;
-  const spaceAbove = controlTop - viewTop - LIST_GAP;
-  const placeAbove = spaceBelow < Math.min(LIST_MAX_HEIGHT, 160) && spaceAbove > spaceBelow;
-  const available = placeAbove ? spaceAbove : spaceBelow;
-  const maxHeight = Math.max(120, Math.min(LIST_MAX_HEIGHT, available));
-
-  if (placeAbove) {
-    return {
-      top: Math.max(viewTop + LIST_GAP, controlTop - LIST_GAP - maxHeight),
-      left: controlLeft,
-      width: rect.width,
-      maxHeight,
-      placement: "above",
-    };
-  }
-
-  return {
-    top: controlBottom + LIST_GAP,
-    left: controlLeft,
-    width: rect.width,
-    maxHeight,
-    placement: "below",
-  };
-}
-
-function pinWindowScroll(scrollX: number, scrollY: number) {
-  if (Math.abs(window.scrollX - scrollX) > 0.5 || Math.abs(window.scrollY - scrollY) > 0.5) {
-    window.scrollTo(scrollX, scrollY);
-  }
 }
 
 function ClearIcon() {
@@ -150,7 +95,6 @@ function ChevronIcon({ open }: { open: boolean }) {
   );
 }
 
-
 export function SelectField({
   value,
   onChange,
@@ -165,6 +109,7 @@ export function SelectField({
   clearable = false,
   disabled = false,
   "aria-label": ariaLabel,
+  dropdownAlign = "left",
 }: SelectFieldProps) {
   const safeValue = value ?? "";
   const isDisabled = Boolean(disabled);
@@ -172,18 +117,13 @@ export function SelectField({
   const { isRendered: isListRendered, isVisible: isListVisible } = useOverlayPresence(isOpen);
   const [inputValue, setInputValue] = useState(() => getLabelForValue(options, safeValue));
   const [activeOptionValue, setActiveOptionValue] = useState<string | null>(null);
-  const [listPosition, setListPosition] = useState<ListPosition | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const safeValueRef = useRef(safeValue);
-  const optionsRef = useRef(options);
   const listId = useId();
   const showClear = clearable && Boolean(safeValue) && !isDisabled;
-
-  safeValueRef.current = safeValue;
-  optionsRef.current = options;
+  const dropdownOriginClass =
+    dropdownAlign === "right" ? "overlay-pop--origin-right" : "overlay-pop--origin-left";
 
   const visibleOptions = useMemo(
     () => (searchable ? filterOptions(options, inputValue ?? "") : options),
@@ -231,81 +171,7 @@ export function SelectField({
 
   const close = useCallback(() => setIsOpen(false), []);
 
-  const updateListPosition = useCallback(() => {
-    const control = rootRef.current;
-    if (!control) return;
-    setListPosition(measureListPosition(control));
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!isListRendered) {
-      setListPosition(null);
-      return;
-    }
-    updateListPosition();
-  }, [isListRendered, updateListPosition, visibleOptions.length]);
-
-  useEffect(() => {
-    if (!isListRendered) return;
-
-    const handleReposition = () => {
-      updateListPosition();
-    };
-
-    window.addEventListener("resize", handleReposition);
-    // Keep list glued to the field while nested containers (filters modal) scroll.
-    window.addEventListener("scroll", handleReposition, true);
-    window.visualViewport?.addEventListener("resize", handleReposition);
-    window.visualViewport?.addEventListener("scroll", handleReposition);
-    return () => {
-      window.removeEventListener("resize", handleReposition);
-      window.removeEventListener("scroll", handleReposition, true);
-      window.visualViewport?.removeEventListener("resize", handleReposition);
-      window.visualViewport?.removeEventListener("scroll", handleReposition);
-    };
-  }, [isListRendered, updateListPosition]);
-
-  /** Same as onboarding: don't let iOS yank the page — list is portaled to the field. */
-  const pinScrollAroundFocus = useCallback(() => {
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
-    const pin = () => {
-      pinWindowScroll(scrollX, scrollY);
-      updateListPosition();
-    };
-    pin();
-    window.requestAnimationFrame(() => {
-      pin();
-      window.requestAnimationFrame(pin);
-    });
-    for (const delay of [50, 100, 200, 280, 360]) {
-      window.setTimeout(pin, delay);
-    }
-  }, [updateListPosition]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handlePointerDown = (event: globalThis.MouseEvent | TouchEvent) => {
-      const target = event.target as Node;
-      if (rootRef.current?.contains(target)) return;
-      if (listRootRef.current?.contains(target)) return;
-      close();
-    };
-
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") close();
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("touchstart", handlePointerDown, { passive: true });
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("touchstart", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [close, isOpen]);
+  useDropdownDismiss(isOpen, close, rootRef);
 
   const handleInputChange = (nextValue: string) => {
     setInputValue(nextValue);
@@ -353,8 +219,6 @@ export function SelectField({
     onChange(option.value);
     close();
 
-    // Safari scrolls focused controls into view when layout changes
-    // (e.g. subcategory panel open). Blur first, then keep scroll pinned.
     inputRef.current?.blur();
 
     restoreScroll();
@@ -362,7 +226,6 @@ export function SelectField({
       restoreScroll();
       window.requestAnimationFrame(restoreScroll);
     });
-    // Cover delayed Safari focus-scroll + panel open animation (~260ms)
     for (const delay of [0, 16, 50, 100, 200, 280, 360]) {
       window.setTimeout(restoreScroll, delay);
     }
@@ -461,6 +324,7 @@ export function SelectField({
   }, [activeOptionValue, isOpen]);
 
   const showPlaceholderState = !safeValue && !(inputValue ?? "").trim();
+
   const handleControlMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (isDisabled) return;
     const target = event.target as HTMLElement;
@@ -470,11 +334,11 @@ export function SelectField({
     setIsOpen(true);
     window.requestAnimationFrame(() => {
       inputRef.current?.focus({ preventScroll: true });
-      pinScrollAroundFocus();
     });
   };
 
-  const handleClear = () => {
+  const handleClear = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     if (isDisabled) return;
     setInputValue("");
     onInputChange?.("");
@@ -482,14 +346,12 @@ export function SelectField({
     setIsOpen(true);
     window.requestAnimationFrame(() => {
       inputRef.current?.focus({ preventScroll: true });
-      pinScrollAroundFocus();
     });
   };
 
   const handleInputFocus = () => {
     if (isDisabled) return;
     setIsOpen(true);
-    pinScrollAroundFocus();
   };
 
   const handleListScroll = () => {
@@ -501,69 +363,11 @@ export function SelectField({
     }
   };
 
-  const listStyle: CSSProperties | undefined = listPosition
-    ? {
-        top: listPosition.top,
-        left: listPosition.left,
-        width: listPosition.width,
-        maxHeight: listPosition.maxHeight,
-      }
-    : undefined;
-
-  const listNode =
-    isListRendered && typeof document !== "undefined" ? (
-      <div
-        ref={listRootRef}
-        className={`site-select__list site-select__list--portal overlay-pop${isListVisible ? " is-open" : ""}${listPosition?.placement === "above" ? " is-above" : ""}${className ? ` ${className}` : ""}`}
-        style={listStyle}
-        aria-hidden={!isListVisible}
-        onWheel={(event) => event.stopPropagation()}
-      >
-        <ul
-          ref={listRef}
-          id={listId}
-          role="listbox"
-          className="site-select__list-inner"
-          onScroll={handleListScroll}
-        >
-          {visibleOptions.length > 0 ? (
-            visibleOptions.map((option, index) => (
-              <li key={option.value} role="presentation">
-                {option.disabled ? (
-                  <span
-                    className={`site-select__group-label${index > 0 ? " site-select__group-label--with-divider" : ""}`}
-                  >
-                    {option.label}
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={option.value === safeValue}
-                    className={`site-select__option${option.value === safeValue ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
-                    data-option-value={option.value}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => handleOptionPick(option)}
-                    onMouseEnter={() => setActiveOptionValue(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                )}
-              </li>
-            ))
-          ) : (
-            <li className="site-select__empty" role="presentation">
-              Ничего не найдено
-            </li>
-          )}
-        </ul>
-      </div>
-    ) : null;
-
   return (
     <div
       ref={rootRef}
       className={`site-select site-select--${variant}${className ? ` ${className}` : ""}${isOpen ? " is-open" : ""}${isDisabled ? " is-disabled" : ""}`}
+      style={{ viewTransitionName: "none" } as CSSProperties}
     >
       <div className="site-select__control" onMouseDown={handleControlMouseDown}>
         <input
@@ -609,14 +413,68 @@ export function SelectField({
             className="site-select__chevron"
             disabled={isDisabled || undefined}
             onMouseDown={(event) => event.preventDefault()}
-            onClick={() => !isDisabled && setIsOpen((current) => !current)}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (!isDisabled) setIsOpen((current) => !current);
+            }}
           >
             <ChevronIcon open={isOpen} />
           </button>
         )}
       </div>
 
-      {listNode ? createPortal(listNode, document.body) : null}
+      {isListRendered ? (
+        <div
+          className={`site-select__list-anchor${dropdownAlign === "right" ? " site-select__list-anchor--right" : ""}`}
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div
+            className={`site-select__list overlay-pop ${dropdownOriginClass}${isListVisible ? " is-open" : ""}`}
+            aria-hidden={!isListVisible}
+            onWheel={(event) => event.stopPropagation()}
+          >
+            <ul
+              ref={listRef}
+              id={listId}
+              role="listbox"
+              className="site-select__list-inner"
+              onScroll={handleListScroll}
+            >
+              {visibleOptions.length > 0 ? (
+                visibleOptions.map((option, index) => (
+                  <li key={option.value} role="presentation">
+                    {option.disabled ? (
+                      <span
+                        className={`site-select__group-label${index > 0 ? " site-select__group-label--with-divider" : ""}`}
+                      >
+                        {option.label}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={option.value === safeValue}
+                        className={`site-select__option${option.value === safeValue ? " is-selected" : ""}${option.value === activeOptionValue ? " is-active" : ""}`}
+                        data-option-value={option.value}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => handleOptionPick(option)}
+                        onMouseEnter={() => setActiveOptionValue(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    )}
+                  </li>
+                ))
+              ) : (
+                <li className="site-select__empty" role="presentation">
+                  Ничего не найдено
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
