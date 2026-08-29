@@ -9,6 +9,8 @@ import { deleteAvatar, updateMe, uploadAvatar } from "@/shared/api/auth";
 import { ApiError, ensureFreshAccessToken } from "@/shared/api/http";
 import { mapBackendUserToAuthUser } from "@/shared/api/mappers";
 import { compressAvatarForUpload } from "@/shared/lib/compress-image";
+import { MQ } from "@/shared/lib/breakpoints";
+import { useMediaQuery } from "@/shared/lib/use-media-query";
 import { useCitySelectOptions } from "@/shared/lib/use-city-select-options";
 import { DeleteIcon, LogoutIcon } from "@/shared/ui/icons";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
@@ -28,7 +30,9 @@ const CREDENTIALS_BUTTON_CLASS =
 export function ProfileSettingsPanel() {
   const router = useRouter();
   const { user, accessToken, applyUser, logout } = useAuth();
+  const isCompact = useMediaQuery(MQ.compact);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const avatarErrorRef = useRef<HTMLParagraphElement>(null);
 
   const [displayName, setDisplayName] = useState("");
   const [cityId, setCityId] = useState("");
@@ -44,6 +48,7 @@ export function ProfileSettingsPanel() {
   const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
   const [pendingAvatarPreview, setPendingAvatarPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const { cityOptions, onCityInputChange, onCityListEndReached } = useCitySelectOptions({
@@ -72,6 +77,14 @@ export function ProfileSettingsPanel() {
 
   if (!user) return null;
 
+  const showAvatarError = (message: string) => {
+    setAvatarError(message);
+    setMessage(null);
+    requestAnimationFrame(() => {
+      avatarErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  };
+
   const resetForm = () => {
     setDisplayName(user.name);
     setCityId(user.cityId ?? "");
@@ -84,6 +97,7 @@ export function ProfileSettingsPanel() {
     setPendingAvatar(null);
     setPendingAvatarPreview(null);
     setError(null);
+    setAvatarError(null);
     setMessage(null);
   };
 
@@ -93,17 +107,18 @@ export function ProfileSettingsPanel() {
     if (!file) return;
 
     if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
-      setError("Нужен JPEG, PNG или WebP.");
+      showAvatarError("Нужен JPEG, PNG или WebP.");
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
-      setError("Аватар не больше 2 МБ.");
+      showAvatarError("Аватар не больше 2 МБ.");
       return;
     }
 
     if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
     setPendingAvatar(file);
     setPendingAvatarPreview(URL.createObjectURL(file));
+    setAvatarError(null);
     setError(null);
   };
 
@@ -115,6 +130,7 @@ export function ProfileSettingsPanel() {
       if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
       setPendingAvatar(null);
       setPendingAvatarPreview(null);
+      setAvatarError(null);
       setError(null);
       return;
     }
@@ -127,6 +143,7 @@ export function ProfileSettingsPanel() {
 
     setIsRemovingAvatar(true);
     setError(null);
+    setAvatarError(null);
     setMessage(null);
 
     try {
@@ -134,7 +151,7 @@ export function ProfileSettingsPanel() {
       applyUser(mapBackendUserToAuthUser(response.user));
       setMessage("Аватар удалён.");
     } catch (requestError) {
-      setError(
+      showAvatarError(
         requestError instanceof ApiError
           ? requestError.message
           : "Не удалось удалить аватар.",
@@ -159,19 +176,33 @@ export function ProfileSettingsPanel() {
 
     setIsSaving(true);
     setError(null);
+    setAvatarError(null);
     setMessage(null);
+
+    let avatarUploadFailed = false;
 
     try {
       if (pendingAvatar) {
         setIsUploadingAvatar(true);
-        const freshToken = await ensureFreshAccessToken();
-        const compressed = await compressAvatarForUpload(pendingAvatar);
-        const avatarResponse = await uploadAvatar(freshToken, compressed);
-        applyUser(mapBackendUserToAuthUser(avatarResponse.user));
-        if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
-        setPendingAvatar(null);
-        setPendingAvatarPreview(null);
-        setIsUploadingAvatar(false);
+        try {
+          const freshToken = await ensureFreshAccessToken();
+          const compressed = await compressAvatarForUpload(pendingAvatar);
+          const avatarResponse = await uploadAvatar(freshToken, compressed);
+          applyUser(mapBackendUserToAuthUser(avatarResponse.user));
+          if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+          setPendingAvatar(null);
+          setPendingAvatarPreview(null);
+        } catch (avatarRequestError) {
+          avatarUploadFailed = true;
+          showAvatarError(
+            avatarRequestError instanceof ApiError
+              ? avatarRequestError.message
+              : "Не удалось загрузить аватар.",
+          );
+          throw avatarRequestError;
+        } finally {
+          setIsUploadingAvatar(false);
+        }
       }
 
       const payload: {
@@ -186,11 +217,13 @@ export function ProfileSettingsPanel() {
       applyUser(mapBackendUserToAuthUser(response.user));
       setMessage("Изменения сохранены.");
     } catch (requestError) {
-      setError(
-        requestError instanceof ApiError
-          ? requestError.message
-          : "Не удалось сохранить изменения.",
-      );
+      if (!avatarUploadFailed) {
+        setError(
+          requestError instanceof ApiError
+            ? requestError.message
+            : "Не удалось сохранить изменения.",
+        );
+      }
     } finally {
       setIsSaving(false);
       setIsUploadingAvatar(false);
@@ -308,12 +341,19 @@ export function ProfileSettingsPanel() {
           <div className="flex flex-col gap-2">
             <span className="profile-settings__label">Аватар</span>
             <div className="relative flex h-[124px] w-full items-center gap-3 overflow-hidden rounded-[18px] border-[0.5px] border-dashed border-[#CACACA] bg-white px-3">
-              <div className="group relative size-[98px] shrink-0">
+              <div
+                className={[
+                  "profile-settings__avatar-wrap",
+                  isCompact ? "profile-settings__avatar-wrap--touch" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
                   disabled={isRemovingAvatar}
-                  className="flex size-full items-center justify-center overflow-hidden rounded-[10px] border-[0.2px] border-solid border-[#CACACA] bg-[#F2F4F7] disabled:opacity-60"
+                  className="profile-settings__avatar-preview-btn"
                 >
                   {avatarPreview ? (
                     <img src={avatarPreview} alt="" className="size-full object-cover" />
@@ -327,7 +367,7 @@ export function ProfileSettingsPanel() {
                     aria-label="Удалить аватар"
                     disabled={isRemovingAvatar || isSaving}
                     onClick={(event) => void handleAvatarRemove(event)}
-                    className="absolute inset-0 flex items-center justify-center rounded-[10px] bg-[#1A1A1A]/0 text-white opacity-0 transition group-hover:bg-[#1A1A1A]/55 group-hover:opacity-100 focus-visible:bg-[#1A1A1A]/55 focus-visible:opacity-100 disabled:pointer-events-none"
+                    className="profile-settings__avatar-remove"
                   >
                     <DeleteIcon className="h-[22px] w-[20px]" />
                   </button>
@@ -352,6 +392,15 @@ export function ProfileSettingsPanel() {
               className="hidden"
               onChange={handleAvatarPick}
             />
+            {avatarError ? (
+              <p
+                ref={avatarErrorRef}
+                role="alert"
+                className="profile-settings__feedback text-[#FF2056]"
+              >
+                {avatarError}
+              </p>
+            ) : null}
           </div>
 
           <div className="profile-settings__form-actions">
