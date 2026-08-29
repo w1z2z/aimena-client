@@ -1547,7 +1547,7 @@ a.profile-deal-card__partner-name:hover {
   .profile-sidebar__head {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
+    align-items: stretch;
     gap: 10px;
     width: 100%;
   }
@@ -1560,7 +1560,6 @@ a.profile-deal-card__partner-name:hover {
 
   .profile-sidebar__meta {
     width: 100%;
-    gap: 8px;
   }
 
   .profile-sidebar__name {
@@ -1608,17 +1607,23 @@ a.profile-deal-card__partner-name:hover {
   }
 
   .profile-sidebar__stats {
+    display: flex;
     width: 100%;
     min-width: 0;
+    height: 100%;
+    flex-direction: column;
     gap: 7px;
   }
 
   .profile-sidebar__stat {
+    display: flex;
     height: auto;
     min-height: 0;
+    flex: 1 1 0;
     gap: 4px;
     border-radius: 14px;
     padding: 9px 7px;
+    justify-content: center;
   }
 
   .profile-sidebar__stat-label {
@@ -1638,13 +1643,13 @@ a.profile-deal-card__partner-name:hover {
   }
 
   .profile-sidebar__identity .profile-avatar {
-    width: 72px;
-    height: 72px;
-    border-radius: 24px;
+    width: 108px;
+    height: 108px;
+    border-radius: 36px;
   }
 
   .profile-sidebar__identity .profile-avatar__fallback {
-    font-size: 26px;
+    font-size: 39px;
   }
 
   .profile-sidebar__nav {
@@ -1762,10 +1767,6 @@ a.profile-deal-card__partner-name:hover {
     gap: 8px;
   }
 
-  .profile-sidebar__meta {
-    gap: 7px;
-  }
-
   .profile-sidebar__name {
     font-size: 18px;
   }
@@ -1811,13 +1812,13 @@ a.profile-deal-card__partner-name:hover {
   }
 
   .profile-sidebar__identity .profile-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
+    width: 96px;
+    height: 96px;
+    border-radius: 30px;
   }
 
   .profile-sidebar__identity .profile-avatar__fallback {
-    font-size: 22px;
+    font-size: 33px;
   }
 
   .profile-nav-item {
