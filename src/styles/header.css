@@ -686,11 +686,6 @@ html.is-scroll-locked body {
   color: #1a1a1a;
 }
 
-.home-ticker-pin {
-  box-shadow: none;
-}
-
-
 /* Recommendations list — snap one card per scroll gesture */
 .home-recommendations-scroll {
   scrollbar-width: thin;

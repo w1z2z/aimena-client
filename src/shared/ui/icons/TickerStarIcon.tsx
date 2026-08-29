@@ -18,7 +18,7 @@ export function TickerStarIcon({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
-      className={`block h-[22px] w-[22px] shrink-0 ${className ?? ""}`}
+      className={`block shrink-0 ${className ?? ""}`}
       {...props}
     >
       <path

@@ -15,10 +15,8 @@ const tickerItems = [
 
 function TickerPin({ label }: { label: string }) {
   return (
-    <div className="home-ticker-pin flex h-[34px] shrink-0 flex-none items-center justify-center gap-[12px] rounded-[16.327px] bg-[#c8ff02] px-[18px] py-[12px]">
-      <span className="whitespace-nowrap text-center text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-        {label}
-      </span>
+    <div className="home-ticker-pin">
+      <span className="home-ticker-pin__label">{label}</span>
     </div>
   );
 }
@@ -30,8 +28,8 @@ export function TickerCarousel({ compact = false }: { compact?: boolean }) {
     <div
       className={
         compact
-          ? "home-ticker-carousel home-ticker-carousel--compact pointer-events-none z-20 h-[34px] w-full overflow-hidden"
-          : "home-ticker-carousel pointer-events-none absolute left-0 z-20 h-[34px] w-full overflow-hidden"
+          ? "home-ticker-carousel home-ticker-carousel--compact pointer-events-none z-20 w-full overflow-hidden"
+          : "home-ticker-carousel pointer-events-none absolute left-0 z-20 w-full overflow-hidden"
       }
       style={
         compact
@@ -42,11 +40,14 @@ export function TickerCarousel({ compact = false }: { compact?: boolean }) {
             }
       }
     >
-      <div className="home-ticker-track flex w-max items-center gap-[12px]">
+      <div className="home-ticker-track">
         {loopItems.map((item, idx) => (
-          <div key={`${item}-${idx}`} className="flex shrink-0 items-center gap-[12px]">
+          <div key={`${item}-${idx}`} className="home-ticker-carousel__item">
             <TickerPin label={item} />
-            <TickerStarIcon gradientId={`ticker-star-grad-${idx}${compact ? "-c" : ""}`} />
+            <TickerStarIcon
+              className="home-ticker-star"
+              gradientId={`ticker-star-grad-${idx}${compact ? "-c" : ""}`}
+            />
           </div>
         ))}
       </div>

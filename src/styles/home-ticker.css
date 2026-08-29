@@ -1,4 +1,6 @@
 .home-ticker-carousel {
+  box-sizing: border-box;
+  height: 34px;
   isolation: isolate;
 }
 
@@ -34,6 +36,10 @@
 }
 
 .home-ticker-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 12px;
   animation: home-ticker-scroll 48s linear infinite;
   will-change: transform;
   backface-visibility: hidden;
@@ -41,9 +47,72 @@
   transform: translateZ(0);
 }
 
+.home-ticker-carousel__item {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-ticker-pin {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 18px;
+  border-radius: 16.327px;
+  background: #c8ff02;
+  box-shadow: none;
+}
+
+.home-ticker-pin__label {
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.home-ticker-star {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+
+/* Mobile hero — match compact rec-card exchange pills (24px / 11px) */
+.home-ticker-carousel--compact {
+  height: 24px;
+}
+
+.home-ticker-carousel--compact .home-ticker-pin {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 39px;
+}
+
+.home-ticker-carousel--compact .home-ticker-pin__label {
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.002em;
+}
+
+.home-ticker-carousel--compact .home-ticker-track,
+.home-ticker-carousel--compact .home-ticker-carousel__item {
+  gap: 8px;
+}
+
+.home-ticker-carousel--compact .home-ticker-star {
+  width: 16px;
+  height: 16px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-ticker-track {
     animation: none;
   }
 }
-
