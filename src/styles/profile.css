@@ -1,3 +1,523 @@
+/**
+ * Profile pages — own + public.
+ * Breakpoints: shared/lib/breakpoints.ts (480 / 640 / 1024 / 1120 / 1480).
+ */
+
+/* --- Page shell --- */
+
+.profile-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f8f8f5;
+}
+
+.profile-page__main {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(1440px + 48px);
+  margin: 0 auto;
+  padding: 72px 24px 48px;
+}
+
+.profile-page__inner {
+  display: flex;
+  width: 100%;
+  max-width: 1440px;
+  align-items: flex-start;
+  gap: 24px;
+  margin: 0 auto;
+}
+
+.profile-page__content {
+  min-width: 0;
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+/* --- Sidebar --- */
+
+.profile-sidebar {
+  display: flex;
+  width: 100%;
+  max-width: 342px;
+  flex: none;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.profile-sidebar__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 31px;
+  background: #ffffff;
+  padding: 24px;
+}
+
+.profile-sidebar__card--public {
+  overflow: visible;
+}
+
+.profile-sidebar__head {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+}
+
+.profile-sidebar__identity {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.profile-sidebar__meta {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.profile-sidebar__name-row {
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.profile-sidebar__name {
+  margin: 0;
+  max-width: 200px;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.003em;
+}
+
+.profile-sidebar__verified {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+
+.profile-sidebar__location {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0.5px solid #cacaca;
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 8px 20px;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.014px;
+}
+
+.profile-sidebar__pin {
+  width: 9px;
+  height: 12px;
+  flex: none;
+}
+
+.profile-sidebar__joined {
+  margin: 0;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.profile-sidebar__bio {
+  margin: 0;
+  max-width: 270px;
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.profile-sidebar__stats {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-sidebar__stat {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  height: 95px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 0.5px solid #8e8bed;
+  border-radius: 21px;
+  background: #f3edff;
+  padding: 24px;
+}
+
+.profile-sidebar__stat-label {
+  margin: 0;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.014px;
+}
+
+.profile-sidebar__stat-value {
+  margin: 0;
+  color: #8e8bed;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.003em;
+}
+
+.profile-sidebar__stat-value--rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.profile-sidebar__stat-star {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+
+.profile-sidebar__nav {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-sidebar__nav-item-wrap {
+  flex: none;
+}
+
+.profile-sidebar__reviews {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 31px;
+  background: #f8f8f5;
+  padding: 15px 14px;
+}
+
+.profile-sidebar__reviews-title {
+  margin: 0 0 12px;
+  width: 100%;
+  text-align: center;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.003em;
+}
+
+.profile-sidebar__reviews-empty {
+  margin: 0;
+  padding: 24px 0;
+  width: 100%;
+  text-align: center;
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.profile-sidebar__reviews-more {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  text-align: center;
+  text-decoration: none;
+}
+
+.profile-sidebar__reviews-more:hover {
+  color: #8e8bed;
+}
+
+/* Public profile: sidebar reviews preview — desktop only; mobile uses tab */
+.profile-nav-item--compact-only {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .profile-nav-item--compact-only {
+    display: flex;
+  }
+
+  .profile-sidebar__reviews--desktop-only {
+    display: none !important;
+  }
+}
+
+/* --- Content panels --- */
+
+.profile-panel {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.profile-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+
+.profile-panel__heading {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-panel__title {
+  margin: 0;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 40px;
+  letter-spacing: -0.5px;
+}
+
+.profile-panel__count {
+  margin: 0;
+  color: #626262;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.profile-panel__toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.profile-panel__body {
+  margin-top: 48px;
+}
+
+.profile-panel__body--plain {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Listings grid — 3 cols in profile content, same ladder as listings-grid */
+.profile-listings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 342px));
+  gap: 48px 24px;
+  width: 100%;
+}
+
+/* --- Settings --- */
+
+.profile-settings {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.profile-settings__intro {
+  display: flex;
+  max-width: 589px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-settings__credentials-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-settings__credentials-row .profile-settings__password-btn {
+  width: 218px;
+  max-width: 100%;
+}
+
+.profile-settings__form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-settings__form-actions .profile-settings__submit {
+  width: 243px;
+  max-width: 100%;
+}
+
+.profile-settings__privacy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+@media (max-width: 1120px) {
+  .profile-page__main {
+    padding: 80px 16px 40px;
+  }
+
+  .profile-page__inner {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .profile-sidebar {
+    max-width: none;
+  }
+
+  .profile-panel__title {
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+
+  .profile-panel__count {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .profile-panel__body {
+    margin-top: 20px;
+  }
+
+  .profile-listings-grid {
+    grid-template-columns: repeat(2, minmax(0, 342px));
+    gap: 20px 12px;
+  }
+
+  .profile-listing-card-slot {
+    container-type: inline-size;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 342 / 464;
+  }
+
+  .profile-listing-card-slot .home-listing-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 342px;
+    height: 464px;
+    transform: scale(calc(100cqw / 342px));
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-panel__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 4px 12px;
+  }
+
+  .profile-panel__heading {
+    gap: 4px;
+  }
+
+  .profile-panel__toolbar {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    justify-content: flex-end;
+  }
+
+  .profile-settings__credentials-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-settings__credentials-row .profile-settings__password-btn {
+    width: 100%;
+  }
+
+  .profile-settings__form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-settings__form-actions .profile-settings__submit,
+  .profile-settings__form-actions button {
+    width: 100%;
+  }
+
+  .profile-settings__privacy-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-page__main {
+    padding: 72px 12px 32px;
+  }
+
+  .profile-panel__title {
+    font-size: 24px;
+  }
+
+  .profile-panel__count {
+    margin-top: 0;
+    font-size: 12px;
+  }
+
+  .profile-panel__body {
+    margin-top: 16px;
+  }
+
+  .profile-listings-grid {
+    gap: 16px 10px;
+  }
+}
+
 /* Smooth card reorder via View Transitions (Chrome/Safari/Edge) */
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -114,7 +634,32 @@
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.014px;
+  text-decoration: none;
   transition: background-color 150ms ease;
+}
+
+.profile-nav-item__icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  overflow: hidden;
+}
+
+.profile-nav-item__icon img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.profile-nav-item__icon--muted {
+  opacity: 0.6;
+}
+
+.profile-nav-item__label {
+  min-width: 0;
 }
 
 .profile-nav-item:hover {
@@ -677,15 +1222,316 @@ a.profile-deal-card__partner-name:hover {
   white-space: nowrap;
 }
 
-@media (max-width: 1120px) {
-  .profile-deal-card__exchange {
-    grid-template-columns: minmax(0, 1fr);
+/*
+ * Deal history cards on mobile — same layout as desktop, scaled down.
+ * Must follow base .profile-deal-* rules above.
+ */
+@media (max-width: 1024px) {
+  .profile-deal-card {
     gap: 16px;
-    padding-right: 0;
+    padding: 16px;
+    border-radius: 24px;
+  }
+
+  .profile-deal-card__date {
+    top: 16px;
+    right: 16px;
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .profile-deal-card__exchange {
+    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
+    gap: 10px;
+    padding-right: 52px;
   }
 
   .profile-deal-card__badge {
-    justify-self: start;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+  }
+
+  .profile-deal-card__badge img {
+    width: 15px;
+    height: 13px;
+  }
+
+  .profile-deal-side {
+    gap: 8px;
+  }
+
+  .profile-deal-side__meta {
+    gap: 4px;
+  }
+
+  .profile-deal-side__label {
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .profile-deal-side__title {
+    font-size: 12px;
+  }
+
+  .profile-deal-thumb {
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .profile-deal-thumb.has-stack {
+    flex-basis: 60px;
+    width: 60px;
+    height: 60px;
+  }
+
+  .profile-deal-thumb__main,
+  .profile-deal-thumb__image {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+  }
+
+  .profile-deal-thumb__stack {
+    width: 32px;
+    height: 32px;
+  }
+
+  .profile-deal-thumb__stack-image {
+    width: 32px;
+    height: 32px;
+    border-width: 2px;
+    border-radius: 10px;
+  }
+
+  .profile-deal-thumb__stack-count {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 9px;
+  }
+
+  .profile-deal-card__footer {
+    gap: 12px;
+  }
+
+  .profile-deal-card__partner {
+    gap: 8px;
+  }
+
+  .profile-deal-card__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  .profile-deal-card__avatar span {
+    font-size: 14px;
+  }
+
+  .profile-deal-card__partner-name {
+    font-size: 12px;
+  }
+
+  .profile-deal-card__points {
+    padding: 6px 10px;
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .profile-deal-card__points svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .profile-deal-card__actions {
+    gap: 8px;
+  }
+
+  .profile-deal-card__action {
+    padding: 10px 12px;
+    font-size: 12px;
+    border-radius: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-deal-card {
+    padding: 14px;
+    gap: 14px;
+    border-radius: 20px;
+  }
+
+  .profile-deal-card__date {
+    top: 14px;
+    right: 14px;
+  }
+
+  .profile-deal-card__exchange {
+    grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr);
+    gap: 8px;
+    padding-right: 46px;
+  }
+
+  .profile-deal-card__badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+
+  .profile-deal-thumb {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .profile-deal-thumb.has-stack {
+    flex-basis: 52px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .profile-deal-thumb__main,
+  .profile-deal-thumb__image {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .profile-deal-thumb__stack {
+    width: 28px;
+    height: 28px;
+  }
+
+  .profile-deal-thumb__stack-image {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+  }
+
+  .profile-deal-card__action {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+/*
+ * Mobile profile — MUST stay after base .profile-avatar / .profile-nav-item
+ * (those are defined earlier in this file without a media query).
+ */
+@media (max-width: 1024px) {
+  .profile-sidebar__card {
+    padding: 16px;
+    border-radius: 24px;
+  }
+
+  /* Две колонки как на деске: слева профиль, справа метрики — те же стили */
+  .profile-sidebar__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .profile-sidebar__identity {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .profile-sidebar__meta {
+    width: 100%;
+  }
+
+  .profile-sidebar__name {
+    max-width: 100%;
+  }
+
+  .profile-sidebar__bio {
+    max-width: 100%;
+  }
+
+  .profile-sidebar__stats {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .profile-sidebar__identity .profile-avatar {
+    width: min(158px, 100%);
+    height: min(158px, 100%);
+  }
+
+  .profile-sidebar__nav {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .profile-sidebar__nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .profile-sidebar__nav-item-wrap {
+    display: flex;
+    flex: 0 0 auto;
+  }
+
+  .profile-nav-item {
+    width: auto;
+    height: auto;
+    min-height: 40px;
+    flex: 0 0 auto;
+    gap: 8px;
+    border-width: 1.5px;
+    border-radius: 16px;
+    padding: 8px 12px;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .profile-nav-item__icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .profile-sidebar__reviews {
+    border-radius: 24px;
+    padding: 12px;
+  }
+
+  .profile-sidebar__reviews-title {
+    margin-bottom: 8px;
+    font-size: 18px;
+  }
+
+  .profile-panel__title {
+    font-size: 22px;
+    line-height: 1.15;
+  }
+
+  .profile-panel__count {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-sidebar__head {
+    gap: 8px;
+  }
+
+  .profile-nav-item {
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: 11px;
   }
 }
 

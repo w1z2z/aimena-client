@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth";
 import { getPublicProfile } from "@/shared/api/auth";
 import { ApiError } from "@/shared/api/http";
+import { useProfileScrollTracker } from "@/shared/lib/profile-scroll-memory";
 import { ErrorBlock } from "@/shared/ui/ErrorBlock";
 import { Header } from "@/widgets/header/Header";
 
@@ -30,6 +31,7 @@ export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
   const slug = typeof params.slug === "string" ? params.slug : "";
   const { user } = useAuth();
   const active = resolveActiveSection(pathname);
+  useProfileScrollTracker();
 
   useEffect(() => {
     if (user?.slug && slug && user.slug === slug) {
@@ -61,9 +63,9 @@ export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
 
   if (user?.slug && user.slug === slug) {
     return (
-      <div className="min-h-screen bg-[#F8F8F5]">
+      <div className="profile-page">
         <Header />
-        <div className="mx-auto w-full max-w-[1440px] px-6 pb-12 pt-18">
+        <div className="profile-page__main">
           <p className="text-[16px] font-semibold text-[#626262]">Переход в ваш профиль…</p>
         </div>
       </div>
@@ -72,9 +74,9 @@ export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
 
   if (profileQuery.isLoading) {
     return (
-      <div className="min-h-screen bg-[#F8F8F5]">
+      <div className="profile-page">
         <Header />
-        <div className="mx-auto w-full max-w-[1440px] px-6 pb-12 pt-18">
+        <div className="profile-page__main">
           <p className="text-[16px] font-semibold text-[#626262]">Загрузка профиля…</p>
         </div>
       </div>
@@ -85,9 +87,9 @@ export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
     const notFound =
       profileQuery.error instanceof ApiError && profileQuery.error.status === 404;
     return (
-      <div className="min-h-screen bg-[#F8F8F5]">
+      <div className="profile-page">
         <Header />
-        <div className="mx-auto w-full max-w-[1440px] px-6 pb-12 pt-18">
+        <div className="profile-page__main">
           <ErrorBlock
             title={notFound ? "Профиль не найден" : "Не удалось загрузить профиль"}
             message={
@@ -105,12 +107,12 @@ export function PublicProfileLayout({ children }: PublicProfileLayoutProps) {
   const profile = profileQuery.data.profile;
 
   return (
-    <div className="min-h-screen bg-[#F8F8F5]">
+    <div className="profile-page">
       <Header />
-      <div className="px-6 pb-12 pt-18">
-        <div className="mx-auto flex w-full max-w-[1440px] items-start gap-6">
+      <div className="profile-page__main">
+        <div className="profile-page__inner">
           <PublicProfileSidebar profile={profile} active={active} />
-          <div className="relative min-w-0 flex-1">{children}</div>
+          <div className="profile-page__content">{children}</div>
         </div>
       </div>
     </div>

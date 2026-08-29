@@ -18,6 +18,7 @@ import {
 } from "./constants";
 import { ProfileReviewCard } from "./ProfileReviewCard";
 import { PublicProfileActionsMenu } from "./PublicProfileActionsMenu";
+import { saveProfileScrollPosition } from "@/shared/lib/profile-scroll-memory";
 
 type PublicProfileSidebarProps = {
   profile: BackendPublicProfile;
@@ -42,107 +43,88 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
     (reviewsPreviewQuery.isSuccess ? 0 : profile.ratingCount);
 
   return (
-    <aside className="flex w-full max-w-[342px] shrink-0 flex-col items-stretch gap-6">
-      <div className="relative flex flex-col items-center gap-9 overflow-visible rounded-[31px] bg-white p-6">
+    <aside className="profile-sidebar">
+      <div className="profile-sidebar__card profile-sidebar__card--public">
         <PublicProfileActionsMenu userId={profile.id} />
 
-        <div className="profile-avatar">
-          {profile.avatarUrl ? (
-            <img src={profile.avatarUrl} alt="" />
-          ) : (
-            <div className="profile-avatar__fallback">{avatarInitial}</div>
-          )}
-        </div>
+        <div className="profile-sidebar__head">
+          <div className="profile-sidebar__identity">
+            <div className="profile-avatar">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="" />
+              ) : (
+                <div className="profile-avatar__fallback">{avatarInitial}</div>
+              )}
+            </div>
 
-        <div className="relative z-[1] flex flex-col items-center gap-3">
-          <div className="flex items-center justify-center gap-1">
-            <p className="max-w-[171px] text-center text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#1A1A1A]">
-              {profile.displayName}
-            </p>
-            {profile.verified ? (
-              <img src={PROFILE_ASSETS.verified} alt="" className="size-[17px] shrink-0" />
-            ) : null}
+            <div className="profile-sidebar__meta">
+              <div className="profile-sidebar__name-row">
+                <p className="profile-sidebar__name">{profile.displayName}</p>
+                {profile.verified ? (
+                  <img src={PROFILE_ASSETS.verified} alt="" className="profile-sidebar__verified" />
+                ) : null}
+              </div>
+
+              {profile.city ? (
+                <div className="profile-sidebar__location">
+                  <img src={PROFILE_ASSETS.pin} alt="" className="profile-sidebar__pin" />
+                  <span>{profile.city.name}</span>
+                </div>
+              ) : null}
+
+              <p className="profile-sidebar__joined">
+                {joined ? `На Aimena с ${joined}` : "На Aimena"}
+              </p>
+
+              {profile.bio ? <p className="profile-sidebar__bio">{profile.bio}</p> : null}
+            </div>
           </div>
 
-          {profile.city ? (
-            <div className="flex items-center justify-center gap-2 rounded-[18px] border-[0.5px] border-solid border-[#CACACA] bg-white px-5 py-2">
-              <img src={PROFILE_ASSETS.pin} alt="" className="h-[12px] w-[9px]" />
-              <span className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-                {profile.city.name}
-              </span>
+          <div className="profile-sidebar__stats">
+            <div className="profile-sidebar__stat">
+              <p className="profile-sidebar__stat-label">Рейтинг профиля</p>
+              <div className="profile-sidebar__stat-value profile-sidebar__stat-value--rating">
+                <RatingStarIcon className="profile-sidebar__stat-star" />
+                <span>{ratingDisplay}</span>
+              </div>
             </div>
-          ) : null}
 
-          {profile.bio ? (
-            <p className="max-w-[270px] text-center text-[14px] font-normal leading-[1.7] text-[#626262]">
-              {profile.bio}
-            </p>
-          ) : null}
-        </div>
+            <div className="profile-sidebar__stat">
+              <p className="profile-sidebar__stat-label">Отзывов</p>
+              <p className="profile-sidebar__stat-value">{formatProfileNumber(reviewsCount)}</p>
+            </div>
 
-        <div className="relative z-[1] flex w-full flex-col gap-3">
-          <div className="flex h-[95px] w-full flex-col items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F3EDFF] p-6">
-            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-              Рейтинг профиля
-            </p>
-            <div className="flex items-center gap-1">
-              <RatingStarIcon className="size-[17px]" />
-              <p className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#8E8BED]">
-                {ratingDisplay}
+            <div className="profile-sidebar__stat">
+              <p className="profile-sidebar__stat-label">Обменов</p>
+              <p className="profile-sidebar__stat-value">
+                {formatProfileNumber(profile.swapsCount)}
               </p>
             </div>
           </div>
-
-          <div className="flex h-[95px] w-full flex-col items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F3EDFF] p-6">
-            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-              Отзывов
-            </p>
-            <p className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#8E8BED]">
-              {formatProfileNumber(reviewsCount)}
-            </p>
-          </div>
-
-          <div className="flex h-[95px] w-full flex-col items-center justify-center gap-3 rounded-[21px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F3EDFF] p-6">
-            <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
-              Обменов
-            </p>
-            <p className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#8E8BED]">
-              {formatProfileNumber(profile.swapsCount)}
-            </p>
-          </div>
         </div>
-
-        <p className="relative z-[1] text-center text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
-          {joined ? `На Aimena с ${joined}` : "На Aimena"}
-        </p>
       </div>
 
-      <nav className="flex w-full flex-col gap-6">
+      <nav className="profile-sidebar__nav" aria-label="Разделы профиля">
         {nav.map((item) => {
           const isActive = item.id === active;
-          const dealsHidden =
-            item.id === "deals" && !profile.showCompletedListings;
+          const dealsHidden = item.id === "deals" && !profile.showCompletedListings;
           const activeClass = "profile-nav-item profile-nav-item--active";
           const idleClass = "profile-nav-item";
           const disabledClass = "profile-nav-item profile-nav-item--disabled";
 
           if (dealsHidden) {
             return (
-              <div key={item.id} className="group relative w-full">
+              <div key={item.id} className="profile-sidebar__nav-item-wrap group relative">
                 <span
                   role="link"
                   aria-disabled="true"
                   aria-describedby="deals-history-hidden-hint"
                   className={disabledClass}
                 >
-                  <span className="relative size-6 shrink-0 overflow-hidden opacity-60">
-                    <img
-                      src={PROFILE_ASSETS[item.icon]}
-                      alt=""
-                      className="absolute inset-0 size-full object-contain"
-                    />
+                  <span className="profile-nav-item__icon profile-nav-item__icon--muted">
+                    <img src={PROFILE_ASSETS[item.icon]} alt="" />
                   </span>
-                  {item.label}
+                  <span className="profile-nav-item__label">{item.label}</span>
                 </span>
                 <span
                   id="deals-history-hidden-hint"
@@ -160,35 +142,30 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
               key={item.id}
               href={item.href}
               scroll={false}
-              className={isActive ? activeClass : idleClass}
+              onClick={saveProfileScrollPosition}
+              className={`${isActive ? activeClass : idleClass}${
+                item.compactOnly ? " profile-nav-item--compact-only" : ""
+              }`}
             >
-              <span className="relative size-6 shrink-0 overflow-hidden">
-                <img
-                  src={PROFILE_ASSETS[item.icon]}
-                  alt=""
-                  className="absolute inset-0 size-full object-contain"
-                />
+              <span className="profile-nav-item__icon">
+                <img src={PROFILE_ASSETS[item.icon]} alt="" />
               </span>
-              {item.label}
+              <span className="profile-nav-item__label">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
       {showReviewsBlock ? (
-        <section className="flex w-full flex-col overflow-hidden rounded-[31px] bg-[#F8F8F5] px-[14px] py-[15px]">
-          <h2 className="w-full shrink-0 pb-3 text-center text-[24px] font-extrabold leading-[1.1] tracking-[-0.003em] text-[#1A1A1A]">
+        <section className="profile-sidebar__reviews profile-sidebar__reviews--desktop-only">
+          <h2 className="profile-sidebar__reviews-title">
             Отзывы ({formatProfileNumber(reviewsCount)})
           </h2>
 
           {reviewsPreviewQuery.isLoading ? (
-            <p className="w-full py-6 text-center text-[14px] font-semibold leading-[1.4] text-[#626262]">
-              Загрузка отзывов…
-            </p>
+            <p className="profile-sidebar__reviews-empty">Загрузка отзывов…</p>
           ) : sidebarReviews.length === 0 ? (
-            <p className="w-full py-6 text-center text-[14px] font-semibold leading-[1.4] text-[#626262]">
-              Пока нет отзывов.
-            </p>
+            <p className="profile-sidebar__reviews-empty">Пока нет отзывов.</p>
           ) : (
             <div className="flex w-full flex-col gap-3">
               {sidebarReviews.map((review) => (
@@ -197,7 +174,8 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
               <Link
                 href={`/users/${profile.slug}/reviews`}
                 scroll={false}
-                className="flex h-3 w-full shrink-0 items-center justify-center self-stretch text-center text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A] hover:text-[#8E8BED]"
+                onClick={saveProfileScrollPosition}
+                className="profile-sidebar__reviews-more"
               >
                 показать все отзывы
               </Link>

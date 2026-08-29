@@ -87,7 +87,7 @@ export function ProfileListingsPanel() {
     body = (
       <ListingCardSkeletonGrid
         count={PROFILE_PAGE_SIZE}
-        className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12"
+        className="profile-listings-grid"
         itemClassName="profile-listing-card-slot"
       />
     );
@@ -105,7 +105,7 @@ export function ProfileListingsPanel() {
   } else {
     body = (
       <>
-        <div className="profile-listings-grid grid grid-cols-3 gap-x-6 gap-y-12">
+        <div className="profile-listings-grid">
           {listings.map((listing) => {
             const lifecycle = resolveOwnLifecycle(listing);
             return (
@@ -140,29 +140,27 @@ export function ProfileListingsPanel() {
   }
 
   return (
-    // Figma Frame 32680: 1074px = 342×3 + 24×2
-    <section className="flex w-[1074px] shrink-0 flex-col">
-      <div className="flex flex-col gap-3">
-        <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
-          Ваши объявления
-        </h1>
-        <p className="text-[14px] font-normal leading-[1.7] text-[#626262]">{countLabel}</p>
+    <section className="profile-panel">
+      <div className="profile-panel__header">
+        <div className="profile-panel__heading">
+          <h1 className="profile-panel__title">Ваши объявления</h1>
+          <p className="profile-panel__count">{countLabel}</p>
+        </div>
+        {user ? (
+          <div className="profile-panel__toolbar">
+            <ProfileSortControl
+              sort={sort}
+              onSortChange={setSort}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              typeOptions={PROFILE_LISTING_TYPE_OPTIONS}
+              dialogLabel="Сортировка объявлений"
+            />
+          </div>
+        ) : null}
       </div>
 
-      {/* 48px от счётчика до карточек; сортировка — 8px над сеткой */}
-      <div className="relative mt-12 w-full overflow-visible">
-        <div className="absolute bottom-full right-0 z-30 mb-12 flex items-center overflow-visible">
-          <ProfileSortControl
-            sort={sort}
-            onSortChange={setSort}
-            typeFilter={typeFilter}
-            onTypeChange={setTypeFilter}
-            typeOptions={PROFILE_LISTING_TYPE_OPTIONS}
-            dialogLabel="Сортировка объявлений"
-          />
-        </div>
-        {body}
-      </div>
+      <div className="profile-panel__body">{body}</div>
     </section>
   );
 }

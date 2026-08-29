@@ -236,16 +236,12 @@ export function ProfileSettingsPanel() {
   const avatarPreview = pendingAvatarPreview ?? user.avatarUrl;
 
   return (
-    <section className="flex w-full flex-col gap-12">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex max-w-[589px] flex-col gap-3">
-          <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
-            Настройки профиля
-          </h1>
-          <p className="text-[14px] font-normal leading-[1.7] text-[#626262]">
-            Управляйте данными аккаунта и настройками приватности.
-          </p>
-        </div>
+    <section className="profile-settings">
+      <div className="profile-settings__intro">
+        <h1 className="profile-panel__title">Настройки профиля</h1>
+        <p className="profile-panel__count">
+          Управляйте данными аккаунта и настройками приватности.
+        </p>
       </div>
 
       <div className="flex flex-col gap-6">
@@ -259,13 +255,13 @@ export function ProfileSettingsPanel() {
             <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">
               Электронная почта
             </p>
-            <div className="flex items-center gap-3">
+            <div className="profile-settings__credentials-row">
               <div className={CREDENTIALS_FIELD_CLASS}>
                 <p className="break-all">{user.email}</p>
               </div>
               <button
                 type="button"
-                className={CREDENTIALS_BUTTON_CLASS}
+                className={`profile-settings__password-btn ${CREDENTIALS_BUTTON_CLASS}`}
                 onClick={() => router.push("/change-password")}
               >
                 Поменять пароль
@@ -366,11 +362,11 @@ export function ProfileSettingsPanel() {
             />
           </div>
 
-          <div className="flex h-12 items-center gap-3">
+          <div className="profile-settings__form-actions">
             <button
               type="submit"
               disabled={isSaving}
-              className="flex h-12 w-[243px] items-center justify-center rounded-[21px] bg-[#8E8BED] px-6 text-[14px] font-semibold text-white disabled:opacity-60"
+              className="profile-settings__submit flex h-12 items-center justify-center rounded-[21px] bg-[#8E8BED] px-6 text-[14px] font-semibold text-white disabled:opacity-60"
             >
               {isSaving ? "Сохраняем…" : "Сохранить изменения"}
             </button>
@@ -391,7 +387,7 @@ export function ProfileSettingsPanel() {
           Приватность
         </h2>
 
-        <div className="flex items-center justify-between gap-6">
+        <div className="profile-settings__privacy-row">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
               Показывать завершённые объявления
@@ -408,7 +404,7 @@ export function ProfileSettingsPanel() {
           />
         </div>
 
-        <div className="flex items-center justify-between gap-6">
+        <div className="profile-settings__privacy-row">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <p className="text-[14px] font-semibold leading-[1.2] tracking-[0.014px] text-[#1A1A1A]">
               Не отображать личные данные на странице

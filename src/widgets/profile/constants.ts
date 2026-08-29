@@ -34,10 +34,19 @@ export function getPublicProfileNav(slug: string): Array<{
   href: string;
   label: string;
   icon: keyof typeof PROFILE_ASSETS;
+  /** Shown in tab bar only up to compact breakpoint (mobile chrome). */
+  compactOnly?: boolean;
 }> {
   return [
     { id: "listings", href: `/users/${slug}`, label: "Объявления", icon: "listings" },
     { id: "deals", href: `/users/${slug}/deals`, label: "История обменов", icon: "deals" },
+    {
+      id: "reviews",
+      href: `/users/${slug}/reviews`,
+      label: "Отзывы",
+      icon: "reviews",
+      compactOnly: true,
+    },
   ];
 }
 

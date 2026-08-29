@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { useAuth } from "@/features/auth";
+import { useProfileScrollTracker } from "@/shared/lib/profile-scroll-memory";
 import { Header } from "@/widgets/header/Header";
 
 import type { ProfileSection } from "./constants";
@@ -17,12 +18,13 @@ type ProfileLayoutProps = {
 export function ProfileLayout({ active, children }: ProfileLayoutProps) {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuth();
+  useProfileScrollTracker();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F8F8F5]">
+      <div className="profile-page">
         <Header />
-        <div className="mx-auto w-full max-w-[1440px] px-6 pb-12 pt-18">
+        <div className="profile-page__main">
           <p className="text-[16px] font-semibold text-[#626262]">Загрузка профиля…</p>
         </div>
       </div>
@@ -31,12 +33,10 @@ export function ProfileLayout({ active, children }: ProfileLayoutProps) {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-[#F8F8F5]">
+      <div className="profile-page">
         <Header />
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col items-start gap-6 px-6 pb-12 pt-18">
-          <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
-            Мой профиль
-          </h1>
+        <div className="profile-page__main flex flex-col items-start gap-6">
+          <h1 className="profile-panel__title">Мой профиль</h1>
           <p className="text-[16px] font-semibold text-[#626262]">
             Войдите в аккаунт, чтобы открыть личный кабинет.
           </p>
@@ -53,13 +53,12 @@ export function ProfileLayout({ active, children }: ProfileLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F8F5]">
+    <div className="profile-page">
       <Header />
-      {/* px снаружи: внутри ровно 1440 = сайдбар 342 + gap 24 + контент 1074 */}
-      <div className="px-6 pb-12 pt-18">
-        <div className="mx-auto flex w-full max-w-[1440px] items-start gap-6">
+      <div className="profile-page__main">
+        <div className="profile-page__inner">
           <ProfileSidebar user={user} active={active} />
-          <div className="min-w-0 flex-1">{children}</div>
+          <div className="profile-page__content">{children}</div>
         </div>
       </div>
     </div>

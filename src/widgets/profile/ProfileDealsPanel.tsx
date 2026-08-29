@@ -81,16 +81,13 @@ export function ProfileDealsPanel() {
   }
 
   return (
-    <section className="flex w-[1074px] max-w-full shrink-0 flex-col">
-      <div className="flex flex-col gap-3">
-        <h1 className="text-[40px] font-bold leading-10 tracking-[-0.5px] text-[#1A1A1A]">
-          История обменов
-        </h1>
-        <p className="text-[14px] font-normal leading-[1.7] text-[#626262]">{countLabel}</p>
-      </div>
-
-      <div className="relative mt-12 w-full overflow-visible">
-        <div className="absolute bottom-full right-0 z-30 mb-12 flex items-center overflow-visible">
+    <section className="profile-panel">
+      <div className="profile-panel__header">
+        <div className="profile-panel__heading">
+          <h1 className="profile-panel__title">История обменов</h1>
+          <p className="profile-panel__count">{countLabel}</p>
+        </div>
+        <div className="profile-panel__toolbar">
           <ProfileSortControl
             sort={sort}
             onSortChange={setSort}
@@ -100,8 +97,9 @@ export function ProfileDealsPanel() {
             dialogLabel="Сортировка истории обменов"
           />
         </div>
-        {body}
       </div>
+
+      <div className="profile-panel__body profile-panel__body--plain">{body}</div>
     </section>
   );
 }

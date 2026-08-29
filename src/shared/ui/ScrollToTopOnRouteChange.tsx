@@ -3,6 +3,13 @@
 import { useLayoutEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
+import {
+  getLastPathname,
+  isSameProfileTabNavigation,
+  restoreProfileScrollPosition,
+  setLastPathname,
+} from "@/shared/lib/profile-scroll-memory";
+
 export function forcePageScrollTop() {
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
@@ -17,6 +24,7 @@ export function forcePageScrollTop() {
 /**
  * Always land at the top when the route changes.
  * Skips hash targets (e.g. /#home-recommendations) so intentional in-page scrolls still work.
+ * Skips own/public profile tab switches (/profile/*, /users/:slug/*).
  */
 export function ScrollToTopOnRouteChange() {
   const pathname = usePathname();
@@ -25,6 +33,14 @@ export function ScrollToTopOnRouteChange() {
 
   useLayoutEffect(() => {
     if (window.location.hash) return;
+
+    const previousPathname = getLastPathname() ?? pathname;
+    setLastPathname(pathname);
+
+    if (isSameProfileTabNavigation(previousPathname, pathname)) {
+      restoreProfileScrollPosition();
+      return;
+    }
 
     const previous = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";
