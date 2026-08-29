@@ -15,6 +15,7 @@ import {
   type ProfileSection,
 } from "./constants";
 import { saveProfileScrollPosition } from "@/shared/lib/profile-scroll-memory";
+import { ProfileSidebarName } from "./ProfileSidebarName";
 
 type ProfileSidebarProps = {
   user: AuthUser;
@@ -40,7 +41,7 @@ export function ProfileSidebar({ user, active }: ProfileSidebarProps) {
 
             <div className="profile-sidebar__meta">
               <div className="profile-sidebar__name-row">
-                <p className="profile-sidebar__name">{user.name}</p>
+                <ProfileSidebarName name={user.name} />
                 {user.verified ? (
                   <img src={PROFILE_ASSETS.verified} alt="" className="profile-sidebar__verified" />
                 ) : null}

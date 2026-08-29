@@ -18,6 +18,7 @@ import {
 } from "./constants";
 import { ProfileReviewCard } from "./ProfileReviewCard";
 import { PublicProfileActionsMenu } from "./PublicProfileActionsMenu";
+import { ProfileSidebarName } from "./ProfileSidebarName";
 import { saveProfileScrollPosition } from "@/shared/lib/profile-scroll-memory";
 
 type PublicProfileSidebarProps = {
@@ -59,7 +60,7 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
 
             <div className="profile-sidebar__meta">
               <div className="profile-sidebar__name-row">
-                <p className="profile-sidebar__name">{profile.displayName}</p>
+                <ProfileSidebarName name={profile.displayName} />
                 {profile.verified ? (
                   <img src={PROFILE_ASSETS.verified} alt="" className="profile-sidebar__verified" />
                 ) : null}

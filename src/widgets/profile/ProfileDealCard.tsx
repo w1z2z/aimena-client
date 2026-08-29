@@ -3,7 +3,11 @@
 
 import Link from "next/link";
 
-import type { DealHistoryItem, DealHistoryListingSide } from "@/shared/api/deals";
+import type {
+  DealHistoryItem,
+  DealHistoryListingSide,
+  DealHistoryPerson,
+} from "@/shared/api/deals";
 
 import { RatingStarIcon } from "@/shared/ui/icons";
 
@@ -21,8 +25,16 @@ const STATUS_BADGE: Record<
   cancelled: {
     bg: "bg-[#FF2056]",
     icon: PROFILE_ASSETS.swap,
-    label: "Обмен отменён",
+    label: "Обмен не состоялся",
   },
+};
+
+const DEAL_SIDE_LABELS: Record<
+  DealHistoryItem["status"],
+  { given: string; received: string }
+> = {
+  successful: { given: "Отдал", received: "Получил" },
+  cancelled: { given: "Предлагал", received: "Хотел получить" },
 };
 
 type ProfileDealCardProps = {
@@ -81,19 +93,59 @@ function ListingSide({
   );
 }
 
+function PartnerRow({ partner }: { partner: DealHistoryPerson }) {
+  const partnerHref = partner.slug ? `/users/${partner.slug}` : null;
+
+  return (
+    <div className="profile-deal-card__partner">
+      {partnerHref ? (
+        <Link href={partnerHref} className="profile-deal-card__avatar">
+          {partner.avatarUrl ? (
+            <img src={partner.avatarUrl} alt="" />
+          ) : (
+            <span>{partner.avatarInitial}</span>
+          )}
+        </Link>
+      ) : (
+        <div className="profile-deal-card__avatar">
+          {partner.avatarUrl ? (
+            <img src={partner.avatarUrl} alt="" />
+          ) : (
+            <span>{partner.avatarInitial}</span>
+          )}
+        </div>
+      )}
+      {partnerHref ? (
+        <Link href={partnerHref} className="profile-deal-card__partner-name">
+          {partner.name}
+        </Link>
+      ) : (
+        <p className="profile-deal-card__partner-name">{partner.name}</p>
+      )}
+      <span className="profile-deal-card__points">
+        <RatingStarIcon />
+        <span>{formatProfileNumber(partner.points)}</span>
+      </span>
+    </div>
+  );
+}
+
 export function ProfileDealCard({
   deal,
   showReviewAction = true,
   showChatAction = true,
 }: ProfileDealCardProps) {
   const badge = STATUS_BADGE[deal.status];
+  const sideLabels = DEAL_SIDE_LABELS[deal.status];
   const chatHref = deal.threadId
     ? `/chats?selected=${encodeURIComponent(deal.threadId)}`
     : null;
   const reviewHref = deal.threadId
     ? `/chats?selected=${encodeURIComponent(deal.threadId)}&dealModal=review`
     : null;
-  const partnerHref = deal.partner.slug ? `/users/${deal.partner.slug}` : null;
+  const showActions =
+    (showReviewAction && deal.canLeaveReview && reviewHref) ||
+    (showChatAction && chatHref);
 
   return (
     <article
@@ -102,7 +154,9 @@ export function ProfileDealCard({
       <p className="profile-deal-card__date">{formatProfileDate(deal.date)}</p>
 
       <div className="profile-deal-card__exchange">
-        <ListingSide label="Отдал" side={deal.given} />
+        <div className="profile-deal-card__given">
+          <ListingSide label={sideLabels.given} side={deal.given} />
+        </div>
 
         <div
           className={`profile-deal-card__badge ${badge.bg}`}
@@ -112,54 +166,29 @@ export function ProfileDealCard({
           <img src={badge.icon} alt="" width={19} height={17} />
         </div>
 
-        <ListingSide label="Получил" side={deal.received} />
-      </div>
-
-      <div className="profile-deal-card__footer">
-        <div className="profile-deal-card__partner">
-          {partnerHref ? (
-            <Link href={partnerHref} className="profile-deal-card__avatar">
-              {deal.partner.avatarUrl ? (
-                <img src={deal.partner.avatarUrl} alt="" />
-              ) : (
-                <span>{deal.partner.avatarInitial}</span>
-              )}
-            </Link>
-          ) : (
-            <div className="profile-deal-card__avatar">
-              {deal.partner.avatarUrl ? (
-                <img src={deal.partner.avatarUrl} alt="" />
-              ) : (
-                <span>{deal.partner.avatarInitial}</span>
-              )}
-            </div>
-          )}
-          {partnerHref ? (
-            <Link href={partnerHref} className="profile-deal-card__partner-name">
-              {deal.partner.name}
-            </Link>
-          ) : (
-            <p className="profile-deal-card__partner-name">{deal.partner.name}</p>
-          )}
-          <span className="profile-deal-card__points">
-            <RatingStarIcon />
-            <span>{formatProfileNumber(deal.partner.points)}</span>
-          </span>
+        <div className="profile-deal-card__received">
+          <ListingSide label={sideLabels.received} side={deal.received} />
         </div>
 
-        <div className="profile-deal-card__actions">
-          {showReviewAction && deal.canLeaveReview && reviewHref ? (
-            <Link href={reviewHref} className="profile-deal-card__action is-primary">
-              Оставить отзыв
-            </Link>
-          ) : null}
-          {showChatAction && chatHref ? (
-            <Link href={chatHref} className="profile-deal-card__action">
-              Открыть чат
-            </Link>
-          ) : null}
-        </div>
+        <PartnerRow partner={deal.partner} />
       </div>
+
+      {showActions ? (
+        <div className="profile-deal-card__footer">
+          <div className="profile-deal-card__actions">
+            {showReviewAction && deal.canLeaveReview && reviewHref ? (
+              <Link href={reviewHref} className="profile-deal-card__action is-primary">
+                Оставить отзыв
+              </Link>
+            ) : null}
+            {showChatAction && chatHref ? (
+              <Link href={chatHref} className="profile-deal-card__action">
+                Открыть чат
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }

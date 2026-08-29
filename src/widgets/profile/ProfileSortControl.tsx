@@ -145,9 +145,9 @@ export function ProfileSortControl<T extends string = string>({
             role="dialog"
             aria-label={dialogLabel}
             aria-hidden={!isVisible}
-            className={`profile-sort-popup overlay-pop overlay-pop--origin-right box-border flex w-[326px] flex-col items-start justify-center gap-3 rounded-[31px] border-[0.5px] border-solid border-[#8E8BED] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]${isVisible ? " is-open" : ""}`}
+            className={`profile-sort-popup overlay-pop overlay-pop--origin-right${isVisible ? " is-open" : ""}`}
           >
-            <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">По порядку:</p>
+            <p className="profile-sort-popup__section-label">По порядку:</p>
             <div
               className="profile-sort-switch"
               role="radiogroup"
@@ -181,8 +181,8 @@ export function ProfileSortControl<T extends string = string>({
 
             {showTypeSection && typeOptions ? (
               <>
-                <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">По типу:</p>
-                <div role="listbox" aria-label="Тип" className="flex w-[278px] flex-col gap-3">
+                <p className="profile-sort-popup__section-label">По типу:</p>
+                <div role="listbox" aria-label="Тип" className="profile-sort-popup__type-list">
                   {typeOptions.map((option) => {
                     const isActive = typeFilter === option.value;
                     return (
@@ -195,11 +195,7 @@ export function ProfileSortControl<T extends string = string>({
                           if (option.value === typeFilter) return;
                           onTypeChange?.(option.value);
                         }}
-                        className={`flex h-[34px] w-full shrink-0 items-center rounded-[13px] px-3 text-left text-[14px] font-semibold leading-[1.2] tracking-[0.001em] transition-colors duration-200 ${
-                          isActive
-                            ? "border-[0.5px] border-solid border-[#8E8BED] bg-[#8E8BED] text-white"
-                            : "border-[0.5px] border-solid border-transparent bg-white text-[#1A1A1A] hover:bg-[#F2F4F7]"
-                        }`}
+                        className={`profile-sort-popup__type-btn${isActive ? " is-active" : ""}`}
                       >
                         {option.label}
                       </button>

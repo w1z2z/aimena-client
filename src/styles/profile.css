@@ -104,6 +104,10 @@
   letter-spacing: -0.003em;
 }
 
+.profile-sidebar__name-part:not(:last-child)::after {
+  content: " ";
+}
+
 .profile-sidebar__verified {
   width: 17px;
   height: 17px;
@@ -582,6 +586,69 @@
   }
 }
 
+.profile-sort-popup {
+  box-sizing: border-box;
+  display: flex;
+  width: 326px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  border: 0.5px solid #8e8bed;
+  border-radius: 31px;
+  background: #ffffff;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.profile-sort-popup__section-label {
+  margin: 0;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.profile-sort-popup__type-list {
+  display: flex;
+  width: 278px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-sort-popup__type-btn {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  height: 34px;
+  flex-shrink: 0;
+  align-items: center;
+  border: 0.5px solid transparent;
+  border-radius: 13px;
+  background: #ffffff;
+  padding: 0 12px;
+  color: #1a1a1a;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.profile-sort-popup__type-btn:hover:not(.is-active) {
+  background: #f2f4f7;
+}
+
+.profile-sort-popup__type-btn.is-active {
+  border-color: #8e8bed;
+  background: #8e8bed;
+  color: #ffffff;
+}
+
 /* Profile sidebar avatar — Figma: 158×158, radius 49, lilac 0.5 #8E8BED */
 .profile-avatar {
   box-sizing: border-box;
@@ -934,9 +1001,28 @@
 .profile-deal-card__exchange {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 50px minmax(0, 1fr);
+  grid-template-rows: auto auto;
   align-items: center;
-  gap: 24px;
+  column-gap: 24px;
+  row-gap: 12px;
   padding-right: 64px;
+}
+
+.profile-deal-card__given {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.profile-deal-card__received {
+  grid-column: 3;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.profile-deal-card__partner {
+  grid-column: 3;
+  grid-row: 2;
 }
 
 .profile-deal-side {
@@ -980,6 +1066,8 @@
 .profile-deal-card__badge {
   box-sizing: border-box;
   display: flex;
+  grid-column: 2;
+  grid-row: 1;
   width: 50px;
   height: 50px;
   flex: none;
@@ -987,6 +1075,8 @@
   justify-content: center;
   border: 0.641px solid #cacaca;
   border-radius: 17.857px;
+  align-self: center;
+  justify-self: center;
 }
 
 .profile-deal-card__badge img {
@@ -1000,15 +1090,22 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16px;
 }
 
 .profile-deal-card__partner {
+  box-sizing: border-box;
   display: flex;
+  width: 100%;
   min-width: 0;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  border: 0.5px solid #8e8bed;
+  border-radius: 21px;
+  background: #f3edff;
+  padding: 12px 14px;
 }
 
 .profile-deal-card__avatar {
@@ -1049,6 +1146,7 @@
 .profile-deal-card__partner-name {
   margin: 0;
   min-width: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   color: #1a1a1a;
   font-family: var(--font-manrope), sans-serif;
@@ -1234,16 +1332,24 @@ a.profile-deal-card__partner-name:hover {
   }
 
   .profile-deal-card__date {
-    top: 16px;
-    right: 16px;
+    position: static;
+    order: 3;
+    align-self: flex-end;
+    margin: 0;
     font-size: 10px;
     line-height: 14px;
   }
 
   .profile-deal-card__exchange {
+    order: 1;
     grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
-    gap: 10px;
-    padding-right: 52px;
+    column-gap: 10px;
+    row-gap: 10px;
+    padding-right: 0;
+  }
+
+  .profile-deal-card__footer {
+    order: 2;
   }
 
   .profile-deal-card__badge {
@@ -1317,24 +1423,27 @@ a.profile-deal-card__partner-name:hover {
   }
 
   .profile-deal-card__partner {
-    gap: 8px;
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 8px;
+    row-gap: 6px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 18px;
   }
 
   .profile-deal-card__avatar {
+    grid-column: 1;
+    grid-row: 1;
     width: 36px;
     height: 36px;
     border-radius: 8px;
   }
 
-  .profile-deal-card__avatar span {
-    font-size: 14px;
-  }
-
-  .profile-deal-card__partner-name {
-    font-size: 12px;
-  }
-
   .profile-deal-card__points {
+    grid-column: 2;
+    grid-row: 1;
     padding: 6px 10px;
     font-size: 10px;
     line-height: 14px;
@@ -1343,6 +1452,18 @@ a.profile-deal-card__partner-name:hover {
   .profile-deal-card__points svg {
     width: 11px;
     height: 11px;
+  }
+
+  .profile-deal-card__partner-name {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    flex: none;
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .profile-deal-card__avatar span {
+    font-size: 14px;
   }
 
   .profile-deal-card__actions {
@@ -1363,15 +1484,11 @@ a.profile-deal-card__partner-name:hover {
     border-radius: 20px;
   }
 
-  .profile-deal-card__date {
-    top: 14px;
-    right: 14px;
-  }
-
   .profile-deal-card__exchange {
     grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr);
-    gap: 8px;
-    padding-right: 46px;
+    column-gap: 8px;
+    row-gap: 8px;
+    padding-right: 0;
   }
 
   .profile-deal-card__badge {
@@ -1422,44 +1539,112 @@ a.profile-deal-card__partner-name:hover {
  */
 @media (max-width: 1024px) {
   .profile-sidebar__card {
-    padding: 16px;
-    border-radius: 24px;
+    padding: 12px;
+    border-radius: 20px;
   }
 
-  /* Две колонки как на деске: слева профиль, справа метрики — те же стили */
+  /* Две колонки как на деске: слева профиль, справа метрики — компактнее */
   .profile-sidebar__head {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
   }
 
   .profile-sidebar__identity {
     width: 100%;
     min-width: 0;
+    gap: 10px;
   }
 
   .profile-sidebar__meta {
     width: 100%;
+    gap: 8px;
   }
 
   .profile-sidebar__name {
     max-width: 100%;
+    font-size: 20px;
+    line-height: 1.15;
+  }
+
+  .profile-sidebar__name-part {
+    display: block;
+  }
+
+  .profile-sidebar__name-part::after {
+    content: none;
+  }
+
+  .profile-sidebar__verified {
+    width: 15px;
+    height: 15px;
+  }
+
+  .profile-sidebar__location {
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .profile-sidebar__pin {
+    width: 8px;
+    height: 11px;
+  }
+
+  .profile-sidebar__joined {
+    font-size: 12px;
+    line-height: 1.35;
+    color: #626262;
   }
 
   .profile-sidebar__bio {
     max-width: 100%;
+    font-size: 12px;
+    line-height: 1.4;
   }
 
   .profile-sidebar__stats {
     width: 100%;
     min-width: 0;
+    gap: 7px;
+  }
+
+  .profile-sidebar__stat {
+    height: auto;
+    min-height: 0;
+    gap: 4px;
+    border-radius: 14px;
+    padding: 9px 7px;
+  }
+
+  .profile-sidebar__stat-label {
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: 0;
+  }
+
+  .profile-sidebar__stat-value {
+    font-size: 17px;
+    line-height: 1.1;
+  }
+
+  .profile-sidebar__stat-star {
+    width: 12px;
+    height: 12px;
   }
 
   .profile-sidebar__identity .profile-avatar {
-    width: min(158px, 100%);
-    height: min(158px, 100%);
+    width: 72px;
+    height: 72px;
+    border-radius: 24px;
+  }
+
+  .profile-sidebar__identity .profile-avatar__fallback {
+    font-size: 26px;
   }
 
   .profile-sidebar__nav {
@@ -1521,17 +1706,166 @@ a.profile-deal-card__partner-name:hover {
     font-size: 12px;
     line-height: 1.4;
   }
+
+  .profile-sort-popup {
+    width: 300px;
+    gap: 11px;
+    border-radius: 28px;
+    padding: 20px;
+  }
+
+  .profile-sort-popup__section-label {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .profile-sort-switch {
+    width: 252px;
+    height: 38px;
+    border-radius: 14px;
+  }
+
+  .profile-sort-switch__indicator {
+    border-radius: 12px;
+  }
+
+  .profile-sort-switch__btn {
+    padding: 0 11px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  .profile-sort-popup__type-list {
+    width: 252px;
+    gap: 11px;
+  }
+
+  .profile-sort-popup__type-btn {
+    height: 32px;
+    border-radius: 12px;
+    padding: 0 11px;
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 480px) {
+  .profile-sidebar__card {
+    padding: 10px;
+    border-radius: 18px;
+  }
+
   .profile-sidebar__head {
     gap: 8px;
+  }
+
+  .profile-sidebar__identity {
+    gap: 8px;
+  }
+
+  .profile-sidebar__meta {
+    gap: 7px;
+  }
+
+  .profile-sidebar__name {
+    font-size: 18px;
+  }
+
+  .profile-sidebar__verified {
+    width: 14px;
+    height: 14px;
+  }
+
+  .profile-sidebar__location {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .profile-sidebar__joined {
+    font-size: 11px;
+  }
+
+  .profile-sidebar__bio {
+    font-size: 11px;
+  }
+
+  .profile-sidebar__stats {
+    gap: 6px;
+  }
+
+  .profile-sidebar__stat {
+    padding: 8px 6px;
+    border-radius: 12px;
+  }
+
+  .profile-sidebar__stat-label {
+    font-size: 10px;
+  }
+
+  .profile-sidebar__stat-value {
+    font-size: 16px;
+  }
+
+  .profile-sidebar__stat-star {
+    width: 11px;
+    height: 11px;
+  }
+
+  .profile-sidebar__identity .profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+  }
+
+  .profile-sidebar__identity .profile-avatar__fallback {
+    font-size: 22px;
   }
 
   .profile-nav-item {
     min-height: 36px;
     padding: 7px 10px;
     font-size: 11px;
+  }
+
+  .profile-sort-popup {
+    width: min(288px, calc(100vw - 24px));
+    gap: 10px;
+    border-radius: 26px;
+    padding: 18px;
+  }
+
+  .profile-sort-popup__section-label {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .profile-sort-switch {
+    width: 100%;
+    max-width: 240px;
+    height: 36px;
+    border-radius: 13px;
+  }
+
+  .profile-sort-switch__indicator {
+    border-radius: 11px;
+  }
+
+  .profile-sort-switch__btn {
+    padding: 0 10px;
+    border-radius: 11px;
+    font-size: 12px;
+  }
+
+  .profile-sort-popup__type-list {
+    width: 100%;
+    max-width: 240px;
+    gap: 10px;
+  }
+
+  .profile-sort-popup__type-btn {
+    height: 30px;
+    border-radius: 11px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 }
 
