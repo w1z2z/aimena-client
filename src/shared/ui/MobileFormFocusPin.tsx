@@ -31,15 +31,35 @@ function shouldSkipPin(target: HTMLElement): boolean {
   return false;
 }
 
+function focusWithoutScroll(target: HTMLElement) {
+  if (typeof target.focus !== "function") return;
+  try {
+    target.focus({ preventScroll: true });
+  } catch {
+    target.focus();
+  }
+  pinScrollAroundFocus();
+}
+
 /**
- * Site-wide iOS / compact: prevent the page from jumping (feels like zoom)
- * when tapping inputs and combobox fields.
+ * Compact / touch: keep the page from jumping when tapping inputs and combobox fields.
  */
 export function MobileFormFocusPin() {
   const isCompact = useMediaQuery(MQ.compact);
 
   useEffect(() => {
     if (!isCompact) return;
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) return;
+      const target = event.target;
+      if (!isTextFormControl(target)) return;
+      if (shouldSkipPin(target)) return;
+      if (document.activeElement === target) return;
+
+      event.preventDefault();
+      focusWithoutScroll(target);
+    };
 
     const onFocusIn = (event: FocusEvent) => {
       const target = event.target;
@@ -48,8 +68,12 @@ export function MobileFormFocusPin() {
       pinScrollAroundFocus();
     };
 
+    document.addEventListener("touchstart", onTouchStart, { passive: false, capture: true });
     document.addEventListener("focusin", onFocusIn);
-    return () => document.removeEventListener("focusin", onFocusIn);
+    return () => {
+      document.removeEventListener("touchstart", onTouchStart, { capture: true });
+      document.removeEventListener("focusin", onFocusIn);
+    };
   }, [isCompact]);
 
   return null;

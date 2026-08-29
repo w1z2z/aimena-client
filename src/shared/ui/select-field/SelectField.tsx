@@ -395,6 +395,16 @@ export function SelectField({
               event.preventDefault();
             }
           }}
+          onTouchStart={(event) => {
+            if (isDisabled || searchable) return;
+            if (event.touches.length !== 1) return;
+            event.preventDefault();
+            setIsOpen(true);
+            window.requestAnimationFrame(() => {
+              inputRef.current?.focus({ preventScroll: true });
+              pinScrollAroundFocus();
+            });
+          }}
           className={`site-select__input${showPlaceholderState ? " is-placeholder" : ""}${!searchable ? " is-readonly-select" : ""}`}
         />
         {showClear ? (
