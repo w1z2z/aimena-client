@@ -56,9 +56,6 @@
   padding: 24px;
 }
 
-.profile-sidebar__card--public {
-  overflow: visible;
-}
 
 .profile-sidebar__head {
   display: flex;
@@ -650,6 +647,33 @@
 }
 
 /* Profile sidebar avatar — Figma: 158×158, radius 49, lilac 0.5 #8E8BED */
+.profile-avatar-wrap {
+  position: relative;
+  flex: none;
+  align-self: center;
+}
+
+.profile-sidebar__actions-menu--card {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 6;
+}
+
+.profile-sidebar__actions-menu--avatar {
+  display: none;
+}
+
+.profile-sidebar__actions-trigger {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profile-sidebar__actions-menu .listing-detail-actions__trigger {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+}
+
 .profile-avatar {
   box-sizing: border-box;
   position: relative;
@@ -1538,6 +1562,29 @@ a.profile-deal-card__partner-name:hover {
  * (those are defined earlier in this file without a media query).
  */
 @media (max-width: 1024px) {
+  .profile-sidebar__card--public {
+    overflow: visible;
+  }
+
+  .profile-sidebar__card--public .profile-sidebar__head,
+  .profile-sidebar__card--public .profile-sidebar__identity,
+  .profile-avatar-wrap {
+    overflow: visible;
+  }
+
+  .profile-sidebar__actions-menu--card {
+    display: none;
+  }
+
+  .profile-sidebar__actions-menu--avatar {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 6;
+    transform: translate(18%, -18%);
+  }
+
   .profile-sidebar__card {
     padding: 12px;
     border-radius: 20px;
@@ -1650,6 +1697,39 @@ a.profile-deal-card__partner-name:hover {
 
   .profile-sidebar__identity .profile-avatar__fallback {
     font-size: 39px;
+  }
+
+  .profile-sidebar__actions-menu .listing-detail-actions__trigger {
+    width: 34px;
+    height: 34px;
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  .profile-sidebar__actions-menu .listing-detail-actions__trigger svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .profile-sidebar__actions-menu .listing-detail-actions__panel {
+    top: calc(100% + 8px);
+    right: auto;
+    left: 50%;
+    min-width: 0;
+    width: max-content;
+    max-width: min(300px, calc(100vw - 32px));
+    padding: 16px;
+    transform: translate3d(-50%, -8px, 0);
+    transform-origin: top center;
+  }
+
+  .profile-sidebar__actions-menu .listing-detail-actions__panel--open {
+    transform: translate3d(-50%, 0, 0);
+  }
+
+  .profile-sidebar__actions-menu .listing-detail-actions__item {
+    height: 44px;
+    font-size: 13px;
   }
 
   .profile-sidebar__nav {

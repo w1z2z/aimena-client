@@ -46,16 +46,19 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
   return (
     <aside className="profile-sidebar">
       <div className="profile-sidebar__card profile-sidebar__card--public">
-        <PublicProfileActionsMenu userId={profile.id} />
+        <PublicProfileActionsMenu userId={profile.id} placement="card" />
 
         <div className="profile-sidebar__head">
           <div className="profile-sidebar__identity">
-            <div className="profile-avatar">
-              {profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt="" />
-              ) : (
-                <div className="profile-avatar__fallback">{avatarInitial}</div>
-              )}
+            <div className="profile-avatar-wrap">
+              <PublicProfileActionsMenu userId={profile.id} placement="avatar" />
+              <div className="profile-avatar">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt="" />
+                ) : (
+                  <div className="profile-avatar__fallback">{avatarInitial}</div>
+                )}
+              </div>
             </div>
 
             <div className="profile-sidebar__meta">

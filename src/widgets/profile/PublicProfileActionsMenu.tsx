@@ -14,9 +14,13 @@ import {
 
 type PublicProfileActionsMenuProps = {
   userId: string;
+  placement?: "card" | "avatar";
 };
 
-export function PublicProfileActionsMenu({ userId }: PublicProfileActionsMenuProps) {
+export function PublicProfileActionsMenu({
+  userId,
+  placement = "card",
+}: PublicProfileActionsMenuProps) {
   const { guardAuth } = useAuthGate();
   const containerRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
@@ -79,10 +83,13 @@ export function PublicProfileActionsMenu({ userId }: PublicProfileActionsMenuPro
   };
 
   return (
-    <div ref={containerRef} className="absolute top-6 right-6 z-[6]">
+    <div
+      ref={containerRef}
+      className={`profile-sidebar__actions-menu profile-sidebar__actions-menu--${placement}`}
+    >
       <button
         type="button"
-        className="box-border flex h-[34px] w-10 shrink-0 cursor-pointer items-center justify-center gap-[5.89px] rounded-[12px] border-[0.5px] border-solid border-[#CACACA] bg-white p-2 hover:border-[#8E8BED]"
+        className="profile-sidebar__actions-trigger listing-detail-actions__trigger"
         aria-label="Действия с профилем"
         aria-haspopup="dialog"
         aria-expanded={open}
