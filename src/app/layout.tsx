@@ -6,6 +6,7 @@ import { AuthGateProvider, AuthProvider } from "@/features/auth";
 import { ChatInboxProvider } from "@/features/chat-inbox";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
 import { ScrollToTopOnRouteChange } from "@/shared/ui/ScrollToTopOnRouteChange";
+import { MobileFormFocusPin } from "@/shared/ui/MobileFormFocusPin";
 import { FloatingChat } from "@/widgets/floating-chat/FloatingChat";
 import { SiteFooter } from "@/widgets/footer/SiteFooter";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
                 <Suspense fallback={null}>
                   <ScrollToTopOnRouteChange />
                 </Suspense>
+                <MobileFormFocusPin />
                 <div className="flex min-h-full flex-1 flex-col">{children}</div>
                 <SiteFooter />
                 <FloatingChat />

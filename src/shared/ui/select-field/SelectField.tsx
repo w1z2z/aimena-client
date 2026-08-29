@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import { useDropdownDismiss } from "@/shared/lib/dropdown-anchor";
+import { pinScrollAroundFocus, pinWindowScroll } from "@/shared/lib/pin-window-scroll";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 
 export type SelectOption = {
@@ -334,6 +335,7 @@ export function SelectField({
     setIsOpen(true);
     window.requestAnimationFrame(() => {
       inputRef.current?.focus({ preventScroll: true });
+      pinScrollAroundFocus();
     });
   };
 
@@ -346,12 +348,14 @@ export function SelectField({
     setIsOpen(true);
     window.requestAnimationFrame(() => {
       inputRef.current?.focus({ preventScroll: true });
+      pinScrollAroundFocus();
     });
   };
 
   const handleInputFocus = () => {
     if (isDisabled) return;
     setIsOpen(true);
+    pinScrollAroundFocus();
   };
 
   const handleListScroll = () => {

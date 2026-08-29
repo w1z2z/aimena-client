@@ -1499,10 +1499,10 @@
   }
 }
 
-/* Hero compact: city select text matches mode toggle (12px). Must follow base select rules above. */
+/* Hero compact: city select — 16px on iOS to avoid focus zoom. */
 .home-hero-compact .home-hero-field .site-select--field .site-select__input,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input {
-  font-size: 12px !important;
+  font-size: 16px !important;
   line-height: 1.35 !important;
 }
 
@@ -1510,7 +1510,7 @@
 .home-hero-compact .home-hero-field .site-select--field .site-select__input.is-placeholder,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input::placeholder,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input.is-placeholder {
-  font-size: 12px !important;
+  font-size: 16px !important;
   line-height: 1.35 !important;
 }
 
@@ -1520,5 +1520,5 @@
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input.is-placeholder,
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input::placeholder,
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input.is-placeholder {
-  font-size: 11px !important;
+  font-size: 16px !important;
 }
