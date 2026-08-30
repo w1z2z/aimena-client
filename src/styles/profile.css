@@ -583,6 +583,13 @@
     padding: 80px 16px 40px;
   }
 
+  .profile-panel__title {
+    scroll-margin-top: 70px;
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+
   .profile-page__inner {
     flex-direction: column;
     gap: 20px;
@@ -590,12 +597,6 @@
 
   .profile-sidebar {
     max-width: none;
-  }
-
-  .profile-panel__title {
-    font-size: 28px;
-    line-height: 1.15;
-    letter-spacing: -0.3px;
   }
 
   .profile-panel__count {

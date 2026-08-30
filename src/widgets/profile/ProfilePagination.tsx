@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef } from "react";
 
-import { forcePageScrollTop } from "@/shared/ui/ScrollToTopOnRouteChange";
+import { scrollToProfilePanelTitle } from "@/shared/lib/scroll-to-profile-panel";
 
 export const PROFILE_PAGE_SIZE = 9;
 /** Favorites / free catalog pages */
@@ -61,13 +61,14 @@ type ProfilePaginationProps = {
 
 export function ProfilePagination({ page, pageCount, onChange }: ProfilePaginationProps) {
   const skipScrollRef = useRef(true);
+  const navRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
     if (skipScrollRef.current) {
       skipScrollRef.current = false;
       return;
     }
-    forcePageScrollTop();
+    scrollToProfilePanelTitle(navRef.current);
   }, [page]);
 
   if (pageCount <= 1) return null;
@@ -76,6 +77,7 @@ export function ProfilePagination({ page, pageCount, onChange }: ProfilePaginati
 
   return (
     <nav
+      ref={navRef}
       aria-label="Пагинация"
       className="mt-12 flex w-full items-center justify-center gap-2"
     >
