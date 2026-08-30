@@ -128,11 +128,29 @@ export function useDropdownDismiss(
       if (event.key === "Escape") onClose();
     };
 
+    const onScroll = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Node) {
+        if (rootRef.current?.contains(target)) return;
+        if (panelRef?.current?.contains(target)) return;
+      }
+      onClose();
+    };
+
     window.addEventListener("click", onOutsideClick);
     window.addEventListener("keydown", onKeyDown);
+
+    const timeoutId = window.setTimeout(() => {
+      window.addEventListener("scroll", onScroll, true);
+      window.visualViewport?.addEventListener("scroll", onScroll);
+    }, 80);
+
     return () => {
       window.removeEventListener("click", onOutsideClick);
       window.removeEventListener("keydown", onKeyDown);
+      window.clearTimeout(timeoutId);
+      window.removeEventListener("scroll", onScroll, true);
+      window.visualViewport?.removeEventListener("scroll", onScroll);
     };
   }, [open, onClose, rootRef, panelRef]);
 }
