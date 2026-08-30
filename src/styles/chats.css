@@ -2481,8 +2481,8 @@ body:has(.chats-page) {
 
   .chats-page.is-mobile-thread .chats-swap-header {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 6px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -2515,7 +2515,7 @@ body:has(.chats-page) {
     font-size: 12px;
   }
 
-  /* Compact status plaques — both fit, never overflow viewport */
+  /* Status plaques — match exchange-offer / profile deal mobile scale */
   .chats-page.is-mobile-thread .chats-swap-preview {
     box-sizing: border-box;
     width: 100%;
@@ -2524,51 +2524,51 @@ body:has(.chats-page) {
     height: auto;
     min-height: 0;
     max-height: none;
-    gap: 6px;
-    padding: 6px;
-    border-radius: 14px;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 18px;
     overflow: hidden;
   }
 
   .chats-page.is-mobile-thread .chats-swap-preview__media,
   .chats-page.is-mobile-thread .chats-swap-preview__image-link,
   .chats-page.is-mobile-thread .chats-swap-preview__image {
-    width: 40px;
-    height: 40px;
-    flex: 0 0 40px;
+    width: 72px;
+    height: 72px;
+    flex: 0 0 72px;
   }
 
   .chats-page.is-mobile-thread .chats-swap-preview__image,
   .chats-page.is-mobile-thread .chats-swap-preview__image-link {
-    border-radius: 10px;
+    border-radius: 14px;
   }
 
   .chats-page.is-mobile-thread .chats-swap-preview__body {
     height: auto;
-    min-height: 0;
+    min-height: 72px;
     min-width: 0;
-    gap: 4px;
-    justify-content: flex-start;
+    gap: 8px;
+    justify-content: space-between;
   }
 
   .chats-page.is-mobile-thread .chats-swap-preview__copy {
-    gap: 2px;
+    gap: 4px;
     width: 100%;
     max-width: 100%;
     padding-right: 0;
   }
 
   .chats-page.is-mobile-thread .chats-swap-preview--theirs .chats-swap-preview__copy {
-    padding-right: 30px;
+    padding-right: 40px;
   }
 
   .chats-page.is-mobile-thread .chats-swap-preview__label {
-    font-size: 9px;
-    line-height: 1.2;
+    font-size: 11px;
+    line-height: 16px;
   }
 
   .chats-page.is-mobile-thread .chats-swap-preview__title {
-    font-size: 11px;
+    font-size: 14px;
     line-height: 1.2;
   }
 
@@ -2576,42 +2576,42 @@ body:has(.chats-page) {
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
-    height: 22px;
-    min-height: 22px;
-    max-height: 22px;
-    padding: 0 6px;
-    border-radius: 11px;
-    font-size: 9px;
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
+    padding: 0 12px;
+    border-radius: 18px;
+    font-size: 13px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .chats-page.is-mobile-thread .chats-swap-menu {
-    top: 6px;
-    right: 6px;
+    top: 10px;
+    right: 10px;
   }
 
   .chats-page.is-mobile-thread .chats-swap-menu__trigger {
-    width: 28px;
-    height: 24px;
-    padding: 2px;
-    border-radius: 8px;
+    width: 36px;
+    height: 32px;
+    padding: 4px;
+    border-radius: 10px;
   }
 
   .chats-page.is-mobile-thread .chats-swap-menu__trigger img,
   .chats-page.is-mobile-thread .chats-swap-menu__trigger svg {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
   }
 
   .chats-page.is-mobile-thread .chats-swap-preview__pager {
-    right: 1px;
-    bottom: 1px;
+    right: 4px;
+    bottom: 4px;
     min-width: 0;
-    height: 16px;
-    padding: 0 3px;
-    font-size: 8px;
+    height: 20px;
+    padding: 0 6px;
+    font-size: 10px;
   }
 
   .chats-page.is-mobile-thread .chats-messages {
