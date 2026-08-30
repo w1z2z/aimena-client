@@ -43,12 +43,18 @@ export function Logo({ tone = "brand" }: LogoProps) {
       href="/"
       scroll
       onClick={handleClick}
-      className="inline-flex h-[54px] w-[162px] items-center"
+      className="inline-flex h-[54px] w-[162px] shrink-0 items-center"
       aria-label="На главную"
     >
       <LogoIcon
         src={tone === "dark" ? "/logo2.png" : "/logo.png"}
-        className="block h-full w-full object-contain"
+        width={162}
+        height={tone === "dark" ? 53 : 54}
+        className={
+          tone === "dark"
+            ? "block h-[53px] w-[162px] object-fill"
+            : "block h-[54px] w-[162px] object-fill"
+        }
       />
     </Link>
   );
