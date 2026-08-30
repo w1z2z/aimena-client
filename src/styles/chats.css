@@ -2442,6 +2442,7 @@ body:has(.chats-page) {
     overscroll-behavior: none;
     padding-bottom: 0;
     touch-action: none;
+    background: #fff;
   }
 
   body:has(.chats-page.is-mobile-thread) .mobile-bottom-nav {
@@ -2478,20 +2479,54 @@ body:has(.chats-page) {
 
   /* Pin chat shell exactly to visualViewport (header stays on screen when keyboard opens). */
   .chats-page.is-mobile-thread {
+    --chats-overscroll-bleed: 96px;
     position: fixed;
-    top: var(--chats-vv-top, 0px);
+    /* Extend above the viewport so iOS rubber-band doesn't reveal the page behind. */
+    top: calc(var(--chats-vv-top, 0px) - var(--chats-overscroll-bleed));
     right: 0;
     left: 0;
     bottom: auto;
     z-index: 50;
+    box-sizing: border-box;
     width: 100%;
-    height: var(--chats-vv-height, 100dvh);
-    max-height: var(--chats-vv-height, 100dvh);
+    height: calc(
+      var(--chats-vv-height, 100dvh) + (var(--chats-overscroll-bleed) * 2)
+    );
+    max-height: none;
+    padding-top: var(--chats-overscroll-bleed);
+    padding-bottom: var(--chats-overscroll-bleed);
     overflow: hidden;
+    background: #f8f8f5;
     touch-action: manipulation;
   }
 
+  .chats-page.is-mobile-thread::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 4;
+    height: var(--chats-overscroll-bleed);
+    background: #fff;
+    pointer-events: none;
+  }
+
+  .chats-page.is-mobile-thread::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 4;
+    height: var(--chats-overscroll-bleed);
+    background: #f8f8f5;
+    pointer-events: none;
+  }
+
   .chats-page.is-mobile-thread .chats-main {
+    position: relative;
+    z-index: 5;
     height: 100%;
     min-height: 0;
     padding: 0;
@@ -2538,7 +2573,8 @@ body:has(.chats-page) {
 
   .chats-page.is-mobile-thread .chats-messages {
     touch-action: pan-y;
-    overscroll-behavior: contain;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
     -webkit-overflow-scrolling: touch;
   }
 

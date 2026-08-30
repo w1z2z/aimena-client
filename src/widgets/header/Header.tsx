@@ -764,6 +764,7 @@ export function Header() {
         data-home={isHomePage ? "true" : undefined}
         data-compact={isCompact ? "true" : undefined}
       >
+        <div className="site-header__overscroll" aria-hidden="true" />
         <div className="site-header__backdrop" aria-hidden="true" />
 
         {isCompact ? (

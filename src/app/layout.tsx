@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Golos_Text, Manrope } from "next/font/google";
 import { Suspense } from "react";
 
@@ -27,6 +27,12 @@ export const metadata: Metadata = {
   description: "Обмен вещами и услугами без продаж",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#1a1a1a",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,8 +52,10 @@ export default function RootLayout({
                   <ScrollToTopOnRouteChange />
                 </Suspense>
                 <MobileFormFocusPin />
-                <div className="flex min-h-full flex-1 flex-col">{children}</div>
-                <SiteFooter />
+                <div className="app-surface">
+                  {children}
+                  <SiteFooter />
+                </div>
                 <FloatingChat />
               </AuthGateProvider>
             </ChatInboxProvider>

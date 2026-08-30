@@ -274,9 +274,28 @@
   overflow: visible;
 }
 
+/* Covers iOS rubber-band / Dynamic Island gap above the fixed header. */
+.site-header__overscroll {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  z-index: 0;
+  height: calc(240px + env(safe-area-inset-top, 0px));
+  pointer-events: none;
+  background: #1a1a1a;
+}
+
+.site-header[data-scrolled="true"] .site-header__overscroll {
+  background: #1a1a1a;
+}
+
 .site-header__backdrop {
   position: absolute;
-  inset: 0;
+  top: calc(-240px - env(safe-area-inset-top, 0px));
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 0;
   pointer-events: none;
   opacity: 0;

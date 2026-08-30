@@ -90,6 +90,12 @@ body {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
+  overscroll-behavior-y: none;
+}
+
+html {
+  /* iOS rubber-band samples the root background — keep it dark. */
+  background-color: #1a1a1a !important;
 }
 
 html.is-scroll-locked,
@@ -102,8 +108,18 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   color: var(--color-text-primary);
-  background: var(--color-bg-page);
+  /* Must match html: fixed chrome rubber-bands and reveals body, not the page surface. */
+  background-color: #1a1a1a !important;
   font-family: var(--font-manrope), Arial, sans-serif;
+}
+
+.app-surface {
+  display: flex;
+  min-height: 100%;
+  min-height: 100dvh;
+  flex: 1 1 auto;
+  flex-direction: column;
+  background: var(--color-bg-page);
 }
 
 /* Keep scrollbars visually light across browsers. */
