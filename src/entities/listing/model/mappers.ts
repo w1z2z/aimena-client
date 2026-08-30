@@ -70,7 +70,7 @@ export const EXTRA_PAY_LABELS: Record<ApiListingDetail["extraPay"], string> = {
   none: "Без доплаты",
   i_pay: "Могу доплатить",
   they_pay: "Приму доплату",
-  both: "По договоренности",
+  both: "В обе стороны",
 };
 
 export function mapApiListingToCard(listing: ApiListingCard): ListingCardData {

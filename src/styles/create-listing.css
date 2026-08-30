@@ -70,9 +70,58 @@
 }
 
 .listing-editor__section {
+  overflow: visible;
   border-radius: var(--listing-section-radius);
   padding: var(--listing-section-pad);
   box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+}
+
+.listing-editor__exchange-categories {
+  overflow: visible;
+}
+
+.listing-editor__price-field {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  height: var(--listing-input-h);
+  align-items: center;
+  gap: 4px;
+  border: 0.5px solid #cacaca;
+  border-radius: var(--listing-input-radius);
+  background: #ffffff;
+  padding: 0 12px;
+}
+
+.listing-editor__price-field:focus-within {
+  border-color: #8e8bed;
+}
+
+.listing-editor__price-prefix,
+.listing-editor__price-suffix {
+  flex-shrink: 0;
+  color: #626262;
+  font-size: var(--listing-control-font);
+  font-weight: 400;
+  line-height: var(--listing-control-lh);
+}
+
+.listing-editor__price-input {
+  min-width: 0;
+  height: 100%;
+  flex: 1 1 auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #1a1a1a;
+  font-size: var(--listing-control-font);
+  font-weight: 400;
+  line-height: var(--listing-control-lh);
+  outline: none;
+}
+
+.listing-editor__price-input::placeholder {
+  color: #626262;
 }
 
 .listing-editor__section--lime {
@@ -380,7 +429,7 @@
     --listing-control-lh: 1.35;
     --listing-page-title: 26px;
     --listing-section-title: 20px;
-    --listing-photo-cell: 88px;
+    --listing-photo-cell: 112px;
   }
 
   .listing-editor__container {
@@ -415,9 +464,9 @@
   }
 
   .listing-editor__add-photo {
-    font-size: 11px;
-    line-height: 1.1;
-    padding: 4px;
+    font-size: 12px;
+    line-height: 1.15;
+    padding: 6px;
   }
 
   .listing-editor__city-row {
@@ -432,7 +481,7 @@
   }
 
   .listing-editor__actions {
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: 12px;
   }
 
@@ -449,6 +498,6 @@
   .listing-editor {
     --listing-page-title: 22px;
     --listing-section-title: 18px;
-    --listing-photo-cell: 76px;
+    --listing-photo-cell: 100px;
   }
 }

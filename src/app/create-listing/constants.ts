@@ -44,7 +44,7 @@ export const EXTRA_PAY_OPTIONS: Array<{ id: ExtraPayId; label: string }> = [
   { id: "none", label: "Без доплаты" },
   { id: "i_pay", label: "Могу доплатить" },
   { id: "they_pay", label: "Приму доплату" },
-  { id: "both", label: "По договоренности" },
+  { id: "both", label: "В обе стороны" },
 ];
 
 export const SERVICE_FORMAT_OPTIONS: Array<{ id: ServiceFormatId; label: string }> = [

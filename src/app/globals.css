@@ -221,7 +221,8 @@ textarea:disabled {
   .listing-editor input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
   .listing-editor textarea,
   .listing-editor select,
-  .listing-editor .site-select__input {
+  .listing-editor .site-select__input,
+  .listing-editor .listing-editor__price-input {
     font-size: 13px !important;
     line-height: 1.35 !important;
   }
@@ -230,7 +231,8 @@ textarea:disabled {
   .listing-editor textarea::placeholder,
   .listing-editor select::placeholder,
   .listing-editor .site-select__input::placeholder,
-  .listing-editor .site-select__input.is-placeholder {
+  .listing-editor .site-select__input.is-placeholder,
+  .listing-editor .listing-editor__price-input::placeholder {
     font-size: 13px !important;
     line-height: 1.35 !important;
   }

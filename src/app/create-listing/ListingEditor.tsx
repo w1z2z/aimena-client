@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import {
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -507,13 +506,11 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const isEditMode = mode === "edit";
   const itemPhotosInputRef = useRef<HTMLInputElement>(null);
   const docPhotosInputRef = useRef<HTMLInputElement>(null);
-  const priceMeasureRef = useRef<HTMLSpanElement>(null);
   const wantsTagFieldRef = useRef<HTMLDivElement>(null);
   const [listingKind, setListingKind] = useState<ListingKind>("item");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priceDigits, setPriceDigits] = useState("");
-  const [priceTextWidth, setPriceTextWidth] = useState(0);
   const [itemCategoryTree, setItemCategoryTree] = useState<CategoryTreeNode[]>([]);
   const [serviceCategoryTree, setServiceCategoryTree] = useState<CategoryTreeNode[]>([]);
   const [categoriesReady, setCategoriesReady] = useState(false);
@@ -957,12 +954,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const listingTypeLabel = listingKind === "item" ? "вещи" : "услуги";
   const listingTypeName = listingKind === "item" ? "вещь" : "услугу";
   const formattedPrice = formatPriceWithSpaces(priceDigits);
-
-  useLayoutEffect(() => {
-    const node = priceMeasureRef.current;
-    if (!node) return;
-    setPriceTextWidth(node.getBoundingClientRect().width);
-  }, [formattedPrice]);
 
   const handleIsFreeChange = (next: boolean) => {
     // Exactly one of free / desired exchange must stay enabled.
@@ -1712,8 +1703,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                 Напишите примерную стоимость вашей {listingTypeName} (другим будет легче предложить
                 равноценный обмен)
               </p>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]">
+              <div className="listing-editor__price-field">
+                <span className="listing-editor__price-prefix" aria-hidden>
                   ~
                 </span>
                 <input
@@ -1726,21 +1717,10 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     setPriceDigits(nextDigits);
                   }}
                   placeholder="0"
-                  className="listing-editor__control listing-editor__control--price pl-6 pr-3 outline-none placeholder:text-[#626262] focus:border-[#8E8BED]"
+                  aria-label="Примерная стоимость"
+                  className="listing-editor__price-input"
                 />
-                <span
-                  ref={priceMeasureRef}
-                  aria-hidden="true"
-                  className="pointer-events-none invisible absolute left-6 top-1/2 -translate-y-1/2 whitespace-pre text-[14px] font-normal leading-[170%]"
-                >
-                  {formattedPrice || "0"}
-                </span>
-                <span
-                  className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[14px] font-normal leading-[170%] text-[#626262]"
-                  style={{ left: `calc(1.5rem + ${priceTextWidth}px + 0.25rem)` }}
-                >
-                  руб.
-                </span>
+                <span className="listing-editor__price-suffix">руб.</span>
               </div>
             </div>
 
@@ -1811,7 +1791,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           <div className={`create-listing-exchange-panel${exchangeEnabled ? " is-open" : ""}`}>
             <div className="create-listing-exchange-panel__inner" inert={!exchangeEnabled}>
               <div className="create-listing-exchange-panel__content listing-editor__exchange-content">
-                <div className="grid gap-2">
+                <div className="listing-editor__exchange-categories grid gap-2">
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
                     Выберите категории вещей или услуг, которые хотите получить взамен (до{" "}
                     {WANTS_CATEGORIES_LIMIT}). Можно указать категорию целиком или уточнить
