@@ -1829,8 +1829,9 @@ body:has(.chats-page) {
 
 .chats-composer {
   display: flex;
-  height: 42px;
-  align-items: center;
+  min-height: 42px;
+  height: auto;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
   padding: 7px 12px;
@@ -1841,7 +1842,8 @@ body:has(.chats-page) {
     linear-gradient(90deg, #8e8bed 0%, #c8ff02 100%) border-box;
 }
 
-.chats-composer input {
+.chats-composer input,
+.chats-composer textarea {
   min-width: 0;
   flex: 1;
   border: 0;
@@ -1849,11 +1851,26 @@ body:has(.chats-page) {
   color: #1a1a1a;
   font: inherit;
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.35;
   outline: none;
 }
 
-.chats-composer input::placeholder {
+.chats-composer textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 24px;
+  max-height: 120px;
+  margin: 0;
+  padding: 2px 0;
+  resize: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  field-sizing: content;
+}
+
+.chats-composer input::placeholder,
+.chats-composer textarea::placeholder {
   color: #626262;
 }
 
@@ -1863,6 +1880,7 @@ body:has(.chats-page) {
   flex: none;
   align-items: center;
   justify-content: center;
+  margin-bottom: 1px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -2272,7 +2290,9 @@ body:has(.chats-page) {
   }
 
   .chats-composer input,
-  .chats-composer input::placeholder {
+  .chats-composer input::placeholder,
+  .chats-composer textarea,
+  .chats-composer textarea::placeholder {
     font-size: 13px;
     line-height: 1.35;
   }
@@ -2316,5 +2336,368 @@ body:has(.chats-page) {
 
   .listing-action-modal__card.chats-docs-picker {
     padding: 24px 16px 16px;
+  }
+}
+
+/* ——— Mobile chat (≤1024): list-first / full-screen thread like Avito/TG ——— */
+
+.chats-mobile-back {
+  box-sizing: border-box;
+  display: none;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 0;
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chats-mobile-back__chevron {
+  font-size: 18px;
+  line-height: 1;
+}
+
+@media (max-width: 1024px) {
+  html:has(.chats-page.is-mobile-thread),
+  body:has(.chats-page.is-mobile-thread) {
+    height: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+    padding-bottom: 0;
+    touch-action: none;
+  }
+
+  body:has(.chats-page.is-mobile-thread) .mobile-bottom-nav {
+    display: none;
+  }
+
+  .chats-page.is-mobile-list .chats-main,
+  .chats-page.is-mobile-thread .chats-main {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .chats-page.is-mobile-list .chats-main {
+    padding: 72px 12px calc(12px + var(--mobile-bottom-nav-height, 52px) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .chats-page.is-mobile-list .chats-sidebar {
+    height: 100%;
+    min-height: 0;
+    gap: 14px;
+  }
+
+  .chats-page.is-mobile-list .chats-sidebar h1 {
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .chats-page.is-mobile-list .chats-panel,
+  .chats-page.is-mobile-list .chats-empty-panel {
+    display: none;
+  }
+
+  /* Pin chat shell exactly to visualViewport (header stays on screen when keyboard opens). */
+  .chats-page.is-mobile-thread {
+    position: fixed;
+    top: var(--chats-vv-top, 0px);
+    right: 0;
+    left: 0;
+    bottom: auto;
+    z-index: 50;
+    width: 100%;
+    height: var(--chats-vv-height, 100dvh);
+    max-height: var(--chats-vv-height, 100dvh);
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  .chats-page.is-mobile-thread .chats-main {
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .chats-page.is-mobile-thread .chats-sidebar {
+    display: none;
+  }
+
+  .chats-page.is-mobile-thread .chats-empty-panel {
+    display: none;
+  }
+
+  .chats-page.is-mobile-thread .chats-panel {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #f8f8f5;
+    overflow: hidden;
+  }
+
+  .chats-page.is-mobile-thread .chats-panel--active {
+    background: #f8f8f5;
+  }
+
+  .chats-page.is-mobile-thread .chats-active-stage {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header,
+  .chats-page.is-mobile-thread .chats-support-header,
+  .chats-page.is-mobile-thread .chats-active-footer {
+    flex: none;
+    flex-shrink: 0;
+  }
+
+  .chats-page.is-mobile-thread .chats-messages {
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chats-page.is-mobile-thread .chats-mobile-back {
+    display: inline-flex;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px;
+    border-radius: 0;
+    overflow: hidden;
+    pointer-events: auto;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header .chats-mobile-back {
+    grid-column: 1 / -1;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header::after {
+    bottom: -10px;
+    height: 10px;
+  }
+
+  .chats-page.is-mobile-thread .chats-support-header {
+    gap: 6px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 12px;
+    border-radius: 0;
+  }
+
+  .chats-page.is-mobile-thread .chats-support-header strong {
+    font-size: 18px;
+  }
+
+  .chats-page.is-mobile-thread .chats-support-header span {
+    font-size: 12px;
+  }
+
+  /* Compact status plaques — both fit, never overflow viewport */
+  .chats-page.is-mobile-thread .chats-swap-preview {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview__media,
+  .chats-page.is-mobile-thread .chats-swap-preview__image-link,
+  .chats-page.is-mobile-thread .chats-swap-preview__image {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview__image,
+  .chats-page.is-mobile-thread .chats-swap-preview__image-link {
+    border-radius: 10px;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview__body {
+    height: auto;
+    min-height: 0;
+    min-width: 0;
+    gap: 4px;
+    justify-content: flex-start;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview__copy {
+    gap: 2px;
+    width: 100%;
+    max-width: 100%;
+    padding-right: 0;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview--theirs .chats-swap-preview__copy {
+    padding-right: 30px;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview__label {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview__title {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview__status {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    height: 22px;
+    min-height: 22px;
+    max-height: 22px;
+    padding: 0 6px;
+    border-radius: 11px;
+    font-size: 9px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-menu {
+    top: 6px;
+    right: 6px;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-menu__trigger {
+    width: 28px;
+    height: 24px;
+    padding: 2px;
+    border-radius: 8px;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-menu__trigger img,
+  .chats-page.is-mobile-thread .chats-swap-menu__trigger svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-preview__pager {
+    right: 1px;
+    bottom: 1px;
+    min-width: 0;
+    height: 16px;
+    padding: 0 3px;
+    font-size: 8px;
+  }
+
+  .chats-page.is-mobile-thread .chats-messages {
+    gap: 12px;
+    margin: 4px 0 0;
+    padding: 14px 12px 16px;
+  }
+
+  .chats-page.is-mobile-thread .chats-message {
+    max-width: min(82%, 420px);
+    gap: 8px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .chats-page.is-mobile-thread .chats-active-footer,
+  .chats-page.is-mobile-thread .chats-footer-bar {
+    flex: none;
+  }
+
+  .chats-page.is-mobile-thread .chats-footer-bar {
+    gap: 8px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+    border-radius: 0;
+  }
+
+  /* Keyboard open: hide entire top chrome (back + plaques) */
+  .chats-page.is-mobile-thread[data-keyboard="true"] .chats-swap-header,
+  .chats-page.is-mobile-thread[data-keyboard="true"] .chats-support-header {
+    display: none;
+  }
+
+  .chats-page.is-mobile-thread[data-keyboard="true"] .chats-footer-bar {
+    padding-bottom: 6px;
+  }
+
+  /* Keyboard open: hide deal action buttons under the composer */
+  .chats-page.is-mobile-thread[data-keyboard="true"] .chats-actions,
+  .chats-page.is-mobile-thread[data-keyboard="true"] .chats-action-error,
+  .chats-page.is-mobile-thread[data-keyboard="true"] .chats-action-notice {
+    display: none;
+  }
+
+  .chats-page.is-mobile-thread .chats-footer-bar::before {
+    top: -10px;
+    height: 10px;
+  }
+
+  /* Deal buttons — always one row on mobile thread */
+  .chats-page.is-mobile-thread .chats-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 6px;
+    height: auto;
+    min-height: 36px;
+    grid-template-columns: none;
+  }
+
+  .chats-page.is-mobile-thread .chats-actions button {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    height: 36px;
+    min-height: 36px;
+    padding: 0 8px;
+    border-radius: 18px;
+    font-size: 11px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chats-page.is-mobile-thread .chats-panel--offer {
+    gap: 10px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px
+      calc(12px + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #f8f8f5;
+    touch-action: pan-y;
+  }
+
+  .chats-page.is-mobile-thread .chats-panel--offer > .chats-mobile-back {
+    margin-bottom: 2px;
   }
 }

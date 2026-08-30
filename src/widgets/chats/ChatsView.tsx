@@ -10,8 +10,9 @@ import {
   useState,
   type FormEvent,
   type ReactNode,
+  type SyntheticEvent,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import {
@@ -22,6 +23,8 @@ import {
 } from "@/entities/listing";
 import { useAuth, useAuthGate } from "@/features/auth";
 import { useChatInbox } from "@/features/chat-inbox";
+import { MQ } from "@/shared/lib/breakpoints";
+import { useMediaQuery } from "@/shared/lib/use-media-query";
 import {
   getChats,
   getChatAttachableDocuments,
@@ -558,12 +561,14 @@ function IncomingOfferPanel({
   error,
   onAccept,
   onReject,
+  onBack,
 }: {
   offer: IncomingOffer;
   busy: boolean;
   error: string;
   onAccept: () => void;
   onReject: () => void;
+  onBack?: () => void;
 }) {
   const [offerIndex, setOfferIndex] = useState(0);
   const offeredListings = offer.offeredListings;
@@ -595,6 +600,7 @@ function IncomingOfferPanel({
 
   return (
     <section className="chats-panel chats-panel--offer">
+      {onBack ? <ChatsMobileBack onBack={onBack} /> : null}
       <ProfileHeader profile={counterpart ?? offer.sender} />
       <div className="chats-offer-comparison">
         {isSenderView ? (
@@ -832,9 +838,27 @@ function SwapPreviewCard({
   );
 }
 
-function SupportHeader({ name }: { name: string }) {
+function ChatsMobileBack({ onBack }: { onBack: () => void }) {
+  return (
+    <button type="button" className="chats-mobile-back" onClick={onBack}>
+      <span className="chats-mobile-back__chevron" aria-hidden>
+        ←
+      </span>
+      Чаты
+    </button>
+  );
+}
+
+function SupportHeader({
+  name,
+  onBack,
+}: {
+  name: string;
+  onBack?: () => void;
+}) {
   return (
     <div className="chats-support-header">
+      {onBack ? <ChatsMobileBack onBack={onBack} /> : null}
       <strong>{name}</strong>
       <span>Мы на связи в этом чате</span>
     </div>
@@ -844,9 +868,11 @@ function SupportHeader({ name }: { name: string }) {
 function SwapHeader({
   thread,
   currentUserId,
+  onBack,
 }: {
   thread: ChatThread;
   currentUserId: string;
+  onBack?: () => void;
 }) {
   if (!thread.offer) return null;
 
@@ -904,6 +930,7 @@ function SwapHeader({
 
   return (
     <div className="chats-swap-header">
+      {onBack ? <ChatsMobileBack onBack={onBack} /> : null}
       <SwapPreviewCard
         label={mine.label}
         listing={mine.listing}
@@ -935,12 +962,14 @@ function ActiveChatPanel({
   initialDealModal,
   onSend,
   onDealUpdated,
+  onBack,
 }: {
   thread: ChatThread;
   currentUserId: string;
   initialDealModal: ReturnType<typeof dealModalFromQuery>;
   onSend: (payload: SendMessagePayload) => Promise<boolean>;
   onDealUpdated: (deal: ChatThread["deal"]) => void;
+  onBack?: () => void;
 }) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -955,6 +984,7 @@ function ActiveChatPanel({
   const messagesRef = useRef<HTMLDivElement>(null);
   const attachmentsRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   const stickToBottomRef = useRef(true);
   const lastMessage = thread.messages[thread.messages.length - 1];
   const lastMessageId = lastMessage?.id;
@@ -978,16 +1008,43 @@ function ActiveChatPanel({
     scrollMessagesToBottom("auto");
   }, [thread.messages.length, scrollMessagesToBottom]);
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
+  const sendTextMessage = async () => {
     const body = message.trim();
-    if (!body || sending) return;
+    if (!body || sending || composerRef.current?.disabled) return;
     setSending(true);
     stickToBottomRef.current = true;
     const sent = await onSend({ body });
     if (sent) setMessage("");
     setSending(false);
+    const node = composerRef.current;
+    if (!node || node.disabled) return;
+    try {
+      node.focus({ preventScroll: true });
+    } catch {
+      node.focus();
+    }
   };
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    void sendTextMessage();
+  };
+
+  const keepComposerFocused = (event: SyntheticEvent) => {
+    // Prevent the control from taking focus so iOS keeps the keyboard open.
+    event.preventDefault();
+  };
+
+  const resizeComposer = () => {
+    const node = composerRef.current;
+    if (!node) return;
+    node.style.height = "0px";
+    node.style.height = `${Math.min(node.scrollHeight, 120)}px`;
+  };
+
+  useLayoutEffect(() => {
+    resizeComposer();
+  }, [message]);
 
   useEffect(() => {
     if (!attachmentsOpen) return;
@@ -1022,6 +1079,17 @@ function ActiveChatPanel({
     root.addEventListener("scroll", syncStickiness, { passive: true });
     return () => root.removeEventListener("scroll", syncStickiness);
   }, [thread.id]);
+
+  useEffect(() => {
+    const keepBottomOnKeyboard = () => {
+      if (!stickToBottomRef.current) return;
+      scrollMessagesToBottom("auto");
+    };
+    window.visualViewport?.addEventListener("resize", keepBottomOnKeyboard);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", keepBottomOnKeyboard);
+    };
+  }, [scrollMessagesToBottom]);
 
   useEffect(() => {
     const root = messagesRef.current;
@@ -1170,9 +1238,13 @@ function ActiveChatPanel({
     <section className="chats-panel chats-panel--active">
       <div className="chats-active-stage">
         {isSupport ? (
-          <SupportHeader name={thread.counterpart.displayName} />
+          <SupportHeader name={thread.counterpart.displayName} onBack={onBack} />
         ) : (
-          <SwapHeader thread={thread} currentUserId={currentUserId} />
+          <SwapHeader
+            thread={thread}
+            currentUserId={currentUserId}
+            onBack={onBack}
+          />
         )}
         <div ref={messagesRef} className="chats-messages">
           {(() => {
@@ -1289,6 +1361,7 @@ function ActiveChatPanel({
                   aria-expanded={attachmentsOpen}
                   aria-haspopup="menu"
                   disabled={composerLocked || sending}
+                  onMouseDown={keepComposerFocused}
                   onClick={() => {
                     if (!composerLocked) setAttachmentsOpen((open) => !open);
                   }}
@@ -1296,18 +1369,44 @@ function ActiveChatPanel({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/images/chat/attachment.svg" alt="" />
                 </button>
-                <input
+                <textarea
+                  ref={composerRef}
                   value={message}
+                  rows={1}
                   onChange={(event) => setMessage(event.target.value)}
+                  onFocus={(event) => {
+                    const node = event.currentTarget;
+                    try {
+                      node.focus({ preventScroll: true });
+                    } catch {
+                      /* ignore */
+                    }
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                  }}
                   placeholder={composerLocked ? "Чат только для чтения" : "Написать...."}
                   maxLength={2000}
-                  disabled={composerLocked || sending}
+                  disabled={composerLocked}
+                  name="aimena-chat-message"
+                  autoComplete="off"
+                  autoCorrect="on"
+                  autoCapitalize="sentences"
+                  spellCheck={true}
+                  enterKeyHint="enter"
+                  inputMode="text"
+                  data-1p-ignore
+                  data-lpignore="true"
+                  data-form-type="other"
+                  aria-label="Сообщение"
                 />
                 <button
-                  type="submit"
+                  type="button"
                   className="chats-composer__send"
                   aria-label="Отправить"
                   disabled={composerLocked || !message.trim() || sending}
+                  onMouseDown={keepComposerFocused}
+                  onClick={() => void sendTextMessage()}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/images/chat/send-star.svg" alt="" />
@@ -1342,10 +1441,12 @@ function ActiveChatPanel({
 }
 
 export function ChatsView() {
+  const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { guardAuth } = useAuthGate();
   const { refreshUnread } = useChatInbox();
   const searchParams = useSearchParams();
+  const isCompact = useMediaQuery(MQ.compact);
   const selectedFromQuery = searchParams.get("selected");
   const openSupportFromQuery = searchParams.get("support") === "1";
   const initialDealModal = dealModalFromQuery(searchParams.get("dealModal"));
@@ -1357,6 +1458,89 @@ export function ChatsView() {
   const [loading, setLoading] = useState(true);
   const [actionBusy, setActionBusy] = useState(false);
   const [error, setError] = useState("");
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  const mobileThreadOpen = isCompact && Boolean(selectedId);
+  const pageModeClass = isCompact
+    ? mobileThreadOpen
+      ? " is-mobile-thread"
+      : " is-mobile-list"
+    : "";
+
+  const syncChatUrl = useCallback(
+    (nextId: string | null) => {
+      const next =
+        nextId != null
+          ? `/chats?selected=${encodeURIComponent(nextId)}`
+          : "/chats";
+      const current =
+        typeof window !== "undefined"
+          ? `${window.location.pathname}${window.location.search}`
+          : "";
+      if (current === next) return;
+      router.replace(next, { scroll: false });
+    },
+    [router],
+  );
+
+  useEffect(() => {
+    if (!mobileThreadOpen) {
+      setKeyboardOpen(false);
+      const root = document.documentElement;
+      root.style.removeProperty("--chats-vv-top");
+      root.style.removeProperty("--chats-vv-height");
+      root.style.removeProperty("--chats-kbd-inset");
+      return;
+    }
+
+    const root = document.documentElement;
+    const lockWindowScroll = () => {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
+        window.scrollTo(0, 0);
+      }
+      if (document.documentElement.scrollTop !== 0) {
+        document.documentElement.scrollTop = 0;
+      }
+      if (document.body.scrollTop !== 0) {
+        document.body.scrollTop = 0;
+      }
+    };
+
+    const syncViewport = () => {
+      const vv = window.visualViewport;
+      lockWindowScroll();
+      if (!vv) {
+        root.style.removeProperty("--chats-vv-top");
+        root.style.removeProperty("--chats-vv-height");
+        setKeyboardOpen(false);
+        return;
+      }
+      // Follow the visible viewport so Safari's keyboard pan does not hide the header.
+      const top = Math.max(0, Math.round(vv.offsetTop));
+      const height = Math.max(0, Math.round(vv.height));
+      root.style.setProperty("--chats-vv-top", `${top}px`);
+      root.style.setProperty("--chats-vv-height", `${height}px`);
+      const covered = Math.max(0, window.innerHeight - height - top);
+      setKeyboardOpen(covered > 60);
+    };
+
+    syncViewport();
+    window.visualViewport?.addEventListener("resize", syncViewport);
+    window.visualViewport?.addEventListener("scroll", syncViewport);
+    window.addEventListener("resize", syncViewport);
+    window.addEventListener("scroll", lockWindowScroll, { passive: true });
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", syncViewport);
+      window.visualViewport?.removeEventListener("scroll", syncViewport);
+      window.removeEventListener("resize", syncViewport);
+      window.removeEventListener("scroll", lockWindowScroll);
+      root.style.removeProperty("--chats-vv-top");
+      root.style.removeProperty("--chats-vv-height");
+      root.style.removeProperty("--chats-kbd-inset");
+      setKeyboardOpen(false);
+    };
+  }, [mobileThreadOpen]);
 
   const loadSummaries = useCallback(async (signal?: AbortSignal) => {
     const response = await getChats(signal);
@@ -1604,21 +1788,34 @@ export function ChatsView() {
   }, [filter, summaries]);
 
   const handleSelect = (item: ChatSummary) => {
-    if (item.id === selectedId) return;
+    if (item.id === selectedId) {
+      if (isCompact) syncChatUrl(item.id);
+      return;
+    }
     setSelectedId(item.id);
     setIncomingOffer(null);
     setThread(null);
     setError("");
+    syncChatUrl(item.id);
   };
+
+  const handleBackToList = useCallback(() => {
+    setSelectedId(null);
+    setIncomingOffer(null);
+    setThread(null);
+    setError("");
+    syncChatUrl(null);
+  }, [syncChatUrl]);
 
   const handleFilterChange = (nextFilter: ChatFilter) => {
     const nextItems = filterChatSummaries(summaries, nextFilter);
     setFilter(nextFilter);
     if (!nextItems.some((item) => item.id === selectedId)) {
-      setSelectedId(nextItems[0]?.id ?? null);
+      setSelectedId(null);
       setIncomingOffer(null);
       setThread(null);
       setError("");
+      if (selectedId) syncChatUrl(null);
     }
   };
 
@@ -1638,6 +1835,7 @@ export function ChatsView() {
           : (items[0]?.id ?? null);
       setSelectedId(nextId);
       setIncomingOffer(null);
+      syncChatUrl(nextId);
     } catch (actionError) {
       setError(
         actionError instanceof ApiError
@@ -1699,8 +1897,11 @@ export function ChatsView() {
   };
 
   return (
-    <div className="chats-page">
-      <Header />
+    <div
+      className={`chats-page${pageModeClass}`}
+      data-keyboard={keyboardOpen ? "true" : undefined}
+    >
+      {mobileThreadOpen ? null : <Header />}
       <main className="chats-main">
         <Sidebar
           items={filteredSummaries}
@@ -1717,6 +1918,7 @@ export function ChatsView() {
             error={error}
             onAccept={() => void resolveOffer("accept")}
             onReject={() => void resolveOffer("reject")}
+            onBack={isCompact ? handleBackToList : undefined}
           />
         ) : null}
         {!loading && thread && user ? (
@@ -1725,6 +1927,7 @@ export function ChatsView() {
             thread={thread}
             currentUserId={user.id}
             initialDealModal={initialDealModal}
+            onBack={isCompact ? handleBackToList : undefined}
             onSend={handleSend}
             onDealUpdated={(deal) => {
               setThread((current) => {

@@ -31,6 +31,8 @@ function shouldSkipPin(target: HTMLElement): boolean {
   if (target.closest(".site-header-compact-search")) return true;
   // Auth has its own keyboard scroll assist.
   if (target.closest(".auth-page-shell")) return true;
+  // Open mobile chat pins itself to visualViewport above the keyboard.
+  if (target.closest(".chats-page.is-mobile-thread")) return true;
   return false;
 }
 
