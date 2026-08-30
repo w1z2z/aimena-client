@@ -1231,14 +1231,12 @@
   }
 
   .listing-detail-gallery {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 56px;
-    gap: 8px;
-    align-items: stretch;
+    position: relative;
+    display: block;
   }
 
   .listing-detail-gallery__main {
-    width: 100%;
+    width: calc(100% - 64px);
     margin: 0;
     aspect-ratio: 1 / 1;
     border-radius: 18px;
@@ -1253,12 +1251,17 @@
   }
 
   .listing-detail-gallery__thumbs-wrap {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     width: 56px;
     min-height: 0;
-    align-self: stretch;
+    overflow: hidden;
+    padding: 0;
   }
 
   .listing-detail-gallery__thumbs-viewport {
@@ -1266,26 +1269,34 @@
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    width: 56px;
+    width: 100%;
     min-height: 0;
+    overflow: hidden;
   }
 
   .listing-detail-gallery__thumbs {
     flex: 1 1 auto;
     flex-direction: column;
-    align-items: stretch;
+    flex-wrap: nowrap;
+    align-items: center;
     gap: 6px;
-    width: 56px;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
     min-height: 0;
-    overflow-x: hidden;
+    box-sizing: border-box;
+    padding: 3px;
+    margin: 0;
+    overflow-x: visible;
     overflow-y: auto;
+    scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
 
   .listing-detail-gallery__thumb {
-    flex: 0 0 56px;
-    width: 56px;
-    height: 56px;
+    flex: 0 0 50px;
+    width: 50px;
+    height: 50px;
     border-radius: 12px;
   }
 
@@ -1352,26 +1363,24 @@
     height: 44px;
   }
 
-  .listing-detail-gallery {
-    grid-template-columns: minmax(0, 1fr) 52px;
-    gap: 6px;
+  .listing-detail-gallery__main {
+    width: calc(100% - 58px);
   }
 
-  .listing-detail-gallery__thumbs-wrap,
-  .listing-detail-gallery__thumbs-viewport,
-  .listing-detail-gallery__thumbs {
+  .listing-detail-gallery__thumbs-wrap {
     width: 52px;
   }
 
   .listing-detail-gallery__thumb {
-    flex: 0 0 52px;
-    width: 52px;
-    height: 52px;
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
     border-radius: 12px;
   }
 
   .listing-detail-gallery__thumbs {
     gap: 6px;
+    padding: 3px;
   }
 
   .listing-detail-wants__title,
