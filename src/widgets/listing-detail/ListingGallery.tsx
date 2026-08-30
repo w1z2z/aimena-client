@@ -372,60 +372,58 @@ export function ListingGallery({
         ) : null}
       </div>
 
-      {canNavigate ? (
-        <div ref={alignTargetRef} className="listing-detail-gallery__thumbs-wrap">
-          <div className="listing-detail-gallery__thumbs-viewport">
-            <div
-              ref={thumbsTrackRef}
-              className="listing-detail-gallery__thumbs"
-              role="list"
-            >
-              {slides.map((slide, index) => (
-                <button
-                  key={slide.id}
-                  type="button"
-                  role="listitem"
-                  data-thumb-index={index}
-                  aria-label={`Фото ${index + 1}`}
-                  aria-current={index === safeIndex}
-                  className={[
-                    "listing-detail-gallery__thumb",
-                    index === safeIndex ? "listing-detail-gallery__thumb--active" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={() => setActiveIndex(index)}
-                >
-                  <img src={slide.url} alt="" />
-                </button>
-              ))}
-            </div>
-
-            {showThumbsNav ? (
-              <>
-                <button
-                  type="button"
-                  aria-label="Предыдущие миниатюры"
-                  className="listing-detail-gallery__thumbs-nav listing-detail-gallery__thumbs-nav--prev"
-                  disabled={!canScrollThumbsLeft}
-                  onClick={() => scrollThumbsByPage(-1)}
-                >
-                  <ThumbStripChevron direction="left" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Следующие миниатюры"
-                  className="listing-detail-gallery__thumbs-nav listing-detail-gallery__thumbs-nav--next"
-                  disabled={!canScrollThumbsRight}
-                  onClick={() => scrollThumbsByPage(1)}
-                >
-                  <ThumbStripChevron direction="right" />
-                </button>
-              </>
-            ) : null}
+      <div ref={alignTargetRef} className="listing-detail-gallery__thumbs-wrap">
+        <div className="listing-detail-gallery__thumbs-viewport">
+          <div
+            ref={thumbsTrackRef}
+            className="listing-detail-gallery__thumbs"
+            role="list"
+          >
+            {slides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                role="listitem"
+                data-thumb-index={index}
+                aria-label={`Фото ${index + 1}`}
+                aria-current={index === safeIndex}
+                className={[
+                  "listing-detail-gallery__thumb",
+                  index === safeIndex ? "listing-detail-gallery__thumb--active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => setActiveIndex(index)}
+              >
+                <img src={slide.url} alt="" />
+              </button>
+            ))}
           </div>
+
+          {showThumbsNav ? (
+            <>
+              <button
+                type="button"
+                aria-label="Предыдущие миниатюры"
+                className="listing-detail-gallery__thumbs-nav listing-detail-gallery__thumbs-nav--prev"
+                disabled={!canScrollThumbsLeft}
+                onClick={() => scrollThumbsByPage(-1)}
+              >
+                <ThumbStripChevron direction="left" />
+              </button>
+              <button
+                type="button"
+                aria-label="Следующие миниатюры"
+                className="listing-detail-gallery__thumbs-nav listing-detail-gallery__thumbs-nav--next"
+                disabled={!canScrollThumbsRight}
+                onClick={() => scrollThumbsByPage(1)}
+              >
+                <ThumbStripChevron direction="right" />
+              </button>
+            </>
+          ) : null}
         </div>
-      ) : null}
+      </div>
 
       {lightbox}
     </div>

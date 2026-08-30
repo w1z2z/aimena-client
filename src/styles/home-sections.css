@@ -357,23 +357,23 @@
     display: none;
   }
 
-  .home-free-carousel__nav {
-    width: 50px;
-    height: 66px;
-    border-radius: 12px;
+  .home-free-carousel__nav.carousel-nav-btn {
+    width: 36px;
+    height: 48px;
+    border-radius: 10px;
   }
 
-  .home-free-carousel__nav .carousel-nav-btn__icon {
-    width: 16px;
-    height: 26px;
+  .home-free-carousel__nav.carousel-nav-btn .carousel-nav-btn__icon {
+    width: 11px;
+    height: 18px;
   }
 
   .home-free-carousel__nav--prev {
-    left: 8px;
+    left: 6px;
   }
 
   .home-free-carousel__nav--next {
-    right: 8px;
+    right: 6px;
   }
 
   .home-free-section__carousel-slot,
