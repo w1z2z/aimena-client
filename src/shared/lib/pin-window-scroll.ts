@@ -16,6 +16,11 @@ export function pinWindowScroll(scrollX: number, scrollY: number) {
 
 let activePinCleanup: (() => void) | null = null;
 
+/** Stop fighting page scroll after an accidental focus while swiping. */
+export function cancelScrollPin() {
+  activePinCleanup?.();
+}
+
 /** Pin across keyboard / focus-scroll delays (iOS may scroll late). */
 export function pinScrollAroundFocus(durationMs = 1000) {
   if (typeof window === "undefined") return;
