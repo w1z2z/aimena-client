@@ -841,9 +841,22 @@ function SwapPreviewCard({
 function ChatsMobileBack({ onBack }: { onBack: () => void }) {
   return (
     <button type="button" className="chats-mobile-back" onClick={onBack}>
-      <span className="chats-mobile-back__chevron" aria-hidden>
-        ←
-      </span>
+      <svg
+        width="10"
+        height="6"
+        viewBox="0 0 10 6"
+        fill="none"
+        aria-hidden
+        className="chats-mobile-back__chevron"
+      >
+        <path
+          d="M1 1L5 5L9 1"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
       Чаты
     </button>
   );
@@ -1038,27 +1051,79 @@ function ActiveChatPanel({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const stickToBottomRef = useRef(true);
+  const programmaticScrollRef = useRef(false);
+  const scrollRetryTimersRef = useRef<number[]>([]);
   const lastMessage = thread.messages[thread.messages.length - 1];
   const lastMessageId = lastMessage?.id;
   const lastMessageSenderId = lastMessage?.senderId;
 
-  const scrollMessagesToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+  const scrollMessagesToBottom = useCallback(() => {
     const root = messagesRef.current;
     if (!root) return;
-    root.scrollTo({ top: root.scrollHeight, behavior });
+
+    stickToBottomRef.current = true;
+    programmaticScrollRef.current = true;
+
+    for (const timerId of scrollRetryTimersRef.current) {
+      window.clearTimeout(timerId);
+    }
+    scrollRetryTimersRef.current = [];
+
+    const run = () => {
+      const node = messagesRef.current;
+      if (!node) return;
+      // iOS Safari: avoid scrollTo(smooth) and scrollIntoView (they move the wrong scroller).
+      const top = Math.max(0, node.scrollHeight - node.clientHeight);
+      node.scrollTop = top;
+    };
+
+    run();
+    window.requestAnimationFrame(() => {
+      run();
+      window.requestAnimationFrame(run);
+    });
+
+    for (const delay of [0, 50, 120, 250, 400]) {
+      scrollRetryTimersRef.current.push(window.setTimeout(run, delay));
+    }
+    scrollRetryTimersRef.current.push(
+      window.setTimeout(() => {
+        programmaticScrollRef.current = false;
+        stickToBottomRef.current = true;
+        run();
+      }, 480),
+    );
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      for (const timerId of scrollRetryTimersRef.current) {
+        window.clearTimeout(timerId);
+      }
+    };
   }, []);
 
   useLayoutEffect(() => {
     stickToBottomRef.current = true;
-    scrollMessagesToBottom("auto");
-    const frameId = window.requestAnimationFrame(() => scrollMessagesToBottom("auto"));
-    return () => window.cancelAnimationFrame(frameId);
+    scrollMessagesToBottom();
   }, [thread.id, scrollMessagesToBottom]);
 
   useLayoutEffect(() => {
-    if (!stickToBottomRef.current || thread.messages.length === 0) return;
-    scrollMessagesToBottom("auto");
-  }, [thread.messages.length, scrollMessagesToBottom]);
+    if (!stickToBottomRef.current) return;
+    scrollMessagesToBottom();
+  }, [thread.messages.length, pendingMessages.length, scrollMessagesToBottom]);
+
+  useLayoutEffect(() => {
+    if (!stickToBottomRef.current) return;
+    scrollMessagesToBottom();
+  }, [
+    thread.deal?.status,
+    thread.deal?.termsConfirmedByMe,
+    thread.deal?.termsConfirmedByOther,
+    thread.deal?.completedByMe,
+    thread.deal?.completedByOther,
+    scrollMessagesToBottom,
+  ]);
 
   const sendTextMessage = async () => {
     const body = message.trim();
@@ -1068,13 +1133,16 @@ function ActiveChatPanel({
     const sent = await onSend({ body });
     if (sent) setMessage("");
     setSending(false);
+    scrollMessagesToBottom();
     const node = composerRef.current;
-    if (!node || node.disabled) return;
-    try {
-      node.focus({ preventScroll: true });
-    } catch {
-      node.focus();
+    if (node && !node.disabled) {
+      try {
+        node.focus({ preventScroll: true });
+      } catch {
+        node.focus();
+      }
     }
+    scrollMessagesToBottom();
   };
 
   const submit = (event: FormEvent) => {
@@ -1124,6 +1192,7 @@ function ActiveChatPanel({
     if (!root) return;
 
     const syncStickiness = () => {
+      if (programmaticScrollRef.current) return;
       const distanceFromBottom = root.scrollHeight - root.scrollTop - root.clientHeight;
       stickToBottomRef.current = distanceFromBottom < 80;
     };
@@ -1135,7 +1204,7 @@ function ActiveChatPanel({
   useEffect(() => {
     const keepBottomOnKeyboard = () => {
       if (!stickToBottomRef.current) return;
-      scrollMessagesToBottom("auto");
+      scrollMessagesToBottom();
     };
     window.visualViewport?.addEventListener("resize", keepBottomOnKeyboard);
     return () => {
@@ -1144,18 +1213,17 @@ function ActiveChatPanel({
   }, [scrollMessagesToBottom]);
 
   useEffect(() => {
-    const root = messagesRef.current;
-    if (!root || !lastMessageId) return;
-
+    if (!lastMessageId) return;
     const fromMe = lastMessageSenderId === currentUserId;
     if (!stickToBottomRef.current && !fromMe) return;
-
-    root.scrollTo({
-      top: root.scrollHeight,
-      behavior: stickToBottomRef.current || fromMe ? "smooth" : "auto",
-    });
-    stickToBottomRef.current = true;
-  }, [thread.id, lastMessageId, lastMessageSenderId, currentUserId, thread.messages.length]);
+    scrollMessagesToBottom();
+  }, [
+    thread.id,
+    lastMessageId,
+    lastMessageSenderId,
+    currentUserId,
+    scrollMessagesToBottom,
+  ]);
 
   const isSupport = thread.kind === "support" || !thread.offer;
   const composerLocked = thread.status !== "active";
@@ -1185,6 +1253,7 @@ function ActiveChatPanel({
   const sendListingDocuments = async (listingDocumentIds: string[]) => {
     setSending(true);
     stickToBottomRef.current = true;
+    scrollMessagesToBottom();
     let allSent = true;
     try {
       for (const listingDocumentId of listingDocumentIds) {
@@ -1202,6 +1271,7 @@ function ActiveChatPanel({
       }
     } finally {
       setSending(false);
+      scrollMessagesToBottom();
     }
   };
 
@@ -1241,6 +1311,7 @@ function ActiveChatPanel({
       ...pendingItems.map((item) => item.message),
     ]);
     stickToBottomRef.current = true;
+    scrollMessagesToBottom();
     setSending(true);
 
     try {
@@ -1437,7 +1508,7 @@ function ActiveChatPanel({
                     document.documentElement.scrollTop = 0;
                     document.body.scrollTop = 0;
                   }}
-                  placeholder={composerLocked ? "Чат только для чтения" : "Написать...."}
+                  placeholder={composerLocked ? "Чат только для чтения" : "Сообщение..."}
                   maxLength={2000}
                   disabled={composerLocked}
                   name="aimena-chat-message"
@@ -1471,7 +1542,11 @@ function ActiveChatPanel({
                 deal={thread.deal}
                 threadStatus={thread.status}
                 initialModal={initialDealModal}
-                onDealUpdated={onDealUpdated}
+                onDealUpdated={(deal) => {
+                  stickToBottomRef.current = true;
+                  onDealUpdated(deal);
+                  scrollMessagesToBottom();
+                }}
               />
             ) : null}
           </div>

@@ -1326,6 +1326,7 @@ body:has(.chats-page) {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 24px 12px 32px 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .chats-date-divider {
@@ -2380,25 +2381,41 @@ body:has(.chats-page) {
   display: none;
   flex: none;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   width: fit-content;
+  height: 32px;
   margin: 0;
-  padding: 4px 2px;
-  border: 0;
-  background: transparent;
+  padding: 8px 24px;
+  border: 1px solid #cacaca;
+  border-radius: 36px;
+  background: #fff;
   color: #1a1a1a;
   font: inherit;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1.2;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.014px;
   cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
+.chats-mobile-back:hover {
+  background: #f8f8f5;
+}
+
+.chats-mobile-back:active {
+  border-color: #8e8bed;
+  background: #f0e8ff;
+}
+
 .chats-mobile-back__chevron {
-  font-size: 18px;
-  line-height: 1;
+  display: block;
+  flex: none;
+  width: 10px;
+  height: 6px;
+  transform: rotate(90deg);
 }
 
 @media (max-width: 1024px) {
