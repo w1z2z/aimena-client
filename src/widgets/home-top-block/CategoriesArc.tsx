@@ -49,8 +49,10 @@ const ARC_CENTER_X = ARC_CONTAINER_WIDTH / 2;
 const ARC_CONTAINER_TOP = 96;
 const CATEGORY_DRAG_CLICK_THRESHOLD = 6;
 const CATEGORY_DRAG_PIXELS_PER_STEP = 88;
-/** Compact (≤1024): shrink the whole arc so more icons fit on a phone-sized crop. */
-const ARC_COMPACT_SCALE = 0.56;
+/** Compact (≤1024): scale icon size on mobile. */
+const ARC_COMPACT_SCALE = 0.68;
+/** Compact: horizontal spacing between categories (< 1 = tighter). */
+const ARC_COMPACT_SPACING_SCALE = 0.88;
 
 type CategoryProfileStep = {
   offsetX: number;
@@ -268,7 +270,12 @@ type CategoryLayout = {
   labelOpacity: number;
 };
 
-function computeCategoryLayout(index: number, displayIndex: number, length: number): CategoryLayout {
+function computeCategoryLayout(
+  index: number,
+  displayIndex: number,
+  length: number,
+  offsetXScale = 1,
+): CategoryLayout {
   const distance = getWrappedDistanceFloat(index, displayIndex, length);
   const maxVisibleDistance = CATEGORY_PROFILE.length - 1;
   const isFar = Math.abs(distance) > maxVisibleDistance + 0.05;
@@ -277,7 +284,7 @@ function computeCategoryLayout(index: number, displayIndex: number, length: numb
   const centerY = interpolateProfile("centerY", distance);
 
   return {
-    x: ARC_CENTER_X + direction * interpolateProfile("offsetX", distance),
+    x: ARC_CENTER_X + direction * interpolateProfile("offsetX", distance) * offsetXScale,
     y: centerY - iconHeight / 2,
     iconWidth: interpolateProfile("iconWidth", distance),
     iconHeight,
@@ -356,7 +363,8 @@ export function CategoriesArc({
   const isSafari = useIsSafari();
   const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
   const arcScale = isCompact ? ARC_COMPACT_SCALE : 1;
-  const dragPixelsPerStep = CATEGORY_DRAG_PIXELS_PER_STEP * arcScale;
+  const offsetXScale = isCompact ? ARC_COMPACT_SPACING_SCALE : 1;
+  const dragPixelsPerStep = CATEGORY_DRAG_PIXELS_PER_STEP * arcScale * offsetXScale;
   const animationRef = useRef<number | null>(null);
   const dragFrameRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
@@ -374,7 +382,7 @@ export function CategoriesArc({
         const refs = itemRefs.current[index];
         if (!refs) return;
 
-        const layout = computeCategoryLayout(index, displayIndex, length);
+        const layout = computeCategoryLayout(index, displayIndex, length, offsetXScale);
         if (layout.isFar) {
           refs.button.style.opacity = "0";
           refs.button.style.pointerEvents = "none";
@@ -386,7 +394,7 @@ export function CategoriesArc({
         applyCategoryLayout(refs, layout, useSvgIconFilterRef.current, { skipFilters, skipAria });
       });
     },
-    [categories, length],
+    [categories, length, offsetXScale],
   );
 
   const setInteractionWillChange = useCallback((enabled: boolean) => {
@@ -609,7 +617,19 @@ export function CategoriesArc({
           : null),
       }}
     >
-      <CategoryArcGlass />
+      <div
+        className="pointer-events-none absolute inset-0 z-0 overflow-visible"
+        style={
+          isCompact
+            ? {
+                transform: `scaleX(${ARC_COMPACT_SPACING_SCALE})`,
+                transformOrigin: `${ARC_CENTER_X}px top`,
+              }
+            : undefined
+        }
+      >
+        <CategoryArcGlass />
+      </div>
 
       <svg aria-hidden className="pointer-events-none absolute size-0 overflow-hidden">
         <defs>
@@ -645,7 +665,7 @@ export function CategoriesArc({
 
       <div className="absolute inset-0 z-[1] overflow-visible" style={{ transform: "translateZ(0)" }}>
         {categories.map((item, index) => {
-          const layout = computeCategoryLayout(index, initialIndex, length);
+          const layout = computeCategoryLayout(index, initialIndex, length, offsetXScale);
           const distance = getWrappedDistanceFloat(index, initialIndex, length);
 
           return (
