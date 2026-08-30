@@ -189,7 +189,7 @@ function LabeledInput({
   className: string;
   compact?: boolean;
 }) {
-  const textClass = compact ? "text-[12px] leading-[135%]" : "text-[14px] leading-[170%]";
+  const textClass = compact ? "text-[13px] leading-[135%]" : "text-[14px] leading-[170%]";
   return (
     <div className={className}>
       <p className={`mb-[12px] font-normal text-[#1A1A1A] ${compact ? "text-[12px] leading-[135%]" : "text-[14px] leading-[170%]"}`}>
@@ -217,7 +217,7 @@ function HeroPriceInput({
   const priceMeasureRef = useRef<HTMLSpanElement>(null);
   const [priceTextWidth, setPriceTextWidth] = useState(0);
   const formattedPrice = formatPriceWithSpaces(priceDigits);
-  const textClass = compact ? "text-[12px] leading-[135%]" : "text-[14px] leading-[170%]";
+  const textClass = compact ? "text-[13px] leading-[135%]" : "text-[14px] leading-[170%]";
 
   useLayoutEffect(() => {
     const node = priceMeasureRef.current;

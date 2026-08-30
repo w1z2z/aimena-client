@@ -1499,10 +1499,10 @@
   }
 }
 
-/* Hero compact: city select — 16px on iOS to avoid focus zoom. */
+/* Hero compact: city select — match create-listing control font on mobile. */
 .home-hero-compact .home-hero-field .site-select--field .site-select__input,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input {
-  font-size: 16px !important;
+  font-size: 13px !important;
   line-height: 1.35 !important;
 }
 
@@ -1510,7 +1510,7 @@
 .home-hero-compact .home-hero-field .site-select--field .site-select__input.is-placeholder,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input::placeholder,
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input.is-placeholder {
-  font-size: 16px !important;
+  font-size: 13px !important;
   line-height: 1.35 !important;
 }
 
@@ -1520,5 +1520,29 @@
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input.is-placeholder,
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input::placeholder,
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input.is-placeholder {
-  font-size: 16px !important;
+  font-size: 13px !important;
+}
+
+/* Compact ≤1024 — shared inputs/selects match create-listing (--listing-control-font: 13px).
+ * Note: site-wide iOS 16px !important in globals.css still wins unless overridden there. */
+@media (max-width: 1024px) {
+  .site-select--filter .site-select__input,
+  .site-select--field .site-select__input,
+  .site-select--hero .site-select__input,
+  .site-select--filter .site-select__input::placeholder,
+  .site-select--filter .site-select__input.is-placeholder,
+  .site-select--field .site-select__input::placeholder,
+  .site-select--field .site-select__input.is-placeholder,
+  .site-select--hero .site-select__input::placeholder,
+  .site-select--hero .site-select__input.is-placeholder,
+  .site-select__option,
+  .home-filters-panel__input,
+  .home-filters-panel__input::placeholder,
+  .home-filters-panel__price-measure,
+  .home-filters-panel__price-suffix,
+  .create-listing-description__input,
+  .create-listing-description__input::placeholder {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
 }

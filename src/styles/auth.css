@@ -366,12 +366,13 @@
   .auth-input {
     height: 44px;
     border-radius: 16px;
-    /* iOS Safari zooms focused inputs under 16px — keep readable without zoom. */
-    font-size: 16px;
+    font-size: 13px;
+    line-height: 1.35;
   }
 
   .auth-input::placeholder {
-    font-size: 16px;
+    font-size: 13px;
+    line-height: 1.35;
   }
 
   .auth-button {
@@ -386,7 +387,14 @@
   .auth-city-select.site-select--field .site-select__input {
     height: 44px;
     border-radius: 16px;
-    font-size: 16px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .auth-city-select.site-select--field .site-select__input::placeholder,
+  .auth-city-select.site-select--field .site-select__input.is-placeholder {
+    font-size: 13px;
+    line-height: 1.35;
   }
 
   .auth-link--nav {

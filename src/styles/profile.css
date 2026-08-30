@@ -2064,7 +2064,7 @@ a.profile-deal-card__partner-name:hover {
   .profile-settings-city.site-select--field .site-select__input,
   .profile-settings-city.site-select--field .site-select__input::placeholder,
   .profile-settings-city.site-select--field .site-select__input.is-placeholder {
-    font-size: 16px !important;
+    font-size: 13px !important;
     line-height: 1.35 !important;
   }
 
@@ -2079,7 +2079,7 @@ a.profile-deal-card__partner-name:hover {
   }
 
   .profile-settings .site-select__option {
-    font-size: 16px !important;
+    font-size: 13px !important;
     line-height: 1.35 !important;
   }
 }

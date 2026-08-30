@@ -238,6 +238,48 @@ textarea:disabled {
   }
 }
 
+/*
+ * Home hero + feed filters — same 13px as listing-editor (overrides iOS 16px rule).
+ * Must beat `input:not([type=…])×9` specificity from the site-wide compact fix above.
+ */
+@media (max-width: 1024px) {
+  .home-hero-compact input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  .home-hero-compact .site-select__input,
+  .home-hero-form__lime input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  .home-hero-form__lime .site-select__input,
+  .home-filters-panel input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  .home-filters-panel .site-select__input,
+  .home-filters-modal input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  .home-filters-modal .site-select__input {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-hero-compact input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  .home-hero-compact .site-select__input::placeholder,
+  .home-hero-compact .site-select__input.is-placeholder,
+  .home-hero-form__lime input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  .home-hero-form__lime .site-select__input::placeholder,
+  .home-hero-form__lime .site-select__input.is-placeholder,
+  .home-filters-panel input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  .home-filters-panel .site-select__input::placeholder,
+  .home-filters-panel .site-select__input.is-placeholder,
+  .home-filters-modal input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  .home-filters-modal .site-select__input::placeholder,
+  .home-filters-modal .site-select__input.is-placeholder {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-hero-compact .home-hero-field--price > div > span,
+  .home-hero-form__lime .home-hero-field--price > div > span,
+  .home-filters-panel__price-measure,
+  .home-filters-panel__price-suffix {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
+}
+
 @keyframes home-ticker-scroll {
   from {
     transform: translate3d(0, 0, 0);

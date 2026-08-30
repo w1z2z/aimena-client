@@ -316,12 +316,12 @@
 .home-hero-compact .home-hero-field .site-select--field .site-select__input {
   height: var(--hero-input-h);
   border-radius: var(--hero-input-radius);
-  font-size: 16px !important;
+  font-size: 13px !important;
   line-height: 1.35 !important;
 }
 
 .home-hero-compact .home-hero-field--price > div > span {
-  font-size: 16px !important;
+  font-size: 13px !important;
   line-height: 1.35 !important;
 }
 
@@ -330,7 +330,7 @@
 .home-hero-compact .home-hero-field .site-select--hero .site-select__input.is-placeholder,
 .home-hero-compact .home-hero-field .site-select--field .site-select__input::placeholder,
 .home-hero-compact .home-hero-field .site-select--field .site-select__input.is-placeholder {
-  font-size: 16px !important;
+  font-size: 13px !important;
   line-height: 1.35 !important;
 }
 
@@ -343,7 +343,7 @@
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--hero .site-select__input.is-placeholder,
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input::placeholder,
 .home-hero-compact[data-density="dense"] .home-hero-field .site-select--field .site-select__input.is-placeholder {
-  font-size: 16px !important;
+  font-size: 13px !important;
 }
 
 .home-hero-city-row {
@@ -964,7 +964,7 @@
 
 }
 
-/* Mobile safety net: iOS needs 16px in focused fields — labels may stay compact. */
+/* Mobile: match create-listing control typography (13px). */
 @media (max-width: 1024px) {
   .home-hero-form__lime .home-hero-field > p {
     font-size: 12px !important;
@@ -975,7 +975,7 @@
   .home-hero-form__lime .site-select--hero .site-select__input,
   .home-hero-form__lime .site-select--field .site-select__input,
   .home-hero-form__lime .home-hero-field--price > div > span {
-    font-size: 16px !important;
+    font-size: 13px !important;
     line-height: 1.35 !important;
   }
 
@@ -984,7 +984,7 @@
   .home-hero-form__lime .site-select--field .site-select__input::placeholder,
   .home-hero-form__lime .site-select--hero .site-select__input.is-placeholder,
   .home-hero-form__lime .site-select--field .site-select__input.is-placeholder {
-    font-size: 16px !important;
+    font-size: 13px !important;
     line-height: 1.35 !important;
   }
 }

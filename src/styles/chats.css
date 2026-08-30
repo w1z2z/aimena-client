@@ -2271,6 +2271,12 @@ body:has(.chats-page) {
     min-height: 48px;
   }
 
+  .chats-composer input,
+  .chats-composer input::placeholder {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
   .chats-offer-column > h2 {
     font-size: 16px;
   }

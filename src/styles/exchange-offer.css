@@ -533,6 +533,14 @@ a.exchange-offer-profile:hover {
     margin: 0 auto;
     transform: rotate(90deg);
   }
+
+  .exchange-offer-search input,
+  .exchange-offer-search input::placeholder,
+  .exchange-offer-choice textarea,
+  .exchange-offer-choice textarea::placeholder {
+    font-size: 13px;
+    line-height: 1.35;
+  }
 }
 
 @media (max-width: 640px) {
