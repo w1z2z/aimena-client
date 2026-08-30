@@ -12,6 +12,7 @@ import {
   type ReactNode,
   type SyntheticEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -678,17 +679,58 @@ function ChatSupportMenu({
   };
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState<{ top: number; left: number; width: number } | null>(
+    null,
+  );
   const { isRendered, isVisible } = useOverlayPresence(open);
+
+  useLayoutEffect(() => {
+    if (!isRendered) {
+      setPanelPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+      const rect = trigger.getBoundingClientRect();
+      const width = Math.min(337, Math.max(240, window.innerWidth - 24));
+      const left = Math.min(
+        Math.max(12, rect.right - width),
+        window.innerWidth - width - 12,
+      );
+      setPanelPosition({
+        top: Math.round(rect.bottom + 8),
+        left: Math.round(left),
+        width: Math.round(width),
+      });
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isRendered, isVisible]);
 
   useEffect(() => {
     if (!open) return;
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false);
+      const target = event.target as Node;
+      if (
+        containerRef.current?.contains(target) ||
+        panelRef.current?.contains(target)
+      ) {
+        return;
       }
+      setOpen(false);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -703,9 +745,13 @@ function ChatSupportMenu({
     };
   }, [open]);
 
+  const panelReady = panelPosition !== null;
+  const showPanel = isVisible && panelReady;
+
   return (
     <div ref={containerRef} className="chats-swap-menu">
       <button
+        ref={triggerRef}
         type="button"
         className="chats-swap-menu__trigger"
         aria-label="Меню чата"
@@ -717,35 +763,53 @@ function ChatSupportMenu({
         <MenuSquareIcon className="text-[#1A1A1A]" />
       </button>
 
-      {isRendered ? (
-        <div
-          id={panelId}
-          role="dialog"
-          aria-label="Действия в чате"
-          aria-hidden={!isVisible}
-          className={[
-            "listing-detail-actions__panel",
-            isVisible ? "listing-detail-actions__panel--open" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          <Link
-            href={`/users/${counterpart.slug}`}
-            className="listing-detail-actions__item"
-            onClick={() => setOpen(false)}
-          >
-            Открыть профиль
-          </Link>
-          <button
-            type="button"
-            className="listing-detail-actions__item listing-detail-actions__item--danger"
-            onClick={() => setOpen(false)}
-          >
-            Позвать поддержку
-          </button>
-        </div>
-      ) : null}
+      {isRendered && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={panelRef}
+              id={panelId}
+              role="dialog"
+              aria-label="Действия в чате"
+              aria-hidden={!showPanel}
+              className={[
+                "listing-detail-actions__panel",
+                "chats-swap-menu__panel",
+                showPanel ? "listing-detail-actions__panel--open" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                panelPosition
+                  ? {
+                      top: panelPosition.top,
+                      left: panelPosition.left,
+                      width: panelPosition.width,
+                      minWidth: panelPosition.width,
+                    }
+                  : { top: -9999, left: -9999, visibility: "hidden" }
+              }
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <Link
+                href={`/users/${counterpart.slug}`}
+                className="listing-detail-actions__item"
+                onClick={() => setOpen(false)}
+              >
+                Открыть профиль
+              </Link>
+              <button
+                type="button"
+                className="listing-detail-actions__item listing-detail-actions__item--danger chats-swap-menu__soon-btn"
+                disabled
+                aria-disabled="true"
+              >
+                Позвать поддержку
+              </button>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

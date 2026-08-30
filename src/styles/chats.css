@@ -1130,6 +1130,22 @@ body:has(.chats-page) {
   pointer-events: auto;
 }
 
+.chats-swap-menu__panel {
+  position: fixed;
+  right: auto;
+  z-index: 200;
+  max-width: calc(100vw - 24px);
+}
+
+.chats-swap-menu__soon-btn {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.chats-swap-menu__soon-btn:hover {
+  border-color: #cacaca;
+}
+
 .chats-swap-menu__trigger {
   box-sizing: border-box;
   display: flex;
@@ -2538,7 +2554,7 @@ body:has(.chats-page) {
   .chats-page.is-mobile-thread .chats-swap-header {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
+    gap: 0;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -2550,6 +2566,7 @@ body:has(.chats-page) {
 
   .chats-page.is-mobile-thread .chats-swap-header .chats-mobile-back {
     grid-column: 1 / -1;
+    margin-bottom: 8px;
   }
 
   .chats-page.is-mobile-thread .chats-swap-header__pins {
