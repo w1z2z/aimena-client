@@ -113,6 +113,7 @@ export function Header() {
   const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [activeSearchSuggestionIndex, setActiveSearchSuggestionIndex] = useState<number>(-1);
+  const [searchSuggestionsSuppressed, setSearchSuggestionsSuppressed] = useState(false);
   const [compactMode, setCompactMode] = useState(isCompact);
 
   // Reset before paint when crossing into compact — avoids a one-frame open + close animation flash.
@@ -128,6 +129,7 @@ export function Header() {
       setSearchQuery("");
       setSearchSuggestions([]);
       setActiveSearchSuggestionIndex(-1);
+      setSearchSuggestionsSuppressed(false);
       setOpenPanel(null);
     } else {
       setIsMobileMenuOpen(false);
@@ -199,6 +201,7 @@ export function Header() {
   const showSearchSuggestions =
     showExpandedSearch &&
     !isSearchClosing &&
+    !searchSuggestionsSuppressed &&
     (isSearchLoading || searchQuery.trim().length >= 2);
   const { isRendered: suggestionsRendered, isVisible: suggestionsVisible } =
     useOverlayPresence(Boolean(showSearchSuggestions));
@@ -401,6 +404,7 @@ export function Header() {
     if (options?.clear) {
       setSearchQuery("");
       setSearchSuggestions([]);
+      setSearchSuggestionsSuppressed(false);
     }
 
     setIsSearchClosing(true);
@@ -434,13 +438,15 @@ export function Header() {
     if (pathname !== "/") {
       router.push("/");
     }
+
+    setSearchQuery(trimmed);
+    setSearchSuggestions([]);
+    setActiveSearchSuggestionIndex(-1);
+    setSearchSuggestionsSuppressed(true);
+    searchInputRef.current?.blur();
+
     if (!isScrolled) {
       closeSearchWithAnimation();
-    } else {
-      setSearchQuery("");
-      setSearchSuggestions([]);
-      setActiveSearchSuggestionIndex(-1);
-      searchInputRef.current?.blur();
     }
   };
 
@@ -481,6 +487,7 @@ export function Header() {
       setSearchQuery("");
       setSearchSuggestions([]);
       setActiveSearchSuggestionIndex(-1);
+      setSearchSuggestionsSuppressed(false);
       return;
     }
     closeSearchWithAnimation({ clear: true });
@@ -547,7 +554,9 @@ export function Header() {
         onChange={(event) => {
           setSearchQuery(event.target.value);
           setActiveSearchSuggestionIndex(-1);
+          setSearchSuggestionsSuppressed(false);
         }}
+        onFocus={() => setSearchSuggestionsSuppressed(false)}
         onKeyDown={handleSearchInputKeyDown}
         placeholder={isCompact ? "Поиск по объявлениям" : ""}
         aria-label="Поиск по объявлениям"
