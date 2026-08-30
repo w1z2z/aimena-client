@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useLayoutEffect, type ReactNode } from "react";
 
 import { useAuth } from "@/features/auth";
-import { useProfileScrollTracker } from "@/shared/lib/profile-scroll-memory";
+import { MQ } from "@/shared/lib/breakpoints";
+import { pinScrollTop, useProfileScrollTracker } from "@/shared/lib/profile-scroll-memory";
 import { Header } from "@/widgets/header/Header";
 
 import type { ProfileSection } from "./constants";
@@ -19,6 +20,13 @@ export function ProfileLayout({ active, children }: ProfileLayoutProps) {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuth();
   useProfileScrollTracker();
+
+  // After auth/content paints, pin top on mobile so browser restore can't land on listings.
+  useLayoutEffect(() => {
+    if (isLoading || !user) return;
+    if (!window.matchMedia(MQ.tablet).matches) return;
+    return pinScrollTop([0, 50, 120, 250, 500, 900]);
+  }, [isLoading, user?.id, active]);
 
   if (isLoading) {
     return (

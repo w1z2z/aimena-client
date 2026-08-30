@@ -1,12 +1,22 @@
-/** Preserves window scrollY across in-profile tab navigations. */
+/** Preserves window scrollY across in-profile tab navigations (desktop only). */
 
 import { useEffect } from "react";
+
+import { MQ } from "@/shared/lib/breakpoints";
 
 let savedScrollY = 0;
 let lastPathname: string | null = null;
 
+function isMobileProfileViewport() {
+  return typeof window !== "undefined" && window.matchMedia(MQ.tablet).matches;
+}
+
 export function saveProfileScrollPosition() {
   if (typeof window === "undefined") return;
+  if (isMobileProfileViewport()) {
+    savedScrollY = 0;
+    return;
+  }
   savedScrollY = window.scrollY;
 }
 
@@ -20,6 +30,12 @@ export function setLastPathname(pathname: string) {
 
 export function restoreProfileScrollPosition() {
   if (typeof window === "undefined") return;
+
+  // Mobile profile is stacked (avatar → listings). Always open from the top.
+  if (isMobileProfileViewport()) {
+    forceScrollTop();
+    return;
+  }
 
   const y = savedScrollY;
   const restore = () => {
@@ -38,6 +54,37 @@ export function restoreProfileScrollPosition() {
   window.setTimeout(restore, 120);
 }
 
+export function resetProfileScrollPosition() {
+  savedScrollY = 0;
+}
+
+export function forceScrollTop() {
+  if (typeof window === "undefined") return;
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  if (document.scrollingElement) {
+    document.scrollingElement.scrollTop = 0;
+  }
+  const main = document.querySelector("main");
+  if (main instanceof HTMLElement) main.scrollTop = 0;
+}
+
+/** Repeated top pin — fights browser scroll restoration after content paints. */
+export function pinScrollTop(delaysMs: number[] = [0, 50, 100, 200, 400, 800]) {
+  if (typeof window === "undefined") return () => {};
+
+  window.history.scrollRestoration = "manual";
+  forceScrollTop();
+  const frameId = window.requestAnimationFrame(forceScrollTop);
+  const timerIds = delaysMs.map((ms) => window.setTimeout(forceScrollTop, ms));
+
+  return () => {
+    window.cancelAnimationFrame(frameId);
+    timerIds.forEach((id) => window.clearTimeout(id));
+  };
+}
+
 export function isOwnProfileTabRoute(pathname: string) {
   return pathname === "/profile" || pathname.startsWith("/profile/");
 }
@@ -47,9 +94,9 @@ export function getPublicProfileSlug(pathname: string) {
   return match?.[1] ?? null;
 }
 
-/** Tab switches inside the same profile shell — keep scroll position. */
+/** Tab switches inside the same profile shell — keep scroll position (desktop). */
 export function isSameProfileTabNavigation(from: string, to: string) {
-  if (from === to) return true;
+  if (from === to) return false;
 
   if (isOwnProfileTabRoute(from) && isOwnProfileTabRoute(to)) {
     return true;
@@ -64,9 +111,14 @@ export function isSameProfileTabNavigation(from: string, to: string) {
   return false;
 }
 
-/** Keep scroll position fresh while the profile shell is mounted. */
+/** Keep scroll position fresh while the profile shell is mounted (desktop). */
 export function useProfileScrollTracker() {
   useEffect(() => {
+    if (isMobileProfileViewport()) {
+      resetProfileScrollPosition();
+      return;
+    }
+
     const onScroll = () => saveProfileScrollPosition();
 
     saveProfileScrollPosition();

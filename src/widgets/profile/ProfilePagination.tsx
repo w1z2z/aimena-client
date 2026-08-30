@@ -60,20 +60,24 @@ type ProfilePaginationProps = {
 };
 
 export function ProfilePagination({ page, pageCount, onChange }: ProfilePaginationProps) {
-  const skipScrollRef = useRef(true);
+  const userChangedPageRef = useRef(false);
   const navRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
-    if (skipScrollRef.current) {
-      skipScrollRef.current = false;
-      return;
-    }
+    if (!userChangedPageRef.current) return;
+    userChangedPageRef.current = false;
     scrollToProfilePanelTitle(navRef.current);
   }, [page]);
 
   if (pageCount <= 1) return null;
 
   const items = buildPageItems(page, pageCount);
+
+  const changePage = (next: number) => {
+    if (next === page) return;
+    userChangedPageRef.current = true;
+    onChange(next);
+  };
 
   return (
     <nav
@@ -85,7 +89,7 @@ export function ProfilePagination({ page, pageCount, onChange }: ProfilePaginati
         type="button"
         aria-label="Предыдущая страница"
         disabled={page <= 1}
-        onClick={() => onChange(page - 1)}
+        onClick={() => changePage(page - 1)}
         className={`${pageButtonBase} border-[#CACACA] bg-white px-0 text-[#1A1A1A] disabled:cursor-not-allowed disabled:opacity-40`}
       >
         <PaginationArrow direction="prev" />
@@ -106,7 +110,7 @@ export function ProfilePagination({ page, pageCount, onChange }: ProfilePaginati
             type="button"
             aria-label={`Страница ${item}`}
             aria-current={item === page ? "page" : undefined}
-            onClick={() => onChange(item)}
+            onClick={() => changePage(item)}
             className={`${pageButtonBase} px-3 ${
               item === page
                 ? "border-[#8E8BED] bg-[#8E8BED] text-white"
@@ -122,7 +126,7 @@ export function ProfilePagination({ page, pageCount, onChange }: ProfilePaginati
         type="button"
         aria-label="Следующая страница"
         disabled={page >= pageCount}
-        onClick={() => onChange(page + 1)}
+        onClick={() => changePage(page + 1)}
         className={`${pageButtonBase} border-[#CACACA] bg-white px-0 text-[#1A1A1A] disabled:cursor-not-allowed disabled:opacity-40`}
       >
         <PaginationArrow direction="next" />

@@ -5,10 +5,15 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import {
   getLastPathname,
+  isOwnProfileTabRoute,
   isSameProfileTabNavigation,
+  getPublicProfileSlug,
+  pinScrollTop,
+  resetProfileScrollPosition,
   restoreProfileScrollPosition,
   setLastPathname,
 } from "@/shared/lib/profile-scroll-memory";
+import { MQ } from "@/shared/lib/breakpoints";
 
 export function forcePageScrollTop() {
   window.scrollTo(0, 0);
@@ -21,10 +26,15 @@ export function forcePageScrollTop() {
   if (main instanceof HTMLElement) main.scrollTop = 0;
 }
 
+function isProfilePath(pathname: string) {
+  return isOwnProfileTabRoute(pathname) || Boolean(getPublicProfileSlug(pathname));
+}
+
 /**
  * Always land at the top when the route changes.
  * Skips hash targets (e.g. /#home-recommendations) so intentional in-page scrolls still work.
- * Skips own/public profile tab switches (/profile/*, /users/:slug/*).
+ * Desktop: keeps scroll across own/public profile tab switches.
+ * Mobile profile: always pins to top (stacked layout).
  */
 export function ScrollToTopOnRouteChange() {
   const pathname = usePathname();
@@ -34,29 +44,29 @@ export function ScrollToTopOnRouteChange() {
   useLayoutEffect(() => {
     if (window.location.hash) return;
 
-    const previousPathname = getLastPathname() ?? pathname;
+    const previousPathname = getLastPathname();
     setLastPathname(pathname);
+    const mobile = window.matchMedia(MQ.tablet).matches;
+
+    // Cold load / reload
+    if (previousPathname == null) {
+      resetProfileScrollPosition();
+      return pinScrollTop();
+    }
+
+    // Mobile profile routes — never restore mid-page scroll
+    if (mobile && isProfilePath(pathname)) {
+      resetProfileScrollPosition();
+      return pinScrollTop();
+    }
 
     if (isSameProfileTabNavigation(previousPathname, pathname)) {
       restoreProfileScrollPosition();
       return;
     }
 
-    const previous = window.history.scrollRestoration;
-    window.history.scrollRestoration = "manual";
-    forcePageScrollTop();
-
-    // After paint / overlay unlock that may restore scrollY from a sheet.
-    const frameId = window.requestAnimationFrame(forcePageScrollTop);
-    const timerId = window.setTimeout(forcePageScrollTop, 0);
-    const lateTimerId = window.setTimeout(forcePageScrollTop, 80);
-
-    return () => {
-      window.history.scrollRestoration = previous;
-      window.cancelAnimationFrame(frameId);
-      window.clearTimeout(timerId);
-      window.clearTimeout(lateTimerId);
-    };
+    resetProfileScrollPosition();
+    return pinScrollTop();
   }, [pathname, search]);
 
   return null;
