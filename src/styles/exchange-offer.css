@@ -524,65 +524,331 @@ a.exchange-offer-profile:hover {
   color: #fff;
 }
 
+/* Mirror chats incoming-offer acceptance — full mobile stack */
 @media (max-width: 1120px) {
-  .exchange-offer-layout {
-    grid-template-columns: minmax(0, 1fr);
+  .exchange-offer-main {
+    width: min(100% - 24px, 1440px);
+    padding: 88px 0 24px;
   }
 
-  .exchange-offer-swap {
-    margin: 0 auto;
-    transform: rotate(90deg);
+  .exchange-offer-profile {
+    min-height: 64px;
+    padding: 10px 12px;
+    border-radius: 20px;
+  }
+
+  .exchange-offer-profile__avatar {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+    border-radius: 14px;
+  }
+
+  .exchange-offer-profile > div {
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .exchange-offer-profile strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .exchange-offer-layout {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .exchange-offer-choice,
+  .exchange-offer-result {
+    gap: 10px;
+  }
+
+  .exchange-offer-title {
+    min-height: 0;
+    gap: 10px;
+  }
+
+  .exchange-offer-title h1,
+  .exchange-offer-result > h1 {
+    font-size: 18px;
+    letter-spacing: -0.3px;
+  }
+
+  .exchange-offer-title > span {
+    flex: none;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .exchange-offer-balance {
+    min-height: 0;
+    padding: 8px 12px;
+    border-radius: 18px;
+    font-size: 13px;
+  }
+
+  .exchange-offer-search {
+    min-height: 42px;
+    border-radius: 18px;
   }
 
   .exchange-offer-search input,
   .exchange-offer-search input::placeholder,
   .exchange-offer-choice textarea,
   .exchange-offer-choice textarea::placeholder {
-    font-size: 13px;
-    line-height: 1.35;
-  }
-}
-
-@media (max-width: 640px) {
-  .exchange-offer-main {
-    width: min(100% - 24px, 1440px);
-    padding-top: 82px;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
   }
 
-  .exchange-offer-profile {
-    border-radius: 21px;
+  .exchange-offer-list {
+    height: min(320px, 48vh);
+    border-radius: 20px;
   }
 
   .exchange-offer-list__scroll {
+    gap: 10px;
     padding: 12px;
   }
 
   .exchange-offer-own-card {
-    grid-template-columns: 72px minmax(0, 1fr) 37px;
+    grid-template-columns: 72px minmax(0, 1fr) 36px;
     gap: 10px;
-    border-radius: 21px;
+    padding: 10px;
+    border-radius: 18px;
   }
 
   .exchange-offer-own-card__image {
     width: 72px;
     height: 72px;
+    border-radius: 14px;
+  }
+
+  .exchange-offer-own-card__content {
+    gap: 8px;
+  }
+
+  .exchange-offer-own-card h3 {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
 
   .exchange-offer-own-card__meta:nth-of-type(1) {
     display: none;
   }
 
-  .exchange-offer-target__heading {
-    flex-direction: column;
+  .exchange-offer-select {
+    width: 36px;
+    height: 72px;
+    border-radius: 14px;
   }
 
-  .exchange-offer-stats,
+  .exchange-offer-free-panel {
+    height: auto;
+    min-height: 160px;
+    gap: 8px;
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
+
+  .exchange-offer-free-panel__title {
+    font-size: 15px;
+  }
+
+  .exchange-offer-free-panel__text {
+    max-width: none;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .exchange-offer-choice textarea {
+    height: auto;
+    min-height: 96px;
+    max-height: 160px;
+    padding: 14px;
+    border-radius: 18px;
+    line-height: 1.5;
+  }
+
+  .exchange-offer-swap {
+    align-self: center;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+    border-radius: 16px;
+    transform: rotate(90deg);
+  }
+
+  .exchange-offer-swap svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .exchange-offer-target {
+    min-height: 0;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .exchange-offer-target__heading {
+    min-height: 0;
+    gap: 10px;
+  }
+
+  .exchange-offer-target__image {
+    width: 88px;
+    height: 88px;
+    flex-basis: 88px;
+    border-radius: 16px;
+  }
+
+  .exchange-offer-target__heading > div {
+    gap: 6px;
+  }
+
+  .exchange-offer-target h2,
+  .exchange-offer-target h3 {
+    font-size: 18px;
+    letter-spacing: -0.3px;
+  }
+
+  .exchange-offer-target h2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .exchange-offer-target__pills {
+    gap: 6px;
+  }
+
+  .exchange-offer-stats {
+    gap: 8px;
+  }
+
+  .exchange-offer-stats > div {
+    min-height: 0;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .exchange-offer-wants {
+    gap: 8px;
+  }
+
+  .exchange-offer-wants > div {
+    gap: 6px;
+  }
+
+  .exchange-offer-wants__row {
+    gap: 8px;
+  }
+
+  .exchange-offer-pill {
+    min-height: 0;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .exchange-offer-submit-error {
+    margin: 12px 0 0;
+    text-align: left;
+  }
+
   .exchange-offer-actions {
     grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .exchange-offer-actions button,
+  .exchange-offer-success button {
+    width: 100%;
+    min-height: 48px;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: 21px;
   }
 
   .exchange-offer-success {
-    align-items: stretch;
     flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .exchange-offer-main {
+    width: calc(100% - 24px);
+    padding-top: 80px;
+    padding-bottom: 16px;
+  }
+
+  .exchange-offer-title h1,
+  .exchange-offer-result > h1,
+  .exchange-offer-target h2,
+  .exchange-offer-target h3 {
+    font-size: 16px;
+  }
+
+  .exchange-offer-list {
+    height: min(280px, 42vh);
+  }
+
+  .exchange-offer-own-card {
+    grid-template-columns: 64px minmax(0, 1fr) 34px;
+  }
+
+  .exchange-offer-own-card__image {
+    width: 64px;
+    height: 64px;
+  }
+
+  .exchange-offer-select {
+    width: 34px;
+    height: 64px;
+  }
+
+  .exchange-offer-target {
+    padding: 12px;
+    gap: 12px;
+    border-radius: 18px;
+  }
+
+  .exchange-offer-target__heading {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .exchange-offer-target__image {
+    width: 72px;
+    height: 72px;
+    flex-basis: 72px;
+  }
+
+  .exchange-offer-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .exchange-offer-stats > div {
+    padding: 10px;
+    border-radius: 14px;
+    font-size: 12px;
+  }
+
+  .exchange-offer-actions {
+    grid-template-columns: 1fr;
   }
 }

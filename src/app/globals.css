@@ -19,6 +19,8 @@
 @import "../styles/chat-badges.css";
 @import "../styles/notifications-dropdown.css";
 @import "../styles/floating-chat.css";
+@import "../styles/exchange-offer.css";
+@import "../styles/chats.css";
 
 /*
  * Layout breakpoints — keep in sync with shared/lib/breakpoints.ts
@@ -250,7 +252,9 @@ textarea:disabled {
   .home-filters-panel input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
   .home-filters-panel .site-select__input,
   .home-filters-modal input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
-  .home-filters-modal .site-select__input {
+  .home-filters-modal .site-select__input,
+  .exchange-offer-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  .exchange-offer-page textarea {
     font-size: 13px !important;
     line-height: 1.35 !important;
   }
@@ -266,7 +270,9 @@ textarea:disabled {
   .home-filters-panel .site-select__input.is-placeholder,
   .home-filters-modal input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
   .home-filters-modal .site-select__input::placeholder,
-  .home-filters-modal .site-select__input.is-placeholder {
+  .home-filters-modal .site-select__input.is-placeholder,
+  .exchange-offer-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  .exchange-offer-page textarea::placeholder {
     font-size: 13px !important;
     line-height: 1.35 !important;
   }
