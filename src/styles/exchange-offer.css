@@ -184,23 +184,34 @@ a.exchange-offer-profile:hover {
 }
 
 .exchange-offer-list {
+  /* Card ≈ 117px; gap 12; inset pads keep content out of 31px radius */
+  --exchange-own-card-h: 117px;
+  --exchange-list-gap: 12px;
+  --exchange-list-inset: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   height: 364px;
   overflow: hidden;
   border: 0.5px solid #cacaca;
   border-radius: 31px;
   background: #fff;
+  /* Inset scroll from rounded corners so cards never clip into the radius */
+  padding-block: var(--exchange-list-inset);
 }
 
 .exchange-offer-list__scroll {
   display: flex;
   box-sizing: border-box;
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--exchange-list-gap);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 24px;
+  padding-inline: 24px;
 }
 
 .exchange-offer-own-card {
@@ -545,6 +556,70 @@ a.exchange-offer-profile:hover {
   color: #fff;
 }
 
+/* Desktop: offer block fills the viewport height (page scroll + footer stay). */
+@media (min-width: 1121px) {
+  .exchange-offer-layout {
+    align-items: stretch;
+    /* header pad + profile + gaps + actions — block fits first screen */
+    height: calc(100dvh - 320px);
+    max-height: calc(100dvh - 320px);
+    min-height: 0;
+  }
+
+  .exchange-offer-choice,
+  .exchange-offer-result {
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .exchange-offer-swap {
+    align-self: center;
+  }
+
+  .exchange-offer-choice > .exchange-offer-title,
+  .exchange-offer-choice > .exchange-offer-balance,
+  .exchange-offer-choice > .exchange-offer-search,
+  .exchange-offer-choice > textarea,
+  .exchange-offer-result > h1 {
+    flex: none;
+  }
+
+  .exchange-offer-list,
+  .exchange-offer-free-panel {
+    flex: 1 1 auto;
+    height: auto;
+    /* Always fit 2 full own-cards + gap + top/bottom insets */
+    min-height: calc(
+      (2 * var(--exchange-own-card-h)) + var(--exchange-list-gap) +
+        (2 * var(--exchange-list-inset))
+    );
+  }
+
+  .exchange-offer-free-panel {
+    justify-content: center;
+  }
+
+  .exchange-offer-choice {
+    gap: 16px;
+  }
+
+  .exchange-offer-choice textarea {
+    height: 88px;
+    min-height: 88px;
+    padding: 16px 20px;
+  }
+
+  .exchange-offer-target {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 /* Mirror chats incoming-offer acceptance — full mobile stack */
 @media (max-width: 1120px) {
   .exchange-offer-main {
@@ -641,11 +716,15 @@ a.exchange-offer-profile:hover {
   .exchange-offer-list {
     height: min(320px, 48vh);
     border-radius: 20px;
+    --exchange-list-inset: 12px;
+    --exchange-list-gap: 10px;
+    --exchange-own-card-h: 92px;
   }
 
   .exchange-offer-list__scroll {
-    gap: 10px;
-    padding: 12px;
+    gap: var(--exchange-list-gap);
+    padding-inline: 12px;
+    padding-block: 0;
   }
 
   .exchange-offer-own-card {
