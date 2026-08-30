@@ -25,7 +25,7 @@ export function ProfileLayout({ active, children }: ProfileLayoutProps) {
   useLayoutEffect(() => {
     if (isLoading || !user) return;
     if (!window.matchMedia(MQ.tablet).matches) return;
-    return pinScrollTop([0, 50, 120, 250, 500, 900]);
+    return pinScrollTop([0, 50, 150]);
   }, [isLoading, user?.id, active]);
 
   if (isLoading) {

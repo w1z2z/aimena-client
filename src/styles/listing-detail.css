@@ -1300,6 +1300,11 @@
     border-radius: 12px;
   }
 
+  .listing-detail-gallery__thumb--active {
+    border-color: #8e8bed;
+    box-shadow: inset 0 0 0 1.5px #8e8bed;
+  }
+
   .listing-detail-gallery__thumbs-nav {
     display: none;
   }

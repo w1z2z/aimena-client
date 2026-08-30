@@ -34,14 +34,39 @@ export function pinScrollAroundFocus(durationMs = 1000) {
     pinWindowScroll(scrollX, scrollY);
   };
 
-  const onScroll = () => {
-    pin();
+  let cleanedUp = false;
+  const cleanup = () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
+    window.removeEventListener("scroll", onScroll, { capture: true });
+    viewport?.removeEventListener("scroll", onScroll);
+    viewport?.removeEventListener("resize", onScroll);
+    window.removeEventListener("wheel", onUserScrollIntent);
+    window.removeEventListener("touchstart", onUserScrollIntent);
+    window.removeEventListener("touchmove", onUserScrollIntent);
+    timeouts.forEach((id) => window.clearTimeout(id));
+    if (activePinCleanup === cleanup) {
+      activePinCleanup = null;
+    }
   };
 
-  window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+  const onUserScrollIntent = () => {
+    cleanup();
+  };
+
+  const onScroll = () => {
+    if (Math.abs(window.scrollY - scrollY) > 2 || Math.abs(window.scrollX - scrollX) > 2) {
+      cleanup();
+    }
+  };
+
   const viewport = window.visualViewport;
+  window.addEventListener("scroll", onScroll, { passive: true, capture: true });
   viewport?.addEventListener("scroll", onScroll);
   viewport?.addEventListener("resize", onScroll);
+  window.addEventListener("wheel", onUserScrollIntent, { passive: true });
+  window.addEventListener("touchstart", onUserScrollIntent, { passive: true });
+  window.addEventListener("touchmove", onUserScrollIntent, { passive: true });
 
   pin();
   window.requestAnimationFrame(() => {
@@ -50,18 +75,10 @@ export function pinScrollAroundFocus(durationMs = 1000) {
   });
 
   const timeouts = [16, 50, 100, 150, 200, 280, 360, 450, 600, 750, 900, 1000].map((delay) =>
-    window.setTimeout(pin, delay),
+    window.setTimeout(() => {
+      if (!cleanedUp) pin();
+    }, delay),
   );
-
-  const cleanup = () => {
-    window.removeEventListener("scroll", onScroll, { capture: true });
-    viewport?.removeEventListener("scroll", onScroll);
-    viewport?.removeEventListener("resize", onScroll);
-    timeouts.forEach((id) => window.clearTimeout(id));
-    if (activePinCleanup === cleanup) {
-      activePinCleanup = null;
-    }
-  };
 
   activePinCleanup = cleanup;
   window.setTimeout(cleanup, durationMs);

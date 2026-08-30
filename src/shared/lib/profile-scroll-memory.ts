@@ -71,18 +71,51 @@ export function forceScrollTop() {
 }
 
 /** Repeated top pin — fights browser scroll restoration after content paints. */
-export function pinScrollTop(delaysMs: number[] = [0, 50, 100, 200, 400, 800]) {
+export function pinScrollTop(delaysMs: number[] = [0, 50, 150]) {
   if (typeof window === "undefined") return () => {};
 
   window.history.scrollRestoration = "manual";
-  forceScrollTop();
-  const frameId = window.requestAnimationFrame(forceScrollTop);
-  const timerIds = delaysMs.map((ms) => window.setTimeout(forceScrollTop, ms));
 
-  return () => {
-    window.cancelAnimationFrame(frameId);
+  let cancelled = false;
+  let frameId = 0;
+  const timerIds: number[] = [];
+
+  const cleanup = () => {
+    if (cancelled) return;
+    cancelled = true;
+    if (frameId) window.cancelAnimationFrame(frameId);
     timerIds.forEach((id) => window.clearTimeout(id));
+    window.removeEventListener("wheel", onUserIntent);
+    window.removeEventListener("pointerdown", onUserIntent);
+    window.removeEventListener("touchstart", onUserIntent);
+    window.removeEventListener("touchmove", onUserIntent);
+    window.removeEventListener("scroll", onScroll);
   };
+
+  const pin = () => {
+    if (cancelled) return;
+    forceScrollTop();
+  };
+
+  const onUserIntent = () => {
+    cleanup();
+  };
+
+  const onScroll = () => {
+    if (window.scrollY > 1) cleanup();
+  };
+
+  pin();
+  frameId = window.requestAnimationFrame(pin);
+  delaysMs.forEach((ms) => timerIds.push(window.setTimeout(pin, ms)));
+
+  window.addEventListener("wheel", onUserIntent, { passive: true });
+  window.addEventListener("pointerdown", onUserIntent, { passive: true });
+  window.addEventListener("touchstart", onUserIntent, { passive: true });
+  window.addEventListener("touchmove", onUserIntent, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  return cleanup;
 }
 
 export function isOwnProfileTabRoute(pathname: string) {

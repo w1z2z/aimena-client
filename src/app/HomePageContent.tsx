@@ -36,12 +36,32 @@ export function HomePageContent() {
 
     const previous = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";
-    forcePageScrollTop();
+    let cancelled = false;
 
-    // One extra frame — Next sometimes nudges scroll after paint; don't fight user scroll.
-    const frameId = window.requestAnimationFrame(forcePageScrollTop);
+    const cancel = () => {
+      cancelled = true;
+    };
+
+    const pin = () => {
+      if (!cancelled) forcePageScrollTop();
+    };
+
+    pin();
+
+    const frameId = window.requestAnimationFrame(pin);
+    window.addEventListener("wheel", cancel, { passive: true, once: true });
+    window.addEventListener("touchstart", cancel, { passive: true, once: true });
+    window.addEventListener("pointerdown", cancel, { passive: true, once: true });
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (window.scrollY > 1) cancel();
+      },
+      { passive: true },
+    );
 
     return () => {
+      cancelled = true;
       window.cancelAnimationFrame(frameId);
       window.history.scrollRestoration = previous;
     };
