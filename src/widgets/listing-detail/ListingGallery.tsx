@@ -98,6 +98,14 @@ export function ListingGallery({
       return;
     }
 
+    const vertical = getComputedStyle(track).flexDirection.startsWith("column");
+    if (vertical) {
+      const maxScroll = track.scrollHeight - track.clientHeight;
+      setCanScrollThumbsLeft(track.scrollTop > 2);
+      setCanScrollThumbsRight(maxScroll - track.scrollTop > 2);
+      return;
+    }
+
     const maxScroll = track.scrollWidth - track.clientWidth;
     setCanScrollThumbsLeft(track.scrollLeft > 2);
     setCanScrollThumbsRight(maxScroll - track.scrollLeft > 2);
@@ -115,13 +123,24 @@ export function ListingGallery({
 
       const trackRect = track.getBoundingClientRect();
       const thumbRect = activeThumb.getBoundingClientRect();
-      const leftOverflow = thumbRect.left - trackRect.left;
-      const rightOverflow = thumbRect.right - trackRect.right;
+      const vertical = getComputedStyle(track).flexDirection.startsWith("column");
 
-      if (leftOverflow < 0) {
-        track.scrollBy({ left: leftOverflow, behavior });
-      } else if (rightOverflow > 0) {
-        track.scrollBy({ left: rightOverflow, behavior });
+      if (vertical) {
+        const topOverflow = thumbRect.top - trackRect.top;
+        const bottomOverflow = thumbRect.bottom - trackRect.bottom;
+        if (topOverflow < 0) {
+          track.scrollBy({ top: topOverflow, behavior });
+        } else if (bottomOverflow > 0) {
+          track.scrollBy({ top: bottomOverflow, behavior });
+        }
+      } else {
+        const leftOverflow = thumbRect.left - trackRect.left;
+        const rightOverflow = thumbRect.right - trackRect.right;
+        if (leftOverflow < 0) {
+          track.scrollBy({ left: leftOverflow, behavior });
+        } else if (rightOverflow > 0) {
+          track.scrollBy({ left: rightOverflow, behavior });
+        }
       }
 
       window.requestAnimationFrame(syncThumbsScrollState);
@@ -132,6 +151,11 @@ export function ListingGallery({
   const scrollThumbsByPage = (direction: -1 | 1) => {
     const track = thumbsTrackRef.current;
     if (!track) return;
+    const vertical = getComputedStyle(track).flexDirection.startsWith("column");
+    if (vertical) {
+      track.scrollBy({ top: direction * track.clientHeight, behavior: "smooth" });
+      return;
+    }
     track.scrollBy({ left: direction * track.clientWidth, behavior: "smooth" });
   };
 

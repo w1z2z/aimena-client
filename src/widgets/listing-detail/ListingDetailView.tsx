@@ -250,7 +250,7 @@ export function ListingDetailView() {
     <div className="listing-detail-page min-h-screen bg-[#F8F8F5]">
       <Header />
 
-      <main className="listing-detail-page__main mx-auto w-full max-w-[calc(1440px+48px)] px-6 pb-16 pt-[102px]">
+      <main className="listing-detail-page__main">
         {isLoading ? <ListingDetailSkeleton /> : null}
 
         {notFound ? (
