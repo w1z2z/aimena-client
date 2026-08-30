@@ -345,14 +345,12 @@ function getDocPhotoGridLayout(photoCount: number) {
 }
 
 const EXCHANGE_FIELD_INPUT_CLASS =
-  "box-border h-[50px] w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white px-3 py-[11px] text-[14px] font-normal leading-[140%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[140%] placeholder:text-[#626262]";
+  "listing-editor__control listing-editor__control--tag outline-none placeholder:text-[#626262]";
 
-const SECTION_TITLE_CLASS =
-  "m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#626262]";
+const SECTION_TITLE_CLASS = "listing-editor__section-title";
 
-const SECTION_TEXT_CLASS = "text-[14px] font-normal leading-[170%] text-[#1A1A1A]";
-const PHOTO_UPLOAD_LABEL_CLASS =
-  "text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A]";
+const SECTION_TEXT_CLASS = "listing-editor__label";
+const PHOTO_UPLOAD_LABEL_CLASS = "listing-editor__label listing-editor__label--strong";
 
 function PlaceholderImage() {
   return (
@@ -475,7 +473,7 @@ function AddPhotoCard({
       onClick={onClick}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className="aspect-square w-full rounded-[12px] border border-dashed border-[#cacaca] bg-[#ffffff] text-[13px] font-semibold text-[#626262]"
+      className="listing-editor__add-photo"
     >
       {label}
     </button>
@@ -1369,13 +1367,11 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
   if (isEditMode && (isHydrating || loadError)) {
     return (
-      <main className="min-h-screen w-full bg-[#F8F8F5] text-[#1A1A1A]">
+      <main className="listing-editor min-h-screen w-full bg-[#F8F8F5] text-[#1A1A1A]">
         <Header />
         <div className="h-[54px]" aria-hidden="true" />
-        <div className="mx-auto flex w-full max-w-[1238px] flex-col gap-4 px-4 pb-14 pt-14">
-          <h1 className="m-0 text-[40px] font-bold leading-[40px] tracking-[-0.005em] text-[#1A1A1A]">
-            Редактирование объявления
-          </h1>
+        <div className="listing-editor__container mx-auto flex w-full max-w-[1238px] flex-col px-4">
+          <h1 className="listing-editor__page-title">Редактирование объявления</h1>
           {loadError ? (
             <ErrorBlock
               title="Не удалось загрузить объявление"
@@ -1393,24 +1389,24 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   }
 
   return (
-    <main className="min-h-screen w-full bg-[#F8F8F5] text-[#1A1A1A]">
+    <main className="listing-editor min-h-screen w-full bg-[#F8F8F5] text-[#1A1A1A]">
       <Header />
       <div className="h-[54px]" aria-hidden="true" />
 
-      <div className="mx-auto flex w-full max-w-[1238px] flex-col gap-5 px-4 pb-14 pt-14">
-        <section className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="m-0 text-[40px] font-bold leading-[40px] tracking-[-0.005em] text-[#1A1A1A]">
+      <div className="listing-editor__container mx-auto flex w-full max-w-[1238px] flex-col px-4">
+        <section className="listing-editor__page-head">
+          <div className="listing-editor__page-head-copy">
+            <h1 className="listing-editor__page-title">
               {isEditMode ? "Редактирование объявления" : "Создание объявления"}
             </h1>
-            <p className="mb-5 mt-2 text-[14px] font-semibold leading-[120%] tracking-[-0.002em] text-[#626262]">
+            <p className="listing-editor__page-subtitle">
               {isEditMode
                 ? "Обновите данные объявления и сохраните изменения"
                 : "Создавайте объявления, чтобы обмениваться с другими"}
             </p>
           </div>
-          <div className="mt-1 rounded-[15px] bg-[linear-gradient(135deg,#8E8BED_0%,#c8ff02_100%)] p-[1px]">
-            <div className="relative box-border inline-flex h-[42px] w-[212px] items-center gap-[4px] rounded-[15px] border-0 bg-[#F2F4F7] p-[4px]">
+          <div className="listing-editor__kind-toggle-wrap rounded-[15px] bg-[linear-gradient(135deg,#8E8BED_0%,#c8ff02_100%)] p-[1px]">
+            <div className="listing-editor__kind-toggle">
               <span
                 aria-hidden="true"
                 className={`pointer-events-none absolute bottom-[4px] left-[4px] top-[4px] w-[calc(50%-6px)] rounded-[13px] bg-[#8E8BED] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
@@ -1439,12 +1435,12 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </div>
         </section>
 
-        <section className="rounded-[18px] bg-[#c8ff02] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
-          <h2 className="m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] text-[#1A1A1A]">
+        <section className="listing-editor__section listing-editor__section--lime">
+          <h2 className="listing-editor__section-title listing-editor__section-title--dark">
             Основная информация*
           </h2>
-          <div className="mt-3 grid gap-3">
-            <div id={fieldAnchorId("title")} className="grid gap-1.5">
+          <div className="listing-editor__fields">
+            <div id={fieldAnchorId("title")} className="listing-editor__field">
               <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Наименование {listingTypeLabel}</p>
               <input
                 type="text"
@@ -1454,11 +1450,11 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                   clearError("title");
                 }}
                 placeholder={`Наименование вашей ${listingTypeName}`}
-                className="h-11 rounded-[18px] border-[0.5px] border-[#C4D86F] bg-white px-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#626262]"
+                className="listing-editor__control listing-editor__control--title outline-none placeholder:text-[#626262]"
               />
               <FieldError message={errors.title} />
             </div>
-            <div id={fieldAnchorId("category")} className="grid gap-1.5">
+            <div id={fieldAnchorId("category")} className="listing-editor__field">
               <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Категория {listingTypeLabel}</p>
               <SelectField
                 value={parentCategoryId ?? ""}
@@ -1502,8 +1498,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
               <FieldError message={errors.category} />
             </div>
             <div id={fieldAnchorId("city")}>
-              <div className="flex items-end gap-3">
-                <div className="grid min-w-0 flex-1 gap-1.5">
+              <div className="listing-editor__city-row">
+                <div className="listing-editor__city-field">
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>Город {listingTypeLabel}</p>
                   <SelectField
                     value={cityId ?? ""}
@@ -1532,7 +1528,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                 <button
                   type="button"
                   onClick={handleInsertCityFromProfile}
-                  className="h-12 shrink-0 whitespace-nowrap rounded-[18px] border-[0.5px] border-[#8E8BED] bg-[#8E8BED] px-5 text-[14px] font-semibold text-white"
+                  className="listing-editor__profile-city-btn"
                 >
                   Вставить из профиля
                 </button>
@@ -1542,10 +1538,10 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </div>
         </section>
 
-        <section id={fieldAnchorId("photos")} className="rounded-[18px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+        <section id={fieldAnchorId("photos")} className="listing-editor__section listing-editor__section--white">
           <h3 className={SECTION_TITLE_CLASS}>Добавить фото (до 10 фото)*</h3>
-          <p className={`mt-4 ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить фото</p>
-          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>PNG, JPG, WebP до 5 МБ каждое</p>
+          <p className={`listing-editor__block-label ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить фото</p>
+          <p className={`listing-editor__block-hint ${SECTION_TEXT_CLASS}`}>PNG, JPG, WebP до 5 МБ каждое</p>
           <input
             ref={itemPhotosInputRef}
             type="file"
@@ -1554,8 +1550,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             className="hidden"
             onChange={handleItemPhotosSelected}
           />
-          <div className="relative mt-4 box-border w-full rounded-[6.82px] border-[0.5px] border-dashed border-[#CACACA] p-6">
-            <div className="relative grid grid-cols-5 gap-3">
+          <div className="listing-editor__photo-dropzone relative box-border w-full">
+            <div className="listing-editor__photo-grid relative">
               {Array.from({ length: itemPhotoGrid.visibleSlots }).map((_, index) => {
                 if (index < itemPhotos.length) {
                   const photo = itemPhotos[index];
@@ -1603,14 +1599,14 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           <FieldError message={errors.photos} />
         </section>
 
-        <section className="rounded-[18px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+        <section className="listing-editor__section listing-editor__section--white">
           <h3 className={SECTION_TITLE_CLASS}>Дополнительная информация</h3>
 
           <div id={fieldAnchorId("description")}>
-            <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>
+            <p className={`listing-editor__block-label ${SECTION_TEXT_CLASS}`}>
               Опишите вашу {listingTypeName} подробнее (до 2000 символов)*
             </p>
-            <div className="create-listing-description mt-2">
+            <div className="create-listing-description">
               <textarea
                 maxLength={2000}
                 value={description}
@@ -1627,8 +1623,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
           {listingKind === "item" ? (
             <div id={fieldAnchorId("condition")}>
-              <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Выберите состояние вашей вещи *</p>
-              <div className="mt-2 flex flex-wrap gap-3">
+              <p className={`listing-editor__block-label ${SECTION_TEXT_CLASS}`}>Выберите состояние вашей вещи *</p>
+              <div className="listing-editor__pill-row">
                 {CONDITION_OPTIONS.map((item) => {
                   const active = condition === item.id;
                   return (
@@ -1639,7 +1635,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                         setCondition(item.id);
                         clearError("condition");
                       }}
-                      className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
+                      className={`listing-editor__pill ${
                         active
                           ? "border-[0.5px] border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
                           : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
@@ -1655,8 +1651,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           ) : (
             <>
               <div id={fieldAnchorId("serviceWorkLevel")}>
-                <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Выберите уровень работы *</p>
-                <div className="mt-2 flex flex-wrap gap-3">
+                <p className={`listing-editor__block-label ${SECTION_TEXT_CLASS}`}>Выберите уровень работы *</p>
+                <div className="listing-editor__pill-row">
                   {SERVICE_WORK_LEVEL_OPTIONS.map((item) => {
                     const active = serviceWorkLevel === item.id;
                     return (
@@ -1667,7 +1663,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                           setServiceWorkLevel(item.id);
                           clearError("serviceWorkLevel");
                         }}
-                        className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
+                        className={`listing-editor__pill ${
                           active
                             ? "border-[0.5px] border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
                             : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
@@ -1682,8 +1678,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
               </div>
 
               <div id={fieldAnchorId("serviceFormat")}>
-                <p className={`mt-4 ${SECTION_TEXT_CLASS}`}>Формат оказания услуги *</p>
-                <div className="mt-2 flex flex-wrap gap-3">
+                <p className={`listing-editor__block-label ${SECTION_TEXT_CLASS}`}>Формат оказания услуги *</p>
+                <div className="listing-editor__pill-row">
                   {SERVICE_FORMAT_OPTIONS.map((item) => {
                     const active = serviceFormats.includes(item.id);
                     return (
@@ -1694,7 +1690,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                           setServiceFormats([item.id]);
                           clearError("serviceFormat");
                         }}
-                        className={`flex h-12 min-w-[116px] items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
+                        className={`listing-editor__pill ${
                           active
                             ? "border-[0.5px] border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
                             : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
@@ -1710,9 +1706,9 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             </>
           )}
 
-          <div className="mt-4 grid gap-4">
-            <div>
-              <p className={`mb-2 ${SECTION_TEXT_CLASS}`}>
+          <div className="listing-editor__subsection-grid">
+            <div className="listing-editor__field-stack">
+              <p className={SECTION_TEXT_CLASS}>
                 Напишите примерную стоимость вашей {listingTypeName} (другим будет легче предложить
                 равноценный обмен)
               </p>
@@ -1730,7 +1726,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                     setPriceDigits(nextDigits);
                   }}
                   placeholder="0"
-                  className="h-12 w-full rounded-[18px] border-[0.5px] border-[#CACACA] bg-white pl-6 pr-3 text-[14px] font-normal leading-[170%] text-[#1A1A1A] outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-[170%] placeholder:text-[#626262] focus:border-[#8E8BED]"
+                  className="listing-editor__control listing-editor__control--price pl-6 pr-3 outline-none placeholder:text-[#626262] focus:border-[#8E8BED]"
                 />
                 <span
                   ref={priceMeasureRef}
@@ -1752,7 +1748,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
               <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
                 Отметьте вашу готовность к доплате (другие поймут могут ли они доплатить в счет обмена)
               </p>
-              <div className="mt-2 flex flex-wrap gap-3">
+              <div className="listing-editor__pill-row">
                 {EXTRA_PAY_OPTIONS.map((item) => {
                   const active = extraPay === item.id;
                   return (
@@ -1760,7 +1756,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                       key={item.id}
                       type="button"
                       onClick={() => setExtraPay(item.id)}
-                      className={`flex h-12 items-center justify-center rounded-[18px] px-6 py-3 text-[14px] font-semibold leading-[120%] tracking-[0.001em] transition-colors duration-200 ${
+                      className={`listing-editor__pill ${
                         active
                           ? "border-[0.5px] border-[#8E8BED] bg-[#8E8BED] text-white hover:border-[#9E9EF0] hover:bg-[#9E9EF0]"
                           : "border-[0.5px] border-[#CACACA] bg-white text-[#1A1A1A] hover:border-[#8E8BED] hover:bg-[#F2F4F7]"
@@ -1776,20 +1772,20 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         </section>
 
         <section
-          className={`create-listing-free-section rounded-[18px] p-6 shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${
-            isFree ? "is-on bg-[#c8ff02]" : "bg-white"
+          className={`create-listing-free-section listing-editor__section ${
+            isFree ? "is-on listing-editor__section--lime" : "listing-editor__section--white"
           }`}
         >
-          <div className="flex items-center justify-between gap-6">
-            <div className="min-w-0">
+          <div className="listing-editor__toggle-section">
+            <div className="listing-editor__toggle-copy">
               <h3
-                className={`m-0 text-[24px] font-extrabold leading-[110%] tracking-[-0.003em] ${
-                  isFree ? "text-[#1A1A1A]" : "text-[#626262]"
+                className={`listing-editor__section-title ${
+                  isFree ? "listing-editor__section-title--dark" : ""
                 }`}
               >
                 Отдают даром
               </h3>
-              <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
+              <p className={`listing-editor__toggle-hint ${SECTION_TEXT_CLASS}`}>
                 Включите, если отдаёте {listingTypeName} без обмена — взамен вы ничего не получите
               </p>
             </div>
@@ -1799,11 +1795,11 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </div>
         </section>
 
-        <section className="rounded-[18px] bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
-          <div className="flex items-center justify-between gap-6">
-            <div className="min-w-0">
+        <section className="listing-editor__section listing-editor__section--white">
+          <div className="listing-editor__toggle-section">
+            <div className="listing-editor__toggle-copy">
               <h3 className={SECTION_TITLE_CLASS}>Желаемый обмен</h3>
-              <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
+              <p className={`listing-editor__toggle-hint ${SECTION_TEXT_CLASS}`}>
                 Включите, чтобы указать, что хотите получить взамен
               </p>
             </div>
@@ -1814,7 +1810,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
           <div className={`create-listing-exchange-panel${exchangeEnabled ? " is-open" : ""}`}>
             <div className="create-listing-exchange-panel__inner" inert={!exchangeEnabled}>
-              <div className="create-listing-exchange-panel__content mt-6 grid gap-4">
+              <div className="create-listing-exchange-panel__content listing-editor__exchange-content">
                 <div className="grid gap-2">
                   <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
                     Выберите категории вещей или услуг, которые хотите получить взамен (до{" "}
@@ -1968,13 +1964,13 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
 
         <section
           id={fieldAnchorId("documents")}
-          className="rounded-[18px] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+          className="listing-editor__section listing-editor__section--white"
         >
           <h3 className={SECTION_TITLE_CLASS}>
             Добавить документы, сертификаты, дипломы (до 5 файлов)
           </h3>
-          <p className={`mt-4 ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить файлы</p>
-          <p className={`mt-1 ${SECTION_TEXT_CLASS}`}>
+          <p className={`listing-editor__block-label ${PHOTO_UPLOAD_LABEL_CLASS}`}>Загрузить файлы</p>
+          <p className={`listing-editor__block-hint ${SECTION_TEXT_CLASS}`}>
             PNG, JPG, WebP до 5 МБ или PDF до 10 МБ
           </p>
           <input
@@ -1985,8 +1981,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             className="hidden"
             onChange={handleDocPhotosSelected}
           />
-          <div className="relative mt-4 box-border w-full rounded-[6.82px] border-[0.5px] border-dashed border-[#CACACA] p-6">
-            <div className="relative grid grid-cols-5 gap-3">
+          <div className="listing-editor__photo-dropzone relative box-border w-full">
+            <div className="listing-editor__photo-grid relative">
               {Array.from({ length: docPhotoGrid.visibleSlots }).map((_, index) => {
                 if (index < docPhotos.length) {
                   const photo = docPhotos[index];
@@ -2041,12 +2037,12 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </p>
         ) : null}
 
-        <div className="flex w-full items-center gap-3">
+        <div className="listing-editor__actions">
           <button
             type="button"
             onClick={validateAndPublish}
             disabled={isSubmitting}
-            className="flex h-[63px] flex-1 items-center justify-center rounded-[21px] bg-[#8E8BED] px-[74px] py-4 text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-white disabled:opacity-70"
+            className="listing-editor__submit-btn"
           >
             {isEditMode
               ? listingStatus === "active"
@@ -2058,7 +2054,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             type="button"
             onClick={() => router.back()}
             disabled={isSubmitting}
-            className="box-border flex h-[63px] w-[323px] shrink-0 items-center justify-center rounded-[21px] border border-[#CACACA] bg-white px-[74px] py-4 text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A] disabled:opacity-50"
+            className="listing-editor__cancel-btn"
           >
             Отмена
           </button>

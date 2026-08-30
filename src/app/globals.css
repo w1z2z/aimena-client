@@ -9,6 +9,7 @@
 @import "../styles/mobile-bottom-nav.css";
 @import "../styles/home-sections.css";
 @import "../styles/forms-and-listings.css";
+@import "../styles/create-listing.css";
 @import "../styles/switch.css";
 @import "../styles/auth.css";
 @import "../styles/profile.css";
@@ -209,6 +210,29 @@ textarea:disabled {
   .site-select__input::placeholder,
   .site-select__input.is-placeholder {
     font-size: 16px !important;
+  }
+}
+
+/*
+ * Listing editor — smaller control text on compact (overrides iOS 16px rule above).
+ * Must live after the site-wide compact input fix in this file.
+ */
+@media (max-width: 1024px) {
+  .listing-editor input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"]),
+  .listing-editor textarea,
+  .listing-editor select,
+  .listing-editor .site-select__input {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
+
+  .listing-editor input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="image"])::placeholder,
+  .listing-editor textarea::placeholder,
+  .listing-editor select::placeholder,
+  .listing-editor .site-select__input::placeholder,
+  .listing-editor .site-select__input.is-placeholder {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
   }
 }
 
