@@ -420,6 +420,15 @@ export function ExchangeOfferView() {
             )}
 
             <div className="exchange-offer-layout">
+              <div className="exchange-offer-result">
+                <h1>Хотите получить</h1>
+                <TargetListing listing={target} />
+              </div>
+
+              <div className="exchange-offer-swap" aria-hidden>
+                <SwapIcon />
+              </div>
+
               <section
                 className={`exchange-offer-choice${isFreeOffer ? " is-free" : ""}`}
                 aria-disabled={isFreeOffer || undefined}
@@ -488,15 +497,6 @@ export function ExchangeOfferView() {
                   aria-label="Предложите условия обмена или задайте вопрос"
                 />
               </section>
-
-              <div className="exchange-offer-swap" aria-hidden>
-                <SwapIcon />
-              </div>
-
-              <div className="exchange-offer-result">
-                <h1>Хотите получить</h1>
-                <TargetListing listing={target} />
-              </div>
             </div>
 
             {error ? <p className="exchange-offer-submit-error">{error}</p> : null}
