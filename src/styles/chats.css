@@ -2458,7 +2458,7 @@ body:has(.chats-page) {
   }
 
   .chats-page.is-mobile-list .chats-main {
-    padding: 72px 12px calc(12px + var(--mobile-bottom-nav-height, 78px) + env(safe-area-inset-bottom, 0px));
+    padding: 72px 12px calc(12px + var(--mobile-bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px));
   }
 
   .chats-page.is-mobile-list .chats-sidebar {

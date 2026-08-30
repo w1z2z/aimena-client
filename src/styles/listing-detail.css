@@ -1022,7 +1022,7 @@
 
 @media (max-width: 1024px) {
   .listing-detail-page__main {
-    padding: 80px 12px calc(32px + var(--mobile-bottom-nav-height, 78px) + env(safe-area-inset-bottom, 0px));
+    padding: 80px 12px calc(32px + var(--mobile-bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px));
   }
 
   .listing-detail-layout {
@@ -1346,7 +1346,7 @@
 
 @media (max-width: 640px) {
   .listing-detail-page__main {
-    padding: 72px 12px calc(24px + var(--mobile-bottom-nav-height, 78px) + env(safe-area-inset-bottom, 0px));
+    padding: 72px 12px calc(24px + var(--mobile-bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px));
   }
 
   .listing-detail-heading__title {

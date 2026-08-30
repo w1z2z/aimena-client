@@ -79,7 +79,7 @@
   z-index: 60;
   width: min(412px, calc(100vw - (2 * var(--site-header-compact-inset, 16px))));
   max-width: min(412px, calc(100vw - (2 * var(--site-header-compact-inset, 16px))));
-  max-height: calc(100dvh - 78px);
+  max-height: calc(100dvh - var(--mobile-bottom-nav-height, 56px));
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
