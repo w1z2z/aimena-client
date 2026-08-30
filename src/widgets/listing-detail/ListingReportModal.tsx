@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { ReportReason, ReportTargetType } from "@/shared/api/reports";
@@ -53,6 +53,7 @@ export function ListingReportModal({
   const { isRendered, isVisible } = useOverlayPresence(open);
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [comment, setComment] = useState("");
+  const commentRef = useRef<HTMLTextAreaElement>(null);
 
   const reasons =
     targetType === "user" ? USER_REPORT_REASONS : LISTING_REPORT_REASONS;
@@ -62,6 +63,18 @@ export function ListingReportModal({
     setReason(null);
     setComment("");
   }, [open]);
+
+  useLayoutEffect(() => {
+    if (!isVisible) return;
+    const node = commentRef.current;
+    if (!node) return;
+    node.style.height = "0px";
+    const maxHeight = Number.parseFloat(getComputedStyle(node).maxHeight);
+    const next = Number.isFinite(maxHeight)
+      ? Math.min(node.scrollHeight, maxHeight)
+      : node.scrollHeight;
+    node.style.height = `${next}px`;
+  }, [comment, isVisible]);
 
   useEffect(() => {
     if (!isRendered) return;
@@ -135,8 +148,10 @@ export function ListingReportModal({
         <label className="listing-report-comment">
           <span className="listing-report-comment__label">Комментарий:</span>
           <textarea
+            ref={commentRef}
             className="listing-report-comment__field"
             value={comment}
+            rows={3}
             onChange={(event) => setComment(event.target.value)}
             placeholder="Опишите ситуацию, чтобы мы лучше смогли в ней разобраться"
             disabled={pending}

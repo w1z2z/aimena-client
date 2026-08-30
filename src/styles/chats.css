@@ -2023,7 +2023,7 @@ body:has(.chats-page) {
     height: 100%;
     min-height: 0;
     max-width: none;
-    padding: 12px;
+    padding: 12px 12px calc(24px + env(safe-area-inset-bottom, 0px));
     gap: 12px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -2887,7 +2887,7 @@ body:has(.chats-page) {
   .chats-page.is-mobile-thread .chats-panel--offer {
     gap: 10px;
     padding: calc(10px + env(safe-area-inset-top, 0px)) 12px
-      calc(12px + env(safe-area-inset-bottom, 0px));
+      calc(28px + env(safe-area-inset-bottom, 0px));
     overflow-x: hidden;
     overflow-y: auto;
     background: #f8f8f5;

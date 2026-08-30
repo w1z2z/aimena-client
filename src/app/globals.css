@@ -284,6 +284,20 @@ textarea:disabled {
     font-size: 13px !important;
     line-height: 1.35 !important;
   }
+
+  .listing-action-modal textarea,
+  .listing-action-modal .listing-report-comment__field,
+  .listing-action-modal .listing-action-modal__textarea {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
+
+  .listing-action-modal textarea::placeholder,
+  .listing-action-modal .listing-report-comment__field::placeholder,
+  .listing-action-modal .listing-action-modal__textarea::placeholder {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
 }
 
 @keyframes home-ticker-scroll {
