@@ -6,6 +6,6 @@ export const listingQueryKeys = {
   recommendations: (query: RecommendationsQuery) =>
     [...listingQueryKeys.all, "recommendations", query] as const,
   detail: (listingId: string) => [...listingQueryKeys.all, "detail", listingId] as const,
-  similar: (listingId: string, limit = 12) =>
+  similar: (listingId: string, limit = 8) =>
     [...listingQueryKeys.all, "similar", listingId, limit] as const,
 };

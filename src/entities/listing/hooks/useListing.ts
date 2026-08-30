@@ -16,7 +16,7 @@ export function useListing(listingId: string) {
   });
 }
 
-export function useSimilarListings(listingId: string, limit = 12) {
+export function useSimilarListings(listingId: string, limit = 8) {
   const { user, isLoading } = useAuth();
 
   return useQuery({
@@ -25,7 +25,7 @@ export function useSimilarListings(listingId: string, limit = 12) {
       const response = await getSimilarListings(listingId, { limit }, signal);
       return {
         ...response,
-        data: excludeOwnListings(response.data, user?.id),
+        data: excludeOwnListings(response.data, user?.id).slice(0, limit),
       };
     },
     enabled: Boolean(listingId) && !isLoading,

@@ -14,10 +14,13 @@ const CARD_WIDTH = layout.cardWidth;
 const CARD_GAP = layout.cardGap;
 const CARD_STEP = CARD_WIDTH + CARD_GAP;
 const VISIBLE_COUNT = 4;
+const SIMILAR_LIMIT = 8;
 
 export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps) {
-  const { data, isLoading, isError } = useSimilarListings(listingId, 12);
-  const cards = (data?.data ?? []).map(mapApiListingToCard);
+  const { data, isLoading, isError } = useSimilarListings(listingId, SIMILAR_LIMIT);
+  const cards = (data?.data ?? [])
+    .map(mapApiListingToCard)
+    .slice(0, SIMILAR_LIMIT);
   const trackRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -74,11 +77,7 @@ export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps)
         <div className="listing-detail-similar__viewport">
           <div className="listing-detail-similar__track" style={{ gap: `${CARD_GAP}px` }}>
             {Array.from({ length: VISIBLE_COUNT }, (_, index) => (
-              <div
-                key={index}
-                className="listing-detail-similar__item"
-                style={{ width: `${CARD_WIDTH}px` }}
-              >
+              <div key={index} className="listing-detail-similar__item listings-grid__card">
                 <ListingCardSkeleton />
               </div>
             ))}
@@ -98,11 +97,7 @@ export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps)
             style={{ gap: `${CARD_GAP}px` }}
           >
             {cards.map((listing) => (
-              <div
-                key={listing.id}
-                className="listing-detail-similar__item"
-                style={{ width: `${CARD_WIDTH}px` }}
-              >
+              <div key={listing.id} className="listing-detail-similar__item listings-grid__card">
                 <ListingCard
                   listingId={listing.id}
                   variant={listing.isFree ? "free" : "exchange"}
@@ -127,14 +122,14 @@ export function ListingSimilarSection({ listingId }: ListingSimilarSectionProps)
                 label="Предыдущее объявление"
                 onClick={() => scrollByStep(-1)}
                 disabled={!canScrollLeft}
-                className="absolute left-[14px] top-1/2 z-20 -translate-y-1/2"
+                className="listing-detail-similar__nav listing-detail-similar__nav--prev"
               />
               <CarouselNavButton
                 direction="right"
                 label="Следующее объявление"
                 onClick={() => scrollByStep(1)}
                 disabled={!canScrollRight}
-                className="absolute right-[14px] top-1/2 z-20 -translate-y-1/2"
+                className="listing-detail-similar__nav listing-detail-similar__nav--next"
               />
             </>
           ) : null}
