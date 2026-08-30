@@ -572,6 +572,12 @@
     font-size: 15px;
   }
 
+  .listings-grid__card .home-listing-card__location-icon,
+  .profile-listing-card-slot .home-listing-card__location-icon {
+    width: 9px;
+    height: 12px;
+  }
+
   .listings-grid__card .home-listing-card__exchange-label,
   .profile-listing-card-slot .home-listing-card__exchange-label,
   .listings-grid__card .home-listing-card__category,
