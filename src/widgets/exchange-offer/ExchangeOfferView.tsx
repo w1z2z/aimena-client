@@ -97,10 +97,12 @@ function SelectRemoveIcon() {
 function OwnListingCard({
   listing,
   selected,
+  disabled = false,
   onToggle,
 }: {
   listing: ApiListingCard;
   selected: boolean;
+  disabled?: boolean;
   onToggle: () => void;
 }) {
   const detailLabel =
@@ -112,6 +114,7 @@ function OwnListingCard({
     <article
       className="exchange-offer-own-card"
       data-selected={selected ? "true" : undefined}
+      data-disabled={disabled ? "true" : undefined}
     >
       <ListingImage
         src={listing.coverImageUrl}
@@ -142,6 +145,7 @@ function OwnListingCard({
         type="button"
         className="exchange-offer-select"
         data-selected={selected ? "true" : undefined}
+        disabled={disabled}
         onClick={onToggle}
         aria-pressed={selected}
         aria-label={selected ? `Убрать ${listing.title}` : `Выбрать ${listing.title}`}
@@ -340,16 +344,17 @@ export function ExchangeOfferView() {
           ).replace("~", "~")}`;
 
   const toggleListing = (id: string) => {
-    if (isFreeOffer) return;
+    if (isFreeOffer || sent || submitting) return;
     setSelectedIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
   };
 
   const canSubmit = isFreeOffer || selectedIds.length > 0;
+  const formLocked = sent || submitting;
 
   const submit = async () => {
-    if (!target || !canSubmit || submitting) return;
+    if (!target || !canSubmit || submitting || sent) return;
     setSubmitting(true);
     setError("");
     try {
@@ -419,19 +424,12 @@ export function ExchangeOfferView() {
               </section>
             )}
 
-            <div className="exchange-offer-layout">
-              <div className="exchange-offer-result">
-                <h1>Хотите получить</h1>
-                <TargetListing listing={target} />
-              </div>
-
-              <div className="exchange-offer-swap" aria-hidden>
-                <SwapIcon />
-              </div>
-
+            <div className={`exchange-offer-layout${sent ? " is-sent" : ""}`}>
               <section
-                className={`exchange-offer-choice${isFreeOffer ? " is-free" : ""}`}
-                aria-disabled={isFreeOffer || undefined}
+                className={`exchange-offer-choice${isFreeOffer ? " is-free" : ""}${
+                  sent ? " is-locked" : ""
+                }`}
+                aria-disabled={isFreeOffer || sent || undefined}
               >
                 <div className="exchange-offer-title">
                   <h1>Вы предлагаете</h1>
@@ -465,6 +463,8 @@ export function ExchangeOfferView() {
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
                         placeholder="Найти среди своих объявлений"
+                        disabled={formLocked}
+                        readOnly={sent}
                       />
                     </label>
                     <div className="exchange-offer-list">
@@ -475,6 +475,7 @@ export function ExchangeOfferView() {
                               key={listing.id}
                               listing={listing}
                               selected={selectedIds.includes(listing.id)}
+                              disabled={formLocked}
                               onToggle={() => toggleListing(listing.id)}
                             />
                           ))
@@ -495,8 +496,19 @@ export function ExchangeOfferView() {
                   maxLength={1000}
                   placeholder="Предложите условия обмена или задайте вопрос"
                   aria-label="Предложите условия обмена или задайте вопрос"
+                  disabled={formLocked}
+                  readOnly={sent}
                 />
               </section>
+
+              <div className="exchange-offer-swap" aria-hidden>
+                <SwapIcon />
+              </div>
+
+              <div className="exchange-offer-result">
+                <h1>Хотите получить</h1>
+                <TargetListing listing={target} />
+              </div>
             </div>
 
             {error ? <p className="exchange-offer-submit-error">{error}</p> : null}

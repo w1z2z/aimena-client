@@ -303,6 +303,27 @@ a.exchange-offer-profile:hover {
   background: #8e8bed;
 }
 
+.exchange-offer-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.exchange-offer-choice.is-locked .exchange-offer-search,
+.exchange-offer-choice.is-locked .exchange-offer-list,
+.exchange-offer-choice.is-locked textarea {
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.exchange-offer-choice.is-locked .exchange-offer-search input,
+.exchange-offer-choice.is-locked textarea {
+  color: #626262;
+}
+
+.exchange-offer-own-card[data-disabled="true"] {
+  opacity: 0.85;
+}
+
 .exchange-offer-empty {
   margin: auto;
   color: #626262;
@@ -560,6 +581,19 @@ a.exchange-offer-profile:hover {
     align-items: stretch;
     gap: 12px;
     margin-top: 12px;
+  }
+
+  /* Mobile only: target listing first, then your offer */
+  .exchange-offer-result {
+    order: 1;
+  }
+
+  .exchange-offer-swap {
+    order: 2;
+  }
+
+  .exchange-offer-choice {
+    order: 3;
   }
 
   .exchange-offer-choice,
