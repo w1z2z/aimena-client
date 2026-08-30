@@ -1866,7 +1866,7 @@ body:has(.chats-page) {
   display: flex;
   min-height: 42px;
   height: auto;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   padding: 7px 12px;

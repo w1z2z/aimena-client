@@ -1497,6 +1497,12 @@ function ActiveChatPanel({
                   value={message}
                   rows={1}
                   onChange={(event) => setMessage(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter" || event.shiftKey) return;
+                    if (event.nativeEvent.isComposing) return;
+                    event.preventDefault();
+                    void sendTextMessage();
+                  }}
                   onFocus={(event) => {
                     const node = event.currentTarget;
                     try {
@@ -1516,7 +1522,7 @@ function ActiveChatPanel({
                   autoCorrect="on"
                   autoCapitalize="sentences"
                   spellCheck={true}
-                  enterKeyHint="enter"
+                  enterKeyHint="send"
                   inputMode="text"
                   data-1p-ignore
                   data-lpignore="true"
