@@ -353,6 +353,34 @@
   width: 100%;
 }
 
+/*
+ * Beside the 342px sidebar, 3 full cards need ~1074px content width
+ * (342×3 + 24×2) — roughly viewport 1488px with page padding.
+ */
+@media (max-width: 1480px) and (min-width: 1121px) {
+  .profile-listings-grid {
+    grid-template-columns: repeat(2, minmax(0, 342px));
+    justify-content: center;
+  }
+
+  .profile-listing-card-slot {
+    container-type: inline-size;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 342 / 464;
+  }
+
+  .profile-listing-card-slot .home-listing-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 342px;
+    height: 464px;
+    transform: scale(calc(100cqw / 342px));
+    transform-origin: top left;
+  }
+}
+
 /* --- Settings --- */
 
 .profile-settings {
@@ -610,6 +638,7 @@
 
   .profile-listings-grid {
     grid-template-columns: repeat(2, minmax(0, 342px));
+    justify-content: center;
     gap: 20px 12px;
   }
 
@@ -1058,6 +1087,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .profile-listing-menu {
