@@ -284,6 +284,8 @@
   height: calc(240px + env(safe-area-inset-top, 0px));
   pointer-events: none;
   background: #1a1a1a;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .site-header[data-scrolled="true"] .site-header__overscroll {

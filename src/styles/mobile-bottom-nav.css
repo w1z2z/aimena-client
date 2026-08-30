@@ -15,7 +15,6 @@
   border-top: 0.5px solid #cacaca;
   background: #ffffff;
   box-shadow: 0 -4px 20px rgb(26 26 26 / 6%);
-  /* Keep the bar on a stable compositor layer — iOS scroll jitter fix */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
@@ -26,12 +25,12 @@
   box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  align-items: stretch;
+  align-items: center;
   width: 100%;
   max-width: 560px;
   height: var(--mobile-bottom-nav-height);
   margin: 0 auto;
-  padding: 4px 4px 32px;
+  padding: 4px 4px 26px;
   overflow: visible;
 }
 
@@ -42,7 +41,7 @@
   height: 100%;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 2px;
   border: 0;
   background: transparent;
@@ -90,13 +89,12 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  /* Sit above the bar edge; label stays aligned with other tabs */
+  /* Lift circle so «Разместить» lines up with other tab labels */
   margin-top: -14px;
   border: 1.5px solid #8e8bed;
   border-radius: 50%;
   background: #c8ff02;
   color: #1a1a1a;
-  /* Dual-tone glow without filter:blur — blur makes iOS tab icons jump on scroll */
   box-shadow:
     -4px 5px 12px rgb(142 139 237 / 38%),
     4px 5px 12px rgb(200 255 2 / 42%);
@@ -141,7 +139,6 @@
   line-height: 1;
 }
 
-/* Reserve space so page content clears the tab bar */
 @media (max-width: 1024px) {
   body {
     padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px));
