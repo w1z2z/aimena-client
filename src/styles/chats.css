@@ -1,31 +1,51 @@
+/* Chats page — lock document scroll; layout fills the viewport. */
+html:has(.chats-page),
+body:has(.chats-page) {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .chats-page {
-  min-height: 100vh;
-  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   background: #f8f8f5;
   color: #1a1a1a;
 }
 
 .chats-main {
   display: grid;
-  width: min(1440px, calc(100% - 48px));
-  min-height: 818px;
-  grid-template-columns: 342px minmax(0, 1fr);
-  gap: 24px;
-  margin: 0 auto;
-  padding: 122px 0 56px;
   box-sizing: border-box;
+  width: min(1440px, calc(100% - 48px));
+  min-height: 0;
+  flex: 1 1 auto;
+  grid-template-columns: 342px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 24px;
+  align-content: stretch;
+  margin: 0 auto;
+  /* Fixed header is 54px; keep breathing room below / above edges */
+  padding: 78px 0 24px;
 }
 
 .chats-sidebar {
   display: flex;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   flex-direction: column;
-  align-self: start;
+  align-self: stretch;
   gap: 24px;
+  overflow: hidden;
 }
 
 .chats-sidebar h1 {
   margin: 0;
+  flex: none;
   font-size: 40px;
   font-weight: 700;
   line-height: 40px;
@@ -34,6 +54,7 @@
 
 .chats-tabs {
   display: flex;
+  flex: none;
   flex-wrap: wrap;
   gap: 4px;
 }
@@ -59,10 +80,13 @@
 
 .chats-list {
   display: flex;
-  max-height: 700px;
+  min-height: 0;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 12px;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .chats-list-item {
@@ -236,16 +260,20 @@
   display: flex;
   width: 100%;
   max-width: 1075px;
-  height: 818px;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   flex-direction: column;
   padding: 12px;
   box-sizing: border-box;
   min-width: 0;
+  overflow: hidden;
 }
 
 .chats-empty-panel {
   display: flex;
-  min-height: 300px;
+  height: 100%;
+  min-height: 0;
   align-items: center;
   justify-content: center;
   padding: 48px;
@@ -314,25 +342,26 @@
 }
 
 .chats-panel--offer {
-  height: 885px;
-  min-height: 885px;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   justify-content: flex-start;
-  gap: 0;
-  overflow: visible;
+  gap: 12px;
+  overflow: hidden;
 }
 
 .chats-offer-comparison {
   display: flex;
   width: 100%;
   max-width: 1049px;
-  height: 654px;
-  flex: none;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
-  overflow: visible;
   min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  align-items: stretch;
+  justify-content: space-between;
+  margin-top: 0;
   gap: 12px;
+  overflow: hidden;
 }
 
 .chats-offer-column {
@@ -341,12 +370,13 @@
   width: 100%;
   min-width: 0;
   max-width: 490px;
-  height: 654px;
+  min-height: 0;
+  height: auto;
   flex: 1 1 0;
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .chats-offer-comparison > .chats-offer-column {
@@ -375,14 +405,15 @@
   width: 100%;
   min-width: 0;
   max-width: 490px;
-  height: 625px;
-  min-height: 625px;
-  max-height: 625px;
-  flex: none;
+  min-height: 0;
+  height: auto;
+  flex: 1 1 auto;
   flex-direction: column;
   align-items: stretch;
-  gap: 24px;
-  overflow: visible;
+  gap: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   border: 0.5px solid #cacaca;
   border-radius: 31px;
@@ -408,10 +439,10 @@
   width: 100%;
   max-width: 442px;
   min-width: 0;
-  height: 216px;
+  height: auto;
   flex: none;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: 16px;
   align-self: stretch;
   overflow: hidden;
 }
@@ -421,11 +452,12 @@
   box-sizing: border-box;
   width: auto;
   min-width: 0;
-  height: 96px;
+  height: auto;
+  min-height: 72px;
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-  padding: 24px;
+  padding: 16px 20px;
   border-radius: 21px;
   background: #c8ff02;
   font-size: 14px;
@@ -625,14 +657,14 @@
   width: 100%;
   max-width: 442px;
   min-width: 0;
-  height: 156px;
-  min-height: 156px;
-  max-height: 156px;
-  flex: none;
+  min-height: 0;
+  height: auto;
+  flex: 1 1 auto;
   flex-direction: column;
   align-items: flex-start;
   align-self: stretch;
   gap: 12px;
+  overflow: hidden;
 }
 
 .chats-listing-wants > div {
@@ -704,7 +736,7 @@
 
 .chats-listing-detail--free-claim {
   justify-content: flex-start;
-  gap: 24px;
+  gap: 16px;
 }
 
 .chats-free-claim-panel {
@@ -712,13 +744,13 @@
   display: flex;
   width: 100%;
   max-width: 442px;
-  min-height: 348px;
+  min-height: 120px;
   flex: 1 1 auto;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 32px 24px;
+  padding: 24px;
   border: 0.5px dashed #cacaca;
   border-radius: 31px;
   background: #cacaca;
@@ -747,6 +779,7 @@
   width: 38px;
   height: 38px;
   flex: none;
+  align-self: center;
   align-items: center;
   justify-content: center;
   border: 0.5px solid #cacaca;
@@ -766,14 +799,14 @@
   width: 100%;
   max-width: 442px;
   min-width: 0;
-  height: 156px;
-  min-height: 156px;
-  max-height: 156px;
-  flex: 0 0 156px;
+  min-height: 96px;
+  height: auto;
+  max-height: none;
+  flex: 1 1 auto;
   flex-direction: column;
   align-self: stretch;
   overflow: hidden;
-  padding: 20px 12px 20px 24px;
+  padding: 16px 12px 16px 20px;
   border: 0.5px solid #cacaca;
   border-radius: 31px;
   background: #fff;
@@ -868,7 +901,7 @@
 }
 
 .chats-panel--offer > .chats-actions {
-  margin-top: 30px;
+  margin-top: auto;
 }
 
 .chats-panel--offer > .chats-action-error {
@@ -1918,12 +1951,13 @@
 
   /* Incoming offer acceptance — full mobile stack */
   .chats-panel--offer {
-    height: auto;
+    height: 100%;
     min-height: 0;
     max-width: none;
     padding: 12px;
     gap: 12px;
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .chats-panel--offer .chats-profile-header {
@@ -2195,15 +2229,16 @@
   }
 
   .chats-list {
-    max-height: 250px;
+    max-height: none;
   }
 
   .chats-panel {
-    height: 720px;
+    height: 100%;
+    min-height: 0;
   }
 
   .chats-panel--offer {
-    height: auto;
+    height: 100%;
     min-height: 0;
   }
 

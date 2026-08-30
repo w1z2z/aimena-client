@@ -1,5 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const serviceLinks = [
   { label: "Создать объявление", href: "/create-listing" },
@@ -16,7 +19,10 @@ const helpLinks = [
 ] as const;
 
 export function SiteFooter() {
+  const pathname = usePathname();
   const year = new Date().getFullYear();
+
+  if (pathname.startsWith("/chats")) return null;
 
   return (
     <footer className="site-footer">
