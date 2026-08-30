@@ -874,13 +874,15 @@ function SwapHeader({
   currentUserId: string;
   onBack?: () => void;
 }) {
+  const [offerIndex, setOfferIndex] = useState(0);
+  const [plaquesOpen, setPlaquesOpen] = useState(true);
+
   if (!thread.offer) return null;
 
   const mineStatus = dealSideStatus(thread.deal, "mine");
   const theirsStatus = dealSideStatus(thread.deal, "theirs");
   const target = thread.offer.targetListing;
   const offeredListings = thread.offer.offeredListings;
-  const [offerIndex, setOfferIndex] = useState(0);
   const offered =
     offeredListings[offerIndex] ?? offeredListings[0] ?? null;
 
@@ -929,29 +931,79 @@ function SwapHeader({
       };
 
   return (
-    <div className="chats-swap-header">
-      {onBack ? <ChatsMobileBack onBack={onBack} /> : null}
-      <SwapPreviewCard
-        label={mine.label}
-        listing={mine.listing}
-        listings={mine.listings}
-        activeIndex={mine.activeIndex}
-        menu={mine.menu}
-        statusLabel={mineStatus.label}
-        statusActive={mineStatus.active}
-        onNext={mine.onNext}
-      />
-      <SwapPreviewCard
-        label={theirs.label}
-        listing={theirs.listing}
-        listings={theirs.listings}
-        activeIndex={theirs.activeIndex}
-        menu={theirs.menu}
-        counterpart={thread.counterpart}
-        statusLabel={theirsStatus.label}
-        statusActive={theirsStatus.active}
-        onNext={theirs.onNext}
-      />
+    <div className="chats-swap-header-wrap">
+      <div
+        className={`chats-swap-header${plaquesOpen ? " is-expanded" : " is-collapsed"}`}
+      >
+        {onBack ? <ChatsMobileBack onBack={onBack} /> : null}
+        <div className="chats-swap-header__pins" aria-hidden={plaquesOpen}>
+          <div className="chats-swap-header__pins-inner">
+            <div className="chats-swap-header__pins-content">
+              <span
+                className={`chats-swap-header__pin${mineStatus.active ? " is-active" : ""}`}
+              >
+                {mineStatus.label}
+              </span>
+              <span
+                className={`chats-swap-header__pin${theirsStatus.active ? " is-active" : ""}`}
+              >
+                {theirsStatus.label}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          className={`chats-swap-header__plaques${plaquesOpen ? " is-open" : ""}`}
+        >
+          <div className="chats-swap-header__plaques-inner">
+            <div className="chats-swap-header__plaques-content">
+              <SwapPreviewCard
+                label={mine.label}
+                listing={mine.listing}
+                listings={mine.listings}
+                activeIndex={mine.activeIndex}
+                menu={mine.menu}
+                statusLabel={mineStatus.label}
+                statusActive={mineStatus.active}
+                onNext={mine.onNext}
+              />
+              <SwapPreviewCard
+                label={theirs.label}
+                listing={theirs.listing}
+                listings={theirs.listings}
+                activeIndex={theirs.activeIndex}
+                menu={theirs.menu}
+                counterpart={thread.counterpart}
+                statusLabel={theirsStatus.label}
+                statusActive={theirsStatus.active}
+                onNext={theirs.onNext}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <button
+        type="button"
+        className="chats-swap-header__fold"
+        aria-expanded={plaquesOpen}
+        aria-label={plaquesOpen ? "Свернуть статусы" : "Развернуть статусы"}
+        onClick={() => setPlaquesOpen((open) => !open)}
+      >
+        <svg
+          viewBox="0 0 12 8"
+          fill="none"
+          aria-hidden
+          className={`chats-swap-header__fold-icon${plaquesOpen ? " is-open" : ""}`}
+        >
+          <path
+            d="M1 1.5L6 6.5L11 1.5"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
     </div>
   );
 }

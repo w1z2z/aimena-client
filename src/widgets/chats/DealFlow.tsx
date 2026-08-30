@@ -132,7 +132,13 @@ export function dealSideStatus(
   side: "mine" | "theirs",
 ): { label: string; active: boolean } {
   if (!deal) {
-    return { label: "Ждём готовности владельца", active: false };
+    return {
+      label:
+        side === "mine"
+          ? "Ждём вашей готовности"
+          : "Ждём готовности владельца",
+      active: false,
+    };
   }
   if (deal.status === "cancelled") {
     return {
@@ -153,18 +159,40 @@ export function dealSideStatus(
   if (deal.status === "failure_pending") {
     const iReported = deal.failureReportedByMe;
     const thisSideReported = side === "mine" ? iReported : !iReported;
+    if (thisSideReported) {
+      return {
+        label:
+          side === "mine"
+            ? "Вы сообщили, что обмен не состоялся"
+            : "Владелец сообщил, что обмен не состоялся",
+        active: false,
+      };
+    }
     return {
-      label: thisSideReported
-        ? "Вы сообщили, что обмен не состоялся"
-        : "Ждём решения партнёра",
+      label:
+        side === "mine"
+          ? "Ждём вашего решения"
+          : "Ждём решения владельца",
       active: false,
     };
   }
   if (deal.status === "cancellation_pending") {
     const iRequested = deal.cancellationRequestedByMe;
     const thisSideRequested = side === "mine" ? iRequested : !iRequested;
+    if (thisSideRequested) {
+      return {
+        label:
+          side === "mine"
+            ? "Вы запросили отмену"
+            : "Владелец запросил отмену",
+        active: false,
+      };
+    }
     return {
-      label: thisSideRequested ? "Запросил отмену" : "Ждём решения",
+      label:
+        side === "mine"
+          ? "Ждём вашего решения"
+          : "Ждём решения владельца",
       active: false,
     };
   }
@@ -173,7 +201,10 @@ export function dealSideStatus(
       side === "mine" ? deal.completedByMe : deal.completedByOther;
     if (done) {
       return {
-        label: side === "mine" ? "Вы подтвердили обмен" : "Владелец подтвердил обмен",
+        label:
+          side === "mine"
+            ? "Вы подтвердили обмен"
+            : "Владелец подтвердил обмен",
         active: true,
       };
     }
@@ -190,11 +221,18 @@ export function dealSideStatus(
     side === "mine" ? deal.termsConfirmedByMe : deal.termsConfirmedByOther;
   if (ready) {
     return {
-      label: side === "mine" ? "Вы готовы к обмену" : "Владелец готов к обмену",
+      label:
+        side === "mine" ? "Вы готовы к обмену" : "Владелец готов к обмену",
       active: true,
     };
   }
-  return { label: "Ждём готовности владельца", active: false };
+  return {
+    label:
+      side === "mine"
+        ? "Ждём вашей готовности"
+        : "Ждём готовности владельца",
+    active: false,
+  };
 }
 
 export function DealFlow({

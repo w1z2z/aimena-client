@@ -1008,6 +1008,12 @@ body:has(.chats-page) {
   background: linear-gradient(to top, rgb(26 26 26 / 10%), transparent);
 }
 
+.chats-swap-header-wrap {
+  position: relative;
+  z-index: 2;
+  flex: none;
+}
+
 .chats-swap-header {
   position: relative;
   z-index: 2;
@@ -1021,6 +1027,34 @@ body:has(.chats-page) {
   border-radius: 31px 31px 0 0;
   background: #fff;
   pointer-events: none;
+}
+
+.chats-swap-header__plaques {
+  display: contents;
+}
+
+.chats-swap-header__plaques-inner,
+.chats-swap-header__plaques-content {
+  display: contents;
+}
+
+.chats-swap-header__pins {
+  display: none;
+}
+
+.chats-swap-header__fold {
+  display: none;
+}
+
+.chats-swap-header__fold-icon {
+  display: block;
+  width: 12px;
+  height: 8px;
+  transition: transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.chats-swap-header__fold-icon.is-open {
+  transform: rotate(180deg);
 }
 
 .chats-support-header {
@@ -1052,7 +1086,7 @@ body:has(.chats-page) {
 }
 
 .chats-support-header::after,
-.chats-swap-header::after {
+.chats-swap-header-wrap::after {
   content: "";
   position: absolute;
   right: 0;
@@ -2462,7 +2496,7 @@ body:has(.chats-page) {
     overflow: hidden;
   }
 
-  .chats-page.is-mobile-thread .chats-swap-header,
+  .chats-page.is-mobile-thread .chats-swap-header-wrap,
   .chats-page.is-mobile-thread .chats-support-header,
   .chats-page.is-mobile-thread .chats-active-footer {
     flex: none;
@@ -2479,6 +2513,11 @@ body:has(.chats-page) {
     display: inline-flex;
   }
 
+  .chats-page.is-mobile-thread .chats-swap-header-wrap {
+    overflow: visible;
+    margin-bottom: 22px;
+  }
+
   .chats-page.is-mobile-thread .chats-swap-header {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -2486,7 +2525,7 @@ body:has(.chats-page) {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 10px;
     border-radius: 0;
     overflow: hidden;
     pointer-events: auto;
@@ -2496,7 +2535,131 @@ body:has(.chats-page) {
     grid-column: 1 / -1;
   }
 
-  .chats-page.is-mobile-thread .chats-swap-header::after {
+  .chats-page.is-mobile-thread .chats-swap-header__pins {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 260ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header.is-collapsed .chats-swap-header__pins {
+    grid-template-rows: 1fr;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__pins-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__pins-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+    -webkit-transform: translate3d(0, -8px, 0);
+    transition:
+      opacity 260ms cubic-bezier(0.33, 1, 0.68, 1),
+      transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header.is-collapsed .chats-swap-header__pins-content {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__pin {
+    box-sizing: border-box;
+    display: flex;
+    min-width: 0;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    border: 0.5px solid #cacaca;
+    border-radius: 14px;
+    background: #fff;
+    color: #626262;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.014px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__pin.is-active {
+    background: #c8ff02;
+    color: #1a1a1a;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__plaques {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 260ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__plaques.is-open {
+    grid-template-rows: 1fr;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__plaques-inner {
+    display: block;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__plaques-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+    -webkit-transform: translate3d(0, -8px, 0);
+    transition:
+      opacity 260ms cubic-bezier(0.33, 1, 0.68, 1),
+      transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__plaques.is-open .chats-swap-header__plaques-content {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__fold {
+    box-sizing: border-box;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    border: 0.5px solid #cacaca;
+    border-top: 0;
+    border-radius: 0 0 14px 14px;
+    background: #fff;
+    color: #626262;
+    cursor: pointer;
+    pointer-events: auto;
+    transform: translateX(-50%);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header__fold:active {
+    background: #f8f8f5;
+  }
+
+  .chats-page.is-mobile-thread .chats-swap-header-wrap::after {
     bottom: -10px;
     height: 10px;
   }
@@ -2639,7 +2802,7 @@ body:has(.chats-page) {
   }
 
   /* Keyboard open: hide entire top chrome (back + plaques) */
-  .chats-page.is-mobile-thread[data-keyboard="true"] .chats-swap-header,
+  .chats-page.is-mobile-thread[data-keyboard="true"] .chats-swap-header-wrap,
   .chats-page.is-mobile-thread[data-keyboard="true"] .chats-support-header {
     display: none;
   }
