@@ -556,21 +556,19 @@ a.exchange-offer-profile:hover {
   color: #fff;
 }
 
-/* Desktop: offer block fills the viewport height (page scroll + footer stay). */
+/* Desktop: Figma list = fixed 364px + scroll; target card ~587px without scroll. */
 @media (min-width: 1121px) {
   .exchange-offer-layout {
-    align-items: stretch;
-    /* header pad + profile + gaps + actions — block fits first screen */
-    height: calc(100dvh - 320px);
-    max-height: calc(100dvh - 320px);
+    align-items: center;
+    height: auto;
     min-height: 0;
   }
 
   .exchange-offer-choice,
   .exchange-offer-result {
     min-height: 0;
-    height: 100%;
-    overflow: hidden;
+    height: auto;
+    align-self: center;
   }
 
   .exchange-offer-swap {
@@ -585,38 +583,36 @@ a.exchange-offer-profile:hover {
     flex: none;
   }
 
-  .exchange-offer-list,
-  .exchange-offer-free-panel {
-    flex: 1 1 auto;
-    height: auto;
-    /* Always fit 2 full own-cards + gap + top/bottom insets */
-    min-height: calc(
-      (2 * var(--exchange-own-card-h)) + var(--exchange-list-gap) +
-        (2 * var(--exchange-list-inset))
-    );
+  /* Figma section-mine-item: h-[364px] overflow, p-[24px], gap 12 — not stretch */
+  .exchange-offer-list {
+    flex: none;
+    height: 364px;
+    min-height: 364px;
+    max-height: 364px;
   }
 
   .exchange-offer-free-panel {
+    flex: none;
+    height: 430px;
+    min-height: 430px;
+    max-height: 430px;
     justify-content: center;
   }
 
-  .exchange-offer-choice {
-    gap: 16px;
-  }
-
-  .exchange-offer-choice textarea {
-    height: 88px;
-    min-height: 88px;
-    padding: 16px 20px;
-  }
-
+  /* Figma SectionInfo: ~587px card, all content visible — no inner scroll */
   .exchange-offer-target {
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: none;
+    box-sizing: border-box;
     height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    min-height: 587px;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .exchange-offer-target__heading,
+  .exchange-offer-stats,
+  .exchange-offer-wants {
+    flex: none;
   }
 }
 
