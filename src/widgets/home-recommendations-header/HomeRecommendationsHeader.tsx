@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 import { useHomeSearch } from "@/features/home-search";
+import { scrollToHomeRecommendations } from "@/shared/lib/scroll-to-home-recommendations";
 import { useMediaQuery } from "@/shared/lib/use-media-query";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { useOverlayScrollLock } from "@/shared/lib/use-overlay-scroll-lock";
@@ -38,6 +39,11 @@ export function HomeRecommendationsHeader() {
 
   useOverlayScrollLock(useModal && isRendered, isVisible, modalScrollRef);
 
+  useEffect(() => {
+    if (window.location.hash !== "#home-recommendations") return;
+    scrollToHomeRecommendations({ behavior: "auto", settleDelayMs: 120 });
+  }, []);
+
   const toggleFilters = useCallback(() => {
     setIsFiltersOpen((current) => !current);
   }, [setIsFiltersOpen]);
@@ -71,7 +77,10 @@ export function HomeRecommendationsHeader() {
       <div className="home-recommendations__inner">
         <div className="home-recommendations-header-wrap">
           <div className="home-recommendations-header">
-            <div className="home-recommendations-header__title-group">
+            <div
+              id="home-recommendations-heading"
+              className="home-recommendations-header__title-group"
+            >
               <h2 className="home-recommendations-header__heading">
                 <span>Попробуй найти, то что</span>{" "}
                 <span className="home-recommendations-header__heading-accent">нужно</span>

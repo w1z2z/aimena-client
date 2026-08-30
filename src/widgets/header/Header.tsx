@@ -97,6 +97,7 @@ export function Header() {
   const { guardAuth } = useAuthGate();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const compactSearchSheetRef = useRef<HTMLDivElement>(null);
   const compactSearchOverlayRef = useRef<HTMLDivElement>(null);
   const compactSearchBackdropRef = useRef<HTMLDivElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
@@ -138,14 +139,14 @@ export function Header() {
   );
   useScrollLock(
     isCompact && (isSearchExpanded || compactSearchRendered),
-    searchRef,
+    compactSearchSheetRef,
   );
 
   const focusCompactSearchInput = useCallback(() => {
     cancelScrollPin();
     const focus = () => {
       const backdrop = compactSearchBackdropRef.current;
-      const sheet = searchRef.current;
+      const sheet = compactSearchSheetRef.current;
       if (backdrop) applyCompactSearchBackdrop(backdrop);
       if (sheet) applyCompactSearchSheetViewport(sheet);
       searchInputRef.current?.focus({ preventScroll: true });
@@ -175,7 +176,7 @@ export function Header() {
 
     const attach = () => {
       backdrop = compactSearchBackdropRef.current;
-      sheet = searchRef.current;
+      sheet = compactSearchSheetRef.current;
       if (!backdrop || !sheet) {
         frameId = window.requestAnimationFrame(attach);
         return;
@@ -223,7 +224,11 @@ export function Header() {
 
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as Node;
-      if (searchRef.current?.contains(target) || searchToggleRef.current?.contains(target)) {
+      if (
+        compactSearchSheetRef.current?.contains(target) ||
+        searchRef.current?.contains(target) ||
+        searchToggleRef.current?.contains(target)
+      ) {
         return;
       }
       closeSearchWithAnimation();
@@ -377,6 +382,17 @@ export function Header() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isScrolled, isCompact]);
 
+  // Mobile compact-search viewport styles must never leak onto the desktop bar wrapper.
+  useEffect(() => {
+    if (isCompact) return;
+    const el = searchRef.current;
+    if (!el) return;
+    el.style.top = "";
+    el.style.left = "";
+    el.style.width = "";
+    el.style.height = "";
+  }, [isCompact, showExpandedSearch]);
+
   const closeSearchWithAnimation = (options?: { clear?: boolean }) => {
     if (searchCloseTimerRef.current !== null) {
       window.clearTimeout(searchCloseTimerRef.current);
@@ -442,7 +458,11 @@ export function Header() {
         setOpenPanel(null);
         setActiveSearchSuggestionIndex(-1);
       });
-      focusCompactSearchInput();
+      if (isCompact) {
+        focusCompactSearchInput();
+      } else {
+        searchInputRef.current?.focus();
+      }
       return;
     }
 
@@ -796,7 +816,7 @@ export function Header() {
                       className="site-header-compact-search__backdrop"
                       aria-hidden
                     />
-                    <div ref={searchRef} className="site-header-compact-search__sheet">
+                    <div ref={compactSearchSheetRef} className="site-header-compact-search__sheet">
                       <div className="site-header-compact-search__field">{searchField}</div>
                       <div
                         ref={searchResultsRef}

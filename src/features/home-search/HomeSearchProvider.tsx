@@ -38,6 +38,7 @@ import {
   onOpenHomeFilters,
   type OpenHomeFiltersPayload,
 } from "@/shared/lib/home-open-filters";
+import { scrollToHomeRecommendations } from "@/shared/lib/scroll-to-home-recommendations";
 
 const FILTERS_AUTO_APPLY_DEBOUNCE_MS = 200;
 
@@ -188,19 +189,19 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
 
     setFilters((current) => ({ ...current, titleQuery: trimmed }));
     setAppliedFilters((current) => ({ ...current, titleQuery: trimmed }));
-    setIsFiltersOpen(true);
 
-    const scrollToResults = () => {
-      document.getElementById("home-recommendations")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    };
+    const isCompact =
+      typeof window !== "undefined" &&
+      window.matchMedia(`(max-width: ${COMPACT_HEADER_MAX_WIDTH_PX}px)`).matches;
 
-    // Wait a frame (filters expand) then scroll; second pass for late layout.
-    window.requestAnimationFrame(() => {
-      scrollToResults();
-      window.setTimeout(scrollToResults, 120);
+    // Mobile: scroll to feed only — opening filters races scroll-lock (restores y=0 on close).
+    if (!isCompact) {
+      setIsFiltersOpen(true);
+    }
+
+    scrollToHomeRecommendations({
+      behavior: "smooth",
+      settleDelayMs: isCompact ? 280 : 120,
     });
   }, []);
 
@@ -230,24 +231,9 @@ export function HomeSearchProvider({ children }: { children: ReactNode }) {
         setIsFiltersOpen(true);
       }
 
-      if (!isCompact) {
-        document.getElementById("home-recommendations")?.scrollIntoView({
-          behavior: "auto",
-          block: "start",
-        });
-        return;
-      }
-
-      const scrollToFeed = () => {
-        document.getElementById("home-recommendations-feed")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      };
-
-      window.requestAnimationFrame(() => {
-        scrollToFeed();
-        window.setTimeout(scrollToFeed, 280);
+      scrollToHomeRecommendations({
+        behavior: isCompact ? "smooth" : "auto",
+        settleDelayMs: isCompact ? 280 : 120,
       });
     },
     [categoryUiKeyToBackendId, hero],
