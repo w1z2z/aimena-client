@@ -14,6 +14,7 @@ import { useAuth, useAuthGate } from "@/features/auth";
 import { useChatInbox } from "@/features/chat-inbox";
 import { getListings } from "@/shared/api/listings";
 import { requestHomeTitleSearch } from "@/shared/lib/home-title-search";
+import { cancelScrollPin } from "@/shared/lib/pin-window-scroll";
 import { useMediaQuery } from "@/shared/lib/use-media-query";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { useScrollLock } from "@/shared/lib/use-scroll-lock";
@@ -51,6 +52,41 @@ function getPageScrollTop() {
   );
 }
 
+function applyCompactSearchBackdrop(backdrop: HTMLDivElement) {
+  const viewport = window.visualViewport;
+  const layoutHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+  const coverHeight = viewport
+    ? Math.max(layoutHeight, viewport.offsetTop + viewport.height)
+    : layoutHeight;
+
+  backdrop.style.height = `${coverHeight}px`;
+}
+
+function applyCompactSearchSheetViewport(sheet: HTMLDivElement) {
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+
+  sheet.style.top = `${viewport.offsetTop}px`;
+  sheet.style.left = `${viewport.offsetLeft}px`;
+  sheet.style.width = `${viewport.width}px`;
+  sheet.style.height = `${viewport.height}px`;
+}
+
+function resetCompactSearchViewport(
+  backdrop: HTMLDivElement | null,
+  sheet: HTMLDivElement | null,
+) {
+  if (backdrop) {
+    backdrop.style.height = "";
+  }
+  if (sheet) {
+    sheet.style.top = "";
+    sheet.style.left = "";
+    sheet.style.width = "";
+    sheet.style.height = "";
+  }
+}
+
 export function Header() {
   const router = useRouter();
   const pathname = usePathname();
@@ -61,6 +97,8 @@ export function Header() {
   const { guardAuth } = useAuthGate();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const compactSearchOverlayRef = useRef<HTMLDivElement>(null);
+  const compactSearchBackdropRef = useRef<HTMLDivElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
   const searchToggleRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -100,8 +138,21 @@ export function Header() {
   );
   useScrollLock(
     isCompact && (isSearchExpanded || compactSearchRendered),
-    searchResultsRef,
+    searchRef,
   );
+
+  const focusCompactSearchInput = useCallback(() => {
+    cancelScrollPin();
+    const focus = () => {
+      const backdrop = compactSearchBackdropRef.current;
+      const sheet = searchRef.current;
+      if (backdrop) applyCompactSearchBackdrop(backdrop);
+      if (sheet) applyCompactSearchSheetViewport(sheet);
+      searchInputRef.current?.focus({ preventScroll: true });
+    };
+    focus();
+    window.requestAnimationFrame(focus);
+  }, []);
 
   /** Desktop: expanded on scroll, or after clicking the search icon at top. Compact: overlay presence. */
   const showExpandedSearch =
@@ -109,6 +160,41 @@ export function Header() {
     (isCompact && (isSearchExpanded || isSearchClosing || compactSearchRendered));
   const mountCompactSearch =
     isCompact && (isSearchExpanded || isSearchClosing || compactSearchRendered);
+
+  useEffect(() => {
+    if (!mountCompactSearch) return;
+
+    let frameId = 0;
+    let backdrop: HTMLDivElement | null = null;
+    let sheet: HTMLDivElement | null = null;
+
+    const sync = () => {
+      if (backdrop) applyCompactSearchBackdrop(backdrop);
+      if (sheet) applyCompactSearchSheetViewport(sheet);
+    };
+
+    const attach = () => {
+      backdrop = compactSearchBackdropRef.current;
+      sheet = searchRef.current;
+      if (!backdrop || !sheet) {
+        frameId = window.requestAnimationFrame(attach);
+        return;
+      }
+
+      sync();
+      window.visualViewport?.addEventListener("resize", sync);
+      window.visualViewport?.addEventListener("scroll", sync);
+    };
+
+    attach();
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.visualViewport?.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("scroll", sync);
+      resetCompactSearchViewport(backdrop, sheet);
+    };
+  }, [mountCompactSearch]);
   const showSearchSuggestions =
     showExpandedSearch &&
     !isSearchClosing &&
@@ -356,7 +442,7 @@ export function Header() {
         setOpenPanel(null);
         setActiveSearchSuggestionIndex(-1);
       });
-      searchInputRef.current?.focus();
+      focusCompactSearchInput();
       return;
     }
 
@@ -659,8 +745,7 @@ export function Header() {
               </div>
 
               <div className="ml-auto flex shrink-0 items-center gap-[8px] sm:gap-[12px]">
-                {/* Compact: search is in the bottom nav — remove `hidden` to restore in header */}
-                <div className="relative z-[50] hidden">
+                <div className="relative z-[50]">
                   <button
                     ref={searchToggleRef}
                     type="button"
@@ -700,11 +785,17 @@ export function Header() {
             {mountCompactSearch && typeof document !== "undefined"
               ? createPortal(
                   <div
+                    ref={compactSearchOverlayRef}
                     className={`site-header-compact-search ${compactSearchVisible || (isSearchExpanded && !isSearchClosing) ? "is-open" : ""}`}
                     role="dialog"
                     aria-modal="true"
                     aria-label="Поиск"
                   >
+                    <div
+                      ref={compactSearchBackdropRef}
+                      className="site-header-compact-search__backdrop"
+                      aria-hidden
+                    />
                     <div ref={searchRef} className="site-header-compact-search__sheet">
                       <div className="site-header-compact-search__field">{searchField}</div>
                       <div
@@ -772,16 +863,7 @@ export function Header() {
         />
       ) : null}
 
-      {isCompact ? (
-        <MobileBottomNav
-          searchActive={Boolean(showExpandedSearch && !isSearchClosing)}
-          onSearchClick={() => {
-            setOpenPanel(null);
-            setIsMobileMenuOpen(false);
-            handleSearchToggle();
-          }}
-        />
-      ) : null}
+      {isCompact ? <MobileBottomNav /> : null}
     </>
   );
 }

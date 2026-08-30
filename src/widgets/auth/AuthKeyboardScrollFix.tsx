@@ -15,6 +15,10 @@ function isCitySelectField(el: HTMLElement): boolean {
   return Boolean(el.closest(".site-select, .auth-city-select"));
 }
 
+function isCompactHeaderSearchField(el: HTMLElement): boolean {
+  return Boolean(el.closest(".site-header-compact-search"));
+}
+
 function scrollPageToTop() {
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
@@ -70,12 +74,14 @@ export function AuthKeyboardScrollFix() {
       cancelReset();
       // Combobox opens a portaled list that follows the trigger — don't yank the page
       if (isCitySelectField(event.target)) return;
+      if (isCompactHeaderSearchField(event.target)) return;
       scrollFieldIntoView(event.target);
     };
 
     const onFocusOut = (event: FocusEvent) => {
       if (!isFormField(event.target)) return;
       if (isCitySelectField(event.target)) return;
+      if (isCompactHeaderSearchField(event.target)) return;
       if (isFormField(event.relatedTarget)) return;
       scheduleResetToTop();
     };

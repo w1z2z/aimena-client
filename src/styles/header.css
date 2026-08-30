@@ -313,24 +313,39 @@
   position: fixed;
   inset: 0;
   z-index: 120;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
   overscroll-behavior: none;
   pointer-events: none;
-  background: rgb(248 248 245 / 0%);
-  transition: background-color 260ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .site-header-compact-search.is-open {
   pointer-events: auto;
+}
+
+.site-header-compact-search__backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: 100lvh;
   background: #f8f8f5;
+  opacity: 0;
+  transition: opacity 260ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.site-header-compact-search.is-open .site-header-compact-search__backdrop {
+  opacity: 1;
 }
 
 .site-header-compact-search__sheet {
+  position: fixed;
+  z-index: 1;
   box-sizing: border-box;
   display: flex;
-  flex: 1 1 auto;
   width: 100%;
   min-height: 0;
   max-height: 100%;

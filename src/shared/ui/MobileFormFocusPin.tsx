@@ -28,6 +28,7 @@ function isTextFormControl(target: EventTarget | null): target is HTMLElement {
 }
 
 function shouldSkipPin(target: HTMLElement): boolean {
+  if (target.closest(".site-header-compact-search")) return true;
   // Auth has its own keyboard scroll assist.
   if (target.closest(".auth-page-shell")) return true;
   return false;

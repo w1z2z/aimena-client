@@ -4,12 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { isAuthFlowPath, useAuth, useAuthGate } from "@/features/auth";
 import { useChatInbox } from "@/features/chat-inbox";
-import { HeartIcon, LoginIcon, NavChatIcon, SearchIcon } from "@/shared/ui/icons";
-
-type MobileBottomNavProps = {
-  searchActive?: boolean;
-  onSearchClick: () => void;
-};
+import { HeartIcon, LoginIcon, NavChatIcon, NavHomeIcon } from "@/shared/ui/icons";
 
 function CreateIcon({ className }: { className?: string }) {
   return (
@@ -27,10 +22,7 @@ function CreateIcon({ className }: { className?: string }) {
   );
 }
 
-export function MobileBottomNav({
-  searchActive = false,
-  onSearchClick,
-}: MobileBottomNavProps) {
+export function MobileBottomNav() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user } = useAuth();
@@ -41,11 +33,20 @@ export function MobileBottomNav({
     return null;
   }
 
+  const homeActive = pathname === "/";
   const favoritesActive = pathname.startsWith("/favorites");
   const chatsActive = pathname.startsWith("/chats");
   const createActive = pathname.startsWith("/create-listing");
   const profileActive =
     pathname.startsWith("/profile") || pathname.startsWith("/users/");
+
+  const handleHome = () => {
+    if (pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    router.push("/");
+  };
 
   const handleFavorites = () => {
     guardAuth("favorites", () => {
@@ -78,13 +79,13 @@ export function MobileBottomNav({
       <div className="mobile-bottom-nav__inner">
         <button
           type="button"
-          className={`mobile-bottom-nav__item${searchActive ? " is-active" : ""}`}
-          aria-label="Поиск"
-          aria-pressed={searchActive}
-          onClick={onSearchClick}
+          className={`mobile-bottom-nav__item${homeActive ? " is-active" : ""}`}
+          aria-label="Главная"
+          aria-current={homeActive ? "page" : undefined}
+          onClick={handleHome}
         >
-          <SearchIcon className="h-5 w-5" />
-          <span className="mobile-bottom-nav__label">Поиск</span>
+          <NavHomeIcon className="h-5 w-5" />
+          <span className="mobile-bottom-nav__label">Главная</span>
         </button>
 
         <button
