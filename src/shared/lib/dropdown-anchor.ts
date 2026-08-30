@@ -39,6 +39,75 @@ export function measureDropdownBelow(
   };
 }
 
+export type AnchoredDropdownPosition = {
+  top: number;
+  left: number;
+};
+
+const ANCHORED_DROPDOWN_PADDING = 16;
+
+export type AnchoredDropdownAlign = "left" | "center" | "right";
+
+export type MeasureAnchoredDropdownOptions = {
+  gap?: number;
+  padding?: number;
+  /** Profile sort / listing menu — right edge under trigger. */
+  align?: AnchoredDropdownAlign;
+};
+
+/** Fixed dropdown under trigger, clamped to viewport (portal menus on scaled cards). */
+export function measureAnchoredDropdown(
+  trigger: HTMLElement,
+  panel: HTMLElement,
+  options: MeasureAnchoredDropdownOptions = {},
+): AnchoredDropdownPosition {
+  const gap = options.gap ?? DROPDOWN_ANCHOR_GAP;
+  const padding = options.padding ?? ANCHORED_DROPDOWN_PADDING;
+  const align = options.align ?? "right";
+
+  const triggerRect = trigger.getBoundingClientRect();
+  const panelWidth = panel.offsetWidth;
+  const panelHeight = panel.offsetHeight;
+
+  let top = triggerRect.bottom + gap;
+  let left =
+    align === "center"
+      ? triggerRect.left + triggerRect.width / 2 - panelWidth / 2
+      : align === "right"
+        ? triggerRect.right - panelWidth
+        : triggerRect.left;
+
+  const viewWidth = window.visualViewport?.width ?? window.innerWidth;
+  const viewHeight = window.visualViewport?.height ?? window.innerHeight;
+  const viewLeft = window.visualViewport?.offsetLeft ?? 0;
+  const viewTop = window.visualViewport?.offsetTop ?? 0;
+
+  const minLeft = viewLeft + padding;
+  const maxLeft = viewLeft + viewWidth - padding - panelWidth;
+  left = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft));
+
+  const minTop = viewTop + padding;
+  const maxTop = viewTop + viewHeight - padding - panelHeight;
+  if (top > maxTop) {
+    top = triggerRect.top - gap - panelHeight;
+  }
+  top = Math.min(Math.max(top, minTop), Math.max(minTop, maxTop));
+
+  return { top, left };
+}
+
+/** Fixed position below the control, right edges aligned — profile listing menu, sort popup. */
+export function measureDropdownBelowRight(
+  control: HTMLElement,
+  gap = DROPDOWN_ANCHOR_GAP,
+): { top: number; right: number } {
+  const rect = control.getBoundingClientRect();
+  return {
+    top: rect.bottom + gap,
+    right: window.innerWidth - rect.right,
+  };
+}
+
 export function useDropdownDismiss(
   open: boolean,
   onClose: () => void,

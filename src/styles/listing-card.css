@@ -54,6 +54,10 @@
   overflow: visible;
 }
 
+.home-listing-card--has-title-accessory .home-listing-card__media {
+  overflow: visible;
+}
+
 /* card-title — Label ML; height fits 14px / 1.2 without Figma leading-trim */
 .home-listing-card__title {
   box-sizing: border-box;
@@ -553,5 +557,115 @@
 @media (prefers-reduced-motion: reduce) {
   .listing-skeleton-block {
     animation: none;
+  }
+}
+
+/* Feed cards on mobile — text +4px vs desktop base */
+@media (max-width: 1120px) {
+  .listings-grid__card .home-listing-card__title,
+  .profile-listing-card-slot .home-listing-card__title {
+    font-size: 18px;
+  }
+
+  .listings-grid__card .home-listing-card__location,
+  .profile-listing-card-slot .home-listing-card__location {
+    font-size: 15px;
+  }
+
+  .listings-grid__card .home-listing-card__exchange-label,
+  .profile-listing-card-slot .home-listing-card__exchange-label,
+  .listings-grid__card .home-listing-card__category,
+  .profile-listing-card-slot .home-listing-card__category,
+  .listings-grid__card .home-listing-card__want-pill,
+  .profile-listing-card-slot .home-listing-card__want-pill,
+  .listings-grid__card .home-listing-card__wants-more,
+  .profile-listing-card-slot .home-listing-card__wants-more,
+  .listings-grid__card .home-listing-card__free-pill,
+  .profile-listing-card-slot .home-listing-card__free-pill {
+    font-size: 15px;
+  }
+
+  .listings-grid__card .home-listing-card__lifecycle,
+  .profile-listing-card-slot .home-listing-card__lifecycle {
+    font-size: 18px;
+  }
+
+  .listings-grid__card .home-listing-card__favorite,
+  .profile-listing-card-slot .home-listing-card__favorite,
+  .profile-listing-card-slot .profile-listing-menu__trigger {
+    width: 54px;
+    height: 54px;
+  }
+
+  .listings-grid__card .home-listing-card__favorite svg,
+  .profile-listing-card-slot .home-listing-card__favorite svg,
+  .profile-listing-card-slot .profile-listing-menu__trigger svg {
+    width: 27px !important;
+    height: 24px !important;
+  }
+
+  .profile-listing-card-slot .profile-listing-menu__trigger {
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .listings-grid__card .home-listing-card,
+  .profile-listing-card-slot .home-listing-card {
+    height: 476px;
+  }
+
+  .listings-grid__card .home-listing-card__body,
+  .profile-listing-card-slot .home-listing-card__body {
+    height: 422px;
+    gap: 8px;
+  }
+
+  .listings-grid__card .home-listing-card__footer,
+  .profile-listing-card-slot .home-listing-card__footer {
+    box-sizing: border-box;
+    height: 72px;
+    padding-block: 7px;
+    justify-content: center;
+  }
+
+  .listings-grid__card .home-listing-card__footer-inner,
+  .profile-listing-card-slot .home-listing-card__footer-inner {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .listings-grid__card .home-listing-card__exchange-row,
+  .profile-listing-card-slot .home-listing-card__exchange-row {
+    min-height: 18px;
+    padding-block: 2px;
+    align-items: center;
+  }
+
+  .listings-grid__card .home-listing-card__category-text,
+  .profile-listing-card-slot .home-listing-card__category-text,
+  .listings-grid__card .home-listing-card__want-pill-text,
+  .profile-listing-card-slot .home-listing-card__want-pill-text {
+    line-height: 1.2;
+  }
+
+  .listings-grid__card .home-listing-card__wants-row,
+  .profile-listing-card-slot .home-listing-card__wants-row {
+    min-height: 28px;
+    padding-block: 2px;
+    align-items: center;
+  }
+
+  .listings-grid__card .home-listing-card__want-pill,
+  .profile-listing-card-slot .home-listing-card__want-pill,
+  .listings-grid__card .home-listing-card__free-pill,
+  .profile-listing-card-slot .home-listing-card__free-pill {
+    height: 28px;
+    line-height: 1.2;
+  }
+
+  .listings-grid__card .home-listing-card__wants-pills,
+  .profile-listing-card-slot .home-listing-card__wants-pills {
+    min-height: 28px;
+    align-items: center;
   }
 }

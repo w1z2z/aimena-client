@@ -616,7 +616,7 @@
     container-type: inline-size;
     position: relative;
     width: 100%;
-    aspect-ratio: 342 / 464;
+    aspect-ratio: 342 / 476;
   }
 
   .profile-listing-card-slot .home-listing-card {
@@ -624,7 +624,7 @@
     top: 0;
     left: 0;
     width: 342px;
-    height: 464px;
+    height: 476px;
     transform: scale(calc(100cqw / 342px));
     transform-origin: top left;
   }
@@ -1059,16 +1059,9 @@
   flex-direction: column;
 }
 
-.profile-listing-card-slot:has(.profile-listing-menu--open) {
-  z-index: 50;
-}
-
 .profile-listing-menu {
   position: relative;
-}
-
-.profile-listing-menu--open {
-  z-index: 60;
+  overflow: visible;
 }
 
 .profile-listing-menu__trigger {
@@ -1090,11 +1083,16 @@
   background: #cacaca;
 }
 
-.profile-listing-menu__panel {
+.profile-listing-menu__anchor {
   position: absolute;
-  top: calc(100% + 8px);
+  top: 100%;
   right: 0;
-  z-index: 70;
+  z-index: 50;
+  padding-top: 8px;
+}
+
+.profile-listing-menu__panel {
+  position: relative;
   display: flex;
   box-sizing: border-box;
   width: max-content;
@@ -1106,25 +1104,19 @@
   border: 0.5px solid #cacaca;
   border-radius: 31px;
   background: #fff;
-  opacity: 0;
-  transform: translate3d(0, -8px, 0);
-  -webkit-transform: translate3d(0, -8px, 0);
-  transform-origin: top right;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  will-change: opacity, transform;
-  pointer-events: none;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  transition:
-    opacity 260ms cubic-bezier(0.33, 1, 0.68, 1),
-    transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.profile-listing-menu__panel--open {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-  pointer-events: auto;
+.profile-listing-menu__panel--portaled {
+  position: fixed;
+  z-index: 44;
+  min-width: 0;
+  max-width: min(300px, calc(100vw - 32px));
+}
+
+.profile-listing-menu__panel--portaled .profile-listing-menu__item {
+  height: 44px;
+  font-size: 13px;
 }
 
 .profile-listing-menu__item {

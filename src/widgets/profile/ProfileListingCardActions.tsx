@@ -1,7 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { listingQueryKeys } from "@/entities/listing";
@@ -12,9 +21,18 @@ import {
   type ApiListingCard,
 } from "@/shared/api/listings";
 import { ApiError } from "@/shared/api/http";
+import {
+  measureAnchoredDropdown,
+  useDropdownDismiss,
+} from "@/shared/lib/dropdown-anchor";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { MoreDotsIcon } from "@/shared/ui/icons";
 import { ListingConfirmModal } from "@/widgets/listing-detail/ListingConfirmModal";
+
+import {
+  claimProfileListingMenu,
+  releaseProfileListingMenu,
+} from "./profile-listing-menu-singleton";
 
 type ConfirmKind = "pause" | "delete";
 
@@ -24,6 +42,7 @@ type ProfileListingCardActionsProps = {
 };
 
 const PROFILE_LISTINGS_QUERY_KEY = ["profile-listings-me"] as const;
+const MOBILE_CARD_MENU_MQL = "(max-width: 1120px)";
 
 async function invalidateListingCaches(
   queryClient: ReturnType<typeof useQueryClient>,
@@ -43,8 +62,15 @@ export function ProfileListingCardActions({
   const router = useRouter();
   const queryClient = useQueryClient();
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const [open, setOpen] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
+  const [useMobilePortal, setUseMobilePortal] = useState(false);
+  const [panelPosition, setPanelPosition] = useState<{ top: number; left: number } | null>(
+    null,
+  );
   const { isRendered, isVisible } = useOverlayPresence(open);
   const [modal, setModal] = useState<ConfirmKind | null>(null);
   const [pendingAction, setPendingAction] = useState<ConfirmKind | "publish" | null>(null);
@@ -52,28 +78,67 @@ export function ProfileListingCardActions({
   const canRepublish = status === "draft" || status === "archived";
   const canEdit = status !== "completed";
 
+  const closeMenu = useCallback(() => setOpen(false), []);
+
+  useDropdownDismiss(open, closeMenu, containerRef, panelRef);
+
   useEffect(() => {
-    if (!open) return;
+    setPortalReady(true);
+  }, []);
 
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
+  useEffect(() => {
+    const media = window.matchMedia(MOBILE_CARD_MENU_MQL);
+    const sync = () => setUseMobilePortal(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      releaseProfileListingMenu(closeMenu);
+      return;
+    }
+
+    claimProfileListingMenu(closeMenu);
+    return () => releaseProfileListingMenu(closeMenu);
+  }, [open, closeMenu]);
+
+  useLayoutEffect(() => {
+    if (!open || !isRendered || !useMobilePortal) {
+      setPanelPosition(null);
+      return;
+    }
+
+    const placePanel = () => {
+      const trigger = triggerRef.current;
+      const panel = panelRef.current;
+      if (!trigger || !panel) return;
+      setPanelPosition(measureAnchoredDropdown(trigger, panel, { align: "right" }));
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+    placePanel();
+    const frameId = window.requestAnimationFrame(placePanel);
+
+    const closeOnScroll = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Node && panelRef.current?.contains(target)) return;
+      closeMenu();
     };
 
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
+    const timeoutId = window.setTimeout(() => {
+      window.addEventListener("scroll", closeOnScroll, true);
+      window.visualViewport?.addEventListener("scroll", closeOnScroll);
+    }, 80);
+
     return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+      window.removeEventListener("scroll", closeOnScroll, true);
+      window.visualViewport?.removeEventListener("scroll", closeOnScroll);
+      setPanelPosition(null);
     };
-  }, [open]);
-
-  const closeMenu = () => setOpen(false);
+  }, [open, isRendered, useMobilePortal, closeMenu]);
 
   const closeModal = () => {
     if (pendingAction) return;
@@ -159,6 +224,93 @@ export function ProfileListingCardActions({
     }
   };
 
+  const panelReady = !useMobilePortal || panelPosition !== null;
+  const showPanel = isVisible && panelReady;
+
+  const panelNode = (
+    <div
+      ref={panelRef}
+      id={panelId}
+      role="dialog"
+      aria-label="Действия с объявлением"
+      aria-hidden={!showPanel}
+      className={[
+        "profile-listing-menu__panel",
+        useMobilePortal ? "profile-listing-menu__panel--portaled" : "",
+        "overlay-pop overlay-pop--origin-right",
+        showPanel ? "is-open" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={
+        useMobilePortal && panelPosition
+          ? { top: panelPosition.top, left: panelPosition.left }
+          : useMobilePortal
+            ? { top: -9999, left: -9999, visibility: "hidden" as const }
+            : undefined
+      }
+      onMouseDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
+      {status === "active" ? (
+        <button
+          type="button"
+          className="profile-listing-menu__item"
+          disabled={pendingAction !== null}
+          onClick={() => {
+            closeMenu();
+            setActionError(null);
+            setModal("pause");
+          }}
+        >
+          Снять с публикации
+        </button>
+      ) : null}
+
+      {canRepublish ? (
+        <button
+          type="button"
+          className="profile-listing-menu__item"
+          disabled={pendingAction !== null}
+          onClick={() => {
+            void handlePublish();
+          }}
+        >
+          {status === "draft" ? "Опубликовать" : "Опубликовать снова"}
+        </button>
+      ) : null}
+
+      {canEdit ? (
+        <button
+          type="button"
+          className="profile-listing-menu__item"
+          disabled={pendingAction !== null}
+          onClick={() => {
+            closeMenu();
+            router.push(`/listings/${listingId}/edit`);
+          }}
+        >
+          Редактировать объявление
+        </button>
+      ) : null}
+
+      <button
+        type="button"
+        className="profile-listing-menu__item profile-listing-menu__item--danger"
+        disabled={pendingAction !== null}
+        onClick={() => {
+          closeMenu();
+          setActionError(null);
+          setModal("delete");
+        }}
+      >
+        Удалить объявление
+      </button>
+
+      {actionError ? <p className="profile-listing-menu__error">{actionError}</p> : null}
+    </div>
+  );
+
   return (
     <div
       ref={containerRef}
@@ -170,6 +322,7 @@ export function ProfileListingCardActions({
         .join(" ")}
     >
       <button
+        ref={triggerRef}
         type="button"
         className="profile-listing-menu__trigger"
         aria-label="Действия с объявлением"
@@ -180,83 +333,29 @@ export function ProfileListingCardActions({
           event.preventDefault();
           event.stopPropagation();
           setActionError(null);
-          setOpen((value) => !value);
+          setOpen((value) => {
+            const next = !value;
+            if (next) claimProfileListingMenu(closeMenu);
+            return next;
+          });
         }}
       >
         <MoreDotsIcon className="text-[#1A1A1A]" />
       </button>
 
-      {isRendered ? (
+      {isRendered && !useMobilePortal ? (
         <div
-          id={panelId}
-          role="dialog"
-          aria-label="Действия с объявлением"
-          aria-hidden={!isVisible}
-          className={[
-            "profile-listing-menu__panel",
-            isVisible ? "profile-listing-menu__panel--open" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
+          className="profile-listing-menu__anchor"
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
         >
-          {status === "active" ? (
-            <button
-              type="button"
-              className="profile-listing-menu__item"
-              disabled={pendingAction !== null}
-              onClick={() => {
-                closeMenu();
-                setActionError(null);
-                setModal("pause");
-              }}
-            >
-              Снять с публикации
-            </button>
-          ) : null}
-
-          {canRepublish ? (
-            <button
-              type="button"
-              className="profile-listing-menu__item"
-              disabled={pendingAction !== null}
-              onClick={() => {
-                void handlePublish();
-              }}
-            >
-              {status === "draft" ? "Опубликовать" : "Опубликовать снова"}
-            </button>
-          ) : null}
-
-          {canEdit ? (
-            <button
-              type="button"
-              className="profile-listing-menu__item"
-              disabled={pendingAction !== null}
-              onClick={() => {
-                closeMenu();
-                router.push(`/listings/${listingId}/edit`);
-              }}
-            >
-              Редактировать объявление
-            </button>
-          ) : null}
-
-          <button
-            type="button"
-            className="profile-listing-menu__item profile-listing-menu__item--danger"
-            disabled={pendingAction !== null}
-            onClick={() => {
-              closeMenu();
-              setActionError(null);
-              setModal("delete");
-            }}
-          >
-            Удалить объявление
-          </button>
-
-          {actionError ? <p className="profile-listing-menu__error">{actionError}</p> : null}
+          {panelNode}
         </div>
       ) : null}
+
+      {useMobilePortal && isRendered && portalReady
+        ? createPortal(panelNode, document.body)
+        : null}
 
       <ListingConfirmModal
         open={modal === "pause" || modal === "delete"}

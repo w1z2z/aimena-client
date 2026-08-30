@@ -28,6 +28,10 @@
   transform-origin: top right;
 }
 
+.overlay-pop--origin-top {
+  transform-origin: top center;
+}
+
 /*
  * Bottom sheet — slide up.
  * Use viewport units (not %): iOS Safari often resolves % of auto-height to 0
