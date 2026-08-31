@@ -214,3 +214,68 @@ export function getNotificationImageFallback(item: ChatSummary) {
   return item.imageFallback ?? item.counterpart.displayName.slice(0, 1).toUpperCase();
 }
 
+export function formatChatListTime(value: string) {
+  const date = new Date(value);
+  const today = new Date();
+  if (date.toDateString() === today.toDateString()) {
+    return new Intl.DateTimeFormat("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  }
+  return "Вчера";
+}
+
+export function getChatListContextLine(item: ChatSummary) {
+  const exchange = getChatExchangeDisplay(item);
+  if (exchange) return exchange.line;
+  if (item.targetListingTitle?.trim()) return item.targetListingTitle.trim();
+  if (item.tags?.[0]?.trim()) return item.tags[0].trim();
+  return null;
+}
+
+export type ChatExchangeDisplay = {
+  targetTitle: string;
+  offeredTitle: string | null;
+  targetCover: string | null;
+  offeredCover: string | null;
+  line: string;
+};
+
+/** Always target listing ⇄ offered listing — same order as in the deal. */
+export function getChatExchangeDisplay(item: ChatSummary): ChatExchangeDisplay | null {
+  if (item.kind === "support") return null;
+
+  const targetTitle = item.targetListingTitle?.trim() || null;
+  const offeredTitle =
+    item.offeredListingTitle?.trim() || item.tags?.[0]?.trim() || null;
+  const targetCover = item.targetListingCoverUrl ?? null;
+  const offeredCover = item.offeredListingCoverUrl ?? null;
+
+  if (!targetTitle && !offeredTitle) return null;
+
+  const resolvedTarget = targetTitle ?? offeredTitle!;
+  const resolvedOffered = targetTitle ? offeredTitle : null;
+  const line = resolvedOffered
+    ? `${resolvedTarget} ⇄ ${resolvedOffered}`
+    : resolvedTarget;
+
+  return {
+    targetTitle: resolvedTarget,
+    offeredTitle: resolvedOffered,
+    targetCover,
+    offeredCover,
+    line,
+  };
+}
+
+export function getChatListPreviewLine(item: ChatSummary) {
+  if (item.notificationKind === "offer_rejected") return "Предложение отклонено";
+  if (item.kind === "offer") return "Вам предложение!";
+  return item.preview;
+}
+
+export function getChatListSubtitle(item: ChatSummary) {
+  return getChatListPreviewLine(item);
+}
+

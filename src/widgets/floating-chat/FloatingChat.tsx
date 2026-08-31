@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 import { useAuth, useAuthGate } from "@/features/auth";
-import { useChatInbox } from "@/features/chat-inbox";
+import { chatSummaryToHref, useChatInbox } from "@/features/chat-inbox";
 import {
   connectChatSocket,
   onChatInboxUpdated,
@@ -17,20 +17,9 @@ import { OVERLAY_ANIMATION_MS } from "@/shared/lib/overlay-animation";
 import { useOverlayPresence } from "@/shared/lib/use-overlay-presence";
 import { useMediaQuery } from "@/shared/lib/use-media-query";
 import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
+import { ChatList } from "@/widgets/chats/ChatList";
 
 const LINK_CHEVRON_SRC = "/images/chat/link-chevron.svg";
-
-function formatListTime(value: string) {
-  const date = new Date(value);
-  const today = new Date();
-  if (date.toDateString() === today.toDateString()) {
-    return new Intl.DateTimeFormat("ru-RU", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
-  }
-  return "Вчера";
-}
 
 function CloseIcon({ className }: { className?: string }) {
   return (
@@ -73,65 +62,6 @@ function TextLink({
       <span>{label}</span>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={LINK_CHEVRON_SRC} alt="" aria-hidden className="h-[6px] w-[4px] shrink-0" />
-    </Link>
-  );
-}
-
-function ChatPanelRow({
-  item,
-  tabIndex,
-  onNavigate,
-}: {
-  item: ChatSummary;
-  tabIndex: number;
-  onNavigate: (href: string, event: MouseEvent<HTMLAnchorElement>) => void;
-}) {
-  const href = `/chats?selected=${encodeURIComponent(item.id)}`;
-  const preview = item.preview;
-  const avatarFallback = item.counterpart.displayName.slice(0, 1).toUpperCase();
-
-  return (
-    <Link
-      href={href}
-      tabIndex={tabIndex}
-      onClick={(event) => onNavigate(href, event)}
-      className="flex h-[49px] w-full min-w-0 shrink-0 items-end justify-between gap-[8px] appearance-none [-webkit-appearance:none] transition hover:opacity-80"
-    >
-      <span className="flex h-[49px] min-w-0 flex-1 items-start gap-[9px]">
-        <span
-          className="relative flex size-[49px] shrink-0 items-center justify-center overflow-hidden rounded-[15px] bg-[#cacaca] text-[14px] font-extrabold text-[#1A1A1A]"
-        >
-          {item.counterpart.avatarUrl ? (
-            // Storage URL is dynamic and configured by the API.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={item.counterpart.avatarUrl}
-              alt=""
-              className="absolute inset-0 size-full object-cover"
-            />
-          ) : (
-            <span aria-hidden>{avatarFallback}</span>
-          )}
-        </span>
-
-        <span className="flex min-w-0 flex-1 flex-col items-start text-[#1A1A1A]">
-          <span className="w-full truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em]">
-            {item.counterpart.displayName}
-          </span>
-          <span className="mt-[6px] w-full truncate text-[14px] font-normal leading-[1.2]">
-            {preview}
-          </span>
-        </span>
-      </span>
-
-      <span className="flex shrink-0 flex-col items-end gap-[8px]">
-        <span className="text-right text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
-          {formatListTime(item.updatedAt)}
-        </span>
-        {item.unreadCount > 0 ? (
-          <span className="chat-badge chat-badge--count">{item.unreadCount}</span>
-        ) : null}
-      </span>
     </Link>
   );
 }
@@ -304,26 +234,24 @@ export function FloatingChat() {
                   />
                 </div>
 
-                <div className="flex h-[341px] w-full shrink-0 flex-col items-start gap-[24px] overflow-y-auto overflow-x-hidden">
+                <div className="floating-chat__list-wrap">
                   {loading ? (
                     <p className="m-0 text-[14px] text-[#626262]">Загружаем…</p>
                   ) : null}
                   {!loading && error ? (
                     <p className="m-0 text-[14px] text-[#FF2056]">{error}</p>
                   ) : null}
-                  {!loading && !error && items.length === 0 ? (
-                    <p className="m-0 text-[14px] text-[#626262]">Пока нет чатов.</p>
+                  {!loading && !error ? (
+                    <ChatList
+                      items={items}
+                      emptyLabel="Пока нет чатов."
+                      tabIndex={isPanelVisible ? 0 : -1}
+                      onSelect={() => undefined}
+                      getItemHref={chatSummaryToHref}
+                      onNavigate={handleChatNavigate}
+                      className="floating-chat__list"
+                    />
                   ) : null}
-                  {!loading && !error
-                    ? items.map((item) => (
-                        <ChatPanelRow
-                          key={item.id}
-                          item={item}
-                          tabIndex={isPanelVisible ? 0 : -1}
-                          onNavigate={handleChatNavigate}
-                        />
-                      ))
-                    : null}
                 </div>
               </div>
 

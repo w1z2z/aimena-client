@@ -61,6 +61,9 @@ export type ChatSummary = {
   threadId: string | null;
   targetListingId?: string | null;
   targetListingTitle?: string | null;
+  targetListingCoverUrl?: string | null;
+  offeredListingTitle?: string | null;
+  offeredListingCoverUrl?: string | null;
   isOfferSender?: boolean;
   status:
     | "incoming_request"

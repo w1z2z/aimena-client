@@ -59,6 +59,7 @@ import { Header } from "@/widgets/header/Header";
 import { pluralRu } from "@/widgets/profile/constants";
 
 import { ChatDocumentsPicker } from "./ChatDocumentsPicker";
+import { ChatList } from "./ChatList";
 import { ChatMessageBubble, chatMessagePreview } from "./ChatMessageBubble";
 import { DealFlow, dealSideStatus, dealModalFromQuery } from "./DealFlow";
 
@@ -148,13 +149,6 @@ function formatChatDayLabel(value: string) {
     month: "long",
     ...(sameYear ? {} : { year: "numeric" }),
   }).format(date);
-}
-
-function formatListTime(value: string) {
-  const date = new Date(value);
-  const today = new Date();
-  if (date.toDateString() === today.toDateString()) return formatTime(value);
-  return "Вчера";
 }
 
 function ListingImage({
@@ -507,51 +501,7 @@ function Sidebar({
           </button>
         ))}
       </div>
-      <div className="chats-list">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className="chats-list-item"
-            data-kind={item.kind}
-            data-active={selectedId === item.id ? "true" : undefined}
-            onClick={() => onSelect(item)}
-          >
-            <Avatar
-              src={item.counterpart.avatarUrl}
-              name={item.counterpart.displayName}
-              className={[
-                "chats-list-item__avatar",
-                item.kind === "support" ? "chats-list-item__avatar--support" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              fallback={item.kind === "support" ? "❤️" : null}
-            />
-            <span className="chats-list-item__copy">
-              <strong>{item.counterpart.displayName}</strong>
-              <span>
-                {item.notificationKind === "offer_rejected"
-                  ? "Предложение отклонено"
-                  : item.kind === "offer"
-                    ? "Вам предложение!"
-                    : item.preview}
-              </span>
-            </span>
-            <span className="chats-list-item__meta">
-              <time>{formatListTime(item.updatedAt)}</time>
-              {item.kind === "offer" && item.notificationKind !== "offer_rejected" ? (
-                <span className="chat-badge chat-badge--offer">!</span>
-              ) : item.unreadCount > 0 ? (
-                <span className="chat-badge chat-badge--count">{item.unreadCount}</span>
-              ) : null}
-            </span>
-          </button>
-        ))}
-        {items.length === 0 ? (
-          <p className="chats-list__empty">В этой категории пока ничего нет.</p>
-        ) : null}
-      </div>
+      <ChatList items={items} selectedId={selectedId} onSelect={onSelect} />
     </aside>
   );
 }
