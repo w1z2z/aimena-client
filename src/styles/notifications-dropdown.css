@@ -56,19 +56,17 @@
 }
 
 .notification-deal-media {
-  display: flex;
+  position: relative;
+  display: block;
   flex: none;
-  flex-flow: row nowrap;
-  align-items: center;
-  gap: 4px;
+  width: 55px;
+  height: 55px;
 }
 
 .notification-deal-media__item {
   position: relative;
   display: block;
-  flex: none;
   width: 55px;
-  min-width: 55px;
   height: 55px;
 }
 
@@ -82,6 +80,31 @@
   border: 0.5px solid #e4e4e4;
   border-radius: 20px;
   object-fit: cover;
+}
+
+.notification-deal-media__thumb--free {
+  display: flex;
+  width: 55px;
+  height: 55px;
+  max-width: 55px;
+  max-height: 55px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 0.5px solid #e4e4e4;
+  border-radius: 20px;
+  background: #f5f4ff;
+}
+
+.notification-deal-media__free-label {
+  display: block;
+  width: 100%;
+  color: #8e8bed;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .notification-deal-media__thumb--fallback {
@@ -101,20 +124,51 @@
   font-weight: 800;
 }
 
-.notification-deal-media__swap {
+.notification-deal-media__badge {
+  position: absolute;
+  z-index: 2;
+  top: -2px;
+  left: -2px;
   display: flex;
-  flex: none;
+  width: 22px;
+  height: 22px;
   align-items: center;
-  align-self: center;
   justify-content: center;
+  overflow: hidden;
+  border: 1.5px solid #fff;
+  border-radius: 50%;
 }
 
-.notification-deal-media__swap img {
+.notification-deal-media__badge--free {
+  background: #f5f4ff;
+}
+
+.notification-deal-media__badge-free-label {
+  color: #8e8bed;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.notification-deal-media__badge--fallback {
+  background: linear-gradient(135deg, #f0e8ff, #c8ff02);
+  color: #1a1a1a;
+}
+
+.notification-deal-media__badge-image {
   display: block;
-  width: 14px;
-  height: 13px;
-  max-width: none;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.notification-deal-media__badge-image--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .notification-deal-media__count {
@@ -134,25 +188,6 @@
   font-size: 9px;
   font-weight: 700;
   line-height: 14px;
-}
-
-.notification-deal-media__free-thumb {
-  display: flex;
-  width: 55px;
-  height: 55px;
-  max-width: 55px;
-  max-height: 55px;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border: 0.5px solid #e4e4e4;
-  border-radius: 20px;
-  background: #f5f4ff;
-  color: #8e8bed;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.1;
-  text-align: center;
 }
 
 .notification-card__copy {
