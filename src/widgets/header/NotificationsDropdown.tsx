@@ -49,11 +49,7 @@ function NotificationList({
             href={chatSummaryToHref(item)}
             media={
               media ? (
-                <NotificationDealMedia
-                  mine={media.mine}
-                  theirs={media.theirs}
-                  isFreeClaim={media.isFreeClaim}
-                />
+                <NotificationDealMedia mine={media.mine} theirs={media.theirs} />
               ) : null
             }
             hasUnread={notificationHasUnread(item)}

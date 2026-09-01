@@ -2,13 +2,21 @@
 
 import type { NotificationMediaSide } from "./utils";
 
-function NotificationListingThumb({
-  side,
-  showFreeBadge = false,
-}: {
-  side: NotificationMediaSide;
-  showFreeBadge?: boolean;
-}) {
+function NotificationFreeThumb() {
+  return (
+    <div className="notification-deal-media__item" title="Даром">
+      <span className="notification-deal-media__free-thumb" aria-hidden>
+        Даром
+      </span>
+    </div>
+  );
+}
+
+function NotificationListingThumb({ side }: { side: NotificationMediaSide }) {
+  if (side.isFreePlaceholder) {
+    return <NotificationFreeThumb />;
+  }
+
   const className = [
     "notification-deal-media__thumb",
     !side.coverUrl ? "notification-deal-media__thumb--fallback" : "",
@@ -29,9 +37,6 @@ function NotificationListingThumb({
       {side.extraCount > 0 ? (
         <span className="notification-deal-media__count">+{side.extraCount}</span>
       ) : null}
-      {showFreeBadge ? (
-        <span className="notification-deal-media__free-badge">Даром</span>
-      ) : null}
     </div>
   );
 }
@@ -39,25 +44,12 @@ function NotificationListingThumb({
 type NotificationDealMediaProps = {
   mine: NotificationMediaSide | null;
   theirs: NotificationMediaSide | null;
-  isFreeClaim: boolean;
 };
 
 export function NotificationDealMedia({
   mine,
   theirs,
-  isFreeClaim,
 }: NotificationDealMediaProps) {
-  if (isFreeClaim) {
-    const listing = mine ?? theirs;
-    if (!listing) return null;
-
-    return (
-      <div className="notification-deal-media notification-deal-media--free">
-        <NotificationListingThumb side={listing} showFreeBadge />
-      </div>
-    );
-  }
-
   if (!mine && !theirs) return null;
 
   return (

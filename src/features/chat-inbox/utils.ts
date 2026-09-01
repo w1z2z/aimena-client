@@ -132,6 +132,7 @@ export type NotificationMediaSide = {
   coverUrl: string | null;
   thumbTitle: string;
   extraCount: number;
+  isFreePlaceholder?: boolean;
 };
 
 export type NotificationDealMediaDisplay = {
@@ -186,10 +187,17 @@ export function getNotificationDealMedia(
 
   if (isFreeClaim) {
     const listing = buildNotificationMediaSide(targetTitles, targetCoverUrls);
+    const freePlaceholder: NotificationMediaSide = {
+      coverUrl: null,
+      thumbTitle: "Даром",
+      extraCount: 0,
+      isFreePlaceholder: true,
+    };
+
     return {
       isFreeClaim: true,
-      mine: sender ? null : listing,
-      theirs: sender ? listing : null,
+      mine: sender ? freePlaceholder : listing,
+      theirs: sender ? listing : freePlaceholder,
     };
   }
 
