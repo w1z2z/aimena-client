@@ -5,6 +5,7 @@
   margin-right: -24px;
   overflow-x: hidden;
   overflow-y: auto;
+  overflow-anchor: none;
   overscroll-behavior-x: none;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
@@ -26,4 +27,133 @@
 
 .notifications-dropdown-scroll::-webkit-scrollbar-thumb:hover {
   background: rgb(142 139 237 / 70%);
+}
+
+.notification-card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  transition: opacity 160ms ease;
+}
+
+.notification-card:hover {
+  opacity: 0.9;
+}
+
+/* Time column on top-right, same as chats-list-item__meta */
+.notification-card__meta {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  color: #626262;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.022px;
+}
+
+.notification-card__media {
+  --chats-list-thumb-size: 55px;
+  --chats-list-thumb-radius: 20px;
+  position: relative;
+  flex: none;
+  overflow: visible;
+}
+
+.notification-card__media .chats-list-item__deal-media {
+  overflow: visible;
+}
+
+.notification-card__media .chats-list-item__avatar {
+  width: var(--chats-list-thumb-size);
+  height: var(--chats-list-thumb-size);
+  border-radius: var(--chats-list-thumb-radius);
+}
+
+.notification-card__copy {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notification-card__title {
+  margin: 0;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.001em;
+  color: #1a1a1a;
+}
+
+.notification-card__exchange {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notification-card__exchange-line {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #626262;
+}
+
+.notification-card__exchange-label {
+  flex: none;
+}
+
+.notification-card__exchange-value {
+  display: inline-flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.notification-card__exchange-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-card__exchange-extra {
+  flex: none;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.notification-card__subtitle {
+  margin: 0;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #626262;
+}
+
+.notification-card__time {
+  flex: none;
+  white-space: nowrap;
+  color: inherit;
+  font: inherit;
 }

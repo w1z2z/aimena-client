@@ -8,119 +8,13 @@ import {
   formatChatListTime,
   getChatListDealLine,
   getChatListPreviewLine,
-  getChatListThumb,
   groupChatSummaries,
   truncateChatListLabel,
   type ChatListGroup,
 } from "@/features/chat-inbox";
+import { ChatDealMedia } from "@/features/chat-inbox/ChatDealMedia";
 import type { ChatSummary } from "@/shared/api/chats";
 import { pluralRu } from "@/widgets/profile/constants";
-
-function ChatListAvatar({
-  item,
-  className,
-}: {
-  item: ChatSummary;
-  className: string;
-}) {
-  if (item.counterpart.avatarUrl) {
-    return (
-      // Storage URL is dynamic and configured by the API.
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={item.counterpart.avatarUrl}
-        alt=""
-        className={className}
-      />
-    );
-  }
-
-  return (
-    <span
-      className={[
-        className,
-        "chats-avatar-placeholder",
-        item.kind === "support" ? "chats-list-item__avatar--support" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      aria-hidden
-    >
-      {item.kind === "support" ? "❤️" : item.counterpart.displayName.slice(0, 1).toUpperCase()}
-    </span>
-  );
-}
-
-function ChatListAvatarBadge({ item }: { item: ChatSummary }) {
-  const className = [
-    "chats-list-item__avatar-badge",
-    !item.counterpart.avatarUrl ? "chats-list-item__avatar-badge--fallback" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  if (item.counterpart.avatarUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={item.counterpart.avatarUrl} alt="" className={className} />
-    );
-  }
-
-  return (
-    <span className={className} aria-hidden>
-      {item.counterpart.displayName.slice(0, 1).toUpperCase()}
-    </span>
-  );
-}
-
-function ChatListDealMedia({
-  item,
-  showAvatarBadge = false,
-}: {
-  item: ChatSummary;
-  showAvatarBadge?: boolean;
-}) {
-  const thumb = getChatListThumb(item);
-
-  if (!thumb) {
-    return <ChatListAvatar item={item} className="chats-list-item__avatar" />;
-  }
-
-  return (
-    <span className="chats-list-item__deal-media">
-      <ChatListDealThumb title={thumb.thumbTitle} coverUrl={thumb.coverUrl} />
-      {showAvatarBadge ? <ChatListAvatarBadge item={item} /> : null}
-    </span>
-  );
-}
-
-function ChatListDealThumb({
-  title,
-  coverUrl,
-}: {
-  title: string;
-  coverUrl: string | null;
-}) {
-  const className = [
-    "chats-list-item__deal-thumb",
-    !coverUrl ? "chats-list-item__deal-thumb--fallback" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  if (coverUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={coverUrl} alt="" className={className} />
-    );
-  }
-
-  return (
-    <span className={className} aria-hidden>
-      {title.slice(0, 1).toUpperCase()}
-    </span>
-  );
-}
 
 function ChatListDealText({
   dealLine,
@@ -222,11 +116,7 @@ function ChatListItem({
 
   const content = (
     <>
-      {item.kind === "support" ? (
-        <ChatListAvatar item={item} className="chats-list-item__avatar" />
-      ) : (
-        <ChatListDealMedia item={item} showAvatarBadge={showAvatarBadge} />
-      )}
+      <ChatDealMedia item={item} showAvatarBadge={showAvatarBadge} />
       <span className="chats-list-item__copy">
         {isChild ? (
           <>
@@ -340,7 +230,7 @@ function ChatListGroupBlock({
         aria-expanded={expanded}
         onClick={() => onToggle(group.id)}
       >
-        <ChatListAvatar item={latest} className="chats-list-item__avatar" />
+        <ChatDealMedia item={latest} preferAvatar />
         <span className="chats-list-item__copy">
           <strong>
             <span

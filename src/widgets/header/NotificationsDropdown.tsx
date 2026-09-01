@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 
 import {
   chatSummaryToHref,
-  formatNotificationTime,
-  getNotificationImageFallback,
-  getNotificationImageUrl,
+  formatChatListTime,
+  getNotificationExchangeLines,
   getNotificationSubtitle,
-  getNotificationTags,
   getNotificationTitle,
   notificationHasUnread,
+  notificationShowsDealMedia,
 } from "@/features/chat-inbox";
+import { ChatDealMedia } from "@/features/chat-inbox/ChatDealMedia";
 import { onChatInboxUpdated, onChatThreadUpdated } from "@/shared/api/chat-socket";
 import { getChatNotifications, type ChatSummary } from "@/shared/api/chats";
 
@@ -43,12 +43,16 @@ function NotificationList({
           key={item.id}
           title={getNotificationTitle(item)}
           subtitle={getNotificationSubtitle(item)}
-          tags={getNotificationTags(item)}
-          time={formatNotificationTime(item.updatedAt)}
+          exchangeLines={getNotificationExchangeLines(item)}
+          time={formatChatListTime(item.updatedAt)}
           href={chatSummaryToHref(item)}
-          imageUrl={getNotificationImageUrl(item)}
-          avatarFallback={getNotificationImageFallback(item)}
-          isSupport={item.kind === "support"}
+          media={
+            notificationShowsDealMedia(item) ? (
+              <ChatDealMedia item={item} context="notification" showAvatarBadge />
+            ) : (
+              <ChatDealMedia item={item} />
+            )
+          }
           hasUnread={notificationHasUnread(item)}
           onNavigate={() => onItemClick(item)}
         />

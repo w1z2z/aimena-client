@@ -121,16 +121,15 @@ export function getNotificationTitle(item: ChatSummary) {
 
 /**
  * Под заголовком:
- * - оффер / отклонение → пилюли (через getNotificationTags), subtitle не нужен
- * - принято → короткий CTA
- * - сообщение → превью текста
+ * - обмен → только строки «Получу / Отдам», без дублирующего текста
+ * - сообщение / поддержка → превью текста
  */
 export function getNotificationSubtitle(item: ChatSummary) {
+  if (getNotificationExchangeLines(item)) {
+    return undefined;
+  }
+
   if (isOfferAcceptedItem(item)) {
-    // У владельца (recipient) показываем пилюли offered — subtitle не дублируем.
-    if (item.isOfferSender === false && item.tags && item.tags.length > 0) {
-      return undefined;
-    }
     return item.isOfferSender === false
       ? "Можно связаться в чате"
       : "Свяжитесь с владельцем";
@@ -138,16 +137,13 @@ export function getNotificationSubtitle(item: ChatSummary) {
 
   switch (item.notificationKind) {
     case "incoming_offer":
-      return item.tags && item.tags.length > 0 ? undefined : "Откройте, чтобы рассмотреть";
+      return "Откройте, чтобы рассмотреть";
     case "offer_accepted":
-      if (item.isOfferSender === false && item.tags && item.tags.length > 0) {
-        return undefined;
-      }
       return item.isOfferSender === false
         ? "Можно связаться в чате"
         : "Свяжитесь с владельцем";
     case "offer_rejected":
-      return item.tags && item.tags.length > 0 ? undefined : undefined;
+      return undefined;
     case "cancel_requested":
       return "Участник запрашивает обоюдный отказ от обмена";
     case "cancel_rejected":
@@ -173,10 +169,125 @@ export function getNotificationSubtitle(item: ChatSummary) {
       return item.preview;
     default:
       if (item.kind === "offer") {
-        return item.tags && item.tags.length > 0 ? undefined : "Откройте, чтобы рассмотреть";
+        return "Откройте, чтобы рассмотреть";
       }
       return item.preview;
   }
+}
+
+export type NotificationExchangeLine = {
+  primaryLabel: string;
+  extraLabel?: string;
+};
+
+export type NotificationExchangeLines = {
+  receive: NotificationExchangeLine | null;
+  give: NotificationExchangeLine | null;
+};
+
+function toExchangeLine(titles: string[]): NotificationExchangeLine | null {
+  const parts = getOfferedListParts(titles);
+  if (!parts.primaryLabel) return null;
+  return {
+    primaryLabel: parts.primaryLabel,
+    extraLabel: parts.extraLabel,
+  };
+}
+
+/** Viewer-centric «Получу / Отдам» for exchange-related notifications. */
+export function getNotificationExchangeLines(
+  item: ChatSummary,
+): NotificationExchangeLines | null {
+  if (item.kind === "support") return null;
+  if (item.notificationKind === "support" || item.notificationKind === "chat_message") {
+    return null;
+  }
+
+  const targetTitle = item.targetListingTitle?.trim() || null;
+  const offeredTitles = getOfferedTitles(item);
+  if (!targetTitle && offeredTitles.length === 0) return null;
+
+  const sender = isViewerOfferSender(item);
+  const receiveTitles = sender
+    ? targetTitle
+      ? [targetTitle]
+      : []
+    : offeredTitles.length > 0
+      ? offeredTitles
+      : [];
+  const giveTitles = sender
+    ? offeredTitles
+    : targetTitle
+      ? [targetTitle]
+      : [];
+
+  const receive = receiveTitles.length > 0 ? toExchangeLine(receiveTitles) : null;
+  const give = giveTitles.length > 0 ? toExchangeLine(giveTitles) : null;
+  if (!receive && !give) return null;
+
+  return { receive, give };
+}
+
+export function notificationShowsDealMedia(item: ChatSummary) {
+  if (item.kind === "support") return false;
+  if (item.notificationKind === "support" || item.notificationKind === "chat_message") {
+    return false;
+  }
+  return getNotificationThumb(item) !== null;
+}
+
+/**
+ * Notifications: large cover = first offered listing, badge = counterpart avatar.
+ * (Unlike chat list, sender-side rows also show what was proposed, not the target.)
+ */
+export function getNotificationThumb(item: ChatSummary): {
+  coverUrl: string | null;
+  thumbTitle: string;
+} | null {
+  if (item.kind === "support") return null;
+  if (item.notificationKind === "support" || item.notificationKind === "chat_message") {
+    return null;
+  }
+
+  const offeredTitles = getOfferedTitles(item);
+  const coverUrls = getOfferedCoverUrls(item);
+
+  if (offeredTitles.length > 0 || coverUrls.length > 0) {
+    const coverUrl =
+      coverUrls[0] ??
+      item.offeredListingCoverUrl ??
+      item.coverImageUrl ??
+      item.targetListingCoverUrl ??
+      null;
+
+    return {
+      coverUrl,
+      thumbTitle: offeredTitles[0] ?? item.offeredListingTitle?.trim() ?? "?",
+    };
+  }
+
+  const targetTitle = item.targetListingTitle?.trim();
+  if (targetTitle) {
+    return {
+      coverUrl:
+        item.targetListingCoverUrl ?? item.coverImageUrl ?? null,
+      thumbTitle: targetTitle,
+    };
+  }
+
+  if (item.coverImageUrl) {
+    return {
+      coverUrl: item.coverImageUrl,
+      thumbTitle:
+        offeredTitles[0] ??
+        item.offeredListingTitle?.trim() ??
+        targetTitle ??
+        item.tags?.[0]?.trim() ??
+        "?",
+    };
+  }
+
+  return null;
 }
 
 export function getNotificationTags(item: ChatSummary) {
@@ -223,7 +334,17 @@ export function formatChatListTime(value: string) {
       minute: "2-digit",
     }).format(date);
   }
-  return "Вчера";
+
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) {
+    return "Вчера";
+  }
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}.${month}.${year}`;
 }
 
 export function formatOfferedListLabel(titles: string[]) {
@@ -272,7 +393,7 @@ function getOfferedTitles(item: ChatSummary) {
 
 function getOfferedCoverUrls(item: ChatSummary) {
   if (item.offeredListingCoverUrls?.length) {
-    return item.offeredListingCoverUrls;
+    return item.offeredListingCoverUrls.filter((url): url is string => Boolean(url));
   }
   if (item.offeredListingCoverUrl) {
     return [item.offeredListingCoverUrl];
