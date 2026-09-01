@@ -24,12 +24,12 @@ export function NotificationCard({
 }: NotificationCardProps) {
   const content = (
     <>
-      <div className="notification-card__media">
-        {media}
-        {hasUnread ? <span aria-hidden className="unread-dot unread-dot--avatar" /> : null}
-      </div>
+      <div className="notification-card__media">{media}</div>
       <div className="notification-card__copy">
-        <p className="notification-card__title">{title}</p>
+        <p className="notification-card__title">
+          <span className="notification-card__title-text">{title}</span>
+          {hasUnread ? <span aria-hidden className="unread-dot unread-dot--notification" /> : null}
+        </p>
         <p className="notification-card__counterpart">{counterpartName}</p>
         <time className="notification-card__time">{time}</time>
       </div>

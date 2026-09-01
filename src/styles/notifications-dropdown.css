@@ -45,16 +45,20 @@
   opacity: 0.9;
 }
 
-/* Date under copy — full width for title and name */
 .notification-card__media {
   position: relative;
+  display: block;
   flex: none;
+  flex-shrink: 0;
+  width: auto;
+  max-width: none;
   overflow: visible;
 }
 
 .notification-deal-media {
   display: flex;
   flex: none;
+  flex-flow: row nowrap;
   align-items: center;
   gap: 4px;
 }
@@ -65,18 +69,19 @@
 
 .notification-deal-media__item {
   position: relative;
+  display: block;
   flex: none;
   width: 55px;
+  min-width: 55px;
   height: 55px;
 }
 
-.notification-deal-media__thumb,
-.notification-deal-media__thumb--fallback {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
+.notification-deal-media__thumb {
+  display: block;
+  width: 55px;
+  height: 55px;
+  max-width: 55px;
+  max-height: 55px;
   overflow: hidden;
   border: 0.5px solid #e4e4e4;
   border-radius: 20px;
@@ -84,6 +89,16 @@
 }
 
 .notification-deal-media__thumb--fallback {
+  display: flex;
+  width: 55px;
+  height: 55px;
+  max-width: 55px;
+  max-height: 55px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 0.5px solid #e4e4e4;
+  border-radius: 20px;
   background: linear-gradient(135deg, #f0e8ff, #c8ff02);
   color: #1a1a1a;
   font-size: 18px;
@@ -155,13 +170,29 @@
 }
 
 .notification-card__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
-  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.022px;
   color: #1a1a1a;
+}
+
+.notification-card__title-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-card__title .unread-dot--notification {
+  position: static;
+  flex: none;
 }
 
 .notification-card__counterpart {

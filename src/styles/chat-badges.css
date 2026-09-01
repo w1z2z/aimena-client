@@ -75,6 +75,10 @@
   top: 0;
 }
 
+.unread-dot--notification {
+  position: static;
+}
+
 .unread-dot--nav {
   right: -1px;
   top: -1px;

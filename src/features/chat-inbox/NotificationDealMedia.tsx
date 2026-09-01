@@ -17,7 +17,7 @@ function NotificationListingThumb({
     .join(" ");
 
   return (
-    <span className="notification-deal-media__item" title={side.thumbTitle}>
+    <div className="notification-deal-media__item" title={side.thumbTitle}>
       {side.coverUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={side.coverUrl} alt="" className={className} />
@@ -32,7 +32,7 @@ function NotificationListingThumb({
       {showFreeBadge ? (
         <span className="notification-deal-media__free-badge">Даром</span>
       ) : null}
-    </span>
+    </div>
   );
 }
 
