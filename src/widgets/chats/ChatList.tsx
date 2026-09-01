@@ -73,7 +73,13 @@ function ChatListAvatarBadge({ item }: { item: ChatSummary }) {
   );
 }
 
-function ChatListDealMedia({ item }: { item: ChatSummary }) {
+function ChatListDealMedia({
+  item,
+  showAvatarBadge = false,
+}: {
+  item: ChatSummary;
+  showAvatarBadge?: boolean;
+}) {
   const thumb = getChatListThumb(item);
 
   if (!thumb) {
@@ -83,7 +89,7 @@ function ChatListDealMedia({ item }: { item: ChatSummary }) {
   return (
     <span className="chats-list-item__deal-media">
       <ChatListDealThumb title={thumb.thumbTitle} coverUrl={thumb.coverUrl} />
-      <ChatListAvatarBadge item={item} />
+      {showAvatarBadge ? <ChatListAvatarBadge item={item} /> : null}
     </span>
   );
 }
@@ -186,6 +192,7 @@ type ChatListItemProps = {
   item: ChatSummary;
   selectedId?: string | null;
   tabIndex?: number;
+  showAvatarBadge?: boolean;
   onSelect: (item: ChatSummary) => void;
   href?: string;
   onNavigate?: (href: string, event: MouseEvent<HTMLAnchorElement>) => void;
@@ -195,6 +202,7 @@ function ChatListItem({
   item,
   selectedId,
   tabIndex,
+  showAvatarBadge = false,
   onSelect,
   href,
   onNavigate,
@@ -214,7 +222,7 @@ function ChatListItem({
       {item.kind === "support" ? (
         <ChatListAvatar item={item} className="chats-list-item__avatar" />
       ) : (
-        <ChatListDealMedia item={item} />
+        <ChatListDealMedia item={item} showAvatarBadge={showAvatarBadge} />
       )}
       <span className="chats-list-item__copy">
         <strong>
@@ -304,11 +312,7 @@ function ChatListGroupBlock({
         aria-expanded={expanded}
         onClick={() => onToggle(group.id)}
       >
-        {group.isSupport ? (
-          <ChatListAvatar item={latest} className="chats-list-item__avatar" />
-        ) : (
-          <ChatListDealMedia item={latest} />
-        )}
+        <ChatListAvatar item={latest} className="chats-list-item__avatar" />
         <span className="chats-list-item__copy">
           <strong>
             <span
@@ -402,6 +406,7 @@ export function ChatList({
           <ChatListItem
             key={group.id}
             item={group.items[0]}
+            showAvatarBadge
             selectedId={selectedId}
             tabIndex={tabIndex}
             onSelect={onSelect}
