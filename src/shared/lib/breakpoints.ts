@@ -11,8 +11,7 @@
  * | tablet   | 1120 | content grids, page reflow               |
  * | wide     | 1480 | multi-column card grids (4 → 3)          |
  *
- * Header / floating-chat inset ladders also use min-width
- * 640 / 768 / 1024 / 1280 (Tailwind-aligned padding steps) —
+ * Header inset ladders use min-width 1280 (floating-chat) —
  * those are not layout mode switches.
  */
 
