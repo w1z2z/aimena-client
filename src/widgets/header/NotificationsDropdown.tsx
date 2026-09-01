@@ -6,13 +6,12 @@ import { useRouter } from "next/navigation";
 import {
   chatSummaryToHref,
   formatChatListTime,
-  getNotificationExchangeLines,
-  getNotificationSubtitle,
+  getNotificationCounterpartName,
+  getNotificationDealMedia,
   getNotificationTitle,
   notificationHasUnread,
-  notificationShowsDealMedia,
 } from "@/features/chat-inbox";
-import { ChatDealMedia } from "@/features/chat-inbox/ChatDealMedia";
+import { NotificationDealMedia } from "@/features/chat-inbox/NotificationDealMedia";
 import { onChatInboxUpdated, onChatThreadUpdated } from "@/shared/api/chat-socket";
 import { getChatNotifications, type ChatSummary } from "@/shared/api/chats";
 
@@ -38,25 +37,30 @@ function NotificationList({
 }) {
   return (
     <>
-      {items.map((item) => (
-        <NotificationCard
-          key={item.id}
-          title={getNotificationTitle(item)}
-          subtitle={getNotificationSubtitle(item)}
-          exchangeLines={getNotificationExchangeLines(item)}
-          time={formatChatListTime(item.updatedAt)}
-          href={chatSummaryToHref(item)}
-          media={
-            notificationShowsDealMedia(item) ? (
-              <ChatDealMedia item={item} context="notification" showAvatarBadge />
-            ) : (
-              <ChatDealMedia item={item} />
-            )
-          }
-          hasUnread={notificationHasUnread(item)}
-          onNavigate={() => onItemClick(item)}
-        />
-      ))}
+      {items.map((item) => {
+        const media = getNotificationDealMedia(item);
+
+        return (
+          <NotificationCard
+            key={item.id}
+            title={getNotificationTitle(item)}
+            counterpartName={getNotificationCounterpartName(item)}
+            time={formatChatListTime(item.updatedAt)}
+            href={chatSummaryToHref(item)}
+            media={
+              media ? (
+                <NotificationDealMedia
+                  mine={media.mine}
+                  theirs={media.theirs}
+                  isFreeClaim={media.isFreeClaim}
+                />
+              ) : null
+            }
+            hasUnread={notificationHasUnread(item)}
+            onNavigate={() => onItemClick(item)}
+          />
+        );
+      })}
     </>
   );
 }

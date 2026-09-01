@@ -34,7 +34,6 @@
   width: 100%;
   min-width: 0;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 10px;
   color: inherit;
   text-align: left;
@@ -46,36 +45,105 @@
   opacity: 0.9;
 }
 
-/* Time column on top-right, same as chats-list-item__meta */
-.notification-card__meta {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  color: #626262;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 16px;
-  letter-spacing: 0.022px;
-}
-
+/* Date under copy — full width for title and name */
 .notification-card__media {
-  --chats-list-thumb-size: 55px;
-  --chats-list-thumb-radius: 20px;
   position: relative;
   flex: none;
   overflow: visible;
 }
 
-.notification-card__media .chats-list-item__deal-media {
-  overflow: visible;
+.notification-deal-media {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
 }
 
-.notification-card__media .chats-list-item__avatar {
-  width: var(--chats-list-thumb-size);
-  height: var(--chats-list-thumb-size);
-  border-radius: var(--chats-list-thumb-radius);
+.notification-deal-media--free {
+  gap: 0;
+}
+
+.notification-deal-media__item {
+  position: relative;
+  flex: none;
+  width: 55px;
+  height: 55px;
+}
+
+.notification-deal-media__thumb,
+.notification-deal-media__thumb--fallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 0.5px solid #e4e4e4;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+.notification-deal-media__thumb--fallback {
+  background: linear-gradient(135deg, #f0e8ff, #c8ff02);
+  color: #1a1a1a;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.notification-deal-media__swap {
+  display: flex;
+  flex: none;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
+}
+
+.notification-deal-media__swap img {
+  display: block;
+  width: 14px;
+  height: 13px;
+  max-width: none;
+  object-fit: contain;
+}
+
+.notification-deal-media__count {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  z-index: 1;
+  display: inline-flex;
+  min-width: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #fff;
+  border-radius: 999px;
+  background: #8e8bed;
+  padding: 0 4px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 14px;
+}
+
+.notification-deal-media__free-badge {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  z-index: 1;
+  display: inline-flex;
+  max-width: calc(100% + 8px);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: #8e8bed;
+  padding: 1px 6px;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 12px;
+  white-space: nowrap;
+  transform: translateX(-50%);
 }
 
 .notification-card__copy {
@@ -83,7 +151,7 @@
   min-width: 0;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .notification-card__title {
@@ -92,54 +160,20 @@
   font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: 0.001em;
+  letter-spacing: 0.022px;
   color: #1a1a1a;
 }
 
-.notification-card__exchange {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.notification-card__exchange-line {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  align-items: baseline;
-  gap: 4px;
+.notification-card__counterpart {
   margin: 0;
+  width: 100%;
+  overflow: hidden;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
   color: #626262;
-}
-
-.notification-card__exchange-label {
-  flex: none;
-}
-
-.notification-card__exchange-value {
-  display: inline-flex;
-  min-width: 0;
-  align-items: baseline;
-  gap: 4px;
-  overflow: hidden;
-}
-
-.notification-card__exchange-title {
-  min-width: 0;
-  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.notification-card__exchange-extra {
-  flex: none;
-  font-size: 11px;
-  line-height: 1.2;
-  letter-spacing: 0.01em;
 }
 
 .notification-card__subtitle {
@@ -152,8 +186,12 @@
 }
 
 .notification-card__time {
-  flex: none;
+  margin: 0;
+  align-self: flex-end;
+  color: #626262;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.022px;
   white-space: nowrap;
-  color: inherit;
-  font: inherit;
 }

@@ -3,12 +3,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import type { NotificationExchangeLines } from "@/features/chat-inbox/utils";
-
 type NotificationCardProps = {
   title: string;
-  subtitle?: string;
-  exchangeLines?: NotificationExchangeLines | null;
+  counterpartName: string;
   time: string;
   href?: string;
   media: ReactNode;
@@ -16,32 +13,9 @@ type NotificationCardProps = {
   onNavigate?: () => void;
 };
 
-function NotificationExchangeLineRow({
-  label,
-  line,
-}: {
-  label: string;
-  line: NonNullable<NotificationExchangeLines>["receive"];
-}) {
-  if (!line) return null;
-
-  return (
-    <p className="notification-card__exchange-line">
-      <span className="notification-card__exchange-label">{label}</span>
-      <span className="notification-card__exchange-value" title={line.primaryLabel}>
-        <span className="notification-card__exchange-title">{line.primaryLabel}</span>
-        {line.extraLabel ? (
-          <span className="notification-card__exchange-extra">{line.extraLabel}</span>
-        ) : null}
-      </span>
-    </p>
-  );
-}
-
 export function NotificationCard({
   title,
-  subtitle,
-  exchangeLines,
+  counterpartName,
   time,
   href,
   media,
@@ -56,17 +30,9 @@ export function NotificationCard({
       </div>
       <div className="notification-card__copy">
         <p className="notification-card__title">{title}</p>
-        {exchangeLines ? (
-          <div className="notification-card__exchange">
-            <NotificationExchangeLineRow label="Получу:" line={exchangeLines.receive} />
-            <NotificationExchangeLineRow label="Отдам:" line={exchangeLines.give} />
-          </div>
-        ) : null}
-        {subtitle ? <p className="notification-card__subtitle">{subtitle}</p> : null}
-      </div>
-      <span className="notification-card__meta">
+        <p className="notification-card__counterpart">{counterpartName}</p>
         <time className="notification-card__time">{time}</time>
-      </span>
+      </div>
     </>
   );
 

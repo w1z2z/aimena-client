@@ -1,6 +1,6 @@
 "use client";
 
-import { getChatListThumb, getNotificationThumb } from "./utils";
+import { getChatListThumb } from "./utils";
 import type { ChatSummary } from "@/shared/api/chats";
 
 function ChatDealThumb({
@@ -87,23 +87,17 @@ type ChatDealMediaProps = {
   item: ChatSummary;
   showAvatarBadge?: boolean;
   preferAvatar?: boolean;
-  context?: "chat" | "notification";
   className?: string;
 };
 
-/** Listing cover + optional counterpart avatar badge (shared by chat list & notifications). */
+/** Listing cover + optional counterpart avatar badge (chat list). */
 export function ChatDealMedia({
   item,
   showAvatarBadge = false,
   preferAvatar = false,
-  context = "chat",
   className,
 }: ChatDealMediaProps) {
-  const thumb = preferAvatar
-    ? null
-    : context === "notification"
-      ? getNotificationThumb(item)
-      : getChatListThumb(item);
+  const thumb = preferAvatar ? null : getChatListThumb(item);
 
   if (!thumb) {
     return <ChatListAvatar item={item} className="chats-list-item__avatar" />;

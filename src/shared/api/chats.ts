@@ -62,6 +62,7 @@ export type ChatSummary = {
   targetListingId?: string | null;
   targetListingTitle?: string | null;
   targetListingCoverUrl?: string | null;
+  targetListingIsFree?: boolean;
   offeredListingTitle?: string | null;
   offeredListingCoverUrl?: string | null;
   offeredListingCoverUrls?: Array<string | null>;

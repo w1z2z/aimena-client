@@ -81,13 +81,15 @@ export function getNotificationTitle(item: ChatSummary) {
     return "Предложение принято!";
   }
 
+  const freeClaim = isNotificationFreeClaim(item);
+
   switch (item.notificationKind) {
     case "incoming_offer":
-      return "Вам предложили обмен";
+      return freeClaim ? "Хотят получить даром" : "Вам предложили обмен";
     case "offer_accepted":
       return "Предложение принято!";
     case "offer_rejected":
-      return "Ваше предложение отклонено";
+      return freeClaim ? "Запрос отклонён" : "Ваше предложение отклонено";
     case "cancel_requested":
       return "Запрос на обоюдный отказ";
     case "cancel_rejected":
@@ -113,181 +115,99 @@ export function getNotificationTitle(item: ChatSummary) {
     case "chat_message":
       return item.counterpart.displayName;
     default:
-      if (item.kind === "offer") return "Вам предложили обмен";
+      if (item.kind === "offer") {
+        return freeClaim ? "Хотят получить даром" : "Вам предложили обмен";
+      }
       if (item.kind === "support") return "Сообщение от поддержки";
       return item.counterpart.displayName;
   }
 }
 
-/**
- * Под заголовком:
- * - обмен → только строки «Получу / Отдам», без дублирующего текста
- * - сообщение / поддержка → превью текста
- */
-export function getNotificationSubtitle(item: ChatSummary) {
-  if (getNotificationExchangeLines(item)) {
-    return undefined;
-  }
-
-  if (isOfferAcceptedItem(item)) {
-    return item.isOfferSender === false
-      ? "Можно связаться в чате"
-      : "Свяжитесь с владельцем";
-  }
-
-  switch (item.notificationKind) {
-    case "incoming_offer":
-      return "Откройте, чтобы рассмотреть";
-    case "offer_accepted":
-      return item.isOfferSender === false
-        ? "Можно связаться в чате"
-        : "Свяжитесь с владельцем";
-    case "offer_rejected":
-      return undefined;
-    case "cancel_requested":
-      return "Участник запрашивает обоюдный отказ от обмена";
-    case "cancel_rejected":
-      return "Партнёр отклонил запрос на обоюдный отказ";
-    case "deal_aborted":
-      return "Партнёр отменил обмен";
-    case "deal_cancelled":
-      return "Сделка отменена по обоюдному согласию";
-    case "deal_not_completed":
-      return "Сделка закрыта: обмен не состоялся";
-    case "partner_ready":
-      return "Подтвердите готовность в чате";
-    case "both_ready":
-      return "Можно встречаться и завершать обмен";
-    case "complete_requested":
-      return "Подтвердите, что обмен состоялся";
-    case "failure_requested":
-      return "Партнёр сообщил, что обмен не состоялся";
-    case "review_needed":
-      return "Оставьте отзыв о проведённом обмене";
-    case "support":
-    case "chat_message":
-      return item.preview;
-    default:
-      if (item.kind === "offer") {
-        return "Откройте, чтобы рассмотреть";
-      }
-      return item.preview;
-  }
+/** Вторая строка карточки — имя участника сделки. */
+export function getNotificationCounterpartName(item: ChatSummary) {
+  return item.counterpart.displayName;
 }
 
-export type NotificationExchangeLine = {
-  primaryLabel: string;
-  extraLabel?: string;
+export type NotificationMediaSide = {
+  coverUrl: string | null;
+  thumbTitle: string;
+  extraCount: number;
 };
 
-export type NotificationExchangeLines = {
-  receive: NotificationExchangeLine | null;
-  give: NotificationExchangeLine | null;
+export type NotificationDealMediaDisplay = {
+  isFreeClaim: boolean;
+  mine: NotificationMediaSide | null;
+  theirs: NotificationMediaSide | null;
 };
 
-function toExchangeLine(titles: string[]): NotificationExchangeLine | null {
-  const parts = getOfferedListParts(titles);
-  if (!parts.primaryLabel) return null;
+function buildNotificationMediaSide(
+  titles: string[],
+  coverUrls: string[],
+): NotificationMediaSide | null {
+  if (titles.length === 0) return null;
+
   return {
-    primaryLabel: parts.primaryLabel,
-    extraLabel: parts.extraLabel,
+    coverUrl: coverUrls[0] ?? null,
+    thumbTitle: titles[0],
+    extraCount: titles.length > 1 ? titles.length - 1 : 0,
   };
 }
 
-/** Viewer-centric «Получу / Отдам» for exchange-related notifications. */
-export function getNotificationExchangeLines(
-  item: ChatSummary,
-): NotificationExchangeLines | null {
-  if (item.kind === "support") return null;
-  if (item.notificationKind === "support" || item.notificationKind === "chat_message") {
-    return null;
-  }
-
-  const targetTitle = item.targetListingTitle?.trim() || null;
-  const offeredTitles = getOfferedTitles(item);
-  if (!targetTitle && offeredTitles.length === 0) return null;
-
-  const sender = isViewerOfferSender(item);
-  const receiveTitles = sender
-    ? targetTitle
-      ? [targetTitle]
-      : []
-    : offeredTitles.length > 0
-      ? offeredTitles
-      : [];
-  const giveTitles = sender
-    ? offeredTitles
-    : targetTitle
-      ? [targetTitle]
-      : [];
-
-  const receive = receiveTitles.length > 0 ? toExchangeLine(receiveTitles) : null;
-  const give = giveTitles.length > 0 ? toExchangeLine(giveTitles) : null;
-  if (!receive && !give) return null;
-
-  return { receive, give };
+function getTargetTitles(item: ChatSummary) {
+  const title = item.targetListingTitle?.trim();
+  return title ? [title] : [];
 }
 
-export function notificationShowsDealMedia(item: ChatSummary) {
+function getTargetCoverUrls(item: ChatSummary) {
+  return item.targetListingCoverUrl ? [item.targetListingCoverUrl] : [];
+}
+
+/** Free giveaway: no offered listings, or the target listing is marked free. */
+export function isNotificationFreeClaim(item: ChatSummary) {
   if (item.kind === "support") return false;
-  if (item.notificationKind === "support" || item.notificationKind === "chat_message") {
-    return false;
-  }
-  return getNotificationThumb(item) !== null;
+  if (getOfferedTitles(item).length === 0) return Boolean(item.targetListingTitle?.trim());
+  return Boolean(item.targetListingIsFree);
 }
 
-/**
- * Notifications: large cover = first offered listing, badge = counterpart avatar.
- * (Unlike chat list, sender-side rows also show what was proposed, not the target.)
- */
-export function getNotificationThumb(item: ChatSummary): {
-  coverUrl: string | null;
-  thumbTitle: string;
-} | null {
+export function getNotificationDealMedia(
+  item: ChatSummary,
+): NotificationDealMediaDisplay | null {
   if (item.kind === "support") return null;
   if (item.notificationKind === "support" || item.notificationKind === "chat_message") {
     return null;
   }
 
   const offeredTitles = getOfferedTitles(item);
-  const coverUrls = getOfferedCoverUrls(item);
+  const offeredCoverUrls = getOfferedCoverUrls(item);
+  const targetTitles = getTargetTitles(item);
+  const targetCoverUrls = getTargetCoverUrls(item);
+  const sender = isViewerOfferSender(item);
+  const isFreeClaim = isNotificationFreeClaim(item);
 
-  if (offeredTitles.length > 0 || coverUrls.length > 0) {
-    const coverUrl =
-      coverUrls[0] ??
-      item.offeredListingCoverUrl ??
-      item.coverImageUrl ??
-      item.targetListingCoverUrl ??
-      null;
-
+  if (isFreeClaim) {
+    const listing = buildNotificationMediaSide(targetTitles, targetCoverUrls);
     return {
-      coverUrl,
-      thumbTitle: offeredTitles[0] ?? item.offeredListingTitle?.trim() ?? "?",
+      isFreeClaim: true,
+      mine: sender ? null : listing,
+      theirs: sender ? listing : null,
     };
   }
 
-  const targetTitle = item.targetListingTitle?.trim();
-  if (targetTitle) {
-    return {
-      coverUrl:
-        item.targetListingCoverUrl ?? item.coverImageUrl ?? null,
-      thumbTitle: targetTitle,
-    };
-  }
+  const mine = sender
+    ? buildNotificationMediaSide(offeredTitles, offeredCoverUrls)
+    : buildNotificationMediaSide(targetTitles, targetCoverUrls);
+  const theirs = sender
+    ? buildNotificationMediaSide(targetTitles, targetCoverUrls)
+    : buildNotificationMediaSide(offeredTitles, offeredCoverUrls);
 
-  if (item.coverImageUrl) {
-    return {
-      coverUrl: item.coverImageUrl,
-      thumbTitle:
-        offeredTitles[0] ??
-        item.offeredListingTitle?.trim() ??
-        targetTitle ??
-        item.tags?.[0]?.trim() ??
-        "?",
-    };
-  }
+  if (!mine && !theirs) return null;
 
-  return null;
+  return { isFreeClaim: false, mine, theirs };
+}
+
+/** @deprecated Use getNotificationCounterpartName */
+export function getNotificationSubtitle(item: ChatSummary) {
+  return getNotificationCounterpartName(item);
 }
 
 export function getNotificationTags(item: ChatSummary) {

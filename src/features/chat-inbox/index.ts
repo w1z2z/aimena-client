@@ -1,5 +1,6 @@
 export { ChatInboxProvider, useChatInbox } from "./ChatInboxProvider";
 export { ChatDealMedia } from "./ChatDealMedia";
+export { NotificationDealMedia } from "./NotificationDealMedia";
 export {
   chatSummaryToHref,
   computeHasUnreadConversations,
@@ -16,23 +17,23 @@ export {
   getChatListThumb,
   getChatExchangeDisplay,
   isViewerOfferSender,
-  getNotificationExchangeLines,
+  getNotificationCounterpartName,
+  getNotificationDealMedia,
   getNotificationImageFallback,
   getNotificationImageUrl,
   getNotificationSubtitle,
   getNotificationTags,
-  getNotificationThumb,
   getNotificationTitle,
+  isNotificationFreeClaim,
   notificationHasUnread,
-  notificationShowsDealMedia,
 } from "./utils";
 export { findChatListGroup, groupChatSummaries } from "./group-chat-summaries";
 export type { ChatListGroup } from "./group-chat-summaries";
 export type {
   ChatExchangeDisplay,
   ChatListDealLine,
-  NotificationExchangeLine,
-  NotificationExchangeLines,
+  NotificationDealMediaDisplay,
+  NotificationMediaSide,
 } from "./utils";
 export type { ChatSummary } from "@/shared/api/chats";
 export type { NotificationKind } from "@/shared/api/chats";
