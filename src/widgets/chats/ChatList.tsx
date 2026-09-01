@@ -193,6 +193,7 @@ type ChatListItemProps = {
   selectedId?: string | null;
   tabIndex?: number;
   showAvatarBadge?: boolean;
+  isChild?: boolean;
   onSelect: (item: ChatSummary) => void;
   href?: string;
   onNavigate?: (href: string, event: MouseEvent<HTMLAnchorElement>) => void;
@@ -203,6 +204,7 @@ function ChatListItem({
   selectedId,
   tabIndex,
   showAvatarBadge = false,
+  isChild = false,
   onSelect,
   href,
   onNavigate,
@@ -212,7 +214,8 @@ function ChatListItem({
   const className = [
     "chats-list-item",
     "chats-list-item--main",
-    dealLine ? "chats-list-item--has-deal" : "",
+    isChild ? "chats-list-item--child" : "",
+    !isChild && dealLine ? "chats-list-item--has-deal" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -225,16 +228,41 @@ function ChatListItem({
         <ChatListDealMedia item={item} showAvatarBadge={showAvatarBadge} />
       )}
       <span className="chats-list-item__copy">
-        <strong>
-          <span
-            className="chats-list-item__line-title"
-            title={item.counterpart.displayName}
-          >
-            {truncateChatListLabel(item.counterpart.displayName, 24)}
-          </span>
-        </strong>
-        {dealLine ? <ChatListDealLabel item={item} /> : null}
-        <span className="chats-list-item__preview">{preview}</span>
+        {isChild ? (
+          <>
+            <strong className="chats-list-item__child-title">
+              {dealLine ? (
+                <>
+                  <span
+                    className="chats-list-item__line-title"
+                    title={dealLine.primaryLabel}
+                  >
+                    {truncateChatListLabel(dealLine.primaryLabel)}
+                  </span>
+                  {dealLine.extraLabel ? (
+                    <span className="chats-list-group__count">{dealLine.extraLabel}</span>
+                  ) : null}
+                </>
+              ) : (
+                <span className="chats-list-item__line-title">{preview}</span>
+              )}
+            </strong>
+            <span className="chats-list-item__preview">{preview}</span>
+          </>
+        ) : (
+          <>
+            <strong>
+              <span
+                className="chats-list-item__line-title"
+                title={item.counterpart.displayName}
+              >
+                {truncateChatListLabel(item.counterpart.displayName, 24)}
+              </span>
+            </strong>
+            {dealLine ? <ChatListDealLabel item={item} /> : null}
+            <span className="chats-list-item__preview">{preview}</span>
+          </>
+        )}
       </span>
       <span className="chats-list-item__meta">
         <time>{formatChatListTime(item.updatedAt)}</time>
@@ -342,6 +370,7 @@ function ChatListGroupBlock({
             <ChatListItem
               key={item.id}
               item={item}
+              isChild
               selectedId={selectedId}
               tabIndex={tabIndex}
               onSelect={onSelect}
