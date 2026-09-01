@@ -26,6 +26,9 @@ import { TickerCarousel } from "./TickerCarousel";
 const HERO_BACKGROUND =
   "linear-gradient(180deg, #141131 29.69%, #322F60 47.6%, #545193 67.22%, #8E8BED 100%)";
 
+/** Scene Y of ticker row before scale (spacer + content shift + footer offset + ticker top). */
+const DESKTOP_TICKER_SCENE_TOP = 54 - HERO_CONTENT_SHIFT_UP + 1040;
+
 function subscribeViewport(onStoreChange: () => void) {
   window.addEventListener("resize", onStoreChange, { passive: true });
   return () => window.removeEventListener("resize", onStoreChange);
@@ -235,9 +238,13 @@ export function HomeTopBlock() {
         </div>
       ) : (
         <div
-          className="relative w-full overflow-hidden"
+          className="relative w-full"
           style={{ height: `${Math.max(viewportHeight, sceneFrameHeight)}px` }}
         >
+          <div
+            className="relative w-full overflow-hidden"
+            style={{ height: `${Math.max(viewportHeight, sceneFrameHeight)}px` }}
+          >
           <div
             className="relative left-1/2 origin-top"
             style={{
@@ -282,12 +289,19 @@ export function HomeTopBlock() {
                     <div className="home-hero-desktop-why">
                       <HeroWhyAimena />
                     </div>
-
-                    <TickerCarousel />
                   </div>
                 </div>
               </section>
             </div>
+          </div>
+          </div>
+          <div
+            className="pointer-events-none absolute inset-x-0 z-20 overflow-hidden"
+            style={{
+              top: `${(DESKTOP_TICKER_SCENE_TOP + sceneFooterOffset) * sceneScale}px`,
+            }}
+          >
+            <TickerCarousel />
           </div>
         </div>
       )}

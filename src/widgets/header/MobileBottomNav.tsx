@@ -136,19 +136,21 @@ export function MobileBottomNav() {
           onClick={handleProfile}
         >
           {isAuthenticated && user ? (
-            <span
-              className="mobile-bottom-nav__avatar"
-              style={{
-                background:
-                  "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
-              }}
-            >
-              {user.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                user.avatarInitial
-              )}
+            <span className="mobile-bottom-nav__icon-wrap mobile-bottom-nav__icon-wrap--avatar">
+              <span
+                className="mobile-bottom-nav__avatar"
+                style={{
+                  background:
+                    "linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(90deg, #8E8BED 0%, #c8ff02 100%) border-box",
+                }}
+              >
+                {user.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={user.avatarUrl} alt="" />
+                ) : (
+                  user.avatarInitial
+                )}
+              </span>
             </span>
           ) : (
             <LoginIcon className="h-5 w-5" />
