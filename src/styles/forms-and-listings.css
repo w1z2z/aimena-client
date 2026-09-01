@@ -1301,21 +1301,13 @@
   grid-template-rows: auto 1fr auto;
   align-items: start;
   min-height: 428.25px;
-  overflow: clip;
 }
 
 .site-footer__logo {
   grid-column: 1;
   grid-row: 1;
   display: inline-flex;
-  width: 39px;
-  text-decoration: none;
-}
-
-.site-footer__logo-mark {
-  display: block;
-  width: 39px;
-  height: 60px;
+  width: 162px;
 }
 
 .site-footer__stack {
@@ -1364,10 +1356,6 @@
 .site-footer__label,
 .site-footer__copyright {
   margin: 0;
-  /* Match Figma leading-trim / text-edge so gap: 24px is measured between caps */
-  text-box: trim-both cap alphabetic;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
 }
 
 .site-footer__title {
@@ -1375,7 +1363,7 @@
   font-family: var(--font-manrope), sans-serif;
   font-size: 24px;
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.2;
   letter-spacing: -0.072px;
 }
 
@@ -1437,7 +1425,7 @@
   }
 
   .site-footer__content {
-    grid-template-columns: 39px repeat(2, minmax(0, 1fr));
+    grid-template-columns: 162px repeat(2, minmax(0, 1fr));
     min-height: 0;
   }
 

@@ -322,6 +322,6 @@ textarea:disabled {
   }
 
   to {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(calc(-1 * var(--home-ticker-loop-width, 0px)), 0, 0);
   }
 }

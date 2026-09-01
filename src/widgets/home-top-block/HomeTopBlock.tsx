@@ -13,7 +13,12 @@ import { COMPACT_HEADER_QUERY } from "@/widgets/header/constants";
 import { Header } from "@/widgets/header/Header";
 
 import { CategoriesArc } from "./CategoriesArc";
-import { BASE_SCENE_HEIGHT, BASE_SCENE_WIDTH, computeDesktopSceneScale, HERO_CONTENT_SHIFT_UP } from "./constants";
+import {
+  BASE_SCENE_HEIGHT,
+  BASE_SCENE_WIDTH,
+  computeDesktopSceneScale,
+  HERO_CONTENT_SHIFT_UP,
+} from "./constants";
 import { HeroRecommendationsPanel } from "./HeroRecommendations";
 import { ModeFormColumn } from "./HeroSearchForm";
 import { TickerCarousel } from "./TickerCarousel";
@@ -225,8 +230,8 @@ export function HomeTopBlock() {
             <HeroTitle />
             <HeroForm {...formProps} compactLayout midSlot={compactMidSlot} />
             <HeroWhyAimena />
-            <TickerCarousel compact />
           </div>
+          <TickerCarousel compact />
         </div>
       ) : (
         <div

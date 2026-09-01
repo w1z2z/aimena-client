@@ -1,8 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { Logo } from "@/widgets/header/Logo";
 
 const serviceLinks = [
   { label: "Создать объявление", href: "/create-listing" },
@@ -41,13 +42,9 @@ export function SiteFooter() {
 
       <div className="site-footer__inner">
         <div className="site-footer__content">
-          <Link href="/" className="site-footer__logo" aria-label="Aimena — на главную">
-            <img
-              src="/images/footer/logo-mark.svg"
-              alt=""
-              className="site-footer__logo-mark"
-            />
-          </Link>
+          <div className="site-footer__logo">
+            <Logo tone="dark" />
+          </div>
 
           <nav className="site-footer__stack" aria-label="Сервис">
             <p className="site-footer__title">Сервис</p>
