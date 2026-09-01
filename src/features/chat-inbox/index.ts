@@ -9,7 +9,12 @@ export {
   getChatListContextLine,
   getChatListPreviewLine,
   getChatListSubtitle,
+  formatOfferedListLabel,
+  truncateChatListLabel,
+  getChatListDealLine,
+  getChatListThumb,
   getChatExchangeDisplay,
+  isViewerOfferSender,
   getNotificationImageFallback,
   getNotificationImageUrl,
   getNotificationSubtitle,
@@ -19,6 +24,6 @@ export {
 } from "./utils";
 export { findChatListGroup, groupChatSummaries } from "./group-chat-summaries";
 export type { ChatListGroup } from "./group-chat-summaries";
-export type { ChatExchangeDisplay } from "./utils";
+export type { ChatExchangeDisplay, ChatListDealLine } from "./utils";
 export type { ChatSummary } from "@/shared/api/chats";
 export type { NotificationKind } from "@/shared/api/chats";

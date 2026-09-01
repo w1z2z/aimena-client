@@ -6,9 +6,11 @@ import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import {
   findChatListGroup,
   formatChatListTime,
-  getChatExchangeDisplay,
+  getChatListDealLine,
   getChatListPreviewLine,
+  getChatListThumb,
   groupChatSummaries,
+  truncateChatListLabel,
   type ChatListGroup,
 } from "@/features/chat-inbox";
 import type { ChatSummary } from "@/shared/api/chats";
@@ -49,15 +51,57 @@ function ChatListAvatar({
   );
 }
 
-function ChatListExchangeThumb({
+function ChatListAvatarBadge({ item }: { item: ChatSummary }) {
+  const className = [
+    "chats-list-item__avatar-badge",
+    !item.counterpart.avatarUrl ? "chats-list-item__avatar-badge--fallback" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  if (item.counterpart.avatarUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={item.counterpart.avatarUrl} alt="" className={className} />
+    );
+  }
+
+  return (
+    <span className={className} aria-hidden>
+      {item.counterpart.displayName.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
+function ChatListDealMedia({ item }: { item: ChatSummary }) {
+  const thumb = getChatListThumb(item);
+
+  if (!thumb) {
+    return <ChatListAvatar item={item} className="chats-list-item__avatar" />;
+  }
+
+  return (
+    <span className="chats-list-item__deal-media">
+      <ChatListDealThumb title={thumb.thumbTitle} coverUrl={thumb.coverUrl} />
+      <ChatListAvatarBadge item={item} />
+    </span>
+  );
+}
+
+function ChatListDealThumb({
   title,
   coverUrl,
-  className,
 }: {
   title: string;
   coverUrl: string | null;
-  className?: string;
 }) {
+  const className = [
+    "chats-list-item__deal-thumb",
+    !coverUrl ? "chats-list-item__deal-thumb--fallback" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   if (coverUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -66,80 +110,37 @@ function ChatListExchangeThumb({
   }
 
   return (
-    <span className={`${className} chats-list-exchange__thumb-fallback`} aria-hidden>
+    <span className={className} aria-hidden>
       {title.slice(0, 1).toUpperCase()}
     </span>
   );
 }
 
-function ChatListExchangeMedia({ item }: { item: ChatSummary }) {
-  const exchange = getChatExchangeDisplay(item);
-  if (!exchange) return null;
-
+function ChatListDealText({
+  dealLine,
+  className,
+  titleClassName,
+}: {
+  dealLine: NonNullable<ReturnType<typeof getChatListDealLine>>;
+  className?: string;
+  titleClassName?: string;
+}) {
   return (
-    <span className="chats-list-exchange__media">
-      <ChatListExchangeThumb
-        title={exchange.targetTitle}
-        coverUrl={exchange.targetCover}
-        className="chats-list-exchange__thumb"
-      />
-      {exchange.offeredTitle ? (
-        <>
-          <span className="chats-list-exchange__arrow" aria-hidden>
-            ⇄
-          </span>
-          <ChatListExchangeThumb
-            title={exchange.offeredTitle}
-            coverUrl={exchange.offeredCover}
-            className="chats-list-exchange__thumb"
-          />
-        </>
+    <span className={className} title={dealLine.primaryLabel}>
+      <span className={titleClassName ?? "chats-list-item__deal-title"}>
+        {truncateChatListLabel(dealLine.primaryLabel)}
+      </span>
+      {dealLine.extraLabel ? (
+        <span className="chats-list-group__count">{dealLine.extraLabel}</span>
       ) : null}
     </span>
   );
 }
 
-function ChatListExchangeLine({
-  item,
-  compact = false,
-}: {
-  item: ChatSummary;
-  compact?: boolean;
-}) {
-  const exchange = getChatExchangeDisplay(item);
-  if (!exchange) return null;
-
-  if (!exchange.offeredTitle) {
-    return (
-      <span className="chats-list-exchange__line" title={exchange.targetTitle}>
-        <span className="chats-list-exchange__part">{exchange.targetTitle}</span>
-      </span>
-    );
-  }
-
-  if (compact) {
-    return (
-      <span className="chats-list-exchange__line chats-list-exchange__line--compact" title={exchange.line}>
-        <span className="chats-list-exchange__part">{exchange.targetTitle}</span>
-        <span className="chats-list-exchange__arrow" aria-hidden>
-          ⇄
-        </span>
-        <span className="chats-list-exchange__part">{exchange.offeredTitle}</span>
-      </span>
-    );
-  }
-
-  return (
-    <span className="chats-list-exchange__line chats-list-exchange__line--stacked" title={exchange.line}>
-      <span className="chats-list-exchange__part">{exchange.targetTitle}</span>
-      <span className="chats-list-exchange__stack-row">
-        <span className="chats-list-exchange__arrow" aria-hidden>
-          ⇄
-        </span>
-        <span className="chats-list-exchange__part">{exchange.offeredTitle}</span>
-      </span>
-    </span>
-  );
+function ChatListDealLabel({ item }: { item: ChatSummary }) {
+  const dealLine = getChatListDealLine(item);
+  if (!dealLine) return null;
+  return <ChatListDealText dealLine={dealLine} className="chats-list-item__deal" />;
 }
 
 function ChatListBadges({ item }: { item: ChatSummary }) {
@@ -184,7 +185,6 @@ function ChatListChevron({ expanded }: { expanded: boolean }) {
 type ChatListItemProps = {
   item: ChatSummary;
   selectedId?: string | null;
-  nested?: boolean;
   tabIndex?: number;
   onSelect: (item: ChatSummary) => void;
   href?: string;
@@ -194,47 +194,39 @@ type ChatListItemProps = {
 function ChatListItem({
   item,
   selectedId,
-  nested = false,
   tabIndex,
   onSelect,
   href,
   onNavigate,
 }: ChatListItemProps) {
-  const exchange = getChatExchangeDisplay(item);
+  const dealLine = getChatListDealLine(item);
   const preview = getChatListPreviewLine(item);
   const className = [
     "chats-list-item",
-    nested ? "chats-list-item--nested" : "chats-list-item--main",
-    exchange && !nested ? " chats-list-item--has-exchange" : "",
+    "chats-list-item--main",
+    dealLine ? "chats-list-item--has-deal" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
   const content = (
     <>
-      {nested && exchange ? (
-        <ChatListExchangeMedia item={item} />
-      ) : !nested ? (
+      {item.kind === "support" ? (
         <ChatListAvatar item={item} className="chats-list-item__avatar" />
       ) : (
-        <span className="chats-list-item__thumb chats-list-item__thumb--fallback" aria-hidden>
-          {(item.targetListingTitle ?? item.counterpart.displayName).slice(0, 1).toUpperCase()}
-        </span>
+        <ChatListDealMedia item={item} />
       )}
       <span className="chats-list-item__copy">
         <strong>
-          {nested && exchange ? (
-            <ChatListExchangeLine item={item} />
-          ) : nested ? (
-            getChatListPreviewLine(item)
-          ) : (
-            item.counterpart.displayName
-          )}
+          <span
+            className="chats-list-item__line-title"
+            title={item.counterpart.displayName}
+          >
+            {truncateChatListLabel(item.counterpart.displayName, 24)}
+          </span>
         </strong>
-        {!nested && exchange ? <ChatListExchangeLine item={item} compact /> : null}
-        {!nested || exchange ? (
-          <span className="chats-list-item__preview">{preview}</span>
-        ) : null}
+        {dealLine ? <ChatListDealLabel item={item} /> : null}
+        <span className="chats-list-item__preview">{preview}</span>
       </span>
       <span className="chats-list-item__meta">
         <time>{formatChatListTime(item.updatedAt)}</time>
@@ -312,10 +304,19 @@ function ChatListGroupBlock({
         aria-expanded={expanded}
         onClick={() => onToggle(group.id)}
       >
-        <ChatListAvatar item={latest} className="chats-list-item__avatar" />
+        {group.isSupport ? (
+          <ChatListAvatar item={latest} className="chats-list-item__avatar" />
+        ) : (
+          <ChatListDealMedia item={latest} />
+        )}
         <span className="chats-list-item__copy">
           <strong>
-            {group.counterpart.displayName}
+            <span
+              className="chats-list-item__line-title"
+              title={group.counterpart.displayName}
+            >
+              {truncateChatListLabel(group.counterpart.displayName, 24)}
+            </span>
             <span className="chats-list-group__count">
               {group.items.length} {countLabel}
             </span>
@@ -337,7 +338,6 @@ function ChatListGroupBlock({
             <ChatListItem
               key={item.id}
               item={item}
-              nested
               selectedId={selectedId}
               tabIndex={tabIndex}
               onSelect={onSelect}

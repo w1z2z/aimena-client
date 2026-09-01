@@ -226,9 +226,157 @@ export function formatChatListTime(value: string) {
   return "Вчера";
 }
 
+export function formatOfferedListLabel(titles: string[]) {
+  const normalized = titles.map((title) => title.trim()).filter(Boolean);
+  if (normalized.length === 0) return "";
+  if (normalized.length === 1) return normalized[0];
+  return `${normalized[0]} + ещё ${normalized.length - 1}`;
+}
+
+export function truncateChatListLabel(text: string, maxLength = 30) {
+  const trimmed = text.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  return `${trimmed.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
+export function getOfferedListParts(titles: string[]) {
+  const normalized = titles.map((title) => title.trim()).filter(Boolean);
+  if (normalized.length === 0) {
+    return { label: "", primaryLabel: "", extraLabel: undefined as string | undefined };
+  }
+  if (normalized.length === 1) {
+    return {
+      label: normalized[0],
+      primaryLabel: normalized[0],
+      extraLabel: undefined,
+    };
+  }
+
+  const extraLabel = `+ ещё ${normalized.length - 1}`;
+  return {
+    label: `${normalized[0]} ${extraLabel}`,
+    primaryLabel: normalized[0],
+    extraLabel,
+  };
+}
+
+function getOfferedTitles(item: ChatSummary) {
+  if (item.tags?.length) {
+    return item.tags.map((title) => title.trim()).filter(Boolean);
+  }
+  if (item.offeredListingTitle?.trim()) {
+    return [item.offeredListingTitle.trim()];
+  }
+  return [];
+}
+
+function getOfferedCoverUrls(item: ChatSummary) {
+  if (item.offeredListingCoverUrls?.length) {
+    return item.offeredListingCoverUrls;
+  }
+  if (item.offeredListingCoverUrl) {
+    return [item.offeredListingCoverUrl];
+  }
+  return [];
+}
+
+/** True when the current viewer sent the exchange offer. */
+export function isViewerOfferSender(item: ChatSummary) {
+  if (item.isOfferSender === true) return true;
+  if (item.isOfferSender === false) return false;
+  if (item.kind === "offer" && item.notificationKind !== "offer_rejected") {
+    return false;
+  }
+  if (item.notificationKind === "offer_rejected") return true;
+  return false;
+}
+
+export type ChatListDealLine = {
+  label: string;
+  primaryLabel: string;
+  extraLabel?: string;
+  coverUrl: string | null;
+  thumbTitle: string;
+};
+
+/**
+ * One contextual line for the deal in the chat list:
+ * - sender → target listing (what they want)
+ * - recipient → offered listings (what is proposed to them)
+ */
+export function getChatListDealLine(item: ChatSummary): ChatListDealLine | null {
+  if (item.kind === "support") return null;
+
+  const targetTitle = item.targetListingTitle?.trim() || null;
+  const offeredTitles = getOfferedTitles(item);
+  const sender = isViewerOfferSender(item);
+
+  if (sender) {
+    if (!targetTitle) return null;
+    return {
+      label: targetTitle,
+      primaryLabel: targetTitle,
+      coverUrl: item.targetListingCoverUrl ?? null,
+      thumbTitle: targetTitle,
+    };
+  }
+
+  if (offeredTitles.length > 0) {
+    const coverUrls = getOfferedCoverUrls(item);
+    const parts = getOfferedListParts(offeredTitles);
+    return {
+      label: parts.label,
+      primaryLabel: parts.primaryLabel,
+      extraLabel: parts.extraLabel,
+      coverUrl: coverUrls[0] ?? null,
+      thumbTitle: offeredTitles[0],
+    };
+  }
+
+  if (targetTitle) {
+    return {
+      label: targetTitle,
+      primaryLabel: targetTitle,
+      coverUrl: item.targetListingCoverUrl ?? null,
+      thumbTitle: targetTitle,
+    };
+  }
+
+  return null;
+}
+
+/** Listing cover for chat list: what the viewer receives in the exchange. */
+export function getChatListThumb(item: ChatSummary): {
+  coverUrl: string | null;
+  thumbTitle: string;
+} | null {
+  if (item.kind === "support") return null;
+
+  const dealLine = getChatListDealLine(item);
+  if (dealLine) {
+    return {
+      coverUrl: dealLine.coverUrl,
+      thumbTitle: dealLine.thumbTitle,
+    };
+  }
+
+  const coverUrl =
+    item.coverImageUrl ??
+    item.offeredListingCoverUrl ??
+    item.targetListingCoverUrl ??
+    null;
+  const thumbTitle =
+    item.offeredListingTitle?.trim() ||
+    item.targetListingTitle?.trim() ||
+    item.tags?.[0]?.trim() ||
+    item.counterpart.displayName;
+
+  return { coverUrl, thumbTitle };
+}
+
 export function getChatListContextLine(item: ChatSummary) {
-  const exchange = getChatExchangeDisplay(item);
-  if (exchange) return exchange.line;
+  const dealLine = getChatListDealLine(item);
+  if (dealLine) return dealLine.label;
   if (item.targetListingTitle?.trim()) return item.targetListingTitle.trim();
   if (item.tags?.[0]?.trim()) return item.tags[0].trim();
   return null;

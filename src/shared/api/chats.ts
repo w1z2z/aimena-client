@@ -64,6 +64,7 @@ export type ChatSummary = {
   targetListingCoverUrl?: string | null;
   offeredListingTitle?: string | null;
   offeredListingCoverUrl?: string | null;
+  offeredListingCoverUrls?: Array<string | null>;
   isOfferSender?: boolean;
   status:
     | "incoming_request"
