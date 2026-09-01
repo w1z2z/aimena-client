@@ -86,13 +86,8 @@ body:has(.chats-page) {
   --chats-list-name-line-height: 1.2;
   --chats-list-secondary-size: 13px;
   --chats-list-secondary-line-height: 1.3;
-  --chats-list-thumb-size: calc(
-    var(--chats-list-name-size) * var(--chats-list-name-line-height) +
-    var(--chats-list-copy-gap) +
-    var(--chats-list-secondary-size) * var(--chats-list-secondary-line-height) +
-    var(--chats-list-copy-gap) +
-    var(--chats-list-secondary-size) * var(--chats-list-secondary-line-height)
-  );
+  --chats-list-thumb-size: 55px;
+  --chats-list-row-height: calc(var(--chats-list-thumb-size) + 16px);
   --chats-list-thumb-radius: 20px;
 }
 
@@ -104,14 +99,22 @@ body:has(.chats-page) {
   gap: 12px;
   overflow-x: hidden;
   overflow-y: auto;
+  overflow-anchor: none;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chats-list > .chats-list-item,
+.chats-list > .chats-list-group {
+  flex-shrink: 0;
 }
 
 .chats-list-item {
   display: flex;
   box-sizing: border-box;
   width: 100%;
-  min-height: calc(var(--chats-list-thumb-size, 55px) + 16px);
+  min-height: var(--chats-list-row-height, 71px);
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -230,6 +233,8 @@ body:has(.chats-page) {
 
 /* Main chat: support, single exchange, or collapsed group header */
 .chats-list-item--main {
+  height: var(--chats-list-row-height, 71px);
+  min-height: var(--chats-list-row-height, 71px);
   align-items: flex-start;
 }
 
@@ -352,12 +357,15 @@ body:has(.chats-page) {
 
 .chats-list-group {
   display: flex;
+  flex-shrink: 0;
   flex-direction: column;
   gap: 4px;
 }
 
 .chats-list-group__header {
   width: 100%;
+  height: var(--chats-list-row-height, 71px);
+  min-height: var(--chats-list-row-height, 71px);
 }
 
 .chats-list-group__header .chats-list-item__copy strong {
@@ -399,10 +407,15 @@ body:has(.chats-page) {
   height: 6px;
   color: #626262;
   transition: transform 180ms ease;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .chats-list-group__chevron.is-expanded {
-  transform: rotate(180deg);
+  -webkit-transform: translateZ(0) rotate(180deg);
+  transform: translateZ(0) rotate(180deg);
 }
 
 .chats-list-group__threads {
@@ -503,6 +516,12 @@ body:has(.chats-page) {
 
 .floating-chat__list {
   gap: 8px;
+  overflow-anchor: none;
+}
+
+.floating-chat__list > .chats-list-item,
+.floating-chat__list > .chats-list-group {
+  flex-shrink: 0;
 }
 
 .floating-chat__list .chats-list-item,
