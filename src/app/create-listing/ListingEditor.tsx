@@ -34,6 +34,17 @@ import {
   clearHeroListingDraft,
   readHeroListingDraft,
 } from "@/shared/lib/hero-listing-draft";
+import {
+  AUTOSAVE_DEBOUNCE_MS,
+  buildListingCreateDraft,
+  clearListingCreateDraft,
+  deleteDraftPhotoRecord,
+  deleteDraftPhotoRecords,
+  isListingCreateDraftEmpty,
+  readListingCreateDraft,
+  restoreDraftPhotoItems,
+  saveListingCreateDraftSnapshot,
+} from "@/shared/lib/listing-create-draft";
 import { SelectField, type SelectOption } from "@/shared/ui/select-field";
 import { Header } from "@/widgets/header/Header";
 import { DeleteIcon } from "@/shared/ui/icons";
@@ -549,10 +560,13 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPublishedModalOpen, setIsPublishedModalOpen] = useState(false);
   const [draftCityLabel, setDraftCityLabel] = useState<string | null>(null);
+  const [isDraftRestoring, setIsDraftRestoring] = useState(() => !isEditMode);
+  const [showDraftRestoredNotice, setShowDraftRestoredNotice] = useState(false);
   const [isHydrating, setIsHydrating] = useState(isEditMode);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [listingStatus, setListingStatus] = useState<ApiListingDetail["status"] | null>(null);
-  const heroDraftAppliedRef = useRef(false);
+  const createDraftReadyRef = useRef(false);
+  const createDraftRestoredRef = useRef(false);
   const listingHydratedRef = useRef(false);
   const itemPhotoGrid = getItemPhotoGridLayout(itemPhotos.length);
   const docPhotoGrid = getDocPhotoGridLayout(docPhotos.length);
@@ -685,20 +699,148 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   }, [cityId, draftCityLabel, featuredCities, regularCities, user?.city, user?.cityId]);
 
   useEffect(() => {
-    if (isEditMode) return;
-    if (heroDraftAppliedRef.current) return;
-    heroDraftAppliedRef.current = true;
+    if (isEditMode || createDraftRestoredRef.current || isAuthLoading) return;
 
-    const draft = readHeroListingDraft();
-    if (!draft) return;
+    createDraftRestoredRef.current = true;
+    let cancelled = false;
 
-    if (draft.title) setTitle(draft.title);
-    if (draft.price) setPriceDigits(draft.price);
-    if (draft.cityId) {
-      setCityId(draft.cityId);
-      if (draft.cityLabel) setDraftCityLabel(draft.cityLabel);
-    }
-  }, [isEditMode]);
+    const restoreCreateDraft = async () => {
+      setIsDraftRestoring(true);
+
+      const userId = user?.id ?? null;
+      const draft = readListingCreateDraft(userId);
+      let restoredFromDraft = false;
+
+      if (draft && !isListingCreateDraftEmpty(draft)) {
+        const [itemRestored, docRestored] = await Promise.all([
+          restoreDraftPhotoItems(draft.itemPhotos, "item"),
+          restoreDraftPhotoItems(draft.docPhotos, "doc"),
+        ]);
+
+        if (!cancelled) {
+          setListingKind(draft.listingKind);
+          setTitle(draft.title);
+          setDescription(draft.description);
+          setPriceDigits(draft.priceDigits);
+          setParentCategoryId(draft.parentCategoryId);
+          setChildCategoryId(draft.childCategoryId);
+          setCityId(draft.cityId);
+          setDraftCityLabel(draft.cityLabel);
+          setCondition(draft.condition);
+          setServiceWorkLevel(draft.serviceWorkLevel);
+          setServiceFormats(draft.serviceFormats);
+          setExtraPay(draft.extraPay);
+          setIsFree(draft.isFree);
+          setExchangeEnabled(draft.exchangeEnabled);
+          setWantsOpenToAll(draft.wantsOpenToAll);
+          setWantsParentCategoryId(draft.wantsParentCategoryId);
+          setWantsChildCategoryId(draft.wantsChildCategoryId);
+          setWantsCategoryPins(draft.wantsCategoryPins);
+          setWantsTags(draft.wantsTags);
+          setWantsTagInput(draft.wantsTagInput);
+          setItemPhotos(itemRestored);
+          setDocPhotos(docRestored);
+          setShowDraftRestoredNotice(true);
+          restoredFromDraft = true;
+        }
+      }
+
+      if (!cancelled && !restoredFromDraft) {
+        const heroDraft = readHeroListingDraft();
+        if (heroDraft) {
+          if (heroDraft.title) setTitle(heroDraft.title);
+          if (heroDraft.price) setPriceDigits(heroDraft.price);
+          if (heroDraft.cityId) {
+            setCityId(heroDraft.cityId);
+            if (heroDraft.cityLabel) setDraftCityLabel(heroDraft.cityLabel);
+          }
+        }
+      }
+
+      if (!cancelled) {
+        createDraftReadyRef.current = true;
+        setIsDraftRestoring(false);
+      }
+    };
+
+    void restoreCreateDraft();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isEditMode, isAuthLoading, user?.id]);
+
+  useEffect(() => {
+    if (!showDraftRestoredNotice) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setShowDraftRestoredNotice(false);
+    }, 6000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [showDraftRestoredNotice]);
+
+  useEffect(() => {
+    if (isEditMode || !createDraftReadyRef.current || isDraftRestoring) return;
+
+    const timeoutId = window.setTimeout(() => {
+      const draft = buildListingCreateDraft({
+        userId: user?.id ?? null,
+        listingKind,
+        title,
+        description,
+        priceDigits,
+        parentCategoryId,
+        childCategoryId,
+        cityId,
+        cityLabel: draftCityLabel,
+        condition,
+        serviceWorkLevel,
+        serviceFormats,
+        extraPay,
+        isFree,
+        exchangeEnabled,
+        wantsOpenToAll,
+        wantsParentCategoryId,
+        wantsChildCategoryId,
+        wantsCategoryPins,
+        wantsTags,
+        wantsTagInput,
+        itemPhotos,
+        docPhotos,
+      });
+
+      void saveListingCreateDraftSnapshot(draft, itemPhotos, docPhotos);
+    }, AUTOSAVE_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    isEditMode,
+    isDraftRestoring,
+    user?.id,
+    listingKind,
+    title,
+    description,
+    priceDigits,
+    parentCategoryId,
+    childCategoryId,
+    cityId,
+    draftCityLabel,
+    condition,
+    serviceWorkLevel,
+    serviceFormats,
+    extraPay,
+    isFree,
+    exchangeEnabled,
+    wantsOpenToAll,
+    wantsParentCategoryId,
+    wantsChildCategoryId,
+    wantsCategoryPins,
+    wantsTags,
+    wantsTagInput,
+    itemPhotos,
+    docPhotos,
+  ]);
 
   const itemPhotosRef = useRef(itemPhotos);
   const docPhotosRef = useRef(docPhotos);
@@ -945,10 +1087,12 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
     setParentCategoryId(null);
     setChildCategoryId(null);
     setItemPhotos((current) => {
+      void deleteDraftPhotoRecords(current.map((photo) => photo.id));
       revokePhotoUrls(current);
       return [];
     });
     setDocPhotos((current) => {
+      void deleteDraftPhotoRecords(current.map((photo) => photo.id));
       revokePhotoUrls(current);
       return [];
     });
@@ -1060,17 +1204,23 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   };
 
   const removeItemPhoto = (photoId: string) => {
+    void deleteDraftPhotoRecord(photoId);
     setItemPhotos((current) => {
       const target = current.find((photo) => photo.id === photoId);
-      if (target) URL.revokeObjectURL(target.previewUrl);
+      if (target?.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
       return current.filter((photo) => photo.id !== photoId);
     });
   };
 
   const removeDocPhoto = (photoId: string) => {
+    void deleteDraftPhotoRecord(photoId);
     setDocPhotos((current) => {
       const target = current.find((photo) => photo.id === photoId);
-      if (target) URL.revokeObjectURL(target.previewUrl);
+      if (target?.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
       return current.filter((photo) => photo.id !== photoId);
     });
   };
@@ -1372,6 +1522,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       const created = await createListingDraft(payload);
 
       await publishListing(created.listing.id);
+      await clearListingCreateDraft(user?.id ?? null);
       clearHeroListingDraft();
       setIsPublishedModalOpen(true);
     } catch (error: unknown) {
@@ -1390,6 +1541,21 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       setIsSubmitting(false);
     }
   };
+
+  if (!isEditMode && isDraftRestoring) {
+    return (
+      <main className="listing-editor min-h-screen w-full bg-[#F8F8F5] text-[#1A1A1A]">
+        <Header />
+        <div className="h-[54px]" aria-hidden="true" />
+        <div className="listing-editor__container mx-auto flex w-full max-w-[1238px] flex-col px-4">
+          <h1 className="listing-editor__page-title">Создание объявления</h1>
+          <p className="m-0 text-[14px] font-semibold leading-[120%] text-[#626262]">
+            Загружаем черновик...
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   if (isEditMode && (isHydrating || loadError)) {
     return (
@@ -1460,6 +1626,24 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             </div>
           </div>
         </section>
+
+        {showDraftRestoredNotice ? (
+          <div
+            className="mb-4 flex items-center justify-between gap-3 rounded-[14px] border border-[#D8D6FF] bg-[#F5F4FF] px-4 py-3"
+            role="status"
+          >
+            <p className="m-0 text-[14px] font-semibold leading-[140%] text-[#1A1A1A]">
+              Восстановлен черновик объявления
+            </p>
+            <button
+              type="button"
+              className="shrink-0 text-[13px] font-semibold leading-none text-[#8E8BED]"
+              onClick={() => setShowDraftRestoredNotice(false)}
+            >
+              Скрыть
+            </button>
+          </div>
+        ) : null}
 
         <section className="listing-editor__section listing-editor__section--lime">
           <h2 className="listing-editor__section-title listing-editor__section-title--dark">
@@ -1543,7 +1727,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
                       if (cityPage >= cityPageCount) return;
                       setCityPage((current) => current + 1);
                     }}
-                    placeholder="Начните вводить город или выберите из списка"
+                    placeholder="Укажите город"
                     variant="field"
                     className="create-listing-city-select"
                     allowCustomValue={false}
