@@ -764,6 +764,32 @@ function ChatSupportMenu({
   );
 }
 
+function SwapHeaderPinSlot({
+  listing,
+  listings,
+  label,
+  active,
+}: {
+  listing: ChatListing;
+  listings: ChatListing[];
+  label: string;
+  active: boolean;
+}) {
+  const extraCount = listings.length > 1 ? listings.length - 1 : 0;
+
+  return (
+    <div className="chats-swap-header__pin-slot">
+      <div className="chats-swap-header__pin-thumb-wrap">
+        <ListingImage listing={listing} className="chats-swap-header__pin-thumb" />
+        {extraCount > 0 ? (
+          <span className="chats-list-item__deal-count">+{extraCount}</span>
+        ) : null}
+      </div>
+      <span className={`chats-swap-header__pin${active ? " is-active" : ""}`}>{label}</span>
+    </div>
+  );
+}
+
 function SwapPreviewCard({
   label,
   listing,
@@ -966,16 +992,18 @@ function SwapHeader({
         <div className="chats-swap-header__pins" aria-hidden={plaquesOpen}>
           <div className="chats-swap-header__pins-inner">
             <div className="chats-swap-header__pins-content">
-              <span
-                className={`chats-swap-header__pin${mineStatus.active ? " is-active" : ""}`}
-              >
-                {mineStatus.label}
-              </span>
-              <span
-                className={`chats-swap-header__pin${theirsStatus.active ? " is-active" : ""}`}
-              >
-                {theirsStatus.label}
-              </span>
+              <SwapHeaderPinSlot
+                listing={mine.listing}
+                listings={mine.listings}
+                label={mineStatus.label}
+                active={mineStatus.active}
+              />
+              <SwapHeaderPinSlot
+                listing={theirs.listing}
+                listings={theirs.listings}
+                label={theirsStatus.label}
+                active={theirsStatus.active}
+              />
             </div>
           </div>
         </div>

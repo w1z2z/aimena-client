@@ -2870,6 +2870,10 @@ body:has(.chats-page) {
     pointer-events: auto;
   }
 
+  .chats-page.is-mobile-thread .chats-swap-header.is-collapsed {
+    overflow: visible;
+  }
+
   .chats-page.is-mobile-thread .chats-swap-header .chats-mobile-back {
     grid-column: 1 / -1;
     margin-bottom: 8px;
@@ -2891,10 +2895,15 @@ body:has(.chats-page) {
     min-height: 0;
   }
 
+  .chats-page.is-mobile-thread .chats-swap-header.is-collapsed .chats-swap-header__pins-inner {
+    overflow: visible;
+  }
+
   .chats-page.is-mobile-thread .chats-swap-header__pins-content {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px;
+    padding-bottom: 6px;
     opacity: 0;
     transform: translate3d(0, -8px, 0);
     -webkit-transform: translate3d(0, -8px, 0);
@@ -2909,14 +2918,23 @@ body:has(.chats-page) {
     -webkit-transform: translate3d(0, 0, 0);
   }
 
+  .chats-swap-header__pin-slot {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+    overflow: visible;
+  }
+
   .chats-page.is-mobile-thread .chats-swap-header__pin {
     box-sizing: border-box;
     display: flex;
     min-width: 0;
+    flex: 1 1 auto;
     height: var(--chats-mobile-pill-height);
     align-items: center;
     justify-content: center;
-    padding: 0 12px;
+    padding: 0 10px;
     border: 1px solid #cacaca;
     border-radius: calc(var(--chats-mobile-pill-height) / 2);
     background: #fff;
@@ -2929,6 +2947,35 @@ body:has(.chats-page) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .chats-swap-header__pin-thumb-wrap {
+    position: relative;
+    flex: none;
+    width: var(--chats-mobile-pill-height);
+    height: var(--chats-mobile-pill-height);
+    overflow: visible;
+  }
+
+  .chats-swap-header__pin-thumb {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border: 0.5px solid #e4e4e4;
+    border-radius: 12px;
+    object-fit: cover;
+  }
+
+  .chats-swap-header__pin-thumb.chats-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f0e8ff, #c8ff02);
+    color: #1a1a1a;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
   }
 
   .chats-page.is-mobile-thread .chats-swap-header__pin.is-active {
