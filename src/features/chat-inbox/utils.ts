@@ -398,14 +398,21 @@ export function getChatListDealLine(item: ChatSummary): ChatListDealLine | null 
 export function getChatListThumb(item: ChatSummary): {
   coverUrl: string | null;
   thumbTitle: string;
+  extraCount: number;
 } | null {
   if (item.kind === "support") return null;
 
   const dealLine = getChatListDealLine(item);
   if (dealLine) {
+    const offeredTitles = getOfferedTitles(item);
+    const sender = isViewerOfferSender(item);
+    const extraCount =
+      !sender && offeredTitles.length > 1 ? offeredTitles.length - 1 : 0;
+
     return {
       coverUrl: dealLine.coverUrl,
       thumbTitle: dealLine.thumbTitle,
+      extraCount,
     };
   }
 
@@ -420,7 +427,7 @@ export function getChatListThumb(item: ChatSummary): {
     item.tags?.[0]?.trim() ||
     item.counterpart.displayName;
 
-  return { coverUrl, thumbTitle };
+  return { coverUrl, thumbTitle, extraCount: 0 };
 }
 
 export function getChatListContextLine(item: ChatSummary) {

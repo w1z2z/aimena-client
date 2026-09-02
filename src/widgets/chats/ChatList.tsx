@@ -45,7 +45,7 @@ function ChatListDealLabel({ item }: { item: ChatSummary }) {
 
 function ChatListBadges({ item }: { item: ChatSummary }) {
   if (item.kind === "offer" && item.notificationKind !== "offer_rejected") {
-    return <span className="chat-badge chat-badge--offer">!</span>;
+    return <span className="chat-badge chat-badge--count">1</span>;
   }
   if (item.unreadCount > 0) {
     return <span className="chat-badge chat-badge--count">{item.unreadCount}</span>;
@@ -55,7 +55,7 @@ function ChatListBadges({ item }: { item: ChatSummary }) {
 
 function ChatListGroupBadges({ group }: { group: ChatListGroup }) {
   if (group.hasOfferBadge) {
-    return <span className="chat-badge chat-badge--offer">!</span>;
+    return <span className="chat-badge chat-badge--count">1</span>;
   }
   if (group.totalUnread > 0) {
     return <span className="chat-badge chat-badge--count">{group.totalUnread}</span>;
@@ -86,7 +86,6 @@ type ChatListItemProps = {
   item: ChatSummary;
   selectedId?: string | null;
   tabIndex?: number;
-  showAvatarBadge?: boolean;
   isChild?: boolean;
   onSelect: (item: ChatSummary) => void;
   href?: string;
@@ -97,7 +96,6 @@ function ChatListItem({
   item,
   selectedId,
   tabIndex,
-  showAvatarBadge = false,
   isChild = false,
   onSelect,
   href,
@@ -116,7 +114,7 @@ function ChatListItem({
 
   const content = (
     <>
-      <ChatDealMedia item={item} showAvatarBadge={showAvatarBadge} />
+      <ChatDealMedia item={item} />
       <span className="chats-list-item__copy">
         {isChild ? (
           <>
@@ -325,7 +323,6 @@ export function ChatList({
           <ChatListItem
             key={group.id}
             item={group.items[0]}
-            showAvatarBadge
             selectedId={selectedId}
             tabIndex={tabIndex}
             onSelect={onSelect}

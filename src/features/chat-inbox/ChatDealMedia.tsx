@@ -61,39 +61,15 @@ function ChatListAvatar({
   );
 }
 
-function ChatAvatarBadge({ item }: { item: ChatSummary }) {
-  const className = [
-    "chats-list-item__avatar-badge",
-    !item.counterpart.avatarUrl ? "chats-list-item__avatar-badge--fallback" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  if (item.counterpart.avatarUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={item.counterpart.avatarUrl} alt="" className={className} />
-    );
-  }
-
-  return (
-    <span className={className} aria-hidden>
-      {item.counterpart.displayName.slice(0, 1).toUpperCase()}
-    </span>
-  );
-}
-
 type ChatDealMediaProps = {
   item: ChatSummary;
-  showAvatarBadge?: boolean;
   preferAvatar?: boolean;
   className?: string;
 };
 
-/** Listing cover + optional counterpart avatar badge (chat list). */
+/** Listing cover for chat list rows (and optional avatar for grouped headers). */
 export function ChatDealMedia({
   item,
-  showAvatarBadge = false,
   preferAvatar = false,
   className,
 }: ChatDealMediaProps) {
@@ -106,7 +82,9 @@ export function ChatDealMedia({
   return (
     <span className={["chats-list-item__deal-media", className].filter(Boolean).join(" ")}>
       <ChatDealThumb title={thumb.thumbTitle} coverUrl={thumb.coverUrl} />
-      {showAvatarBadge ? <ChatAvatarBadge item={item} /> : null}
+      {thumb.extraCount > 0 ? (
+        <span className="chats-list-item__deal-count">+{thumb.extraCount}</span>
+      ) : null}
     </span>
   );
 }
