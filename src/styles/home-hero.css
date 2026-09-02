@@ -608,7 +608,8 @@
 }
 
 .home-hero-rec-row__title {
-  display: -webkit-box;
+  display: block;
+  min-width: 0;
   overflow: hidden;
   color: #1a1a1a;
   font-size: 14px;
@@ -616,9 +617,8 @@
   line-height: 1.25;
   letter-spacing: -0.003em;
   text-decoration: none;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-hero-rec-row__title:hover {
