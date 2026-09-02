@@ -120,6 +120,40 @@ function formatPrice(value: number | null) {
   return `~${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
 }
 
+function getOfferDifferenceMeta({
+  isFreeClaim,
+  isSenderView,
+  offeredListings,
+  targetListing,
+}: {
+  isFreeClaim: boolean;
+  isSenderView: boolean;
+  offeredListings: ChatListing[];
+  targetListing: ChatListing;
+}) {
+  if (isFreeClaim) {
+    return { text: "Взамен ничего не нужно", balanced: true };
+  }
+
+  const offeredTotal = offeredListings.reduce(
+    (sum, listing) => sum + (listing.estimatedPrice ?? 0),
+    0,
+  );
+  const difference = offeredTotal - (targetListing.estimatedPrice ?? 0);
+
+  if (difference === 0) {
+    return { text: "Предложения примерно равноценны", balanced: true };
+  }
+
+  const label = isSenderView ? "Ваше предложение" : "Предложение";
+  return {
+    text: `${label} ${difference > 0 ? "дороже" : "дешевле"} на ${formatPrice(
+      Math.abs(difference),
+    )}`,
+    balanced: false,
+  };
+}
+
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("ru-RU", {
     hour: "2-digit",
@@ -548,6 +582,16 @@ function IncomingOfferPanel({
       isSenderView={isSenderView}
     />
   );
+  const offerDifference = useMemo(
+    () =>
+      getOfferDifferenceMeta({
+        isFreeClaim,
+        isSenderView,
+        offeredListings,
+        targetListing: offer.targetListing,
+      }),
+    [isFreeClaim, isSenderView, offeredListings, offer.targetListing],
+  );
 
   return (
     <section className="chats-panel chats-panel--offer">
@@ -604,6 +648,12 @@ function IncomingOfferPanel({
           </>
         )}
       </div>
+      <p
+        className="chats-offer-balance"
+        data-balanced={offerDifference.balanced ? "true" : undefined}
+      >
+        {offerDifference.text}
+      </p>
       {error ? <p className="chats-action-error">{error}</p> : null}
       {declined ? (
         <p className="chats-action-error">Предложение отклонено</p>

@@ -8,6 +8,7 @@ body:has(.chats-page) {
 
 .chats-page {
   --chats-mobile-pill-height: 32px;
+  --chats-panel-max-height: min(880px, calc(100dvh - 102px));
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -27,7 +28,8 @@ body:has(.chats-page) {
   grid-template-columns: 342px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   gap: 24px;
-  align-content: stretch;
+  align-content: start;
+  align-items: start;
   margin: 0 auto;
   /* Fixed header is 54px; keep breathing room below / above edges */
   padding: 78px 0 24px;
@@ -530,9 +532,10 @@ body:has(.chats-page) {
   display: flex;
   width: 100%;
   max-width: 1075px;
-  height: 100%;
+  height: auto;
   min-height: 0;
-  max-height: 100%;
+  max-height: var(--chats-panel-max-height);
+  align-self: start;
   flex-direction: column;
   padding: 12px;
   box-sizing: border-box;
@@ -542,8 +545,10 @@ body:has(.chats-page) {
 
 .chats-empty-panel {
   display: flex;
-  height: 100%;
-  min-height: 0;
+  height: auto;
+  min-height: 240px;
+  max-height: var(--chats-panel-max-height);
+  align-self: start;
   align-items: center;
   justify-content: center;
   padding: 48px;
@@ -612,9 +617,9 @@ body:has(.chats-page) {
 }
 
 .chats-panel--offer {
-  height: 100%;
+  height: var(--chats-panel-max-height);
   min-height: 0;
-  max-height: 100%;
+  max-height: var(--chats-panel-max-height);
   justify-content: flex-start;
   gap: 12px;
   overflow: hidden;
@@ -632,6 +637,7 @@ body:has(.chats-page) {
   margin-top: 0;
   gap: 12px;
   overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .chats-offer-column {
@@ -641,8 +647,6 @@ body:has(.chats-page) {
   min-width: 0;
   max-width: 490px;
   min-height: 0;
-  height: auto;
-  flex: 1 1 0;
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
@@ -654,6 +658,31 @@ body:has(.chats-page) {
   min-width: 0;
   max-width: 490px;
   flex: 1 1 0;
+  min-height: 0;
+}
+
+.chats-offer-comparison > .chats-offer-column > .chats-listing-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.chats-offer-comparison .chats-listing-wants,
+.chats-offer-comparison .chats-offer-message {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.chats-offer-comparison .chats-listing-detail--free-claim {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.chats-offer-comparison .chats-listing-detail--free-claim .chats-offer-message {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .chats-offer-column > h2 {
@@ -677,12 +706,11 @@ body:has(.chats-page) {
   max-width: 490px;
   min-height: 0;
   height: auto;
-  flex: 1 1 auto;
+  flex: none;
   flex-direction: column;
   align-items: stretch;
   gap: 16px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
   overscroll-behavior: contain;
   padding: 24px;
   border: 0.5px solid #cacaca;
@@ -929,12 +957,12 @@ body:has(.chats-page) {
   min-width: 0;
   min-height: 0;
   height: auto;
-  flex: 1 1 auto;
+  flex: none;
   flex-direction: column;
   align-items: flex-start;
   align-self: stretch;
   gap: 12px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .chats-listing-wants > div {
@@ -1015,7 +1043,7 @@ body:has(.chats-page) {
   width: 100%;
   max-width: 442px;
   min-height: 120px;
-  flex: 1 1 auto;
+  flex: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -1061,6 +1089,31 @@ body:has(.chats-page) {
   width: 14px;
   height: 13px;
   object-fit: contain;
+}
+
+.chats-offer-balance {
+  flex: none;
+  margin: 0;
+  min-height: 34px;
+  padding: 8px 12px;
+  border: 0.5px solid #ff2056;
+  border-radius: 31px;
+  background: #fff2f5;
+  color: #ff2056;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.chats-offer-balance[data-balanced="true"] {
+  border-color: #8e8bed;
+  background: #e0ffb8;
+  color: #1a1a1a;
+}
+
+.chats-panel--offer > .chats-offer-balance {
+  flex: none;
 }
 
 .chats-offer-message {
@@ -1171,6 +1224,7 @@ body:has(.chats-page) {
 }
 
 .chats-panel--offer > .chats-actions {
+  flex: none;
   margin-top: auto;
 }
 
@@ -1229,6 +1283,8 @@ body:has(.chats-page) {
 }
 
 .chats-panel--active {
+  height: var(--chats-panel-max-height);
+  max-height: var(--chats-panel-max-height);
   padding: 0;
   overflow: hidden;
   overscroll-behavior: contain;
@@ -2296,15 +2352,15 @@ body:has(.chats-page) {
     grid-template-columns: 300px minmax(0, 1fr);
   }
 
-  /* Incoming offer acceptance — full mobile stack */
+  /* Incoming offer acceptance — same height as open chat */
   .chats-panel--offer {
-    height: 100%;
+    height: var(--chats-panel-max-height);
     min-height: 0;
+    max-height: var(--chats-panel-max-height);
     max-width: none;
     padding: 12px 12px calc(24px + env(safe-area-inset-bottom, 0px));
     gap: 12px;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .chats-panel--offer .chats-profile-header {
@@ -2332,14 +2388,15 @@ body:has(.chats-page) {
   }
 
   .chats-offer-comparison {
-    height: auto;
     max-width: none;
+    flex: 1 1 auto;
+    min-height: 0;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
     margin-top: 0;
     gap: 10px;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .chats-offer-column,
@@ -2347,9 +2404,28 @@ body:has(.chats-page) {
     width: 100%;
     min-width: 0;
     max-width: none;
-    height: auto;
-    flex: none;
+    flex: 1 1 0;
+    min-height: 0;
     gap: 8px;
+  }
+
+  .chats-panel--offer .chats-offer-comparison > .chats-offer-column > .chats-listing-detail {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .chats-panel--offer .chats-offer-comparison .chats-listing-wants,
+  .chats-panel--offer .chats-offer-comparison .chats-offer-message {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .chats-panel--offer .chats-offer-comparison .chats-offer-message__text {
+    max-height: none;
+    flex: 1 1 auto;
+    overflow-y: auto;
   }
 
   .chats-offer-column > h2 {
@@ -2580,13 +2656,18 @@ body:has(.chats-page) {
   }
 
   .chats-panel {
-    height: 100%;
-    min-height: 0;
+    height: auto;
+    max-height: var(--chats-panel-max-height);
   }
 
   .chats-panel--offer {
-    height: 100%;
-    min-height: 0;
+    height: var(--chats-panel-max-height);
+    max-height: var(--chats-panel-max-height);
+  }
+
+  .chats-panel--active {
+    height: var(--chats-panel-max-height);
+    max-height: var(--chats-panel-max-height);
   }
 
   .chats-swap-header {
@@ -2832,7 +2913,22 @@ body:has(.chats-page) {
     overflow: hidden;
   }
 
+  .chats-page.is-mobile-thread .chats-panel--offer {
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+    align-self: stretch;
+    gap: 10px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px
+      calc(28px + env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+    background: #f8f8f5;
+    touch-action: pan-y;
+  }
+
   .chats-page.is-mobile-thread .chats-panel--active {
+    height: 100%;
+    max-height: none;
     background: #f8f8f5;
   }
 
@@ -3255,16 +3351,6 @@ body:has(.chats-page) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .chats-page.is-mobile-thread .chats-panel--offer {
-    gap: 10px;
-    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px
-      calc(28px + env(safe-area-inset-bottom, 0px));
-    overflow-x: hidden;
-    overflow-y: auto;
-    background: #f8f8f5;
-    touch-action: pan-y;
   }
 
   .chats-page.is-mobile-thread .chats-panel--offer > .chats-mobile-back {
