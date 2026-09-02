@@ -12,6 +12,7 @@ export type FieldErrors = {
   condition?: string;
   serviceWorkLevel?: string;
   serviceFormat?: string;
+  exchangeWants?: string;
   photos?: string;
   documents?: string;
 };
@@ -26,6 +27,7 @@ export const FIELD_SCROLL_ORDER: Array<keyof FieldErrors> = [
   "condition",
   "serviceWorkLevel",
   "serviceFormat",
+  "exchangeWants",
   "documents",
 ];
 

@@ -521,6 +521,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const [wantsCategoryPins, setWantsCategoryPins] = useState<WantsCategoryPin[]>([]);
   const [wantsTagInput, setWantsTagInput] = useState("");
   const [wantsTags, setWantsTags] = useState<string[]>([]);
+  const [wantsOpenToAll, setWantsOpenToAll] = useState(false);
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [cityId, setCityId] = useState<string | null>(null);
   const [cityQuery, setCityQuery] = useState("");
@@ -796,6 +797,9 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           })),
         );
         setWantsTags(listing.wantsTags);
+        const hasWantsPreferences =
+          (listing.wantsCategories ?? []).length > 0 || listing.wantsTags.length > 0;
+        setWantsOpenToAll(!listing.isFree && !hasWantsPreferences);
         setIsFree(listing.isFree);
         // Exactly one of free / desired exchange is always on.
         setExchangeEnabled(!listing.isFree);
@@ -975,7 +979,22 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       return;
     }
     setExchangeEnabled(false);
+    setWantsOpenToAll(false);
     requestAnimationFrame(() => setIsFree(true));
+  };
+
+  const handleWantsOpenToAllChange = (next: boolean) => {
+    setWantsOpenToAll(next);
+    if (next) {
+      setExchangeEnabled(true);
+      setIsFree(false);
+      setWantsCategoryPins([]);
+      setWantsParentCategoryId(null);
+      setWantsChildCategoryId(null);
+      setWantsTags([]);
+      setWantsTagInput("");
+      clearError("exchangeWants");
+    }
   };
 
   const handleItemPhotosSelected = (event: ChangeEvent<HTMLInputElement>) => {
@@ -1133,6 +1152,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const addWantsTag = (rawTag: string) => {
     const normalized = rawTag.trim();
     if (!normalized) return;
+    setWantsOpenToAll(false);
     setWantsTags((current) => {
       if (current.length >= WANTS_TAGS_LIMIT) return current;
       const hasDuplicate = current.some(
@@ -1145,6 +1165,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   };
 
   const addWantsCategoryPin = (id: string, label: string) => {
+    setWantsOpenToAll(false);
     setWantsCategoryPins((current) => {
       if (current.length >= WANTS_CATEGORIES_LIMIT) return current;
       if (current.some((pin) => pin.id === id)) return current;
@@ -1268,6 +1289,16 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       nextErrors.photos =
         listingKind === "item" ? "Вы не добавили фото вещи" : "Вы не добавили фото услуги";
     }
+    if (
+      exchangeEnabled &&
+      !isFree &&
+      !wantsOpenToAll &&
+      wantsCategoryPins.length === 0 &&
+      wantsTags.length === 0
+    ) {
+      nextErrors.exchangeWants =
+        "Укажите категории или теги либо включите «Готов рассмотреть все варианты»";
+    }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
@@ -1294,9 +1325,13 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       ]);
 
       const wantsCategoryIds =
-        exchangeEnabled && !isFree ? wantsCategoryPins.map((pin) => pin.id) : [];
-      const wantsPayloadTags = exchangeEnabled && !isFree ? wantsTags : [];
+        exchangeEnabled && !isFree && !wantsOpenToAll
+          ? wantsCategoryPins.map((pin) => pin.id)
+          : [];
+      const wantsPayloadTags =
+        exchangeEnabled && !isFree && !wantsOpenToAll ? wantsTags : [];
       const estimatedPrice = priceDigits ? Number(priceDigits) : null;
+      const payloadIsFree = !exchangeEnabled;
 
       const payload = {
         type: listingKind,
@@ -1309,8 +1344,8 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
         cityId: selectedCityId,
         condition: listingKind === "item" ? condition ?? undefined : undefined,
         estimatedPrice: estimatedPrice ?? undefined,
-        extraPay: isFree ? ("none" as const) : extraPay,
-        isFree,
+        extraPay: payloadIsFree ? ("none" as const) : extraPay,
+        isFree: payloadIsFree,
         wantsTags: wantsPayloadTags,
         itemUploadIds,
         documentUploadIds,
@@ -1775,7 +1810,10 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           </div>
         </section>
 
-        <section className="listing-editor__section listing-editor__section--white">
+        <section
+          id={fieldAnchorId("exchangeWants")}
+          className="listing-editor__section listing-editor__section--white"
+        >
           <div className="listing-editor__toggle-section">
             <div className="listing-editor__toggle-copy">
               <h3 className={SECTION_TITLE_CLASS}>Желаемый обмен</h3>
@@ -1791,149 +1829,216 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
           <div className={`create-listing-exchange-panel${exchangeEnabled ? " is-open" : ""}`}>
             <div className="create-listing-exchange-panel__inner" inert={!exchangeEnabled}>
               <div className="create-listing-exchange-panel__content listing-editor__exchange-content">
-                <div className="listing-editor__exchange-categories grid gap-2">
-                  <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
-                    Выберите категории вещей или услуг, которые хотите получить взамен (до{" "}
-                    {WANTS_CATEGORIES_LIMIT}). Можно указать категорию целиком или уточнить
-                    подкатегорию
-                  </p>
-                  {wantsCategoryPins.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {wantsCategoryPins.map((pin) => (
-                        <span
-                          key={pin.id}
-                          className="inline-flex items-center gap-1.5 rounded-[999px] border border-[#CACACA] bg-white px-3.5 py-1.5 text-[14px] leading-[120%] text-[#1A1A1A]"
-                        >
-                          {pin.label}
-                          <button
-                            type="button"
-                            onClick={() => removeWantsCategoryPin(pin.id)}
-                            className="text-[17px] leading-none text-[#626262] hover:text-[#1A1A1A]"
-                            aria-label={`Удалить категорию ${pin.label}`}
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                  <SelectField
-                    value={wantsParentCategoryId ?? ""}
-                    onChange={handleWantsParentCategoryChange}
-                    options={wantsParentCategoryOptions}
-                    placeholder={
-                      wantsCategoriesAtLimit
-                        ? `Достигнут лимит ${WANTS_CATEGORIES_LIMIT}`
-                        : "Например: Электроника, Одежда, Услуги"
-                    }
-                    variant="field"
-                    className="create-listing-exchange-select"
-                    searchable={false}
-                    allowCustomValue={false}
-                    disabled={wantsCategoriesAtLimit}
-                    aria-label="Желаемая категория"
-                  />
-                  <div
-                    className={`create-listing-subcategory-panel${
-                      !wantsCategoriesAtLimit && wantsChildCategoryOptions.length > 0
-                        ? " is-open"
-                        : ""
-                    }`}
-                  >
-                    <div className="create-listing-subcategory-panel__inner">
-                      <div className="create-listing-subcategory-panel__content mt-2">
-                        <SelectField
-                          value={wantsChildCategoryId ?? ""}
-                          onChange={handleWantsChildCategoryChange}
-                          options={wantsChildCategoryOptions}
-                          placeholder="Уточните подкатегорию или оставьте всю категорию"
-                          variant="field"
-                          className="create-listing-exchange-select"
-                          searchable={false}
-                          allowCustomValue={false}
-                          disabled={
-                            wantsCategoriesAtLimit || wantsChildCategoryOptions.length === 0
-                          }
-                          aria-label="Желаемая подкатегория"
+                <button
+                  type="button"
+                  className={`listing-editor__exchange-open-option${
+                    wantsOpenToAll ? " is-active" : ""
+                  }`}
+                  aria-pressed={wantsOpenToAll}
+                  onClick={() => handleWantsOpenToAllChange(!wantsOpenToAll)}
+                >
+                  <span className="listing-editor__exchange-open-option__mark" aria-hidden>
+                    {wantsOpenToAll ? (
+                      <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                        <path
+                          d="M1 5.2L4.2 8.4L11 1.2"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
+                      </svg>
+                    ) : null}
+                  </span>
+                  <span className="listing-editor__exchange-open-option__copy">
+                    <strong>Готов рассмотреть все варианты</strong>
+                    <span>Не знаю, что хочу — приму любые предложения</span>
+                  </span>
+                </button>
+
+                {errors.exchangeWants ? (
+                  <p className={FIELD_ERROR_CLASS}>{errors.exchangeWants}</p>
+                ) : null}
+
+                <div
+                  className={`create-listing-exchange-wants-panel${
+                    !wantsOpenToAll ? " is-open" : ""
+                  }`}
+                  aria-hidden={wantsOpenToAll}
+                >
+                  <div
+                    className="create-listing-exchange-wants-panel__inner"
+                    inert={wantsOpenToAll}
+                  >
+                    <div className="create-listing-exchange-wants-panel__content">
+                      <div className="listing-editor__exchange-categories grid gap-2">
+                      <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
+                        Выберите категории вещей или услуг, которые хотите получить взамен (до{" "}
+                        {WANTS_CATEGORIES_LIMIT}). Можно указать категорию целиком или уточнить
+                        подкатегорию
+                      </p>
+                      {wantsCategoryPins.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {wantsCategoryPins.map((pin) => (
+                            <span
+                              key={pin.id}
+                              className="inline-flex items-center gap-1.5 rounded-[999px] border border-[#CACACA] bg-white px-3.5 py-1.5 text-[14px] leading-[120%] text-[#1A1A1A]"
+                            >
+                              {pin.label}
+                              <button
+                                type="button"
+                                onClick={() => removeWantsCategoryPin(pin.id)}
+                                className="text-[17px] leading-none text-[#626262] hover:text-[#1A1A1A]"
+                                aria-label={`Удалить категорию ${pin.label}`}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                      <SelectField
+                        value={wantsParentCategoryId ?? ""}
+                        onChange={handleWantsParentCategoryChange}
+                        options={wantsParentCategoryOptions}
+                        placeholder={
+                          wantsCategoriesAtLimit
+                            ? `Достигнут лимит ${WANTS_CATEGORIES_LIMIT}`
+                            : "Например: Электроника, Одежда, Услуги"
+                        }
+                        variant="field"
+                        className="create-listing-exchange-select"
+                        searchable={false}
+                        allowCustomValue={false}
+                        disabled={wantsCategoriesAtLimit}
+                        aria-label="Желаемая категория"
+                      />
+                      <div
+                        className={`create-listing-subcategory-panel${
+                          !wantsCategoriesAtLimit && wantsChildCategoryOptions.length > 0
+                            ? " is-open"
+                            : ""
+                        }`}
+                      >
+                        <div className="create-listing-subcategory-panel__inner">
+                          <div className="create-listing-subcategory-panel__content mt-2">
+                            <SelectField
+                              value={wantsChildCategoryId ?? ""}
+                              onChange={handleWantsChildCategoryChange}
+                              options={wantsChildCategoryOptions}
+                              placeholder="Уточните подкатегорию или оставьте всю категорию"
+                              variant="field"
+                              className="create-listing-exchange-select"
+                              searchable={false}
+                              allowCustomValue={false}
+                              disabled={
+                                wantsCategoriesAtLimit || wantsChildCategoryOptions.length === 0
+                              }
+                              aria-label="Желаемая подкатегория"
+                            />
+                          </div>
+                        </div>
                       </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
+                        Укажите вещи или услуги, которые хотите получить взамен (до{" "}
+                        {WANTS_TAGS_LIMIT}). Начните вводить название — можно выбрать из подсказок
+                        или добавить своё
+                      </p>
+                      <div className="grid gap-2">
+                        {wantsTags.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {wantsTags.map((tag) => (
+                              <span
+                                key={tag.toLowerCase()}
+                                className="inline-flex items-center gap-1.5 rounded-[999px] border border-[#CACACA] bg-white px-3.5 py-1.5 text-[14px] leading-[120%] text-[#1A1A1A]"
+                              >
+                                {tag}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setWantsTags((current) =>
+                                      current.filter(
+                                        (item) => item.toLowerCase() !== tag.toLowerCase(),
+                                      ),
+                                    )
+                                  }
+                                  className="text-[17px] leading-none text-[#626262] hover:text-[#1A1A1A]"
+                                  aria-label={`Удалить тег ${tag}`}
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                        <div ref={wantsTagFieldRef} className="relative w-full">
+                          <input
+                            type="text"
+                            value={wantsTagInput}
+                            onChange={(event) => setWantsTagInput(event.target.value)}
+                            onKeyDown={handleWantsTagKeyDown}
+                            onBlur={() => {
+                              if (wantsTagInput.trim()) {
+                                addWantsTag(wantsTagInput);
+                              }
+                            }}
+                            placeholder={
+                              wantsTags.length >= WANTS_TAGS_LIMIT
+                                ? `Достигнут лимит ${WANTS_TAGS_LIMIT}`
+                                : "Например: iPhone, MacBook, ремонт ноутбука"
+                            }
+                            disabled={wantsTags.length >= WANTS_TAGS_LIMIT}
+                            className={EXCHANGE_FIELD_INPUT_CLASS}
+                          />
+                          {showWantsTagSuggestions ? (
+                            <div className="site-select__list-anchor">
+                              <div className="site-select__list create-listing-tag-suggestions overlay-pop overlay-pop--origin-left is-open">
+                                <ul className="site-select__list-inner" role="listbox">
+                                  {tagSuggestions.map((item) => (
+                                    <li
+                                      key={`${item.value.toLowerCase()}-${item.isCreateAction ? "create" : "existing"}`}
+                                      role="presentation"
+                                    >
+                                      <button
+                                        type="button"
+                                        role="option"
+                                        aria-selected={false}
+                                        className={`site-select__option${item.isCreateAction ? " is-create" : ""}`}
+                                        onMouseDown={(event) => event.preventDefault()}
+                                        onClick={() => addWantsTag(item.value)}
+                                      >
+                                        {item.label}
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
                     </div>
                   </div>
                 </div>
-                <div className="grid gap-2">
-                  <p className={`m-0 ${SECTION_TEXT_CLASS}`}>
-                    Укажите вещи или услуги, которые хотите получить взамен (до {WANTS_TAGS_LIMIT}).
-                    Начните вводить название — можно выбрать из подсказок или добавить своё
-                  </p>
-                  <div className="grid gap-2">
-                    {wantsTags.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {wantsTags.map((tag) => (
-                          <span
-                            key={tag.toLowerCase()}
-                            className="inline-flex items-center gap-1.5 rounded-[999px] border border-[#CACACA] bg-white px-3.5 py-1.5 text-[14px] leading-[120%] text-[#1A1A1A]"
-                          >
-                            {tag}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setWantsTags((current) =>
-                                  current.filter((item) => item.toLowerCase() !== tag.toLowerCase()),
-                                )
-                              }
-                              className="text-[17px] leading-none text-[#626262] hover:text-[#1A1A1A]"
-                              aria-label={`Удалить тег ${tag}`}
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                    <div ref={wantsTagFieldRef} className="relative w-full">
-                      <input
-                        type="text"
-                        value={wantsTagInput}
-                        onChange={(event) => setWantsTagInput(event.target.value)}
-                        onKeyDown={handleWantsTagKeyDown}
-                        onBlur={() => {
-                          if (wantsTagInput.trim()) {
-                            addWantsTag(wantsTagInput);
-                          }
-                        }}
-                        placeholder={
-                          wantsTags.length >= WANTS_TAGS_LIMIT
-                            ? `Достигнут лимит ${WANTS_TAGS_LIMIT}`
-                            : "Например: iPhone, MacBook, ремонт ноутбука"
-                        }
-                        disabled={wantsTags.length >= WANTS_TAGS_LIMIT}
-                        className={EXCHANGE_FIELD_INPUT_CLASS}
-                      />
-                      {showWantsTagSuggestions ? (
-                        <div className="site-select__list-anchor">
-                          <div className="site-select__list create-listing-tag-suggestions overlay-pop overlay-pop--origin-left is-open">
-                            <ul className="site-select__list-inner" role="listbox">
-                              {tagSuggestions.map((item) => (
-                                <li
-                                  key={`${item.value.toLowerCase()}-${item.isCreateAction ? "create" : "existing"}`}
-                                  role="presentation"
-                                >
-                                  <button
-                                    type="button"
-                                    role="option"
-                                    aria-selected={false}
-                                    className={`site-select__option${item.isCreateAction ? " is-create" : ""}`}
-                                    onMouseDown={(event) => event.preventDefault()}
-                                    onClick={() => addWantsTag(item.value)}
-                                  >
-                                    {item.label}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      ) : null}
+
+                <div
+                  className={`create-listing-exchange-wants-panel create-listing-exchange-wants-panel--note${
+                    wantsOpenToAll ? " is-open" : ""
+                  }`}
+                  aria-hidden={!wantsOpenToAll}
+                >
+                  <div
+                    className="create-listing-exchange-wants-panel__inner"
+                    inert={!wantsOpenToAll}
+                  >
+                    <div className="create-listing-exchange-wants-panel__content">
+                      <p className="listing-editor__exchange-open-note">
+                        В карточке объявления отобразится «Любые варианты» — ждите предложений от
+                        других участников.
+                      </p>
                     </div>
                   </div>
                 </div>
