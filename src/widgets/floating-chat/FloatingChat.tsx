@@ -117,7 +117,7 @@ export function FloatingChat() {
         if (current.length === 0) return current;
         const index = current.findIndex((item) => item.id === event.threadId);
         if (index < 0) {
-          void getChatConversations({ limit: 5 })
+          void getChatConversations()
             .then((response) => setItems(response.data))
             .catch(() => undefined);
           return current;
@@ -136,12 +136,12 @@ export function FloatingChat() {
         };
         const next = [...current];
         next.splice(index, 1);
-        return [updated, ...next].slice(0, 5);
+        return [updated, ...next];
       });
     });
 
     const unsubscribeInbox = onChatInboxUpdated(() => {
-      void getChatConversations({ limit: 5 })
+      void getChatConversations()
         .then((response) => setItems(response.data))
         .catch(() => undefined);
     });
@@ -157,7 +157,7 @@ export function FloatingChat() {
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    void getChatConversations({ limit: 5, signal: controller.signal })
+    void getChatConversations({ signal: controller.signal })
       .then((response) => setItems(response.data))
       .catch((requestError: unknown) => {
         if (requestError instanceof DOMException && requestError.name === "AbortError") return;

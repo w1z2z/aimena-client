@@ -495,14 +495,34 @@ body:has(.chats-page) {
 
 .floating-chat__list-wrap {
   display: flex;
-  width: 100%;
+  width: calc(100% + 48px);
   height: 341px;
+  margin-inline: -24px;
   flex-direction: column;
-  overflow: hidden;
+  padding-left: 24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(142 139 237 / 60%) transparent;
+}
+
+.floating-chat__list-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.floating-chat__list-wrap::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: rgb(142 139 237 / 60%);
 }
 
 .floating-chat__list {
   gap: 8px;
+  flex: none;
+  height: auto;
+  min-height: unset;
+  overflow: visible;
   overflow-anchor: none;
 }
 

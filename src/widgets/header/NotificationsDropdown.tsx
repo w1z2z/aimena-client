@@ -242,7 +242,11 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
           expanded ? " notifications-dropdown-inner--expanded" : ""
         }`}
       >
-        <div className="notifications-dropdown-scroll-host">
+        <div
+          className={`notifications-dropdown-scroll-host${
+            expanded ? " is-expanded" : ""
+          }`}
+        >
           <div
             ref={scrollRef}
             onScroll={expanded ? handleScroll : undefined}
