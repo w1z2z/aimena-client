@@ -397,6 +397,14 @@ export function Header() {
   }, [isCompact, showExpandedSearch]);
 
   const closeSearchWithAnimation = (options?: { clear?: boolean }) => {
+    // Scrolled desktop search is header chrome — collapsing it flashes it closed then back.
+    if (!isCompact && isScrolled) {
+      setSearchSuggestionsSuppressed(true);
+      setActiveSearchSuggestionIndex(-1);
+      searchInputRef.current?.blur();
+      return;
+    }
+
     if (searchCloseTimerRef.current !== null) {
       window.clearTimeout(searchCloseTimerRef.current);
     }

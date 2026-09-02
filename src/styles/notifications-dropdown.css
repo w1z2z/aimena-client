@@ -11,35 +11,17 @@
 
 .notifications-dropdown-scroll-host {
   position: relative;
-  width: 100%;
+  width: calc(100% + 48px);
   min-width: 0;
+  margin-inline: -24px;
   overflow: visible;
 }
 
-/* Track line flush with the right edge of the panel content. */
-.notifications-dropdown-scroll-host::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 4px;
-  border-radius: 999px;
-  background: transparent;
-  pointer-events: none;
-}
-
-.notifications-dropdown-scroll-host.is-expanded::after {
-  background: rgb(142 139 237 / 18%);
-}
-
 .notifications-dropdown-viewport {
-  box-sizing: content-box;
+  box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  margin: 0 -8px 0 0;
-  padding-right: 8px;
   overflow-x: hidden;
   overflow-y: hidden;
   overflow-anchor: none;
@@ -49,27 +31,20 @@
 }
 
 .notifications-dropdown-viewport.is-expanded {
-  overflow-y: scroll;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   scrollbar-width: thin;
-  scrollbar-color: rgb(142 139 237 / 65%) rgb(142 139 237 / 18%);
+  scrollbar-color: rgb(142 139 237 / 60%) transparent;
 }
 
 .notifications-dropdown-viewport.is-expanded::-webkit-scrollbar {
-  width: 4px;
-}
-
-.notifications-dropdown-viewport.is-expanded::-webkit-scrollbar-track {
-  border-radius: 999px;
-  background: rgb(142 139 237 / 18%);
+  width: 6px;
 }
 
 .notifications-dropdown-viewport.is-expanded::-webkit-scrollbar-thumb {
-  border: 0;
-  border-radius: 999px;
-  background: rgb(142 139 237 / 65%);
-  background-clip: padding-box;
+  border-radius: 8px;
+  background: rgb(142 139 237 / 60%);
 }
 
 .notifications-dropdown-viewport.is-expanded::-webkit-scrollbar-thumb:hover {
@@ -81,6 +56,7 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  padding-inline: 24px;
 }
 
 .notifications-dropdown-footer {
