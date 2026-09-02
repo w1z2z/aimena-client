@@ -769,18 +769,30 @@ function SwapHeaderPinSlot({
   listings,
   label,
   active,
+  isFreePlaceholder = false,
 }: {
-  listing: ChatListing;
+  listing: ChatListing | null;
   listings: ChatListing[];
   label: string;
   active: boolean;
+  isFreePlaceholder?: boolean;
 }) {
-  const extraCount = listings.length > 1 ? listings.length - 1 : 0;
+  const extraCount =
+    !isFreePlaceholder && listings.length > 1 ? listings.length - 1 : 0;
 
   return (
     <span className={`chats-swap-header__pin${active ? " is-active" : ""}`}>
       <span className="chats-swap-header__pin-thumb-wrap">
-        <ListingImage listing={listing} className="chats-swap-header__pin-thumb" />
+        {isFreePlaceholder ? (
+          <span
+            className="chats-swap-header__pin-thumb chats-swap-header__pin-thumb--free"
+            aria-hidden
+          >
+            Д
+          </span>
+        ) : listing ? (
+          <ListingImage listing={listing} className="chats-swap-header__pin-thumb" />
+        ) : null}
         {extraCount > 0 ? (
           <span className="chats-list-item__deal-count">+{extraCount}</span>
         ) : null}
@@ -799,10 +811,11 @@ function SwapPreviewCard({
   counterpart = null,
   statusLabel,
   statusActive = false,
+  isFreePlaceholder = false,
   onNext,
 }: {
   label: string;
-  listing: ChatListing;
+  listing: ChatListing | null;
   listings: ChatListing[];
   activeIndex?: number;
   menu?: boolean;
@@ -811,11 +824,14 @@ function SwapPreviewCard({
   } | null;
   statusLabel: string;
   statusActive?: boolean;
+  isFreePlaceholder?: boolean;
   onNext?: () => void;
 }) {
-  const count = listings.length;
-  const hasNext = count > 1 && Boolean(onNext);
-  const listingHref = `/listings/${listing.id}`;
+  const count = isFreePlaceholder ? 0 : listings.length;
+  const hasNext = !isFreePlaceholder && count > 1 && Boolean(onNext);
+  const listingHref = listing ? `/listings/${listing.id}` : "";
+  const freeTitle =
+    label === "Ваше" ? "Без взамена" : "Взамен ничего не предлагают";
   const labelText =
     count > 1
       ? `${label} (${count} ${pluralRu(count, "объявление", "объявления", "объявлений")})`
@@ -831,15 +847,24 @@ function SwapPreviewCard({
         .join(" ")}
     >
       <div className="chats-swap-preview__media">
-        <Link
-          href={listingHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="chats-swap-preview__image-link"
-          aria-label={listing.title}
-        >
-          <ListingImage listing={listing} className="chats-swap-preview__image" />
-        </Link>
+        {isFreePlaceholder ? (
+          <span
+            className="chats-swap-preview__image chats-swap-preview__image--free"
+            aria-hidden
+          >
+            Даром
+          </span>
+        ) : listing ? (
+          <Link
+            href={listingHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="chats-swap-preview__image-link"
+            aria-label={listing.title}
+          >
+            <ListingImage listing={listing} className="chats-swap-preview__image" />
+          </Link>
+        ) : null}
         {hasNext && onNext ? (
           <button
             type="button"
@@ -858,14 +883,18 @@ function SwapPreviewCard({
       <div className="chats-swap-preview__body">
         <div className="chats-swap-preview__copy">
           <span className="chats-swap-preview__label">{labelText}</span>
-          <Link
-            href={listingHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="chats-swap-preview__title-link"
-          >
-            <strong className="chats-swap-preview__title">{listing.title}</strong>
-          </Link>
+          {isFreePlaceholder ? (
+            <strong className="chats-swap-preview__title">{freeTitle}</strong>
+          ) : listing ? (
+            <Link
+              href={listingHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="chats-swap-preview__title-link"
+            >
+              <strong className="chats-swap-preview__title">{listing.title}</strong>
+            </Link>
+          ) : null}
         </div>
         <span
           className={`chats-swap-preview__status${statusActive ? " is-active" : ""}`}
@@ -938,8 +967,10 @@ function SwapHeader({
   const offeredListings = thread.offer.offeredListings;
   const offered =
     offeredListings[offerIndex] ?? offeredListings[0] ?? null;
+  const isFreeClaim =
+    Boolean(target.isFree) || offeredListings.length === 0;
 
-  if (!offered) return null;
+  if (!isFreeClaim && !offered) return null;
 
   const iOwnTarget = target.ownerId === currentUserId;
   const goNextOffered = () => {
@@ -952,6 +983,7 @@ function SwapHeader({
         label: "Ваше",
         listing: target,
         listings: [target],
+        isFreePlaceholder: false as const,
         activeIndex: 0,
         menu: false as const,
         onNext: undefined,
@@ -960,6 +992,7 @@ function SwapHeader({
         label: "Ваше",
         listing: offered,
         listings: offeredListings,
+        isFreePlaceholder: isFreeClaim,
         activeIndex: offerIndex,
         menu: false as const,
         onNext: goNextOffered,
@@ -970,6 +1003,7 @@ function SwapHeader({
         label: "Его",
         listing: offered,
         listings: offeredListings,
+        isFreePlaceholder: isFreeClaim,
         activeIndex: offerIndex,
         menu: true as const,
         onNext: goNextOffered,
@@ -978,6 +1012,7 @@ function SwapHeader({
         label: "Его",
         listing: target,
         listings: [target],
+        isFreePlaceholder: false as const,
         activeIndex: 0,
         menu: true as const,
         onNext: undefined,
@@ -997,12 +1032,14 @@ function SwapHeader({
                 listings={mine.listings}
                 label={mineStatus.label}
                 active={mineStatus.active}
+                isFreePlaceholder={mine.isFreePlaceholder}
               />
               <SwapHeaderPinSlot
                 listing={theirs.listing}
                 listings={theirs.listings}
                 label={theirsStatus.label}
                 active={theirsStatus.active}
+                isFreePlaceholder={theirs.isFreePlaceholder}
               />
             </div>
           </div>
@@ -1020,6 +1057,7 @@ function SwapHeader({
                 menu={mine.menu}
                 statusLabel={mineStatus.label}
                 statusActive={mineStatus.active}
+                isFreePlaceholder={mine.isFreePlaceholder}
                 onNext={mine.onNext}
               />
               <SwapPreviewCard
@@ -1031,6 +1069,7 @@ function SwapHeader({
                 counterpart={thread.counterpart}
                 statusLabel={theirsStatus.label}
                 statusActive={theirsStatus.active}
+                isFreePlaceholder={theirs.isFreePlaceholder}
                 onNext={theirs.onNext}
               />
             </div>

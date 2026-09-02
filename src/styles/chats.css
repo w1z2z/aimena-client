@@ -1474,6 +1474,14 @@ body:has(.chats-page) {
   object-fit: cover;
 }
 
+.chats-swap-preview__image--free {
+  background: #f5f4ff;
+  color: #8e8bed;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .chats-swap-preview__pager {
   position: absolute;
   right: 6px;
@@ -2976,6 +2984,18 @@ body:has(.chats-page) {
     font-size: 11px;
     font-weight: 800;
     line-height: 1;
+  }
+
+  .chats-swap-header__pin-thumb--free {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f4ff;
+    color: #8e8bed;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+    text-align: center;
   }
 
   .chats-page.is-mobile-thread .chats-swap-header__pin.is-active {
