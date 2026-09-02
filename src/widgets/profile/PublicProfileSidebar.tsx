@@ -33,7 +33,7 @@ export function PublicProfileSidebar({ profile, active }: PublicProfileSidebarPr
   const nav = getPublicProfileNav(profile.slug);
   const showReviewsBlock = active !== "reviews";
   const reviewsPreviewQuery = useQuery({
-    queryKey: ["public-profile-reviews-preview", profile.slug],
+    queryKey: ["public-profile-reviews-preview", profile.slug, "received-v1"],
     queryFn: ({ signal }) =>
       getUserDealReviews(profile.slug, { page: 1, pageSize: 3 }, signal),
     enabled: showReviewsBlock,

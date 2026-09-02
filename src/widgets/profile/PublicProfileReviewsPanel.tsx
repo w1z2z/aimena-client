@@ -25,7 +25,7 @@ export function PublicProfileReviewsPanel() {
   }, [slug]);
 
   const reviewsQuery = useQuery({
-    queryKey: ["public-profile-reviews", slug, page],
+    queryKey: ["public-profile-reviews", slug, page, "received-v1"],
     queryFn: ({ signal }) =>
       getUserDealReviews(slug, { page, pageSize: PROFILE_PAGE_SIZE }, signal),
     enabled: Boolean(slug),

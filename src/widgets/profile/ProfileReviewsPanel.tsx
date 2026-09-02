@@ -20,7 +20,7 @@ export function ProfileReviewsPanel() {
   const [page, setPage] = useState(1);
 
   const reviewsQuery = useQuery({
-    queryKey: ["profile-reviews-me", user?.id, page],
+    queryKey: ["profile-reviews-me", user?.id, page, "received-v1"],
     queryFn: ({ signal }) =>
       getMyDealReviews({ page, pageSize: PROFILE_PAGE_SIZE }, signal),
     enabled: Boolean(user?.id && accessToken),

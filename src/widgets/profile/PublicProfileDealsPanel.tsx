@@ -39,7 +39,7 @@ export function PublicProfileDealsPanel() {
   }, [sort, typeFilter, slug]);
 
   const dealsQuery = useQuery({
-    queryKey: ["public-profile-deals", slug, typeFilter, sort, page],
+    queryKey: ["public-profile-deals", slug, typeFilter, sort, page, "listings-v1"],
     queryFn: ({ signal }) =>
       getUserDealHistory(
         slug,
@@ -72,12 +72,7 @@ export function PublicProfileDealsPanel() {
       <>
         <div className="flex flex-col gap-6">
           {deals.map((deal) => (
-            <ProfileDealCard
-              key={deal.id}
-              deal={deal}
-              showReviewAction={false}
-              showChatAction={false}
-            />
+            <ProfileDealCard key={deal.id} deal={deal} variant="public" />
           ))}
         </div>
         <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />

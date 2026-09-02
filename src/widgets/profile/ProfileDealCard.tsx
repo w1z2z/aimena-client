@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 import type {
   DealHistoryItem,
@@ -39,39 +40,10 @@ const DEAL_SIDE_LABELS: Record<
 
 type ProfileDealCardProps = {
   deal: DealHistoryItem;
-  /** Hide review CTA on public profiles. */
+  variant?: "own" | "public";
   showReviewAction?: boolean;
   showChatAction?: boolean;
 };
-
-function ListingThumb({ side }: { side: DealHistoryListingSide }) {
-  const hiddenCount = Math.max((side.listingsCount ?? 1) - 2, 0);
-  const showStack = Boolean(side.secondaryImageUrl) || hiddenCount > 0;
-
-  return (
-    <div className={`profile-deal-thumb${showStack ? " has-stack" : ""}`}>
-      <div className="profile-deal-thumb__main">
-        {side.imageUrl ? (
-          <img src={side.imageUrl} alt="" className="profile-deal-thumb__image" />
-        ) : null}
-      </div>
-      {showStack ? (
-        <span className="profile-deal-thumb__stack">
-          {side.secondaryImageUrl ? (
-            <img
-              src={side.secondaryImageUrl}
-              alt=""
-              className="profile-deal-thumb__stack-image"
-            />
-          ) : null}
-          {hiddenCount > 0 ? (
-            <span className="profile-deal-thumb__stack-count">+{hiddenCount}</span>
-          ) : null}
-        </span>
-      ) : null}
-    </div>
-  );
-}
 
 function ListingSide({
   label,
@@ -80,51 +52,99 @@ function ListingSide({
   label: string;
   side: DealHistoryListingSide;
 }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const listings = side.isFree ? [] : side.listings;
+  const count = listings.length;
+  const safeIndex = count > 0 ? activeIndex % count : 0;
+  const current = listings[safeIndex] ?? null;
+  const displayTitle = side.isFree ? "Ничего" : (current?.title ?? side.title);
+
+  const goNext = () => {
+    if (count < 2) return;
+    setActiveIndex((index) => (index + 1) % count);
+  };
+
   return (
     <div className="profile-deal-side">
-      <ListingThumb side={side} />
+      <div className="profile-deal-thumb">
+        <div
+          className={`profile-deal-thumb__main${
+            side.isFree ? " profile-deal-thumb__main--free" : ""
+          }`}
+        >
+          {side.isFree ? (
+            <span className="profile-deal-thumb__free-label">Даром</span>
+          ) : current?.imageUrl ? (
+            <img src={current.imageUrl} alt="" className="profile-deal-thumb__image" />
+          ) : null}
+          {count > 1 ? (
+            <button
+              type="button"
+              className="profile-deal-thumb__pager"
+              aria-label={`Следующее объявление, ${safeIndex + 1} из ${count}`}
+              onClick={goNext}
+            >
+              <span>
+                {safeIndex + 1}/{count}
+              </span>
+              <img src="/images/chat/offer-chevron.svg" alt="" />
+            </button>
+          ) : null}
+        </div>
+      </div>
       <div className="profile-deal-side__meta">
         <p className="profile-deal-side__label">{label}</p>
-        <p className="profile-deal-side__title" title={side.title}>
-          {side.title}
+        <p
+          className={`profile-deal-side__title${
+            side.isFree ? " profile-deal-side__title--empty" : ""
+          }`}
+          title={displayTitle}
+        >
+          {displayTitle}
         </p>
       </div>
     </div>
   );
 }
 
-function PartnerRow({ partner }: { partner: DealHistoryPerson }) {
-  const partnerHref = partner.slug ? `/users/${partner.slug}` : null;
+function PersonRow({
+  person,
+  className = "",
+}: {
+  person: DealHistoryPerson;
+  className?: string;
+}) {
+  const personHref = person.slug ? `/users/${person.slug}` : null;
 
   return (
-    <div className="profile-deal-card__partner">
-      {partnerHref ? (
-        <Link href={partnerHref} className="profile-deal-card__avatar">
-          {partner.avatarUrl ? (
-            <img src={partner.avatarUrl} alt="" />
+    <div className={`profile-deal-card__person${className ? ` ${className}` : ""}`}>
+      {personHref ? (
+        <Link href={personHref} className="profile-deal-card__avatar">
+          {person.avatarUrl ? (
+            <img src={person.avatarUrl} alt="" />
           ) : (
-            <span>{partner.avatarInitial}</span>
+            <span>{person.avatarInitial}</span>
           )}
         </Link>
       ) : (
         <div className="profile-deal-card__avatar">
-          {partner.avatarUrl ? (
-            <img src={partner.avatarUrl} alt="" />
+          {person.avatarUrl ? (
+            <img src={person.avatarUrl} alt="" />
           ) : (
-            <span>{partner.avatarInitial}</span>
+            <span>{person.avatarInitial}</span>
           )}
         </div>
       )}
-      {partnerHref ? (
-        <Link href={partnerHref} className="profile-deal-card__partner-name">
-          {partner.name}
+      {personHref ? (
+        <Link href={personHref} className="profile-deal-card__person-name">
+          {person.name}
         </Link>
       ) : (
-        <p className="profile-deal-card__partner-name">{partner.name}</p>
+        <p className="profile-deal-card__person-name">{person.name}</p>
       )}
       <span className="profile-deal-card__points">
         <RatingStarIcon />
-        <span>{formatProfileNumber(partner.points)}</span>
+        <span>{formatProfileNumber(person.points)}</span>
       </span>
     </div>
   );
@@ -132,6 +152,7 @@ function PartnerRow({ partner }: { partner: DealHistoryPerson }) {
 
 export function ProfileDealCard({
   deal,
+  variant = "own",
   showReviewAction = true,
   showChatAction = true,
 }: ProfileDealCardProps) {
@@ -143,9 +164,8 @@ export function ProfileDealCard({
   const reviewHref = deal.threadId
     ? `/chats?selected=${encodeURIComponent(deal.threadId)}&dealModal=review`
     : null;
-  const showActions =
-    (showReviewAction && deal.canLeaveReview && reviewHref) ||
-    (showChatAction && chatHref);
+  const showReviewButton = showReviewAction && deal.canLeaveReview && reviewHref;
+  const showChatButton = showChatAction && chatHref;
 
   return (
     <article
@@ -156,6 +176,12 @@ export function ProfileDealCard({
       <div className="profile-deal-card__exchange">
         <div className="profile-deal-card__given">
           <ListingSide label={sideLabels.given} side={deal.given} />
+          {variant === "public" ? (
+            <PersonRow
+              person={deal.owner}
+              className="profile-deal-card__person--under-given"
+            />
+          ) : null}
         </div>
 
         <div
@@ -169,24 +195,25 @@ export function ProfileDealCard({
         <div className="profile-deal-card__received">
           <ListingSide label={sideLabels.received} side={deal.received} />
         </div>
-
-        <PartnerRow partner={deal.partner} />
       </div>
 
-      {showActions ? (
+      {variant === "own" ? (
         <div className="profile-deal-card__footer">
-          <div className="profile-deal-card__actions">
-            {showReviewAction && deal.canLeaveReview && reviewHref ? (
-              <Link href={reviewHref} className="profile-deal-card__action is-primary">
-                Оставить отзыв
-              </Link>
-            ) : null}
-            {showChatAction && chatHref ? (
-              <Link href={chatHref} className="profile-deal-card__action">
-                Открыть чат
-              </Link>
-            ) : null}
-          </div>
+          <PersonRow person={deal.partner} />
+          {showReviewButton || showChatButton ? (
+            <div className="profile-deal-card__actions">
+              {showReviewButton ? (
+                <Link href={reviewHref} className="profile-deal-card__action is-primary">
+                  Оставить отзыв
+                </Link>
+              ) : null}
+              {showChatButton ? (
+                <Link href={chatHref} className="profile-deal-card__action">
+                  Открыть чат
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </article>

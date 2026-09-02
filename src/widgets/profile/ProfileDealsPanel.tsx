@@ -38,7 +38,7 @@ export function ProfileDealsPanel() {
   }, [sort, typeFilter]);
 
   const dealsQuery = useQuery({
-    queryKey: ["profile-deals-me", user?.id, typeFilter, sort, page],
+    queryKey: ["profile-deals-me", user?.id, typeFilter, sort, page, "listings-v1"],
     queryFn: ({ signal }) =>
       getMyDealHistory(
         { page, pageSize: PROFILE_PAGE_SIZE, status: typeFilter, sort },
@@ -72,7 +72,7 @@ export function ProfileDealsPanel() {
       <>
         <div className="flex flex-col gap-6">
           {deals.map((deal) => (
-            <ProfileDealCard key={deal.id} deal={deal} showReviewAction />
+            <ProfileDealCard key={deal.id} deal={deal} variant="own" showReviewAction />
           ))}
         </div>
         <ProfilePagination page={page} pageCount={pageCount} onChange={setPage} />

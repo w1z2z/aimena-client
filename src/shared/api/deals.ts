@@ -177,11 +177,15 @@ export type DealHistoryPerson = {
   points: number;
 };
 
-export type DealHistoryListingSide = {
+export type DealHistoryListingItem = {
   title: string;
   imageUrl: string | null;
-  secondaryImageUrl: string | null;
-  listingsCount: number;
+};
+
+export type DealHistoryListingSide = {
+  title: string;
+  listings: DealHistoryListingItem[];
+  isFree: boolean;
 };
 
 export type DealHistoryItem = {
@@ -191,9 +195,14 @@ export type DealHistoryItem = {
   date: string;
   given: DealHistoryListingSide;
   received: DealHistoryListingSide;
+  owner: DealHistoryPerson;
   partner: DealHistoryPerson;
   canLeaveReview: boolean;
   highlighted: boolean;
+};
+
+export type DealReviewSwap = {
+  receivedTitle: string;
 };
 
 export type DealReviewItem = {
@@ -201,6 +210,7 @@ export type DealReviewItem = {
   text: string;
   date: string;
   author: DealHistoryPerson;
+  swap?: DealReviewSwap;
 };
 
 export type DealListMeta = {

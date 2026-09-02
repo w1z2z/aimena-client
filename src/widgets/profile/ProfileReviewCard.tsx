@@ -19,65 +19,50 @@ export function ProfileReviewCard({ review, compact = false }: ProfileReviewCard
 
   return (
     <article
-      className={`flex w-full flex-col gap-3 border-[0.5px] border-solid border-[#CACACA] bg-white ${
-        compact ? "rounded-[21px] p-4" : "rounded-[31px] p-6"
-      }`}
+      className={`profile-review-card${compact ? " profile-review-card--compact" : ""}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+      <p className="profile-review-card__date">{formatProfileDate(review.date)}</p>
+
+      <div className="profile-review-card__header">
+        <div className="profile-review-card__author">
           {authorHref ? (
-            <Link
-              href={authorHref}
-              className="relative size-11 shrink-0 overflow-hidden rounded-[9px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F2F4F7]"
-            >
+            <Link href={authorHref} className="profile-review-card__avatar">
               {review.author.avatarUrl ? (
-                <img src={review.author.avatarUrl} alt="" className="size-full object-cover" />
+                <img src={review.author.avatarUrl} alt="" />
               ) : (
-                <div className="flex size-full items-center justify-center text-[16px] font-extrabold text-[#1A1A1A]">
-                  {review.author.avatarInitial}
-                </div>
+                <span>{review.author.avatarInitial}</span>
               )}
             </Link>
           ) : (
-            <div className="relative size-11 shrink-0 overflow-hidden rounded-[9px] border-[0.5px] border-solid border-[#8E8BED] bg-[#F2F4F7]">
+            <div className="profile-review-card__avatar">
               {review.author.avatarUrl ? (
-                <img src={review.author.avatarUrl} alt="" className="size-full object-cover" />
+                <img src={review.author.avatarUrl} alt="" />
               ) : (
-                <div className="flex size-full items-center justify-center text-[16px] font-extrabold text-[#1A1A1A]">
-                  {review.author.avatarInitial}
-                </div>
+                <span>{review.author.avatarInitial}</span>
               )}
             </div>
           )}
-          <div className={`min-w-0 ${compact ? "flex flex-col gap-1" : "flex items-center gap-3"}`}>
+          <div className="profile-review-card__author-meta">
             {authorHref ? (
-              <Link
-                href={authorHref}
-                className="truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A] hover:text-[#8E8BED]"
-              >
+              <Link href={authorHref} className="profile-review-card__author-name">
                 {review.author.name}
               </Link>
             ) : (
-              <p className="truncate text-[14px] font-semibold leading-[1.2] tracking-[0.001em] text-[#1A1A1A]">
-                {review.author.name}
-              </p>
+              <p className="profile-review-card__author-name">{review.author.name}</p>
             )}
-            <span className="inline-flex w-fit items-center justify-center gap-1 rounded-[44px] bg-[#1A1A1A] px-3 py-2">
-              <RatingStarIcon className="size-[13px]" />
-              <span className="text-[11px] font-semibold leading-4 tracking-[0.002em] text-white">
-                {formatProfileNumber(review.author.points)}
-              </span>
+            <span className="profile-review-card__points">
+              <RatingStarIcon />
+              <span>{formatProfileNumber(review.author.points)}</span>
             </span>
           </div>
         </div>
-        {!compact ? (
-          <p className="shrink-0 text-[11px] font-semibold leading-4 tracking-[0.002em] text-[#626262]">
-            {formatProfileDate(review.date)}
-          </p>
-        ) : null}
       </div>
 
-      <p className="text-[14px] font-normal leading-[1.7] text-[#1A1A1A]">{review.text}</p>
+      <p className="profile-review-card__text">{review.text}</p>
+
+      {review.swap?.receivedTitle ? (
+        <p className="profile-review-card__received">{review.swap.receivedTitle}</p>
+      ) : null}
     </article>
   );
 }
