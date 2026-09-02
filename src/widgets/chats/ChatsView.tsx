@@ -778,15 +778,15 @@ function SwapHeaderPinSlot({
   const extraCount = listings.length > 1 ? listings.length - 1 : 0;
 
   return (
-    <div className="chats-swap-header__pin-slot">
-      <div className="chats-swap-header__pin-thumb-wrap">
+    <span className={`chats-swap-header__pin${active ? " is-active" : ""}`}>
+      <span className="chats-swap-header__pin-thumb-wrap">
         <ListingImage listing={listing} className="chats-swap-header__pin-thumb" />
         {extraCount > 0 ? (
           <span className="chats-list-item__deal-count">+{extraCount}</span>
         ) : null}
-      </div>
-      <span className={`chats-swap-header__pin${active ? " is-active" : ""}`}>{label}</span>
-    </div>
+      </span>
+      <span className="chats-swap-header__pin-label">{label}</span>
+    </span>
   );
 }
 
