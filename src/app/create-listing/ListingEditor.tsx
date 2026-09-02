@@ -50,7 +50,6 @@ import { Header } from "@/widgets/header/Header";
 import { DeleteIcon } from "@/shared/ui/icons";
 import { Switch } from "@/shared/ui/switch/Switch";
 
-import { ListingPublishedModal } from "./ListingPublishedModal";
 import { ListingPublishingOverlay } from "./ListingPublishingOverlay";
 
 import {
@@ -558,7 +557,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPublishedModalOpen, setIsPublishedModalOpen] = useState(false);
   const [draftCityLabel, setDraftCityLabel] = useState<string | null>(null);
   const [isDraftRestoring, setIsDraftRestoring] = useState(() => !isEditMode);
   const [showDraftRestoredNotice, setShowDraftRestoredNotice] = useState(false);
@@ -1524,7 +1522,7 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
       await publishListing(created.listing.id);
       await clearListingCreateDraft(user?.id ?? null);
       clearHeroListingDraft();
-      setIsPublishedModalOpen(true);
+      router.push(`/listings/${created.listing.id}`);
     } catch (error: unknown) {
       if (error instanceof ApiError) {
         setSubmitError(error.message);
@@ -2340,7 +2338,6 @@ export function ListingEditor({ mode = "create", listingId }: ListingEditorProps
             : "Публикуем объявление…"
         }
       />
-      <ListingPublishedModal open={isPublishedModalOpen} />
     </main>
   );
 }
