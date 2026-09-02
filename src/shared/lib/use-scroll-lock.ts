@@ -4,6 +4,30 @@ import { useEffect, useRef, type RefObject } from "react";
 
 const SCROLL_LOCK_CLASS = "is-scroll-locked";
 
+function findScrollableElement(node: Node | null, boundary: HTMLElement): HTMLElement {
+  if (!(node instanceof Element)) {
+    return boundary;
+  }
+
+  let current: Element | null = node;
+  while (current && boundary.contains(current)) {
+    if (current instanceof HTMLElement) {
+      const { overflowY } = window.getComputedStyle(current);
+      const canScrollY =
+        (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+        current.scrollHeight > current.clientHeight + 1;
+
+      if (canScrollY) {
+        return current;
+      }
+    }
+
+    current = current.parentElement;
+  }
+
+  return boundary;
+}
+
 /**
  * Locks document scroll without `position: fixed` on body
  * (that turns fixed overlays into body-relative and the whole UI scrolls together).
@@ -52,11 +76,13 @@ export function useScrollLock(locked: boolean, allowScrollRef?: RefObject<HTMLEl
         return;
       }
 
+      const scrollEl = findScrollableElement(node, allow);
+
       // Inside the allowed scroller: block scroll-chaining to the page at edges (iOS).
       if (event instanceof TouchEvent) {
         const currentY = event.touches[0]?.clientY ?? 0;
         const deltaY = currentY - touchStartYRef.current;
-        const { scrollTop, scrollHeight, clientHeight } = allow;
+        const { scrollTop, scrollHeight, clientHeight } = scrollEl;
         const atTop = scrollTop <= 0;
         const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
         if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {

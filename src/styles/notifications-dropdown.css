@@ -1,32 +1,107 @@
-.notifications-dropdown-scroll {
-  box-sizing: border-box;
-  width: calc(100% + 24px);
-  max-height: 360px;
-  margin-right: -24px;
+.notifications-dropdown-inner {
+  width: 100%;
+  min-width: 0;
+  gap: 24px;
+  transition: gap 280ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.notifications-dropdown-inner--expanded {
+  gap: 0;
+}
+
+.notifications-dropdown-scroll-host {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.notifications-dropdown-viewport {
+  box-sizing: content-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-right: -12px;
+  padding-right: 12px;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-anchor: none;
   overscroll-behavior-x: none;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
   scrollbar-color: rgb(142 139 237 / 45%) transparent;
+  transition: height 280ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.notifications-dropdown-scroll::-webkit-scrollbar {
+.notifications-dropdown-viewport::-webkit-scrollbar {
   width: 4px;
 }
 
-.notifications-dropdown-scroll::-webkit-scrollbar-track {
+.notifications-dropdown-viewport::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.notifications-dropdown-scroll::-webkit-scrollbar-thumb {
+.notifications-dropdown-viewport::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: rgb(142 139 237 / 45%);
 }
 
-.notifications-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+.notifications-dropdown-viewport::-webkit-scrollbar-thumb:hover {
   background: rgb(142 139 237 / 70%);
+}
+
+.notifications-dropdown-viewport.is-expanded {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.notifications-dropdown-list {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.notifications-dropdown-footer {
+  display: flex;
+  width: 100%;
+  max-height: 80px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 1;
+  transition:
+    max-height 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    opacity 220ms cubic-bezier(0.33, 1, 0.68, 1),
+    margin 280ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.notifications-dropdown-footer.is-hiding {
+  max-height: 0;
+  margin-top: -24px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.notifications-dropdown-expand {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.notifications-dropdown-expand:disabled {
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notifications-dropdown-inner,
+  .notifications-dropdown-viewport,
+  .notifications-dropdown-footer {
+    transition: none;
+  }
 }
 
 .notification-card {

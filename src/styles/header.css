@@ -95,12 +95,7 @@
 
 .header-dropdown-panel--sheet .notifications-dropdown-panel {
   overflow: hidden;
-}
-
-.header-dropdown-panel--sheet .notifications-dropdown-scroll {
-  width: 100%;
-  max-height: min(360px, calc(100dvh - 220px));
-  margin-right: 0;
+  max-height: calc(100dvh - var(--mobile-bottom-nav-height, 56px) - 62px);
 }
 
 .header-categories-menu {
@@ -259,14 +254,12 @@
 }
 
 .header-notifications-scroll {
-  scrollbar-gutter: stable;
   min-width: 0;
   overscroll-behavior: contain;
 }
 
 .header-notifications-scroll > * {
   min-width: 0;
-  flex-shrink: 0;
 }
 
 .site-header {

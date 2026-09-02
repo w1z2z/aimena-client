@@ -18,11 +18,12 @@ type HeaderDropdownProps = {
 
 export function HeaderDropdown({ open, onOpenChange, trigger, children, panelLabel }: HeaderDropdownProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const isCompact = useMediaQuery(COMPACT_HEADER_QUERY);
   const { isRendered, isVisible } = useOverlayPresence(open);
 
-  useScrollLock(isRendered && isCompact, containerRef);
+  useScrollLock(isRendered && isCompact, panelRef);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -63,6 +64,7 @@ export function HeaderDropdown({ open, onOpenChange, trigger, children, panelLab
             />
           ) : null}
           <div
+            ref={panelRef}
             id={panelId}
             role="dialog"
             aria-label={panelLabel}

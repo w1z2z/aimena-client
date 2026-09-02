@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -64,9 +64,13 @@ function NotificationList({
 export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropdownProps) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
   const [items, setItems] = useState<ChatSummary[]>([]);
   const [expanded, setExpanded] = useState(false);
+  const [previewHeight, setPreviewHeight] = useState<number | null>(null);
+  const [expandedHeight, setExpandedHeight] = useState<number | null>(null);
+  const [footerHiding, setFooterHiding] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
@@ -130,6 +134,9 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
   useEffect(() => {
     if (!isOpen) {
       setExpanded(false);
+      setPreviewHeight(null);
+      setExpandedHeight(null);
+      setFooterHiding(false);
       return;
     }
 
@@ -156,12 +163,44 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
     };
   }, [isOpen, loadPage]);
 
+  const filteredItems = items.filter(
+    (item) => item.notificationKind !== "offer_rejected" || item.isOfferSender !== false,
+  );
+  const visibleItems = expanded ? filteredItems : filteredItems.slice(0, PREVIEW_LIMIT);
+  const showExpandButton = !expanded && (filteredItems.length > PREVIEW_LIMIT || hasMore);
+
+  useLayoutEffect(() => {
+    if (expanded || loading) return;
+    const element = scrollRef.current;
+    if (!element) return;
+    setPreviewHeight(element.scrollHeight);
+  }, [expanded, loading, visibleItems.length, error]);
+
   const handleShowAll = () => {
+    const viewport = scrollRef.current;
+    const footer = footerRef.current;
+    if (!viewport) return;
+
+    const footerHeight = footer?.offsetHeight ?? 0;
+    const footerGap = footerHeight > 0 ? 24 : 0;
+    const targetHeight = viewport.scrollHeight + footerHeight + footerGap;
+
+    setExpandedHeight(targetHeight);
+    setFooterHiding(true);
     setExpanded(true);
+
+    window.setTimeout(() => {
+      setFooterHiding(false);
+    }, 280);
+
     if (items.length < PAGE_LIMIT && hasMore) {
       void loadPage(nextCursor, true);
     }
   };
+
+  const viewportHeight = expanded
+    ? (expandedHeight ?? previewHeight ?? undefined)
+    : (previewHeight ?? undefined);
 
   const handleScroll = () => {
     if (!expanded || !hasMore || loadingMore) return;
@@ -178,9 +217,6 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
     router.push(chatSummaryToHref(item));
   };
 
-  const visibleItems = expanded ? items : items.slice(0, PREVIEW_LIMIT);
-  const showExpandButton = !expanded && (items.length > PREVIEW_LIMIT || hasMore);
-
   const listContent = (
     <>
       {loading ? <p className="m-0 w-full text-[14px] text-[#626262]">Загружаем…</p> : null}
@@ -191,12 +227,7 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
         <p className="m-0 w-full text-[14px] text-[#626262]">Пока нет уведомлений.</p>
       ) : null}
       {!loading && !error ? (
-        <NotificationList
-          items={visibleItems.filter(
-            (item) => item.notificationKind !== "offer_rejected" || item.isOfferSender !== false,
-          )}
-          onItemClick={handleNotificationClick}
-        />
+        <NotificationList items={visibleItems} onItemClick={handleNotificationClick} />
       ) : null}
       {expanded && loadingMore ? (
         <p className="m-0 w-full text-center text-[14px] text-[#626262]">Загружаем ещё…</p>
@@ -206,38 +237,51 @@ export function NotificationsDropdown({ isOpen, onNavigate }: NotificationsDropd
 
   return (
     <HeaderDropdownPanel className="notifications-dropdown-panel box-border flex w-[412px] max-w-full flex-col items-center justify-center overflow-hidden rounded-[31px] p-[24px] text-[#1A1A1A]">
-      <div className="flex w-full max-w-[364px] flex-col items-start gap-[24px]">
-        {expanded ? (
+      <div
+        className={`notifications-dropdown-inner flex w-full max-w-[364px] flex-col items-start${
+          expanded ? " notifications-dropdown-inner--expanded" : ""
+        }`}
+      >
+        <div className="notifications-dropdown-scroll-host">
           <div
             ref={scrollRef}
-            onScroll={handleScroll}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            className="notifications-dropdown-scroll"
+            onScroll={expanded ? handleScroll : undefined}
+            onMouseEnter={expanded ? onMouseEnter : undefined}
+            onMouseLeave={expanded ? onMouseLeave : undefined}
+            className={`notifications-dropdown-viewport header-notifications-scroll${
+              expanded ? " is-expanded" : ""
+            }`}
+            style={viewportHeight ? { height: viewportHeight } : undefined}
           >
-            <div className="flex w-full flex-col items-start gap-[24px]">{listContent}</div>
+            <div className="notifications-dropdown-list flex w-full flex-col items-start gap-[24px]">
+              {listContent}
+            </div>
           </div>
-        ) : (
-          <div className="flex w-full flex-col items-start gap-[24px]">{listContent}</div>
-        )}
+        </div>
 
-        {showExpandButton ? (
-          <button
-            type="button"
-            onClick={handleShowAll}
-            className="flex w-full flex-col items-center justify-center gap-[12px] text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A] transition hover:opacity-70"
+        {showExpandButton || footerHiding ? (
+          <div
+            ref={footerRef}
+            className={`notifications-dropdown-footer${footerHiding ? " is-hiding" : ""}`}
           >
-            Показать все уведомления
-            <svg width="12" height="6" viewBox="0 0 12 6" fill="none" aria-hidden className="block">
-              <path
-                d="M1 1L6 5L11 1"
-                stroke="#1A1A1A"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+            <button
+              type="button"
+              onClick={handleShowAll}
+              disabled={footerHiding}
+              className="notifications-dropdown-expand flex w-full flex-col items-center justify-center gap-[12px] text-[14px] font-semibold leading-[120%] tracking-[0.001em] text-[#1A1A1A] transition hover:opacity-70"
+            >
+              Показать все уведомления
+              <svg width="12" height="6" viewBox="0 0 12 6" fill="none" aria-hidden className="block">
+                <path
+                  d="M1 1L6 5L11 1"
+                  stroke="#1A1A1A"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
         ) : null}
       </div>
     </HeaderDropdownPanel>
