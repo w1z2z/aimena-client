@@ -12,12 +12,12 @@ import { FreePromoBanner } from "./FreePromoBanner";
 
 /**
  * Same behaviour as the home hero desktop scene:
- * - above tablet: keep the Figma desktop panel intact and scale it as a whole
- * - at tablet and below: existing stacked mobile CSS takes over (no scale)
+ * - above homePromo (900): keep the Figma desktop panel intact and scale it as a whole
+ * - at homePromo and below: existing stacked mobile CSS takes over (no scale)
  */
 export function HomeFreeGiveawaySection() {
   const { items: freeListings, isLoading } = useFreeListings(8);
-  const isMobileLayout = useMediaQuery(MQ.tablet);
+  const isMobileLayout = useMediaQuery(MQ.homePromo);
   const hostRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const needsScale = !isMobileLayout && scale < 1;

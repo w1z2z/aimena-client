@@ -8,6 +8,7 @@
  * | phone    | 480  | tight padding / type                     |
  * | sm       | 640  | forms, stacked detail, narrow columns    |
  * | compact  | 1024 | chrome: header burger / bottom nav       |
+ * | homePromo|  900 | home free panel + exchange CTA reflow    |
  * | tablet   | 1120 | content grids, page reflow               |
  * | wide     | 1480 | multi-column card grids (4 → 3)          |
  *
@@ -19,6 +20,7 @@ export const BP = {
   phone: 480,
   sm: 640,
   compact: 1024,
+  homePromo: 900,
   tablet: 1120,
   wide: 1480,
 } as const;
@@ -32,6 +34,8 @@ export const MQ = {
   sm: `(max-width: ${BP.sm}px)`,
   /** max-width: compact — header burger / bottom nav */
   compact: `(max-width: ${BP.compact}px)`,
+  /** max-width: homePromo — «Всё даром» panel + exchange CTA stacked layout */
+  homePromo: `(max-width: ${BP.homePromo}px)`,
   /** max-width: tablet — content reflow */
   tablet: `(max-width: ${BP.tablet}px)`,
   /** max-width: wide — card grid column drop */

@@ -24,12 +24,13 @@
 
 /*
  * Layout breakpoints — keep in sync with shared/lib/breakpoints.ts
- * phone 480 | sm 640 | compact 1024 | tablet 1120 | wide 1480
+ * phone 480 | sm 640 | compact 1024 | homePromo 900 | tablet 1120 | wide 1480
  */
 @theme {
   --breakpoint-phone: 480px;
   --breakpoint-sm: 640px;
   --breakpoint-compact: 1024px;
+  --breakpoint-home-promo: 900px;
   --breakpoint-tablet: 1120px;
   --breakpoint-wide: 1480px;
 

@@ -263,7 +263,13 @@
   right: 14px;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1120px) and (min-width: 901px) {
+  .home-free-section__inner {
+    padding-inline: 16px;
+  }
+}
+
+@media (max-width: 900px) {
   .home-free-section {
     padding-top: 36px;
     padding-bottom: 32px;
@@ -671,7 +677,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 900px) {
   .home-exchange-cta-section {
     padding-bottom: 36px;
   }
