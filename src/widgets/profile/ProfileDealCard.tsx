@@ -176,12 +176,6 @@ export function ProfileDealCard({
       <div className="profile-deal-card__exchange">
         <div className="profile-deal-card__given">
           <ListingSide label={sideLabels.given} side={deal.given} />
-          {variant === "public" ? (
-            <PersonRow
-              person={deal.owner}
-              className="profile-deal-card__person--under-given"
-            />
-          ) : null}
         </div>
 
         <div
@@ -195,6 +189,12 @@ export function ProfileDealCard({
         <div className="profile-deal-card__received">
           <ListingSide label={sideLabels.received} side={deal.received} />
         </div>
+
+        {variant === "public" ? (
+          <div className="profile-deal-card__owner">
+            <PersonRow person={deal.owner} />
+          </div>
+        ) : null}
       </div>
 
       {variant === "own" ? (
